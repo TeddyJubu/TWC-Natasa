@@ -15,6 +15,21 @@ const cardVariants = cva("group overflow-hidden border border-line bg-canvas tex
   defaultVariants: { variant: "grid" },
 });
 
+/**
+ * Catalogue cards carry a neighborhood color signature so each member reads at
+ * a glance from the shared palette. Unknown neighborhoods fall back to the
+ * neutral catalogue look.
+ */
+const catalogueTones: Record<string, { rule: string; label: string; index: string; wash: string }> = {
+  "Long Island City": { rule: "border-lic/30", label: "text-lic", index: "text-lic", wash: "bg-lic/20" },
+  Astoria: { rule: "border-astoria/30", label: "text-astoria", index: "text-astoria", wash: "bg-astoria/20" },
+  Sunnyside: { rule: "border-sunnyside/30", label: "text-sunnyside", index: "text-sunnyside", wash: "bg-sunnyside/20" },
+  "Jackson Heights": { rule: "border-jackson-heights/30", label: "text-jackson-heights", index: "text-jackson-heights", wash: "bg-jackson-heights/20" },
+  "Forest Hills": { rule: "border-forest-hills/30", label: "text-forest-hills", index: "text-forest-hills", wash: "bg-forest-hills/20" },
+  Elmhurst: { rule: "border-elmhurst/30", label: "text-elmhurst", index: "text-elmhurst", wash: "bg-elmhurst/20" },
+  "Rego Park": { rule: "border-rego-park/30", label: "text-rego-park", index: "text-rego-park", wash: "bg-rego-park/20" },
+};
+
 export interface MemberCardProps extends Omit<React.HTMLAttributes<HTMLElement>, "children">, VariantProps<typeof cardVariants> {
   member: MemberProfile;
   catalogueNumber?: number;
