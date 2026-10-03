@@ -127,10 +127,14 @@ class Title {
     });
     this.mesh = new Mesh(this.gl, { geometry, program });
     const aspect = width / height;
-    const textHeightScaled = this.plane.scale.y * 0.15;
-    const textWidthScaled = textHeightScaled * aspect;
+    const preferredTextHeight = this.plane.scale.y * 0.12;
+    const maximumTextWidth = this.plane.scale.x * 0.88;
+    const preferredTextWidth = preferredTextHeight * aspect;
+    const fitScale = Math.min(1, maximumTextWidth / preferredTextWidth);
+    const textHeightScaled = preferredTextHeight * fitScale;
+    const textWidthScaled = preferredTextWidth * fitScale;
     this.mesh.scale.set(textWidthScaled, textHeightScaled, 1);
-    this.mesh.position.y = -this.plane.scale.y * 0.5 - textHeightScaled * 0.5 - 0.05;
+    this.mesh.position.y = -this.plane.scale.y * 0.5 - textHeightScaled * 0.5 - 0.1;
     this.mesh.setParent(this.plane);
   }
 }
