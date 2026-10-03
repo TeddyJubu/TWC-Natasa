@@ -4,3 +4,4 @@
 - Showcase pages live in `src/routes/` and showcase-only helpers in `src/showcase/` (excluded via `.dsignore`) — they are preview-only and never re-exported.
 - Tokens are CSS variables mapped through `@theme inline` in `theme.css` — keeps light/dark switching to a single `.dark` class.
 - Form primitives use editorial and boxed variants from one shared family — keeps long applications expressive and compact forms consistent.
+- Motion uses shared CSS timing tokens and reduced-motion fallbacks — keeps interactions consistent and accessible without adding a runtime dependency.

@@ -15,7 +15,7 @@ export const Blossom = React.forwardRef<SVGSVGElement, BlossomProps>(({ classNam
 Blossom.displayName = "Blossom";
 
 const badgeVariants = cva(
-  "inline-flex h-12 items-center gap-3 rounded-full px-6 font-sans text-[0.95rem] leading-none",
+  "inline-flex h-12 items-center gap-3 rounded-full px-6 font-sans text-[0.95rem] leading-none transition-[transform,background-color,border-color] duration-300 ease-[var(--ease-snap)] hover:-translate-y-0.5 motion-reduce:transform-none motion-reduce:transition-none [&>svg]:transition-transform [&>svg]:duration-300 hover:[&>svg]:rotate-12 hover:[&>svg]:scale-110",
   {
     variants: {
       variant: {

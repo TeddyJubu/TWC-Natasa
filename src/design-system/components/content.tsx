@@ -15,8 +15,8 @@ export interface ImageFrameProps extends React.ImgHTMLAttributes<HTMLImageElemen
   alt: string;
 }
 export const ImageFrame = React.forwardRef<HTMLImageElement, ImageFrameProps>(({ className, shape, ratio, alt, ...p }, ref) => (
-  <div className={cn(frameVariants({ shape, ratio }), className)}>
-    <img ref={ref} alt={alt} loading="lazy" className="size-full object-cover" {...p} />
+  <div className={cn(frameVariants({ shape, ratio }), "group", className)}>
+    <img ref={ref} alt={alt} loading="lazy" className="size-full object-cover transition-transform duration-700 ease-[var(--ease-gentle)] group-hover:scale-[1.03] motion-reduce:transform-none motion-reduce:transition-none" {...p} />
   </div>
 ));
 ImageFrame.displayName = "ImageFrame";
@@ -148,7 +148,7 @@ export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(({ className, it
 Tabs.displayName = "Tabs";
 
 /* ---------- FeatureCard ---------- */
-const featureVariants = cva("relative flex flex-col justify-end overflow-hidden rounded-card p-7 min-h-80", {
+const featureVariants = cva("group relative flex min-h-80 flex-col justify-end overflow-hidden rounded-card p-7 transition-[transform,box-shadow] duration-300 ease-[var(--ease-snap)] hover:-translate-y-1 hover:shadow-soft motion-reduce:transform-none motion-reduce:transition-none", {
   variants: {
     variant: {
       soft: "bg-surface text-ink",
@@ -168,7 +168,7 @@ export const FeatureCard = React.forwardRef<HTMLElement, FeatureCardProps>(
     <article ref={ref} className={cn(featureVariants({ variant }), className)} {...p}>
       {variant === "photo" && image && (
         <>
-          <img src={image} alt="" loading="lazy" className="absolute inset-0 -z-0 size-full object-cover" />
+          <img src={image} alt="" loading="lazy" className="absolute inset-0 -z-0 size-full object-cover transition-transform duration-700 ease-[var(--ease-gentle)] group-hover:scale-[1.03] motion-reduce:transform-none motion-reduce:transition-none" />
           <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
         </>
       )}
