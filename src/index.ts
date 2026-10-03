@@ -9,3 +9,4 @@ export * from "./design-system/components/form";
 export * from "./design-system/components/motion";
 export * from "./design-system/components/image-trail";
 export * from "./design-system/components/member-card";
+export type { MemberProfile } from "./design-system/data/members";

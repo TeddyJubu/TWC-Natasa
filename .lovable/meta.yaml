@@ -4,9 +4,6 @@ starter_template: custom_design_system
 source_type: local
 upstream_versions:
   tailwindcss: 4.3.3
-  "@tanstack/react-query": 5.101.1
-  "@tanstack/react-router": 1.170.41
-  "@tanstack/react-start": 1.168.60
   react: 19.2.7
   react-dom: 19.2.7
   ogl: 1.0.11

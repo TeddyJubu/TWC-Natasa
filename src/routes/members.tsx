@@ -57,9 +57,17 @@ function MembersPage() {
         <div className="bg-sun py-3 text-center text-sm text-sun-ink">These ten profiles are fictional examples created for the design demonstration.</div>
       </header>
 
-      <Section>
+      <Section tone="night" className="rounded-dome pt-24 md:pt-32">
         <Container className="flex flex-col gap-12">
-          <div className="flex flex-col gap-5 border-b border-line pb-8">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-6 border-b border-line pb-8">
+            <div className="min-w-0">
+              <Badge variant="solid">The directory</Badge>
+              <Heading as="h2" className="mt-5 max-w-2xl">A Catalogue of Women Building Nearby</Heading>
+            </div>
+            <p aria-live="polite" className="shrink-0 pb-1 text-sm text-ink-muted">{String(members.length).padStart(2, "0")} profiles</p>
+          </div>
+
+          <div className="flex flex-col gap-5">
             <p className="text-xs font-medium uppercase text-ink-muted">Browse by neighborhood</p>
             <div className="flex gap-2 overflow-x-auto pb-2" role="group" aria-label="Filter members by neighborhood">
               {neighborhoods.map((neighborhood) => (
@@ -67,7 +75,7 @@ function MembersPage() {
                   key={neighborhood}
                   type="button"
                   size="sm"
-                  variant={activeNeighborhood === neighborhood ? "ink" : "outline"}
+                  variant={activeNeighborhood === neighborhood ? "white" : "outline"}
                   className="shrink-0"
                   aria-pressed={activeNeighborhood === neighborhood}
                   onClick={() => setActiveNeighborhood(neighborhood)}
@@ -76,16 +84,15 @@ function MembersPage() {
                 </Button>
               ))}
             </div>
-            <p aria-live="polite" className="text-sm text-ink-muted">Showing {members.length} {members.length === 1 ? "member" : "members"}</p>
           </div>
 
-          <div className="grid gap-x-4 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
-            {members.map((member) => <MemberCard key={member.id} member={member} />)}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-5">
+            {members.map((member, index) => <MemberCard key={member.id} member={member} variant="catalogue" catalogueNumber={index + 1} />)}
           </div>
         </Container>
       </Section>
 
-      <Section tone="dome">
+      <Section>
         <Container className="flex flex-col items-center gap-8 text-center">
           <Badge variant="solid">Add your light</Badge>
           <Heading className="max-w-3xl">Your Work Belongs in the Conversation</Heading>
