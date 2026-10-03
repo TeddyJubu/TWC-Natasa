@@ -1,0 +1,71 @@
+/* Keepsake theme — import once after `@import "tailwindcss";` */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --ks-paper: #f7f2ec;
+  --ks-surface: #efe6dc;
+  --ks-ink: #2b2522;
+  --ks-ink-muted: #6e625b;
+  --ks-accent: #b7797a;
+  --ks-accent-ink: #fbf7f3;
+  --ks-sage: #8e9a86;
+  --ks-line: #ddd1c4;
+  --ks-danger: #a4473f;
+  --ks-ring: #b7797a;
+}
+
+.dark {
+  --ks-paper: #1e1916;
+  --ks-surface: #2a2320;
+  --ks-ink: #f1e9e1;
+  --ks-ink-muted: #b4a69c;
+  --ks-accent: #d39a9a;
+  --ks-accent-ink: #1e1916;
+  --ks-sage: #a7b39f;
+  --ks-line: #3d3430;
+  --ks-danger: #e07d72;
+  --ks-ring: #d39a9a;
+}
+
+@theme inline {
+  --color-paper: var(--ks-paper);
+  --color-surface: var(--ks-surface);
+  --color-ink: var(--ks-ink);
+  --color-ink-muted: var(--ks-ink-muted);
+  --color-accent: var(--ks-accent);
+  --color-accent-ink: var(--ks-accent-ink);
+  --color-sage: var(--ks-sage);
+  --color-line: var(--ks-line);
+  --color-danger: var(--ks-danger);
+  --color-ring: var(--ks-ring);
+
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-sans: "Karla", system-ui, sans-serif;
+
+  --radius-soft: 0.75rem;
+  --radius-card: 1.5rem;
+  --radius-arch: 999px 999px 1.5rem 1.5rem;
+
+  --shadow-lift: 0 18px 40px -24px rgb(43 37 34 / 0.35);
+
+  --tracking-eyebrow: 0.28em;
+  --ease-gentle: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  html { background: var(--ks-paper); color: var(--ks-ink); }
+  body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+  ::selection { background: var(--ks-accent); color: var(--ks-accent-ink); }
+}
+
+@utility rounded-arch {
+  border-radius: var(--radius-arch);
+}
+
+@keyframes ks-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+@utility animate-rise {
+  animation: ks-rise 0.9s var(--ease-gentle) both;
+}
