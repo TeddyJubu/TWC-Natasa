@@ -221,9 +221,9 @@ export interface FormProgressProps extends React.HTMLAttributes<HTMLOListElement
   current?: number;
 }
 export const FormProgress = React.forwardRef<HTMLOListElement, FormProgressProps>(({ className, items, current = 0, ...p }, ref) => (
-  <ol ref={ref} aria-label="Application sections" className={cn("grid grid-cols-5 gap-1 sm:grid-cols-10", className)} {...p}>
+  <ol ref={ref} aria-label="Application sections" className={cn("flex gap-1", className)} {...p}>
     {items.map((item, index) => (
-      <li key={item} className="group relative">
+      <li key={item} className="group relative min-w-0 flex-1">
         <span className={cn("block h-1 overflow-hidden rounded-full bg-surface-strong", index <= current && "bg-ink")}>
           <span className={cn("block h-full origin-left bg-sky transition-transform duration-700 ease-[var(--ease-gentle)]", index <= current ? "scale-x-100" : "scale-x-0")} />
         </span>

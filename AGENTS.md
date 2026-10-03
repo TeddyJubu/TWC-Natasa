@@ -6,3 +6,4 @@
 - Form primitives use editorial and boxed variants from one shared family — keeps long applications expressive and compact forms consistent.
 - Motion uses shared CSS timing tokens and reduced-motion fallbacks — keeps interactions consistent and accessible without adding a runtime dependency.
 - Long membership forms compose reusable field, choice, notice, progress, section, and action primitives — keeps dense applications consistent and accessible.
+- The uploaded constellation artwork is the canonical logo and `ConstellationLogo` owns its fixed color variants — preserves the original geometry across every brand context.
