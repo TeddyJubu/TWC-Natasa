@@ -12,6 +12,7 @@ import {
   Section,
   Text,
   buttonVariants,
+  cn,
 } from "@/index";
 import { demoMembers } from "@/design-system/data/members";
 import { Shell } from "@/showcase/Shell";
@@ -31,6 +32,17 @@ export const Route = createFileRoute("/members")({
 });
 
 const neighborhoods = ["All", ...Array.from(new Set(demoMembers.map((member) => member.neighborhood)))] as const;
+
+/** Each filter chip lights up in its neighborhood's own color when selected. */
+const neighborhoodFill: Record<string, string> = {
+  "Long Island City": "bg-lic hover:bg-lic",
+  Astoria: "bg-astoria hover:bg-astoria",
+  Sunnyside: "bg-sunnyside hover:bg-sunnyside",
+  "Jackson Heights": "bg-jackson-heights hover:bg-jackson-heights",
+  "Forest Hills": "bg-forest-hills hover:bg-forest-hills",
+  Elmhurst: "bg-elmhurst hover:bg-elmhurst",
+  "Rego Park": "bg-rego-park hover:bg-rego-park",
+};
 
 function MembersPage() {
   const [activeNeighborhood, setActiveNeighborhood] = React.useState<string>("All");
@@ -76,7 +88,7 @@ function MembersPage() {
                   type="button"
                   size="sm"
                   variant={activeNeighborhood === neighborhood ? "white" : "outline"}
-                  className="shrink-0"
+                  className={cn("shrink-0", activeNeighborhood === neighborhood && neighborhoodFill[neighborhood])}
                   aria-pressed={activeNeighborhood === neighborhood}
                   onClick={() => setActiveNeighborhood(neighborhood)}
                 >
