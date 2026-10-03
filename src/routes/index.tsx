@@ -16,6 +16,7 @@ import neighborhoodJacksonHeights from "@/assets/photography/neighborhood-jackso
 import neighborhoodElmhurst from "@/assets/photography/neighborhood-elmhurst.jpg";
 import neighborhoodForestHills from "@/assets/photography/neighborhood-forest-hills.jpg";
 import neighborhoodRegoPark from "@/assets/photography/neighborhood-rego-park.jpg";
+import natasa from "@/design-system/assets/photography/natasa-tuohy.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -71,7 +72,7 @@ function HomePage() {
         </Container>
       </Section>
 
-      <CurvedGallery images={[{ src: p3, alt: "Woman smiling outdoors" }, { src: p1, alt: "Creative professional portrait" }, { src: p2, alt: "Woman entrepreneur portrait" }, { src: p3, alt: "Woman smiling outdoors" }, { src: p1, alt: "Creative professional portrait" }]} />
+      <CurvedGallery images={[{ src: natasa, alt: "Nataša Tuohy, founder of The Women’s Collective" }, { src: p3, alt: "Woman smiling outdoors" }, { src: p1, alt: "Creative professional portrait" }, { src: p2, alt: "Woman entrepreneur portrait" }, { src: natasa, alt: "Nataša Tuohy, founder of The Women’s Collective" }]} />
 
       <Section id="take-part">
         <Container className="flex flex-col gap-16">
@@ -104,10 +105,11 @@ function HomePage() {
               </article>
             ))}
           </div>
-          <Split media={<ImageFrame src={p2} alt="A woman in the collective" shape="panel" ratio="square" />}>
-            <Badge variant="solid">Constellation Captain</Badge>
-            <Heading as="h3" size="section">Meet Shauna</Heading>
-            <Text size="lg">Shauna helps bring women together across the different areas and keeps the connections active and personal.</Text>
+          <Split media={<ImageFrame src={natasa} alt="Nataša Tuohy, founder of The Women’s Collective" shape="panel" ratio="square" />}>
+            <Badge variant="solid">Founder</Badge>
+            <Heading as="h3" size="section">Meet Nataša Tuohy</Heading>
+            <Text size="lg">Nataša is a New York–based architectural and interior designer whose work brings European sensibility together with New York pragmatism. Educated at the University of Florence, she founded her Greenpoint studio around thoughtful spaces, trusted collaboration, and enduring relationships.</Text>
+            <a href="https://natasatuohy.com/about/" target="_blank" rel="noreferrer" className={buttonVariants({ variant: "white" })}>Visit Nataša’s studio</a>
           </Split>
         </Container>
       </Section>
