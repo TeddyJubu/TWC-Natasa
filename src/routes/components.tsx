@@ -76,7 +76,7 @@ const sections: { name: string; render: () => React.ReactNode }[] = [
     <div className="grid w-full gap-6 md:grid-cols-2"><K.FileUpload label="Add a portrait or studio image" hint="JPG or PNG · up to 8 MB" accept="image/png,image/jpeg" /><K.FileUpload label="Supporting work" hint="PDF · up to 12 MB" accept="application/pdf" /></div>
   </Specimen> },
   { name: "Application form", render: () => <Specimen label="FormSection + FormField + FormActions · responsive editorial composition" className="[&>div:first-child]:p-0">
-    <form className="grid w-full overflow-hidden bg-paper lg:grid-cols-3" onSubmit={(e) => e.preventDefault()}>
+    <form className="tone-light grid w-full overflow-hidden bg-paper lg:grid-cols-3" onSubmit={(e) => e.preventDefault()}>
       <div className="flex min-h-[34rem] flex-col justify-between bg-signal p-7 text-ink md:p-9">
         <div><span className="font-sans text-xs font-medium uppercase">01 — Application</span><h3 className="mt-12 font-display text-5xl font-normal leading-none md:text-6xl">Your Next<br /><em>Chapter</em></h3><p className="mt-6 max-w-xs font-sans text-sm leading-relaxed">A focused application for founders shaping useful, original work.</p></div>
         <div className="flex items-end justify-between border-t border-ink/20 pt-5"><span className="font-sans text-xs uppercase">Bloom membership</span><span className="font-display text-4xl">01</span></div>
