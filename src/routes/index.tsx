@@ -1,13 +1,11 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import {
-  Accordion, Badge, BrandLockup, ConstellationLogo, Container, CurvedGallery, FeatureCard, Footer,
-  Heading, Hero, ImageFrame, Navbar, Ribbon, Section, SectionHeader, Split, Statement, Text, buttonVariants,
+  Accordion, Badge, BrandLockup, ConstellationLogo, Container, FeatureCard, Footer,
+  Heading, Hero, ImageFrame, MemberCard, Navbar, Ribbon, Section, SectionHeader, Split, Statement, Text, buttonVariants,
 } from "@/index";
+import { demoMembers } from "@/design-system/data/members";
 import { Shell } from "@/showcase/Shell";
 import hero from "@/assets/photography/hero.jpg";
-import p1 from "@/assets/photography/portrait-1.jpg";
-import p2 from "@/assets/photography/portrait-2.jpg";
-import p3 from "@/assets/photography/portrait-3.jpg";
 import event from "@/assets/photography/event.jpg";
 import neighborhoodLic from "@/assets/photography/neighborhood-lic.jpg";
 import neighborhoodSunnyside from "@/assets/photography/neighborhood-sunnyside.jpg";
@@ -34,6 +32,7 @@ export const Route = createFileRoute("/")({
 
 const links = [
   { label: "Our mission", href: "#mission" },
+  { label: "Members", href: "/members" },
   { label: "Our constellation", href: "#constellation" },
   { label: "Take part", href: "#take-part" },
   { label: "Join", href: "/join" },
@@ -72,7 +71,18 @@ function HomePage() {
         </Container>
       </Section>
 
-      <CurvedGallery images={[{ src: natasa, alt: "Nataša Tuohy, founder of The Women’s Collective" }, { src: p3, alt: "Woman smiling outdoors" }, { src: p1, alt: "Creative professional portrait" }, { src: p2, alt: "Woman entrepreneur portrait" }, { src: natasa, alt: "Nataša Tuohy, founder of The Women’s Collective" }]} />
+      <Section className="bg-surface">
+        <Container className="flex flex-col gap-14">
+          <div className="flex flex-col items-center justify-between gap-8 text-center md:flex-row md:text-left">
+            <SectionHeader align="start" badge="Meet the collective" title="Women Doing Remarkable Work Nearby" intro="Discover the people, practices, and ideas taking shape across Queens." />
+            <Link to="/members" className={buttonVariants({ variant: "outline" })}>Explore all members</Link>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            {demoMembers.slice(0, 3).map((member) => <MemberCard key={member.id} member={member} />)}
+          </div>
+          <p className="text-center text-xs text-ink-muted">Sample profiles shown for design demonstration.</p>
+        </Container>
+      </Section>
 
       <Section id="take-part">
         <Container className="flex flex-col gap-16">
@@ -137,7 +147,7 @@ function HomePage() {
       <Footer
         brand={<BrandLockup logoVariant="white" />}
         statement="Find your people, share what you do, and help someone else shine."
-        links={[{ label: "Our mission", href: "#mission" }, { label: "Join", href: "/join" }]}
+        links={[{ label: "Our mission", href: "#mission" }, { label: "Members", href: "/members" }, { label: "Join", href: "/join" }]}
         note="The Women’s Collective · Western Queens"
       />
     </Shell>
