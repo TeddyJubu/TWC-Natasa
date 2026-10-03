@@ -8,6 +8,7 @@ import p2 from "@/assets/photography/portrait-2.jpg";
 import p3 from "@/assets/photography/portrait-3.jpg";
 import event from "@/assets/photography/event.jpg";
 import flower from "@/assets/illustrations/flower.png";
+import { MembershipApplication } from "@/showcase/MembershipApplication";
 
 export const Route = createFileRoute("/components")({
   head: () => ({
@@ -75,20 +76,10 @@ const sections: { name: string; render: () => React.ReactNode }[] = [
   { name: "FileUpload", render: () => <Specimen label="accept · multiple · disabled">
     <div className="grid w-full gap-6 md:grid-cols-2"><K.FileUpload label="Add a portrait or studio image" hint="JPG or PNG · up to 8 MB" accept="image/png,image/jpeg" /><K.FileUpload label="Supporting work" hint="PDF · up to 12 MB" accept="application/pdf" /></div>
   </Specimen> },
-  { name: "Application form", render: () => <Specimen label="FormSection + FormField + FormActions · responsive editorial composition" className="[&>div:first-child]:p-0">
-    <form className="tone-light grid w-full overflow-hidden bg-paper lg:grid-cols-3" onSubmit={(e) => e.preventDefault()}>
-      <div className="flex min-h-[34rem] flex-col justify-between bg-signal p-7 text-ink md:p-9">
-        <div><span className="font-sans text-xs font-medium uppercase">01 — Application</span><h3 className="mt-12 font-display text-5xl font-normal leading-none md:text-6xl">Your Next<br /><em>Chapter</em></h3><p className="mt-6 max-w-xs font-sans text-sm leading-relaxed">A focused application for founders shaping useful, original work.</p></div>
-        <div className="flex items-end justify-between border-t border-ink/20 pt-5"><span className="font-sans text-xs uppercase">Bloom membership</span><span className="font-display text-4xl">01</span></div>
-      </div>
-      <K.FormSection index="02 — Details" title="Introduce Yourself" description="The essentials first." className="border-t-0 p-7 md:p-9">
-        <div className="flex flex-col gap-9"><K.FormField index="01" label="Full name" htmlFor="application-name"><K.Input id="application-name" placeholder="Your name" /></K.FormField><K.FormField index="02" label="Work email" htmlFor="application-email"><K.Input id="application-email" type="email" placeholder="you@company.com" /></K.FormField><K.FormField index="03" label="Business stage" htmlFor="application-stage"><K.Select id="application-stage"><option>Choose one</option><option>Starting out</option><option>Growing steadily</option><option>Scaling a team</option></K.Select></K.FormField><K.RadioGroup name="application-focus" legend="What brings you here?" defaultValue="peers" options={[{ value: "peers", label: "Peers" }, { value: "ideas", label: "Ideas" }, { value: "growth", label: "Growth" }]} /></div>
-      </K.FormSection>
-      <K.FormSection index="03 — Perspective" title="Tell Us More" description="There are no perfect answers." className="border-t-0 bg-canvas p-7 md:p-9">
-        <div className="flex h-full flex-col gap-8"><K.FormField index="04" label="What are you building?" htmlFor="application-story"><K.Textarea id="application-story" placeholder="The idea, the ambition, the honest version…" /></K.FormField><K.FileUpload label="Add a portrait" hint="JPG or PNG · optional" accept="image/png,image/jpeg" /><K.Checkbox label="Keep me in the loop" description="Occasional field notes, never noise." defaultChecked /><K.FormActions className="mt-auto"><K.Button type="button" variant="link">Save for later</K.Button><K.Button type="submit" variant="ink" className="min-w-44">Send application <span aria-hidden>↗</span></K.Button></K.FormActions></div>
-      </K.FormSection>
-    </form>
-  </Specimen> },
+  { name: "ChoiceGroup", render: () => <Specimen label="legend · options · columns · required"><K.ChoiceGroup className="w-full" name="showcase-opportunities" legend="What would make membership valuable?" hint="Select all that apply." options={[{ value: "peers", label: "Trusted peers" }, { value: "mentors", label: "Mentorship" }, { value: "events", label: "Small gatherings" }, { value: "visibility", label: "Thoughtful visibility" }]} required /></Specimen> },
+  { name: "FormNotice", render: () => <Specimen label='tone="soft|accent"'><div className="grid w-full gap-4 md:grid-cols-2"><K.FormNotice title="Privacy note">Private details stay private and are reviewed by a person.</K.FormNotice><K.FormNotice title="Good to know" tone="accent">You can change these permissions whenever you need.</K.FormNotice></div></Specimen> },
+  { name: "FormProgress", render: () => <Specimen label="items · current"><K.FormProgress className="w-full" current={3} items={["About", "Work", "Community", "Features", "Directory", "Media", "Events", "Contact", "Guidelines", "Signature"]} /></Specimen> },
+  { name: "Application form", render: () => <Specimen label="Complete ten-section membership application · conditional questions · confirmation state" className="[&>div:first-child]:p-0"><MembershipApplication /></Specimen> },
   { name: "Footer", render: () => <Specimen label="brand · statement · contacts · links"><K.Footer className="w-full rounded-card" brand={<K.Wordmark>Bloom</K.Wordmark>} statement="A closing line." contacts={[{ label: "Email", value: "hello@example.com" }]} links={[{ label: "Privacy", href: "#" }]} note="© 2027" /></Specimen> },
 ];
 

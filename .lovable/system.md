@@ -4,7 +4,7 @@ Bloom is bright and editorial: full-bleed sky-blue photography, an elegant serif
 
 ## Setup
 - Import `src/design-system/styles/theme.css` right after `@import "tailwindcss";`.
-- Load fonts with a `<link>`: Gilda Display 400 and Inter 400/500.
+- Fonts are self-hosted in `src/assets/fonts` and loaded by the canonical theme file.
 - Dark mode: add `dark` to `<html>`. Any block can go dark locally with `Section tone="night"` or the `tone-night` class — all tokens invert inside it.
 - Import from the barrel only.
 
@@ -20,6 +20,8 @@ Bloom is bright and editorial: full-bleed sky-blue photography, an elegant serif
 - Use `editorial` fields on feature forms and `boxed` fields in compact utility contexts. Never mix both field variants within one form.
 - Mint, lilac, and signal orange are supporting editorial accents for selected states and specimen panels; keep them subordinate to canvas, ink, and photography.
 - No inline styles; vary via `variant`/`size` props.
+- Motion is editorial and purposeful: shared reveal, stagger, panel, hover, and feedback patterns only. Never add decorative motion that competes with content.
+- Long applications use `FormProgress`, `FormSection`, `ChoiceGroup`, `FormNotice`, and `FormActions`; conditional follow-ups reveal directly beneath their controlling choice.
 
 ## Accessibility
 - White text on photos needs the built-in gradients (`bg-sky-fade`, card overlays); don't remove them.

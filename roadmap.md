@@ -10,3 +10,4 @@
 - [ ] Rebuild the membership application from the supplied reference
 - [ ] Extend the shared motion language across every component and showcase page
 - [ ] Verify the full application, interactions, accessibility, responsive layouts, and build health
+- [ ] Review React Bits and adapt relevant effects without weakening the Bloom design language
