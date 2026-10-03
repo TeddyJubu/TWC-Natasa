@@ -33,7 +33,7 @@
   --bl-ink-muted: #525252;
   --bl-ink-faint: #b9b9b4;
   --bl-line: rgb(31 31 28 / 0.1);
-  --bl-sky: #4a8bb8;
+  --bl-sky: #1f8ad6;
   --bl-sky-ink: #ffffff;
   --bl-sun: #edd22e;
   --bl-sun-ink: #1f1f1c;
@@ -44,13 +44,13 @@
   --bl-glass: rgb(255 255 255 / 0.12);
   --bl-glass-line: rgb(255 255 255 / 0.35);
   --bl-danger: #c2412d;
-  --bl-lic: #2480d6;
-  --bl-sunnyside: #7e52b5;
-  --bl-astoria: #ee7e30;
-  --bl-jackson-heights: #e04f89;
-  --bl-elmhurst: #149791;
-  --bl-forest-hills: #91634a;
-  --bl-rego-park: #de544b;
+  --bl-lic: #2f9dff;
+  --bl-sunnyside: #9b64ff;
+  --bl-astoria: #ff9a1f;
+  --bl-jackson-heights: #ff4d9e;
+  --bl-elmhurst: #12d9bd;
+  --bl-forest-hills: #5fd35f;
+  --bl-rego-park: #ff4438;
 }
 
 /* Night: black sections and dark mode. Tokens invert so components need no tone props. */
