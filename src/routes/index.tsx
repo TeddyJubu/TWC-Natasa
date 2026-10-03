@@ -1,7 +1,7 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import {
   Accordion, Badge, BrandLockup, ConstellationLogo, Container, FeatureCard, Footer,
-  Heading, Hero, ImageFrame, MemberCard, Navbar, Ribbon, Section, SectionHeader, Split, Statement, Text, buttonVariants,
+  CurvedGallery, Heading, Hero, ImageFrame, Navbar, Ribbon, Section, SectionHeader, Split, Statement, Text, buttonVariants,
 } from "@/index";
 import { demoMembers } from "@/design-system/data/members";
 import { Shell } from "@/showcase/Shell";
@@ -72,14 +72,21 @@ function HomePage() {
       </Section>
 
       <Section className="bg-surface">
-        <Container className="flex flex-col gap-14">
+        <Container>
           <div className="flex flex-col items-center justify-between gap-8 text-center md:flex-row md:text-left">
             <SectionHeader align="start" badge="Meet the collective" title="Women Doing Remarkable Work Nearby" intro="Discover the people, practices, and ideas taking shape across Queens." />
             <Link to="/members" className={buttonVariants({ variant: "outline" })}>Explore all members</Link>
           </div>
-          <div className="grid gap-4 md:grid-cols-3">
-            {demoMembers.slice(0, 3).map((member) => <MemberCard key={member.id} member={member} />)}
-          </div>
+        </Container>
+        <CurvedGallery
+          className="mt-8 md:mt-4"
+          images={demoMembers.map((member) => ({
+            src: member.image,
+            alt: `${member.name} · ${member.business}`,
+          }))}
+        />
+        <Container className="flex flex-col items-center gap-5">
+          <Link to="/members" className={buttonVariants({ variant: "ink" })}>View the member directory</Link>
           <p className="text-center text-xs text-ink-muted">Sample profiles shown for design demonstration.</p>
         </Container>
       </Section>
