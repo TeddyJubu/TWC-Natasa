@@ -12,6 +12,7 @@ export function Shell({ children, bare }: { children: React.ReactNode; bare?: bo
     { to: "/colors", label: "Colors" },
     { to: "/typography", label: "Typography" },
     { to: "/components", label: "Components" },
+    { to: "/members", label: "Members" },
     { to: "/join", label: "Join form" },
   ] as const;
   return (
