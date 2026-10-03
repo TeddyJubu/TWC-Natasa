@@ -73,7 +73,7 @@
 
 @layer base {
   html { background: var(--bl-canvas); color: var(--bl-ink); }
-  body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+  body { overflow-x: hidden; font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
 }
 
 /* Sky fade used behind hero photography */
