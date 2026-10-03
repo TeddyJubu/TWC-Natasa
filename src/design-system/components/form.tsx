@@ -204,7 +204,7 @@ export const ChoiceGroup = React.forwardRef<HTMLFieldSetElement, ChoiceGroupProp
 );
 ChoiceGroup.displayName = "ChoiceGroup";
 
-export interface FormNoticeProps extends React.HTMLAttributes<HTMLElement> {
+export interface FormNoticeProps extends Omit<React.HTMLAttributes<HTMLElement>, "title"> {
   title: React.ReactNode;
   tone?: "soft" | "accent";
 }
