@@ -15,14 +15,14 @@ export function Shell({ children, bare }: { children: React.ReactNode; bare?: bo
   ] as const;
   return (
     <div className="min-h-screen bg-canvas text-ink">
-      <div className="fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-1 rounded-full border border-line bg-canvas/90 p-1.5 shadow-soft backdrop-blur">
-        <Wordmark className="px-3 text-xl">Bloom</Wordmark>
+      <div className="fixed inset-x-3 bottom-4 z-50 flex items-center gap-1 overflow-x-auto rounded-full border border-line bg-canvas/90 p-1.5 shadow-soft backdrop-blur sm:left-1/2 sm:right-auto sm:-translate-x-1/2">
+        <Wordmark className="hidden shrink-0 px-3 text-xl sm:inline">Bloom</Wordmark>
         {links.map((l) => (
-          <Link key={l.to} to={l.to} className={cn("rounded-full px-3 py-1.5 text-sm text-ink-muted hover:text-ink")} activeProps={{ className: "bg-surface !text-ink" }} activeOptions={{ exact: true }}>
+          <Link key={l.to} to={l.to} className={cn("shrink-0 rounded-full px-3 py-1.5 text-sm text-ink-muted hover:text-ink")} activeProps={{ className: "bg-surface !text-ink" }} activeOptions={{ exact: true }}>
             {l.label}
           </Link>
         ))}
-        <Button size="sm" variant="ink" className="rounded-full" onClick={() => setDark((d) => !d)} aria-label="Toggle dark theme">{dark ? "Light" : "Dark"}</Button>
+        <Button size="sm" variant="ink" className="shrink-0 rounded-full" onClick={() => setDark((d) => !d)} aria-label="Toggle dark theme">{dark ? "Light" : "Dark"}</Button>
       </div>
       {bare ? children : <Container className="pb-32 pt-16">{children}</Container>}
     </div>

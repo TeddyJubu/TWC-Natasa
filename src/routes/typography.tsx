@@ -9,6 +9,8 @@ export const Route = createFileRoute("/typography")({
       { name: "description", content: "Gilda Display and Inter, and the full Bloom type scale." },
       { property: "og:title", content: "Typography — Bloom Design System" },
       { property: "og:description", content: "Elegant serif display with a clean sans for body." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Typography,

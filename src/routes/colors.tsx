@@ -9,6 +9,8 @@ export const Route = createFileRoute("/colors")({
       { name: "description", content: "Bloom color tokens: canvas, ink, sky, sun and night." },
       { property: "og:title", content: "Colors — Bloom Design System" },
       { property: "og:description", content: "Canvas, ink, sky blue, sunflower yellow and night black." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Colors,
@@ -23,6 +25,10 @@ const tokens = [
   ["text-ink-faint", "Fading statement words, idle tabs", "bg-ink-faint text-ink"],
   ["bg-sky", "Primary buttons, hero sky", "bg-sky text-sky-ink"],
   ["bg-sun", "Ribbons, highlights", "bg-sun text-sun-ink"],
+  ["bg-paper", "Editorial form panels", "bg-paper text-ink"],
+  ["bg-mint", "Selected stories, accents", "bg-mint text-black"],
+  ["bg-lilac", "Supporting editorial panels", "bg-lilac text-black"],
+  ["bg-signal", "High-energy feature panels", "bg-signal text-black"],
 ] as const;
 
 function Colors() {
