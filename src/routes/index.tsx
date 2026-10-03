@@ -1,8 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import {
-  Accordion, BigCountdown, Button, Container, CurvedGallery, FeatureCard, FormField, Hero, ImageFrame, Input,
+  Accordion, BigCountdown, Container, CurvedGallery, FeatureCard, FormField, Hero, ImageFrame, Input,
   Navbar, Ribbon, Section, SectionHeader, Select, Split, Stat, Statement, Tabs, Text, Textarea, Timeline, Footer,
-  Badge, Heading, Wordmark,
+  Badge, Heading, Wordmark, buttonVariants,
 } from "@/index";
 import { Shell } from "@/showcase/Shell";
 import hero from "@/assets/photography/hero.jpg";
@@ -11,7 +11,6 @@ import p2 from "@/assets/photography/portrait-2.jpg";
 import p3 from "@/assets/photography/portrait-3.jpg";
 import event from "@/assets/photography/event.jpg";
 import flower from "@/assets/illustrations/flower.png";
-import { MembershipApplication } from "@/showcase/MembershipApplication";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -31,7 +30,7 @@ const links = [
   { label: "About", href: "#about" },
   { label: "Programs", href: "#programs" },
   { label: "Events", href: "#events" },
-  { label: "Join", href: "#join" },
+  { label: "Join", href: "/join" },
 ];
 
 function StoryPanel({ img, title, year, body }: { img: string; title: string; year: string; body: string }) {
