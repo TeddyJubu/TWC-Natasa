@@ -18,14 +18,11 @@
     "@tanstack/router-plugin": "1.168.42",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
-    "date-fns": "4.4.0",
     "react": "19.2.7",
     "react-dom": "19.2.7",
-    "recharts": "2.15.4",
     "tailwind-merge": "3.7.0",
     "tailwindcss": "4.3.3",
-    "vite-tsconfig-paths": "^6.0.2",
-    "zod": "^3.25.76"
+    "vite-tsconfig-paths": "^6.0.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",

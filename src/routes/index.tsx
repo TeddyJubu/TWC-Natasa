@@ -1,8 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import {
-  Accordion, BigCountdown, Button, Container, CurvedGallery, FeatureCard, FormField, Hero, ImageFrame, Input,
+  Accordion, BigCountdown, Container, CurvedGallery, FeatureCard, FormField, Hero, ImageFrame, Input,
   Navbar, Ribbon, Section, SectionHeader, Select, Split, Stat, Statement, Tabs, Text, Textarea, Timeline, Footer,
-  Badge, Heading, Wordmark,
+  Badge, Heading, Wordmark, buttonVariants,
 } from "@/index";
 import { Shell } from "@/showcase/Shell";
 import hero from "@/assets/photography/hero.jpg";
@@ -11,7 +11,6 @@ import p2 from "@/assets/photography/portrait-2.jpg";
 import p3 from "@/assets/photography/portrait-3.jpg";
 import event from "@/assets/photography/event.jpg";
 import flower from "@/assets/illustrations/flower.png";
-import { MembershipApplication } from "@/showcase/MembershipApplication";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -31,7 +30,7 @@ const links = [
   { label: "About", href: "#about" },
   { label: "Programs", href: "#programs" },
   { label: "Events", href: "#events" },
-  { label: "Join", href: "#join" },
+  { label: "Join", href: "/join" },
 ];
 
 function StoryPanel({ img, title, year, body }: { img: string; title: string; year: string; body: string }) {
@@ -59,7 +58,7 @@ function Sample() {
       <Hero
         image={hero}
         imageAlt="Woman in a white suit standing in a yellow flower field"
-        nav={<Navbar variant="overlay" brand={<Wordmark>Bloom</Wordmark>} links={links} action={<Button variant="white">Become a member</Button>} />}
+        nav={<Navbar variant="overlay" brand={<Wordmark>Bloom</Wordmark>} links={links} action={<Link to="/join" className={buttonVariants({ variant: "white" })}>Become a member</Link>} />}
         badge="A Community of Makers"
         title="Bold Ideas, One Brilliant Circle"
         description="Placeholder intro line that sits quietly on the right of the hero."
@@ -71,7 +70,7 @@ function Sample() {
         <Container className="flex flex-col items-center gap-10 text-center">
           <Badge>A Community of Makers</Badge>
           <Statement lead={2} text="We're building something together. A short statement fades from ink to faint grey so one phrase leads the eye." />
-          <Button>Join the circle</Button>
+          <Link to="/join" className={buttonVariants()}>Join the circle</Link>
         </Container>
       </Section>
       <CurvedGallery images={[{ src: p3, alt: "" }, { src: p1, alt: "" }, { src: p2, alt: "" }, { src: p3, alt: "" }, { src: p1, alt: "" }]} />
@@ -116,10 +115,10 @@ function Sample() {
         </Container>
       </Section>
 
-      <Section id="join" className="bg-paper">
-        <Container>
-          <SectionHeader badge="Membership" title="Will You Join Us?" intro="A complete application built for thoughtful review, clear consent, and expressive member stories." />
-          <div className="mt-16 overflow-hidden rounded-panel border border-line shadow-soft"><MembershipApplication /></div>
+      <Section className="bg-paper">
+        <Container className="flex flex-col items-center gap-10 text-center">
+          <SectionHeader badge="Membership" title="Will You Join Us?" intro="The full application opens on its own page — answer each section at your own pace and submit when you're ready." />
+          <Link to="/join" className={buttonVariants({ variant: "primary", size: "lg" })}>Start your application</Link>
         </Container>
       </Section>
 
