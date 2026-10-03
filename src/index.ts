@@ -6,3 +6,4 @@ export * from "./design-system/components/button";
 export * from "./design-system/components/layout";
 export * from "./design-system/components/content";
 export * from "./design-system/components/form";
+export * from "./design-system/components/motion";
