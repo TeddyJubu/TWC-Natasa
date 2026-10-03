@@ -2,6 +2,7 @@ import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../lib/utils";
 import { Badge, Blossom, Heading, Text } from "./typography";
+import { CircularGalleryEngine } from "./circular-gallery";
 
 /* ---------- ImageFrame ---------- */
 const frameVariants = cva("overflow-hidden bg-surface", {
@@ -72,27 +73,42 @@ export const Hero = React.forwardRef<HTMLElement, HeroProps>(
 );
 Hero.displayName = "Hero";
 
-/* ---------- CurvedGallery: tilted photos along an arc ---------- */
+/* ---------- CurvedGallery: infinite draggable image arc ---------- */
 export interface CurvedGalleryProps extends React.HTMLAttributes<HTMLDivElement> {
   images: { src: string; alt: string }[];
+  bend?: number;
+  scrollSpeed?: number;
+  scrollEase?: number;
 }
-export const CurvedGallery = React.forwardRef<HTMLDivElement, CurvedGalleryProps>(({ className, images, ...p }, ref) => {
-  const mid = (images.length - 1) / 2;
+export const CurvedGallery = React.forwardRef<HTMLDivElement, CurvedGalleryProps>(({ className, images, bend = 2.25, scrollSpeed = 1.5, scrollEase = 0.06, ...p }, ref) => {
+  const [reduceMotion, setReduceMotion] = React.useState(false);
+  React.useEffect(() => {
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReduceMotion(query.matches);
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
+
   return (
-    <div ref={ref} className={cn("flex justify-center gap-4 overflow-hidden py-12", className)} {...p}>
-      {images.map((im, i) => {
-        const d = i - mid;
-        return (
-          <img
-            key={im.src + i}
-            src={im.src}
-            alt={im.alt}
-            loading="lazy"
-            className="motion-gallery-item aspect-[4/5] w-56 shrink-0 object-cover transition-[filter,opacity] duration-700 md:w-80"
-            style={{ transform: `translateY(${d * d * 14}px) rotate(${d * 3}deg)` }}
-          />
-        );
-      })}
+    <div ref={ref} className={cn("relative h-[30rem] overflow-hidden text-ink md:h-[42rem]", className)} {...p}>
+      {reduceMotion ? (
+        <div className="flex h-full snap-x gap-4 overflow-x-auto px-6 py-10">
+          {images.map((image, index) => <img key={image.src + index} src={image.src} alt={image.alt} loading="lazy" className="aspect-[7/9] h-full shrink-0 snap-center rounded-card object-cover" />)}
+        </div>
+      ) : (
+        <CircularGalleryEngine
+          items={images.map((image) => ({ image: image.src, text: image.alt }))}
+          bend={bend}
+          borderRadius={0.06}
+          font={'400 30px "Gilda Display"'}
+          scrollSpeed={scrollSpeed}
+          scrollEase={scrollEase}
+        />
+      )}
+      <ul className="sr-only">
+        {images.map((image, index) => <li key={image.src + index}><img src={image.src} alt={image.alt} /></li>)}
+      </ul>
     </div>
   );
 });
