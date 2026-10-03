@@ -13,9 +13,9 @@ import { MembershipApplication } from "@/showcase/MembershipApplication";
 export const Route = createFileRoute("/components")({
   head: () => ({
     meta: [
-      { title: "Components — Bloom Design System" },
-      { name: "description", content: "Every Bloom component with its variants and states." },
-      { property: "og:title", content: "Components — Bloom Design System" },
+      { title: "Components — The Women’s Collective Design System" },
+      { name: "description", content: "Every Women’s Collective component with its variants and states." },
+      { property: "og:title", content: "Components — The Women’s Collective Design System" },
       { property: "og:description", content: "Hero, badges, tabs, ribbons, timelines, forms and more." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -33,11 +33,12 @@ const sections: { name: string; render: () => React.ReactNode }[] = [
       <K.Button size="sm">Small</K.Button><K.Button>Medium</K.Button><K.Button size="lg">Large</K.Button><K.Button disabled>Disabled</K.Button><K.Button loading>Sending</K.Button>
     </Specimen></>) },
   { name: "Badge", render: () => <Specimen label='variant="soft|glass|solid"'><K.Badge>Our Story</K.Badge><div className="rounded-card bg-sky p-4"><K.Badge variant="glass">Over photos</K.Badge></div><div className="tone-night rounded-card p-4"><K.Badge variant="solid">On night</K.Badge></div></Specimen> },
-  { name: "Typography", render: () => <Specimen label="Heading · Statement · Stat · Wordmark"><div className="flex w-full flex-col gap-6"><K.Wordmark>Bloom</K.Wordmark><K.Heading size="title">Evening Mixer</K.Heading><K.Statement lead={1} text="Ink leads, the rest fades away softly." /><K.Stat value="2019" /></div></Specimen> },
+  { name: "Brand", render: () => <><Specimen label="BrandLockup · compact"><K.BrandLockup /><K.BrandLockup compact /></Specimen><Specimen label="ConstellationLogo · color variants"><div className="grid w-full grid-cols-3 gap-6 sm:grid-cols-5">{(["ink", "long-island-city", "sunnyside", "astoria", "jackson-heights", "elmhurst", "forest-hills", "rego-park"] as const).map((variant) => <K.ConstellationLogo key={variant} variant={variant} size="lg" />)}</div></Specimen></> },
+  { name: "Typography", render: () => <Specimen label="Heading · Statement · Stat · Wordmark"><div className="flex w-full flex-col gap-6"><K.Wordmark>TWC</K.Wordmark><K.Heading size="title">Find Your People</K.Heading><K.Statement lead={1} text="Every connection makes the whole community stronger." /><K.Stat value="07" label="Neighborhood colors" /></div></Specimen> },
   { name: "Hero", render: () => <Specimen label="image · badge · title · info · highlight · nav"><K.Hero className="min-h-0 w-full rounded-card pb-12" image={hero} badge="Community" title="Bold Ideas" description="Short intro line." info={{ image: event, text: "Rooftop Hall" }} highlight={{ value: "24", label: "April" }} /></Specimen> },
   { name: "Navbar", render: () => (<>
-    <Specimen label='variant="solid"'><K.Navbar className="static" brand={<K.Wordmark>Bloom</K.Wordmark>} links={[{ label: "About", href: "#" }, { label: "Events", href: "#" }]} action={<K.Button size="sm">Join</K.Button>} /></Specimen>
-    <Specimen label='variant="overlay" (on photos)'><div className="relative h-28 w-full overflow-hidden rounded-card bg-sky"><K.Navbar variant="overlay" brand={<K.Wordmark>Bloom</K.Wordmark>} links={[{ label: "About", href: "#" }]} action={<K.Button size="sm" variant="white">Join</K.Button>} /></div></Specimen></>) },
+    <Specimen label='variant="solid"'><K.Navbar className="static" brand={<K.BrandLockup compact />} links={[{ label: "Mission", href: "#" }, { label: "Constellation", href: "#" }]} action={<K.Button size="sm">Join</K.Button>} /></Specimen>
+    <Specimen label='variant="overlay" (on photos)'><div className="relative h-28 w-full overflow-hidden rounded-card bg-sky"><K.Navbar variant="overlay" brand={<K.BrandLockup logoVariant="white" compact />} links={[{ label: "Mission", href: "#" }]} action={<K.Button size="sm" variant="white">Join</K.Button>} /></div></Specimen></>) },
   { name: "Section", render: () => <Specimen label='tone="light|night|dome"'><div className="grid w-full gap-3 md:grid-cols-3">{(["light", "night", "dome"] as const).map((t) => <K.Section key={t} tone={t} className="rounded-b-card border border-line py-10 md:py-12"><p className="text-center font-display text-2xl">{t}</p></K.Section>)}</div></Specimen> },
   { name: "SectionHeader", render: () => <Specimen label="badge · title · intro"><K.SectionHeader badge="Agenda" title="Shape of the Day" intro="Short intro under the headline." /></Specimen> },
   { name: "CurvedGallery", render: () => <Specimen label="images"><K.CurvedGallery className="w-full" images={[{ src: p1, alt: "" }, { src: p2, alt: "" }, { src: p3, alt: "" }]} /></Specimen> },
@@ -47,7 +48,7 @@ const sections: { name: string; render: () => React.ReactNode }[] = [
   { name: "BigCountdown", render: () => <Specimen label="target · ornament · unit"><K.BigCountdown className="w-full text-8xl" target="2027-04-24" ornament={flower} /></Specimen> },
   { name: "Timeline", render: () => <Specimen label="items"><K.Timeline className="w-full" items={[{ time: "09:00 AM", title: "Arrival", description: "Coffee.", image: event }, { time: "10:30 AM", title: "Keynote", image: p2 }]} /></Specimen> },
   { name: "ImageFrame", render: () => <Specimen label='shape="card|panel|thumb"'><div className="grid w-full grid-cols-3 gap-4"><K.ImageFrame src={p1} alt="" /><K.ImageFrame src={p2} alt="" shape="panel" /><K.ImageFrame src={p3} alt="" shape="thumb" ratio="square" /></div></Specimen> },
-  { name: "Accordion", render: () => <Specimen label="items"><K.Accordion className="w-full" items={[{ question: "Who can apply?", answer: "Anyone building something." }, { question: "Is there a trial?", answer: "Yes, 14 days." }]} /></Specimen> },
+  { name: "Accordion", render: () => <Specimen label="items"><K.Accordion className="w-full" items={[{ question: "Who can apply?", answer: "Women across Western Queens who feel aligned with the community." }, { question: "Where is it based?", answer: "Across Western Queens neighborhoods." }]} /></Specimen> },
   { name: "Input", render: () => <Specimen label='variant="editorial|boxed" · default · filled · focused · error · disabled'>
     <div className="grid w-full gap-8 md:grid-cols-2 lg:grid-cols-3">
       <K.FormField index="01" label="Full name" htmlFor="input-default" hint="Use the name you introduce yourself with."><K.Input id="input-default" aria-describedby="input-default-hint" placeholder="Your name" /></K.FormField>
@@ -81,8 +82,8 @@ const sections: { name: string; render: () => React.ReactNode }[] = [
   { name: "FormProgress", render: () => <Specimen label="items · current"><K.FormProgress className="w-full" current={3} items={["About", "Work", "Community", "Features", "Directory", "Media", "Events", "Contact", "Guidelines", "Signature"]} /></Specimen> },
   { name: "Reveal", render: () => <Specimen label="once · blur"><div className="grid w-full gap-4 md:grid-cols-2"><K.Reveal className="rounded-card bg-mint p-8"><K.Heading size="title">Soft entrance</K.Heading></K.Reveal><K.Reveal blur className="rounded-card bg-lilac p-8"><K.Heading size="title">Blur entrance</K.Heading></K.Reveal></div></Specimen> },
   { name: "Stagger", render: () => <Specimen label="children reveal in sequence"><K.Stagger className="grid w-full gap-3 sm:grid-cols-3">{["Meet", "Learn", "Grow"].map((label) => <div key={label} className="rounded-card bg-surface p-6 font-display text-2xl">{label}</div>)}</K.Stagger></Specimen> },
-  { name: "Application form", render: () => <Specimen label="Complete ten-section membership application · conditional questions · confirmation state" className="[&>div:first-child]:p-0"><MembershipApplication /></Specimen> },
-  { name: "Footer", render: () => <Specimen label="brand · statement · contacts · links"><K.Footer className="w-full rounded-card" brand={<K.Wordmark>Bloom</K.Wordmark>} statement="A closing line." contacts={[{ label: "Email", value: "hello@example.com" }]} links={[{ label: "Privacy", href: "#" }]} note="© 2027" /></Specimen> },
+  { name: "Application form", render: () => <Specimen label="Complete membership application · conditional questions · confirmation state" className="[&>div:first-child]:p-0"><MembershipApplication /></Specimen> },
+  { name: "Footer", render: () => <Specimen label="brand · statement · contacts · links"><K.Footer className="w-full rounded-card" brand={<K.BrandLockup logoVariant="white" />} statement="Help someone else shine." links={[{ label: "Our mission", href: "#" }]} note="The Women’s Collective" /></Specimen> },
 ];
 
 function Components() {

@@ -1,4 +1,4 @@
-/* Bloom theme — import once after `@import "tailwindcss";` */
+/* The Women’s Collective theme — import once after `@import "tailwindcss";` */
 @custom-variant dark (&:where(.dark, .dark *));
 
 @font-face {
@@ -44,6 +44,13 @@
   --bl-glass: rgb(255 255 255 / 0.12);
   --bl-glass-line: rgb(255 255 255 / 0.35);
   --bl-danger: #c2412d;
+  --bl-lic: #2480d6;
+  --bl-sunnyside: #7e52b5;
+  --bl-astoria: #ee7e30;
+  --bl-jackson-heights: #e04f89;
+  --bl-elmhurst: #149791;
+  --bl-forest-hills: #91634a;
+  --bl-rego-park: #de544b;
 }
 
 /* Night: black sections and dark mode. Tokens invert so components need no tone props. */
@@ -79,6 +86,13 @@
   --color-glass: var(--bl-glass);
   --color-glass-line: var(--bl-glass-line);
   --color-danger: var(--bl-danger);
+  --color-lic: var(--bl-lic);
+  --color-sunnyside: var(--bl-sunnyside);
+  --color-astoria: var(--bl-astoria);
+  --color-jackson-heights: var(--bl-jackson-heights);
+  --color-elmhurst: var(--bl-elmhurst);
+  --color-forest-hills: var(--bl-forest-hills);
+  --color-rego-park: var(--bl-rego-park);
   --color-ring: var(--bl-sky);
 
   --font-display: "Gilda Display", Georgia, serif;

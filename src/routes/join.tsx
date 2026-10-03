@@ -1,15 +1,15 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { Container, Navbar, Section, Wordmark, buttonVariants } from "@/index";
+import { BrandLockup, Container, Navbar, Section, buttonVariants } from "@/index";
 import { Shell } from "@/showcase/Shell";
 import { MembershipApplication } from "@/showcase/MembershipApplication";
 
 export const Route = createFileRoute("/join")({
   head: () => ({
     meta: [
-      { title: "Join Bloom — Membership application" },
-      { name: "description", content: "Apply to the circle: a ten-section membership application with clear consent steps and space for your story." },
-      { property: "og:title", content: "Join Bloom — Membership application" },
-      { property: "og:description", content: "A ten-section membership application — answer each part at your own pace." },
+      { title: "Join The Women’s Collective — Membership application" },
+      { name: "description", content: "Apply to The Women’s Collective, a community connecting women across Western Queens." },
+      { property: "og:title", content: "Join The Women’s Collective — Membership application" },
+      { property: "og:description", content: "Tell us about you, your work, and how you hope to take part in our Western Queens community." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -22,8 +22,8 @@ function JoinPage() {
     <Shell bare>
       <Navbar
         variant="solid"
-        brand={<Link to="/" className="hover:opacity-70 transition-opacity" aria-label="Back to the sample page"><Wordmark>Bloom</Wordmark></Link>}
-        links={[{ label: "Sample page", href: "/" }]}
+        brand={<Link to="/" className="transition-opacity hover:opacity-70" aria-label="The Women’s Collective home"><BrandLockup compact /></Link>}
+        links={[{ label: "Our mission", href: "/#mission" }, { label: "Our constellation", href: "/#constellation" }]}
         action={<Link to="/" className={buttonVariants({ variant: "outline", size: "sm" })}>Back to home</Link>}
       />
       <Section className="pt-14 md:pt-20">

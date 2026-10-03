@@ -17,7 +17,7 @@ export function Shell({ children, bare }: { children: React.ReactNode; bare?: bo
   return (
     <div className="min-h-screen bg-canvas text-ink">
       <div className="fixed inset-x-3 bottom-4 z-50 flex items-center gap-1 overflow-x-auto rounded-full border border-line bg-canvas/90 p-1.5 shadow-soft backdrop-blur transition-[background-color,border-color,box-shadow] duration-300 sm:left-1/2 sm:right-auto sm:-translate-x-1/2">
-        <Wordmark className="hidden shrink-0 px-3 text-xl sm:inline">Bloom</Wordmark>
+        <Wordmark className="hidden shrink-0 px-3 text-xl sm:inline">TWC</Wordmark>
         {links.map((l) => (
           <Link key={l.to} to={l.to} className={cn("shrink-0 rounded-full px-3 py-1.5 text-sm text-ink-muted transition-[transform,background-color,color] duration-300 ease-[var(--ease-snap)] hover:-translate-y-0.5 hover:bg-surface hover:text-ink active:translate-y-0 motion-reduce:transform-none")} activeProps={{ className: "bg-surface !text-ink" }} activeOptions={{ exact: true }}>
             {l.label}
