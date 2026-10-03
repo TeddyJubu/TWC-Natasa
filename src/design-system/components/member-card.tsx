@@ -9,7 +9,7 @@ const cardVariants = cva("group overflow-hidden border border-line bg-canvas tex
     variant: {
       grid: "rounded-card",
       featured: "grid rounded-panel md:grid-cols-[1.05fr_1fr]",
-      catalogue: "rounded-card border-white/15 bg-canvas text-ink",
+      catalogue: "rounded-card bg-canvas text-ink",
     },
   },
   defaultVariants: { variant: "grid" },
@@ -24,6 +24,7 @@ export interface MemberCardProps extends Omit<React.HTMLAttributes<HTMLElement>,
  * Use MemberCard for a public directory or a curated member preview.
  * @example <MemberCard member={member} />
  * @example <MemberCard member={member} variant="featured" />
+ * @example <MemberCard member={member} variant="catalogue" catalogueNumber={1} />
  * Avoid placing MemberCard inside another card or supplying unapproved personal details.
  */
 export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ catalogueNumber, className, member, variant, ...props }, ref) => (
