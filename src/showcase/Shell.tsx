@@ -1,45 +1,30 @@
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
-import { Button, Container, Monogram, cn } from "@/index";
+import { Button, Container, Wordmark, cn } from "@/index";
 
-export function Shell({ children }: { children: React.ReactNode }) {
+export function Shell({ children, bare }: { children: React.ReactNode; bare?: boolean }) {
   const [dark, setDark] = React.useState(false);
   React.useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
   }, [dark]);
   const links = [
-    { to: "/", label: "Overview" },
+    { to: "/", label: "Sample page" },
     { to: "/colors", label: "Colors" },
     { to: "/typography", label: "Typography" },
     { to: "/components", label: "Components" },
   ] as const;
   return (
-    <div className="min-h-screen bg-paper text-ink">
-      <header className="sticky top-0 z-40 border-b border-line bg-paper/90 backdrop-blur">
-        <Container width="wide" className="flex h-14 items-center justify-between gap-4">
-          <Link to="/" className="flex items-baseline gap-3">
-            <Monogram>K</Monogram>
-            <span className="hidden text-xs uppercase tracking-[var(--tracking-eyebrow)] text-ink-muted sm:inline">Keepsake</span>
+    <div className="min-h-screen bg-canvas text-ink">
+      <div className="fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-1 rounded-full border border-line bg-canvas/90 p-1.5 shadow-soft backdrop-blur">
+        <Wordmark className="px-3 text-xl">Bloom</Wordmark>
+        {links.map((l) => (
+          <Link key={l.to} to={l.to} className={cn("rounded-full px-3 py-1.5 text-sm text-ink-muted hover:text-ink")} activeProps={{ className: "bg-surface !text-ink" }} activeOptions={{ exact: true }}>
+            {l.label}
           </Link>
-          <nav className="flex gap-1 overflow-x-auto">
-            {links.map((l) => (
-              <Link
-                key={l.to}
-                to={l.to}
-                className={cn("rounded-full px-3 py-1.5 text-sm text-ink-muted hover:text-ink")}
-                activeProps={{ className: "bg-surface !text-ink" }}
-                activeOptions={{ exact: true }}
-              >
-                {l.label}
-              </Link>
-            ))}
-          </nav>
-          <Button size="sm" variant="outline" onClick={() => setDark((d) => !d)} aria-label="Toggle dark theme">
-            {dark ? "Light" : "Dark"}
-          </Button>
-        </Container>
-      </header>
-      {children}
+        ))}
+        <Button size="sm" variant="ink" className="rounded-full" onClick={() => setDark((d) => !d)} aria-label="Toggle dark theme">{dark ? "Light" : "Dark"}</Button>
+      </div>
+      {bare ? children : <Container className="pb-32 pt-16">{children}</Container>}
     </div>
   );
 }

@@ -1,49 +1,46 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Container, Section, SectionHeader } from "@/index";
+import { SectionHeader } from "@/index";
 import { Shell } from "@/showcase/Shell";
 
 export const Route = createFileRoute("/colors")({
   head: () => ({
     meta: [
-      { title: "Colors — Keepsake Design System" },
-      { name: "description", content: "Every Keepsake color token with its role, in light and dark." },
-      { property: "og:title", content: "Colors — Keepsake Design System" },
-      { property: "og:description", content: "Paper, ink, rose and sage color tokens." },
+      { title: "Colors — Bloom Design System" },
+      { name: "description", content: "Bloom color tokens: canvas, ink, sky, sun and night." },
+      { property: "og:title", content: "Colors — Bloom Design System" },
+      { property: "og:description", content: "Canvas, ink, sky blue, sunflower yellow and night black." },
     ],
   }),
   component: Colors,
 });
 
 const tokens = [
-  ["paper", "Page background", "bg-paper", "text-ink"],
-  ["surface", "Raised / alternate band", "bg-surface", "text-ink"],
-  ["ink", "Primary text, solid buttons", "bg-ink", "text-paper"],
-  ["ink-muted", "Secondary text", "bg-ink-muted", "text-paper"],
-  ["accent", "Rose accent, eyebrows, CTAs", "bg-accent", "text-accent-ink"],
-  ["sage", "Supporting botanical tone", "bg-sage", "text-paper"],
-  ["line", "Hairlines and borders", "bg-line", "text-ink"],
-  ["danger", "Errors", "bg-danger", "text-paper"],
+  ["bg-canvas", "Page background", "bg-canvas text-ink"],
+  ["bg-surface", "Badges, inputs, soft cards", "bg-surface text-ink"],
+  ["bg-surface-strong", "Tags, hover fills", "bg-surface-strong text-ink"],
+  ["bg-ink", "Headlines, dots, lines", "bg-ink text-canvas"],
+  ["text-ink-muted", "Secondary copy", "bg-ink-muted text-canvas"],
+  ["text-ink-faint", "Fading statement words, idle tabs", "bg-ink-faint text-ink"],
+  ["bg-sky", "Primary buttons, hero sky", "bg-sky text-sky-ink"],
+  ["bg-sun", "Ribbons, highlights", "bg-sun text-sun-ink"],
 ] as const;
 
 function Colors() {
   return (
     <Shell>
-      <Section>
-        <Container className="flex flex-col gap-14">
-          <SectionHeader eyebrow="Foundations" title="Colors" intro="Toggle dark in the header to verify every token in both themes." />
-          <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
-            {tokens.map(([name, role, bg, fg]) => (
+      <div className="flex flex-col gap-14">
+        <SectionHeader badge="Foundations" title="Colors" intro="Wrap any block in tone-night (or toggle Dark) and every token inverts." />
+        {["", "tone-night rounded-panel p-8"].map((wrap) => (
+          <div key={wrap} className={`grid grid-cols-2 gap-5 md:grid-cols-4 ${wrap}`}>
+            {tokens.map(([name, role, cls]) => (
               <div key={name} className="flex flex-col gap-3">
-                <div className={`${bg} ${fg} flex aspect-[4/5] items-end rounded-arch border border-line p-5 font-display text-2xl italic`}>Aa</div>
-                <div>
-                  <code className="text-sm text-ink">{bg}</code>
-                  <p className="text-sm text-ink-muted">{role}</p>
-                </div>
+                <div className={`${cls} flex aspect-[4/3] items-end rounded-card border border-line p-5 font-display text-3xl`}>Aa</div>
+                <div><code className="text-sm text-ink">{name}</code><p className="text-sm text-ink-muted">{role}</p></div>
               </div>
             ))}
           </div>
-        </Container>
-      </Section>
+        ))}
+      </div>
     </Shell>
   );
 }

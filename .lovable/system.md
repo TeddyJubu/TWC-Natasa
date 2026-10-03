@@ -1,35 +1,27 @@
-# Keepsake Design System
+# Bloom Design System
 
-Keepsake is a romantic, editorial system that feels like an heirloom invitation: warm paper, ink-dark serif type, one muted rose accent, generous margins and slow, quiet motion.
+Bloom is bright and editorial: full-bleed sky-blue photography, an elegant serif (Gilda Display) over a clean sans (Inter), soft grey pill badges with a blossom mark, and dramatic shifts into pure black "night" sections with a domed top edge. Sunflower yellow appears only as a small highlight (ribbons).
 
 ## Setup
-- Import `src/design-system/styles/theme.css` right after `@import "tailwindcss";` in the app's CSS.
-- Load fonts with a `<link>`: Cormorant Garamond (300/400/500 + italic) and Karla (400/500/600).
-- Dark mode: add the `dark` class to `<html>`.
-- Import components from the barrel (`@/design-system/keepsake`), never deep paths.
+- Import `src/design-system/styles/theme.css` right after `@import "tailwindcss";`.
+- Load fonts with a `<link>`: Gilda Display 400 and Inter 400/500.
+- Dark mode: add `dark` to `<html>`. Any block can go dark locally with `Section tone="night"` or the `tone-night` class — all tokens invert inside it.
+- Import from the barrel only.
 
 ## Hard rules
-- Only token utilities: `bg-paper`, `bg-surface`, `text-ink`, `text-ink-muted`, `text-accent`, `border-line`, etc. Never raw hex, rgb or Tailwind palette colors (`bg-rose-300`).
-- Serif (`font-display`) is for headings, numbers and monograms only; body and controls use `font-sans`.
-- One accent per view region. Rose highlights an eyebrow, one italic word (`<em>` inside `Heading`) or the primary CTA — not all at once.
-- Buttons are pills; cards use `rounded-card`; feature images use `ImageFrame` (arch by default). No hard shadows; `shadow-lift` only on hover.
-- Sections alternate `Section tone="paper"` / `tone="surface"`; always open with `SectionHeader` (eyebrow + heading + optional intro).
-- Motion is gentle: `animate-rise` on entry, `ease-[var(--ease-gentle)]`, nothing bouncy.
-- No inline styles. Vary looks through `variant` / `size` props, not className overrides.
+- Token utilities only (`bg-canvas`, `bg-surface`, `text-ink`, `text-ink-muted`, `text-ink-faint`, `bg-sky`, `bg-sun`, `border-line`). No raw hex or Tailwind palette colors.
+- Serif for headings, big numbers and wordmarks; never bold it — weight 400 only. Sans for everything else.
+- Every section opens with a `Badge` above a centered serif `Heading` (use `SectionHeader`).
+- Pages start with `Hero` (photo, glass badge, white headline left, short copy right, thin white rule, glass info card + big stat).
+- Rhythm: light sections → `tone="dome"` black panel → `tone="night"` continuation → light again. Don't scatter random greys.
+- Buttons have 12px corners (`rounded-control`), not pills; badges are pills. Cards use `rounded-card`.
+- Yellow (`sun`) only for ribbons/small highlights, never large fills or body text.
+- No inline styles; vary via `variant`/`size` props.
 
 ## Accessibility
-- Keep AA contrast: `text-ink-muted` only on `paper` / `surface`.
-- Every control keeps the visible focus ring; inputs always go inside `FormField` with a label.
-- Meaningful images need real `alt`; decorative ones `alt=""`.
+- White text on photos needs the built-in gradients (`bg-sky-fade`, card overlays); don't remove them.
+- `text-ink-faint` is decorative (fading statements, idle tabs) — never for essential copy.
+- Keep focus rings; wrap inputs in `FormField`.
 
 ## Voice
-Warm, brief, sincere. Short headlines with one emphasized word; two to three sentence paragraphs.
-
-```tsx
-<Section tone="surface">
-  <Container>
-    <SectionHeader eyebrow="Schedule" title={<>How the day <em>unfolds</em></>} />
-    <Schedule items={items} />
-  </Container>
-</Section>
-```
+Confident, warm, short. Headlines in Title Case, around five words.

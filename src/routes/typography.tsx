@@ -1,14 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Container, Eyebrow, Heading, Section, SectionHeader, Text } from "@/index";
+import { Badge, Heading, SectionHeader, Stat, Statement, Text } from "@/index";
 import { Shell } from "@/showcase/Shell";
 
 export const Route = createFileRoute("/typography")({
   head: () => ({
     meta: [
-      { title: "Typography — Keepsake Design System" },
-      { name: "description", content: "Cormorant Garamond and Karla, and the full Keepsake type scale." },
-      { property: "og:title", content: "Typography — Keepsake Design System" },
-      { property: "og:description", content: "Serif display headings with a quiet sans for body." },
+      { title: "Typography — Bloom Design System" },
+      { name: "description", content: "Gilda Display and Inter, and the full Bloom type scale." },
+      { property: "og:title", content: "Typography — Bloom Design System" },
+      { property: "og:description", content: "Elegant serif display with a clean sans for body." },
     ],
   }),
   component: Typography,
@@ -26,30 +26,24 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 function Typography() {
   return (
     <Shell>
-      <Section>
-        <Container className="flex flex-col gap-14">
-          <SectionHeader eyebrow="Foundations" title="Typography" />
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="rounded-card bg-surface p-8">
-              <p className="font-display text-6xl font-light">Cormorant <em className="text-accent">Garamond</em></p>
-              <Text className="mt-3">font-display · 300, 400, 500, italic · headings and display only</Text>
-            </div>
-            <div className="rounded-card bg-surface p-8">
-              <p className="font-sans text-5xl">Karla</p>
-              <Text className="mt-3">font-sans · 400, 500, 600 · body, labels, buttons</Text>
-            </div>
-          </div>
-          <div>
-            <Row label='<Heading size="display">'><Heading as="h3" size="display">Under <em>golden</em> light</Heading></Row>
-            <Row label='<Heading size="section">'><Heading as="h3">How the day unfolds</Heading></Row>
-            <Row label='<Heading size="title">'><Heading as="h3" size="title">Dinner, dancing & toasts</Heading></Row>
-            <Row label="<Eyebrow>"><Eyebrow>Save the Date</Eyebrow></Row>
-            <Row label='<Text size="lg">'><Text size="lg">Join us as we gather the people we love most for an evening in the garden.</Text></Row>
-            <Row label='<Text tone="default">'><Text tone="default">Body copy stays relaxed and short — two or three sentences per idea.</Text></Row>
-            <Row label='<Text size="sm">'><Text size="sm">Kindly reply by the first of May.</Text></Row>
-          </div>
-        </Container>
-      </Section>
+      <div className="flex flex-col gap-14">
+        <SectionHeader badge="Foundations" title="Typography" />
+        <div className="grid gap-5 md:grid-cols-2">
+          <div className="rounded-card bg-surface p-8"><p className="font-display text-6xl">Gilda Display</p><Text tone="muted" className="mt-3">font-display · 400 · headings, numbers, wordmark</Text></div>
+          <div className="rounded-card bg-surface p-8"><p className="font-sans text-5xl">Inter</p><Text tone="muted" className="mt-3">font-sans · 400, 500 · body, buttons, badges</Text></div>
+        </div>
+        <div>
+          <Row label='<Heading size="display">'><Heading as="h3" size="display">Bold Ideas, One Circle</Heading></Row>
+          <Row label="<Heading>"><Heading as="h3">Shape of the Day</Heading></Row>
+          <Row label='<Heading size="title">'><Heading as="h3" size="title">Evening Mixer</Heading></Row>
+          <Row label="<Statement lead={2}>"><Statement lead={2} text="We're building something together, one conversation at a time." /></Row>
+          <Row label="<Stat>"><Stat value="2019" label="Founded" /></Row>
+          <Row label="<Badge>"><Badge>Programs</Badge></Row>
+          <Row label='<Text size="lg">'><Text size="lg">Large body copy for intros.</Text></Row>
+          <Row label="<Text>"><Text>Default body copy stays short and plain.</Text></Row>
+          <Row label='<Text tone="muted" size="sm">'><Text tone="muted" size="sm">Captions and fine print.</Text></Row>
+        </div>
+      </div>
     </Shell>
   );
 }
