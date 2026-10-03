@@ -45,22 +45,48 @@ const sections: { name: string; render: () => React.ReactNode }[] = [
   { name: "Timeline", render: () => <Specimen label="items"><K.Timeline className="w-full" items={[{ time: "09:00 AM", title: "Arrival", description: "Coffee.", image: event }, { time: "10:30 AM", title: "Keynote", image: p2 }]} /></Specimen> },
   { name: "ImageFrame", render: () => <Specimen label='shape="card|panel|thumb"'><div className="grid w-full grid-cols-3 gap-4"><K.ImageFrame src={p1} alt="" /><K.ImageFrame src={p2} alt="" shape="panel" /><K.ImageFrame src={p3} alt="" shape="thumb" ratio="square" /></div></Specimen> },
   { name: "Accordion", render: () => <Specimen label="items"><K.Accordion className="w-full" items={[{ question: "Who can apply?", answer: "Anyone building something." }, { question: "Is there a trial?", answer: "Yes, 14 days." }]} /></Specimen> },
-  { name: "Form fields", render: () => (<>
-    <Specimen label="FormField + Input · hint · error · disabled">
-      <div className="grid w-full gap-4 md:grid-cols-3">
-        <K.FormField label="Name" htmlFor="a" hint="As on your ID"><K.Input id="a" placeholder="Jane Smith" /></K.FormField>
-        <K.FormField label="Email" htmlFor="b" error="Please enter a valid email"><K.Input id="b" aria-invalid defaultValue="jane@" /></K.FormField>
-        <K.FormField label="Code" htmlFor="c"><K.Input id="c" disabled placeholder="Locked" /></K.FormField>
+  { name: "Input", render: () => <Specimen label='variant="editorial|boxed" · default · filled · focused · error · disabled'>
+    <div className="grid w-full gap-8 md:grid-cols-2 lg:grid-cols-3">
+      <K.FormField index="01" label="Full name" htmlFor="input-default" hint="Use the name you introduce yourself with."><K.Input id="input-default" placeholder="Your name" /></K.FormField>
+      <K.FormField index="02" label="Studio" htmlFor="input-filled"><K.Input id="input-filled" defaultValue="Common Thread Studio" /></K.FormField>
+      <K.FormField index="03" label="Email" htmlFor="input-error" error="Enter a complete email address."><K.Input id="input-error" aria-invalid aria-describedby="input-error-copy" defaultValue="maya@studio" /></K.FormField>
+      <K.FormField label="Location" htmlFor="input-boxed"><K.Input id="input-boxed" variant="boxed" placeholder="City, country" /></K.FormField>
+      <K.FormField label="Member code" htmlFor="input-disabled"><K.Input id="input-disabled" variant="boxed" disabled value="Assigned after review" readOnly /></K.FormField>
+      <K.FormField label="Focus preview" htmlFor="input-focus"><K.Input id="input-focus" variant="boxed" className="border-sky ring-2 ring-ring/20" value="Active field" readOnly /></K.FormField>
+    </div>
+  </Specimen> },
+  { name: "Textarea", render: () => <Specimen label='variant="editorial|boxed" · resize enabled'>
+    <div className="grid w-full gap-8 md:grid-cols-2"><K.FormField index="04" label="The work" htmlFor="textarea-a" hint="A few sentences are enough."><K.Textarea id="textarea-a" placeholder="Tell us what you are building and why it matters…" /></K.FormField><K.FormField label="A recent win" htmlFor="textarea-b"><K.Textarea id="textarea-b" variant="boxed" defaultValue="We brought our first collection into three independent stores." /></K.FormField></div>
+  </Specimen> },
+  { name: "Select", render: () => <Specimen label='variant="editorial|boxed"'>
+    <div className="grid w-full gap-8 md:grid-cols-2"><K.FormField index="05" label="Business stage" htmlFor="select-a"><K.Select id="select-a" defaultValue="growing"><option value="starting">Starting out</option><option value="growing">Growing steadily</option><option value="scaling">Scaling a team</option></K.Select></K.FormField><K.FormField label="Time zone" htmlFor="select-b"><K.Select id="select-b" variant="boxed"><option>Europe / London</option><option>America / New York</option><option>Asia / Singapore</option></K.Select></K.FormField></div>
+  </Specimen> },
+  { name: "Checkbox", render: () => <Specimen label="label · description · checked · disabled">
+    <div className="grid w-full gap-6 md:grid-cols-3"><K.Checkbox label="Monthly field notes" description="A considered edit of events and member stories." defaultChecked /><K.Checkbox label="Partner introductions" description="Occasional introductions when there is a clear fit." /><K.Checkbox label="Applications closed" disabled /></div>
+  </Specimen> },
+  { name: "RadioGroup", render: () => <Specimen label='variant="pills|list"'>
+    <div className="grid w-full gap-10 md:grid-cols-2"><K.RadioGroup name="membership-format" legend="Preferred gathering" defaultValue="studio" options={[{ value: "studio", label: "Studio table" }, { value: "salon", label: "Evening salon" }, { value: "online", label: "Online circle" }]} /><K.RadioGroup variant="list" name="membership-pace" legend="Your current pace" defaultValue="building" options={[{ value: "forming", label: "Forming the idea" }, { value: "building", label: "Building momentum" }, { value: "expanding", label: "Expanding the team" }]} /></div>
+  </Specimen> },
+  { name: "Switch", render: () => <Specimen label="label · description · checked · disabled">
+    <div className="grid w-full gap-6 md:grid-cols-2"><K.Switch label="Open to introductions" description="Let the membership team suggest thoughtful connections." defaultChecked /><K.Switch label="Pause event reminders" description="This setting is managed by your studio lead." disabled /></div>
+  </Specimen> },
+  { name: "FileUpload", render: () => <Specimen label="accept · multiple · disabled">
+    <div className="grid w-full gap-6 md:grid-cols-2"><K.FileUpload label="Add a portrait or studio image" hint="JPG or PNG · up to 8 MB" accept="image/png,image/jpeg" /><K.FileUpload label="Supporting work" hint="PDF · up to 12 MB" accept="application/pdf" /></div>
+  </Specimen> },
+  { name: "Application form", render: () => <Specimen label="FormSection + FormField + FormActions · responsive editorial composition" className="[&>div:first-child]:p-0">
+    <form className="grid w-full overflow-hidden bg-paper lg:grid-cols-3" onSubmit={(e) => e.preventDefault()}>
+      <div className="flex min-h-[34rem] flex-col justify-between bg-signal p-7 text-ink md:p-9">
+        <div><span className="font-sans text-xs font-medium uppercase">01 — Application</span><h3 className="mt-12 font-display text-5xl font-normal leading-none md:text-6xl">Your Next<br /><em>Chapter</em></h3><p className="mt-6 max-w-xs font-sans text-sm leading-relaxed">A focused application for founders shaping useful, original work.</p></div>
+        <div className="flex items-end justify-between border-t border-ink/20 pt-5"><span className="font-sans text-xs uppercase">Bloom membership</span><span className="font-display text-4xl">01</span></div>
       </div>
-    </Specimen>
-    <Specimen label="Select · Textarea · Checkbox · RadioGroup">
-      <div className="grid w-full gap-4 md:grid-cols-2">
-        <K.FormField label="Plan" htmlFor="d"><K.Select id="d"><option>Founder</option><option>Studio</option></K.Select></K.FormField>
-        <K.FormField label="Message" htmlFor="e"><K.Textarea id="e" placeholder="Tell us more" /></K.FormField>
-        <K.Checkbox label="Send me the newsletter" />
-        <K.RadioGroup name="r" legend="Billing" defaultValue="y" options={[{ value: "m", label: "Monthly" }, { value: "y", label: "Yearly" }]} />
-      </div>
-    </Specimen></>) },
+      <K.FormSection index="02 — Details" title="Introduce Yourself" description="The essentials first." className="border-t-0 p-7 md:p-9">
+        <div className="flex flex-col gap-9"><K.FormField index="01" label="Full name" htmlFor="application-name"><K.Input id="application-name" placeholder="Your name" /></K.FormField><K.FormField index="02" label="Work email" htmlFor="application-email"><K.Input id="application-email" type="email" placeholder="you@company.com" /></K.FormField><K.FormField index="03" label="Business stage" htmlFor="application-stage"><K.Select id="application-stage"><option>Choose one</option><option>Starting out</option><option>Growing steadily</option><option>Scaling a team</option></K.Select></K.FormField><K.RadioGroup name="application-focus" legend="What brings you here?" defaultValue="peers" options={[{ value: "peers", label: "Peers" }, { value: "ideas", label: "Ideas" }, { value: "growth", label: "Growth" }]} /></div>
+      </K.FormSection>
+      <K.FormSection index="03 — Perspective" title="Tell Us More" description="There are no perfect answers." className="border-t-0 bg-canvas p-7 md:p-9">
+        <div className="flex h-full flex-col gap-8"><K.FormField index="04" label="What are you building?" htmlFor="application-story"><K.Textarea id="application-story" placeholder="The idea, the ambition, the honest version…" /></K.FormField><K.FileUpload label="Add a portrait" hint="JPG or PNG · optional" accept="image/png,image/jpeg" /><K.Checkbox label="Keep me in the loop" description="Occasional field notes, never noise." defaultChecked /><K.FormActions className="mt-auto"><K.Button type="button" variant="link">Save for later</K.Button><K.Button type="submit" variant="ink" className="min-w-44">Send application <span aria-hidden>↗</span></K.Button></K.FormActions></div>
+      </K.FormSection>
+    </form>
+  </Specimen> },
   { name: "Footer", render: () => <Specimen label="brand · statement · contacts · links"><K.Footer className="w-full rounded-card" brand={<K.Wordmark>Bloom</K.Wordmark>} statement="A closing line." contacts={[{ label: "Email", value: "hello@example.com" }]} links={[{ label: "Privacy", href: "#" }]} note="© 2027" /></Specimen> },
 ];
 

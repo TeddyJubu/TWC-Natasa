@@ -55,8 +55,8 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(({ cla
   return (
     <label htmlFor={cid} className={cn("group inline-flex cursor-pointer items-start gap-3 text-sm text-ink has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50", className)}>
       <input ref={ref} id={cid} type="checkbox" className="peer sr-only" {...p} />
-      <span aria-hidden className="mt-0.5 grid size-5 shrink-0 place-items-center border border-line bg-canvas transition-colors peer-checked:border-ink peer-checked:bg-ink peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-canvas">
-        <svg viewBox="0 0 16 16" className="size-3 text-canvas opacity-0 peer-checked:opacity-100" fill="none" stroke="currentColor" strokeWidth="2"><path d="m3 8 3 3 7-7" /></svg>
+      <span aria-hidden className="mt-0.5 grid size-5 shrink-0 place-items-center border border-line bg-canvas transition-colors peer-checked:border-ink peer-checked:bg-ink peer-checked:[&>svg]:opacity-100 peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-canvas">
+        <svg viewBox="0 0 16 16" className="size-3 text-canvas opacity-0" fill="none" stroke="currentColor" strokeWidth="2"><path d="m3 8 3 3 7-7" /></svg>
       </span>
       <span><span className="block">{label}</span>{description && <span className="mt-1 block text-xs leading-relaxed text-ink-muted">{description}</span>}</span>
     </label>
@@ -80,7 +80,7 @@ export const RadioGroup = React.forwardRef<HTMLFieldSetElement, RadioGroupProps>
         {options.map((o) => (
           <label key={o.value} className={cn("cursor-pointer has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50", variant === "list" && "border-b border-line last:border-b-0")}>
             <input type="radio" name={name} value={o.value} defaultChecked={defaultValue === o.value} onChange={() => onValueChange?.(o.value)} className="peer sr-only" />
-            <span className={cn("inline-flex items-center font-sans text-sm text-ink transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-ring", variant === "pills" ? "h-11 rounded-full border border-line px-5 peer-checked:border-ink peer-checked:bg-ink peer-checked:text-canvas" : "min-h-field w-full justify-between py-3 peer-checked:font-medium")}>
+            <span className={cn("inline-flex items-center font-sans text-sm text-ink transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-ring", variant === "pills" ? "h-11 rounded-full border border-line px-5 peer-checked:border-ink peer-checked:bg-ink peer-checked:text-canvas" : "min-h-field w-full justify-between py-3 peer-checked:font-medium peer-checked:[&>span]:border-ink peer-checked:[&>span]:bg-ink")}>
               {o.label}{variant === "list" && <span aria-hidden className="size-3 rounded-full border border-line peer-checked:border-ink peer-checked:bg-ink" />}
             </span>
           </label>
@@ -133,18 +133,18 @@ export const FileUpload = React.forwardRef<HTMLInputElement, FileUploadProps>(({
   const auto = React.useId();
   const fid = id ?? auto;
   return (
-    <label htmlFor={fid} className={cn("group flex min-h-field-tall cursor-pointer flex-col items-center justify-center border border-dashed border-line bg-surface px-6 py-8 text-center transition-colors hover:border-ink has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50", className)}>
+    <label htmlFor={fid} className={cn("group relative flex min-h-field-tall cursor-pointer flex-col items-center justify-center border border-dashed border-line bg-surface px-6 py-8 text-center transition-colors hover:border-ink has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50", className)}>
       <input ref={ref} id={fid} type="file" className="peer sr-only" {...p} />
       <svg aria-hidden viewBox="0 0 24 24" className="mb-3 size-6 text-ink" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 16V4m0 0L7 9m5-5 5 5M4 15v4h16v-4" /></svg>
       <span className="font-display text-xl text-ink underline decoration-line underline-offset-4 group-hover:decoration-ink">{label}</span>
       {hint && <span className="mt-2 font-sans text-xs text-ink-muted">{hint}</span>}
-      <span className="pointer-events-none absolute rounded-control peer-focus-visible:ring-2 peer-focus-visible:ring-ring" />
+      <span className="pointer-events-none absolute inset-0 peer-focus-visible:ring-2 peer-focus-visible:ring-ring" />
     </label>
   );
 });
 FileUpload.displayName = "FileUpload";
 
-export interface FormSectionProps extends React.FieldsetHTMLAttributes<HTMLFieldSetElement> {
+export interface FormSectionProps extends Omit<React.FieldsetHTMLAttributes<HTMLFieldSetElement>, "title"> {
   index?: string;
   title: React.ReactNode;
   description?: React.ReactNode;
