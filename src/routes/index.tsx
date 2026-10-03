@@ -93,9 +93,9 @@ function Sample() {
             <Heading className="max-w-xl">A Season Worth Showing Up For</Heading>
           </div>
           <div className="grid gap-3 md:grid-cols-[1fr_1.9fr_1fr]">
-            <FeatureCard tag="Rooftop Hall, Level 12" title="Summit" className="tone-light bg-white text-black" />
+            <FeatureCard tag="Rooftop Hall, Level 12" title="Summit" className="tone-light" />
             <FeatureCard variant="photo" image={event} title="Talks, Dinner & A Night to Remember" description="Photo cards carry a white rule, a serif title and a short paragraph over a soft dark gradient." />
-            <FeatureCard tag="7:00 PM" title="Mixer" className="bg-white text-black" />
+            <FeatureCard tag="7:00 PM" title="Mixer" className="tone-light" />
           </div>
         </Container>
       </Section>

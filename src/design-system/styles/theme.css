@@ -79,3 +79,9 @@
 
 @keyframes bl-marquee { to { transform: translateX(-50%); } }
 @utility animate-marquee { animation: bl-marquee 24s linear infinite; }
+
+/* Force light tokens inside a night block (e.g. light cards on a black section) */
+.tone-light {
+  --bl-canvas: #fcfcfa; --bl-surface: #f2f4f7; --bl-surface-strong: #e6e9ee;
+  --bl-ink: #1f1f1c; --bl-ink-muted: #525252; --bl-ink-faint: #b9b9b4; --bl-line: rgb(31 31 28 / 0.1);
+}
