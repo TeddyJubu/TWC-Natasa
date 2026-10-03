@@ -15,6 +15,21 @@ const cardVariants = cva("group overflow-hidden border border-line bg-canvas tex
   defaultVariants: { variant: "grid" },
 });
 
+/**
+ * Catalogue cards carry a neighborhood color signature so each member reads at
+ * a glance from the shared palette. Unknown neighborhoods fall back to the
+ * neutral catalogue look.
+ */
+const catalogueTones: Record<string, { rule: string; label: string; index: string; wash: string }> = {
+  "Long Island City": { rule: "border-lic/30", label: "text-lic", index: "text-lic", wash: "bg-lic/20" },
+  Astoria: { rule: "border-astoria/30", label: "text-astoria", index: "text-astoria", wash: "bg-astoria/20" },
+  Sunnyside: { rule: "border-sunnyside/30", label: "text-sunnyside", index: "text-sunnyside", wash: "bg-sunnyside/20" },
+  "Jackson Heights": { rule: "border-jackson-heights/30", label: "text-jackson-heights", index: "text-jackson-heights", wash: "bg-jackson-heights/20" },
+  "Forest Hills": { rule: "border-forest-hills/30", label: "text-forest-hills", index: "text-forest-hills", wash: "bg-forest-hills/20" },
+  Elmhurst: { rule: "border-elmhurst/30", label: "text-elmhurst", index: "text-elmhurst", wash: "bg-elmhurst/20" },
+  "Rego Park": { rule: "border-rego-park/30", label: "text-rego-park", index: "text-rego-park", wash: "bg-rego-park/20" },
+};
+
 export interface MemberCardProps extends Omit<React.HTMLAttributes<HTMLElement>, "children">, VariantProps<typeof cardVariants> {
   member: MemberProfile;
   catalogueNumber?: number;
@@ -25,13 +40,17 @@ export interface MemberCardProps extends Omit<React.HTMLAttributes<HTMLElement>,
  * @example <MemberCard member={member} />
  * @example <MemberCard member={member} variant="featured" />
  * @example <MemberCard member={member} variant="catalogue" catalogueNumber={1} />
+ * Catalogue cards pick up the member’s neighborhood color from the palette;
+ * members sharing a neighborhood share its color.
  * Avoid placing MemberCard inside another card or supplying unapproved personal details.
  */
-export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ catalogueNumber, className, member, variant, ...props }, ref) => (
+export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ catalogueNumber, className, member, variant, ...props }, ref) => {
+  const tone = variant === "catalogue" ? catalogueTones[member.neighborhood] : undefined;
+  return (
   <article ref={ref} className={cn(cardVariants({ variant }), className)} {...props}>
     {variant === "catalogue" ? (
       <>
-        <div className="grid min-h-40 grid-cols-[minmax(0,1fr)_auto] gap-4 border-b border-line p-4 sm:p-5">
+        <div className={cn("grid min-h-40 grid-cols-[minmax(0,1fr)_auto] gap-4 border-b border-line p-4 sm:p-5", tone?.rule)}>
           <div className="flex min-w-0 flex-col justify-between gap-5">
             <div>
               <p className="text-xs text-ink-muted">The Women’s Collective</p>
@@ -43,11 +62,11 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
             </div>
           </div>
           <div className="flex shrink-0 flex-col items-end justify-between text-xs text-ink-muted">
-            <span aria-label={`Catalogue number ${catalogueNumber ?? 1}`}>{String(catalogueNumber ?? 1).padStart(2, "0")}</span>
-            <span className="max-w-24 text-right leading-relaxed">{member.neighborhood}</span>
+            <span aria-label={`Catalogue number ${catalogueNumber ?? 1}`} className={tone?.index}>{String(catalogueNumber ?? 1).padStart(2, "0")}</span>
+            <span className={cn("max-w-24 text-right leading-relaxed", tone?.label)}>{member.neighborhood}</span>
           </div>
         </div>
-        <div className="aspect-[4/5] overflow-hidden bg-surface p-3 sm:p-4">
+        <div className={cn("aspect-[4/5] overflow-hidden p-3 sm:p-4", tone?.wash ?? "bg-surface")}>
           <img
             src={member.image}
             alt={member.imageAlt}
@@ -91,5 +110,6 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
       </>
     )}
   </article>
-));
+  );
+});
 MemberCard.displayName = "MemberCard";

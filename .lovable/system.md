@@ -23,7 +23,7 @@ The Women’s Collective is warm, direct, and editorial: full-bleed sky photogra
 - Motion is editorial and purposeful: shared reveal, stagger, panel, hover, and feedback patterns only. Never add decorative motion that competes with content.
 - Use `Reveal` for viewport entry and `Stagger` for short sequenced groups; both preserve content and honor reduced-motion preferences.
 - Long applications use `FormProgress`, `FormSection`, `ChoiceGroup`, `FormNotice`, and `FormActions`; conditional follow-ups reveal directly beneath their controlling choice.
-- Member directories use the `MemberCard` catalogue variant in a dense black contact-sheet panel; portraits begin monochrome and reveal color on hover.
+- Member directories use the `MemberCard` catalogue variant in a dense black contact-sheet panel; each card carries its neighborhood color as a quiet signature (header rule, catalogue number, neighborhood label, and portrait mat), and portraits begin monochrome to reveal color on hover.
 
 ## Accessibility
 - White text on photos needs the built-in gradients (`bg-sky-fade`, card overlays); don't remove them.
