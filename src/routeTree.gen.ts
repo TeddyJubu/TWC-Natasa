@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ColorsRouteImport } from './routes/colors'
 import { Route as ComponentsRouteImport } from './routes/components'
 import { Route as JoinRouteImport } from './routes/join'
+import { Route as MembersRouteImport } from './routes/members'
 import { Route as TypographyRouteImport } from './routes/typography'
 import { Route as Char91__componentChar93PreviewSplatRouteImport } from './routes/[__component].preview.$'
 import { Route as Char91__mockupChar93PreviewSplatRouteImport } from './routes/[__mockup].preview.$'
@@ -35,6 +36,11 @@ const ComponentsRoute = ComponentsRouteImport.update({
 const JoinRoute = JoinRouteImport.update({
   id: '/join',
   path: '/join',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MembersRoute = MembersRouteImport.update({
+  id: '/members',
+  path: '/members',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TypographyRoute = TypographyRouteImport.update({
@@ -60,6 +66,7 @@ export interface FileRoutesByFullPath {
   '/colors': typeof ColorsRoute
   '/components': typeof ComponentsRoute
   '/join': typeof JoinRoute
+  '/members': typeof MembersRoute
   '/typography': typeof TypographyRoute
   '/__component/preview/$': typeof Char91__componentChar93PreviewSplatRoute
   '/__mockup/preview/$': typeof Char91__mockupChar93PreviewSplatRoute
@@ -69,6 +76,7 @@ export interface FileRoutesByTo {
   '/colors': typeof ColorsRoute
   '/components': typeof ComponentsRoute
   '/join': typeof JoinRoute
+  '/members': typeof MembersRoute
   '/typography': typeof TypographyRoute
   '/__component/preview/$': typeof Char91__componentChar93PreviewSplatRoute
   '/__mockup/preview/$': typeof Char91__mockupChar93PreviewSplatRoute
@@ -79,6 +87,7 @@ export interface FileRoutesById {
   '/colors': typeof ColorsRoute
   '/components': typeof ComponentsRoute
   '/join': typeof JoinRoute
+  '/members': typeof MembersRoute
   '/typography': typeof TypographyRoute
   '/__component/preview/$': typeof Char91__componentChar93PreviewSplatRoute
   '/__mockup/preview/$': typeof Char91__mockupChar93PreviewSplatRoute
@@ -90,6 +99,7 @@ export interface FileRouteTypes {
     | '/colors'
     | '/components'
     | '/join'
+    | '/members'
     | '/typography'
     | '/__component/preview/$'
     | '/__mockup/preview/$'
@@ -99,6 +109,7 @@ export interface FileRouteTypes {
     | '/colors'
     | '/components'
     | '/join'
+    | '/members'
     | '/typography'
     | '/__component/preview/$'
     | '/__mockup/preview/$'
@@ -108,6 +119,7 @@ export interface FileRouteTypes {
     | '/colors'
     | '/components'
     | '/join'
+    | '/members'
     | '/typography'
     | '/__component/preview/$'
     | '/__mockup/preview/$'
@@ -118,6 +130,7 @@ export interface RootRouteChildren {
   ColorsRoute: typeof ColorsRoute
   ComponentsRoute: typeof ComponentsRoute
   JoinRoute: typeof JoinRoute
+  MembersRoute: typeof MembersRoute
   TypographyRoute: typeof TypographyRoute
   Char91__componentChar93PreviewSplatRoute: typeof Char91__componentChar93PreviewSplatRoute
   Char91__mockupChar93PreviewSplatRoute: typeof Char91__mockupChar93PreviewSplatRoute
@@ -153,6 +166,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JoinRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/members': {
+      id: '/members'
+      path: '/members'
+      fullPath: '/members'
+      preLoaderRoute: typeof MembersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/typography': {
       id: '/typography'
       path: '/typography'
@@ -182,6 +202,7 @@ const rootRouteChildren: RootRouteChildren = {
   ColorsRoute: ColorsRoute,
   ComponentsRoute: ComponentsRoute,
   JoinRoute: JoinRoute,
+  MembersRoute: MembersRoute,
   TypographyRoute: TypographyRoute,
   Char91__componentChar93PreviewSplatRoute:
     Char91__componentChar93PreviewSplatRoute,
