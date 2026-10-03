@@ -86,8 +86,8 @@ function MembersPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-3 min-[460px]:grid-cols-2 lg:grid-cols-5">
-            {members.map((member) => <MemberCard key={member.id} member={member} variant="catalogue" />)}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-5">
+            {members.map((member, index) => <MemberCard key={member.id} member={member} variant="catalogue" catalogueNumber={index + 1} />)}
           </div>
         </Container>
       </Section>
