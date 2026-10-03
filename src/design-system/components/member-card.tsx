@@ -40,6 +40,8 @@ export interface MemberCardProps extends Omit<React.HTMLAttributes<HTMLElement>,
  * @example <MemberCard member={member} />
  * @example <MemberCard member={member} variant="featured" />
  * @example <MemberCard member={member} variant="catalogue" catalogueNumber={1} />
+ * Catalogue cards pick up the member’s neighborhood color from the palette;
+ * members sharing a neighborhood share its color.
  * Avoid placing MemberCard inside another card or supplying unapproved personal details.
  */
 export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ catalogueNumber, className, member, variant, ...props }, ref) => {
