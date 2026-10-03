@@ -43,7 +43,7 @@ function MembersPage() {
       <Navbar
         brand={<Link to="/" aria-label="The Women’s Collective home"><BrandLockup compact /></Link>}
         links={[{ label: "Home", href: "/" }, { label: "Members", href: "/members" }, { label: "Join", href: "/join" }]}
-        action={<Link to="/join" className={buttonVariants({ variant: "ink" })}>Join the collective</Link>}
+        action={<Link to="/join" className={buttonVariants({ variant: "ink", size: "sm" })}>Join<span className="hidden sm:inline"> the collective</span></Link>}
       />
 
       <header className="overflow-hidden bg-paper pt-20 md:pt-28">

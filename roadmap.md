@@ -11,7 +11,7 @@
 - [x] Extend the shared motion language across every component and showcase page
 - [x] Verify the full application, interactions, accessibility, responsive layouts, and build health
 - [x] Review React Bits and adapt relevant effects without weakening the Bloom design language
-- [ ] Create ten fictional member profiles with cohesive portraits and details
-- [ ] Add a reusable member card and dedicated member directory page
-- [ ] Reorganize the homepage into a concise member preview linking to the directory
+- [x] Create ten fictional member profiles with cohesive portraits and details
+- [x] Add a reusable member card and dedicated member directory page
+- [x] Reorganize the homepage into a concise member preview linking to the directory
 - [ ] Verify metadata, responsive layouts, interactions, accessibility, and build health
