@@ -30,9 +30,8 @@ export const ImageTrail = React.forwardRef<HTMLDivElement, ImageTrailProps>(
     }, [forwardedRef]);
 
     React.useEffect(() => {
-      const canTrail = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
       const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      if (!canTrail || reduceMotion || images.length === 0) return;
+      if (reduceMotion || images.length === 0) return;
 
       let itemIndex = 0;
       let previousX = -100;
