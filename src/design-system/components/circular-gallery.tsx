@@ -690,14 +690,14 @@ export interface CircularGalleryEngineProps extends React.HTMLAttributes<HTMLDiv
   textColor?: string;
   borderRadius?: number;
   font?: string;
-    scrollSpeed?: number;
+  scrollSpeed?: number;
   scrollEase?: number;
 }
 
 export const CircularGalleryEngine = React.forwardRef<HTMLDivElement, CircularGalleryEngineProps>(function CircularGalleryEngine({
   items,
   bend = 3,
-  textColor = '#ffffff',
+  textColor,
   borderRadius = 0.05,
   font = DEFAULT_FONT,
   scrollSpeed = 2,
@@ -706,9 +706,14 @@ export const CircularGalleryEngine = React.forwardRef<HTMLDivElement, CircularGa
   ...props
 }, forwardedRef) {
   const containerRef = React.useRef<HTMLDivElement>(null);
-  React.useImperativeHandle(forwardedRef, () => containerRef.current as HTMLDivElement, []);
+  const setContainerRef = React.useCallback((node: HTMLDivElement | null) => {
+    containerRef.current = node;
+    if (typeof forwardedRef === 'function') forwardedRef(node);
+    else if (forwardedRef) forwardedRef.current = node;
+  }, [forwardedRef]);
   React.useEffect(() => {
     if (!containerRef.current) return;
+    const resolvedTextColor = textColor ?? getComputedStyle(containerRef.current).color;
     let app: App | undefined;
     let isMounted = true;
     resolveFont(font).then(resolvedFont => {
@@ -716,7 +721,7 @@ export const CircularGalleryEngine = React.forwardRef<HTMLDivElement, CircularGa
       app = new App(containerRef.current, {
         items,
         bend,
-        textColor,
+        textColor: resolvedTextColor,
         borderRadius,
         font: resolvedFont,
         scrollSpeed,
@@ -731,7 +736,7 @@ export const CircularGalleryEngine = React.forwardRef<HTMLDivElement, CircularGa
   return (
     <div
       className={cn("size-full cursor-grab overflow-hidden active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", className)}
-      ref={containerRef}
+      ref={setContainerRef}
       {...props}
       tabIndex={0}
       role="region"
@@ -739,4 +744,4 @@ export const CircularGalleryEngine = React.forwardRef<HTMLDivElement, CircularGa
     />
   );
 });
-CircularGalleryEngine.displayName = 'CircularGalleryEngine';}
+CircularGalleryEngine.displayName = 'CircularGalleryEngine';
