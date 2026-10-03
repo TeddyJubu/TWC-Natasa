@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../lib/utils";
 
 export const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 rounded-control font-sans font-normal transition-all duration-300 ease-[var(--ease-gentle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:pointer-events-none disabled:opacity-45",
+  "group inline-flex items-center justify-center gap-2 rounded-control font-sans font-normal shadow-none transition-[transform,box-shadow,background-color,color,filter,opacity] duration-300 ease-[var(--ease-snap)] hover:-translate-y-0.5 hover:shadow-soft active:translate-y-0 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-canvas motion-reduce:transform-none motion-reduce:transition-none disabled:pointer-events-none disabled:opacity-45 disabled:shadow-none",
   {
     variants: {
       variant: {
@@ -12,7 +12,7 @@ export const buttonVariants = cva(
         ink: "bg-ink text-canvas hover:opacity-85",
         sun: "bg-sun text-sun-ink hover:brightness-105",
         outline: "border border-line text-ink hover:bg-surface",
-        link: "rounded-none text-ink underline underline-offset-4 hover:text-sky",
+        link: "rounded-none text-ink underline underline-offset-4 hover:translate-y-0 hover:text-sky hover:shadow-none active:scale-100",
       },
       size: { sm: "h-10 px-4 text-sm", md: "h-[3.25rem] px-6 text-base", lg: "h-14 px-8 text-lg" },
     },

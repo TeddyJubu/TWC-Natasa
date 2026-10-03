@@ -3,12 +3,12 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../lib/utils";
 
 const fieldVariants = cva(
-  "peer w-full font-sans text-base text-ink placeholder:text-ink-faint transition-[border-color,background-color,box-shadow] duration-300 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 aria-[invalid=true]:border-danger aria-[invalid=true]:focus-visible:ring-danger/20",
+  "peer w-full font-sans text-base text-ink placeholder:text-ink-faint transition-[border-color,background-color,box-shadow,transform] duration-300 ease-[var(--ease-snap)] hover:border-ink-muted focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 aria-[invalid=true]:border-danger aria-[invalid=true]:focus-visible:ring-danger/20 motion-reduce:transition-none",
   {
     variants: {
       variant: {
-        editorial: "border-x-0 border-b border-t-0 border-line bg-transparent px-0 focus-visible:border-ink focus-visible:ring-0",
-        boxed: "rounded-control border border-line bg-surface px-4 focus-visible:border-sky focus-visible:ring-2 focus-visible:ring-ring/20",
+        editorial: "border-x-0 border-b border-t-0 border-line bg-transparent px-0 focus-visible:border-sky focus-visible:shadow-[inset_0_-1px_0_var(--bl-sky)] focus-visible:ring-0",
+        boxed: "rounded-control border border-line bg-surface px-4 focus-visible:-translate-y-0.5 focus-visible:border-sky focus-visible:bg-canvas focus-visible:ring-2 focus-visible:ring-ring/20",
       },
     },
     defaultVariants: { variant: "editorial" },
@@ -53,10 +53,10 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(({ cla
   const auto = React.useId();
   const cid = id ?? auto;
   return (
-    <label htmlFor={cid} className={cn("group inline-flex cursor-pointer items-start gap-3 text-sm text-ink has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50", className)}>
+    <label htmlFor={cid} className={cn("group inline-flex cursor-pointer items-start gap-3 text-sm text-ink transition-opacity has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50", className)}>
       <input ref={ref} id={cid} type="checkbox" className="peer sr-only" {...p} />
-      <span aria-hidden className="mt-0.5 grid size-5 shrink-0 place-items-center border border-line bg-canvas transition-colors peer-checked:border-ink peer-checked:bg-ink peer-checked:[&>svg]:opacity-100 peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-canvas">
-        <svg viewBox="0 0 16 16" className="size-3 text-canvas opacity-0" fill="none" stroke="currentColor" strokeWidth="2"><path d="m3 8 3 3 7-7" /></svg>
+      <span aria-hidden className="mt-0.5 grid size-5 shrink-0 place-items-center border border-line bg-canvas transition-[transform,background-color,border-color] duration-300 ease-[var(--ease-snap)] group-hover:scale-105 peer-checked:border-ink peer-checked:bg-ink peer-checked:scale-105 peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-canvas motion-reduce:transform-none motion-reduce:transition-none">
+        <svg viewBox="0 0 16 16" className="size-3 scale-50 text-canvas opacity-0 peer-checked:[animation:bl-check_var(--duration-base)_var(--ease-snap)_both]" fill="none" stroke="currentColor" strokeWidth="2"><path d="m3 8 3 3 7-7" /></svg>
       </span>
       <span><span className="block">{label}</span>{description && <span className="mt-1 block text-xs leading-relaxed text-ink-muted">{description}</span>}</span>
     </label>
@@ -80,8 +80,8 @@ export const RadioGroup = React.forwardRef<HTMLFieldSetElement, RadioGroupProps>
         {options.map((o) => (
           <label key={o.value} className={cn("cursor-pointer has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50", variant === "list" && "border-b border-line last:border-b-0")}>
             <input type="radio" name={name} value={o.value} defaultChecked={defaultValue === o.value} onChange={() => onValueChange?.(o.value)} className="peer sr-only" />
-            <span className={cn("inline-flex items-center font-sans text-sm text-ink transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-ring", variant === "pills" ? "h-11 rounded-full border border-line px-5 peer-checked:border-ink peer-checked:bg-ink peer-checked:text-canvas" : "min-h-field w-full justify-between py-3 peer-checked:font-medium peer-checked:[&>span]:border-ink peer-checked:[&>span]:bg-ink")}>
-              {o.label}{variant === "list" && <span aria-hidden className="size-3 rounded-full border border-line peer-checked:border-ink peer-checked:bg-ink" />}
+            <span className={cn("inline-flex items-center font-sans text-sm text-ink transition-[transform,background-color,border-color,color] duration-300 ease-[var(--ease-snap)] hover:-translate-y-0.5 peer-focus-visible:ring-2 peer-focus-visible:ring-ring motion-reduce:transform-none motion-reduce:transition-none", variant === "pills" ? "h-11 rounded-full border border-line px-5 peer-checked:border-ink peer-checked:bg-ink peer-checked:text-canvas peer-checked:shadow-soft" : "min-h-field w-full justify-between py-3 peer-checked:font-medium peer-checked:[&>span]:scale-125 peer-checked:[&>span]:border-ink peer-checked:[&>span]:bg-ink")}>
+              {o.label}{variant === "list" && <span aria-hidden className="size-3 rounded-full border border-line transition-[transform,background-color,border-color] duration-300 peer-checked:border-ink peer-checked:bg-ink" />}
             </span>
           </label>
         ))}
@@ -100,8 +100,8 @@ export interface FormFieldProps extends React.HTMLAttributes<HTMLDivElement> {
   optional?: boolean;
 }
 export const FormField = React.forwardRef<HTMLDivElement, FormFieldProps>(({ className, label, htmlFor, hint, error, index, optional, children, ...p }, ref) => (
-  <div ref={ref} className={cn("flex flex-col gap-2", className)} {...p}>
-    <Label htmlFor={htmlFor} index={index} optional={optional}>{label}</Label>
+  <div ref={ref} className={cn("group/form-field flex flex-col gap-2", className)} {...p}>
+    <Label htmlFor={htmlFor} index={index} optional={optional} className="transition-colors duration-300 group-focus-within/form-field:text-sky">{label}</Label>
     {children}
     {error ? <p id={`${htmlFor}-error`} role="alert" className="font-sans text-xs text-danger">{error}</p> : hint ? <p id={`${htmlFor}-hint`} className="font-sans text-xs text-ink-muted">{hint}</p> : null}
   </div>
@@ -116,10 +116,10 @@ export const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(({ classNa
   const auto = React.useId();
   const sid = id ?? auto;
   return (
-    <label htmlFor={sid} className={cn("flex cursor-pointer items-start justify-between gap-5 border-y border-line py-4 has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50", className)}>
+    <label htmlFor={sid} className={cn("group flex cursor-pointer items-start justify-between gap-5 border-y border-line py-4 transition-colors hover:border-ink-muted has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50", className)}>
       <span><span className="block font-sans text-sm text-ink">{label}</span>{description && <span className="mt-1 block font-sans text-xs leading-relaxed text-ink-muted">{description}</span>}</span>
       <input ref={ref} id={sid} type="checkbox" role="switch" className="peer sr-only" {...p} />
-      <span aria-hidden className="relative mt-0.5 h-6 w-11 shrink-0 rounded-full bg-surface-strong transition-colors after:absolute after:left-1 after:top-1 after:size-4 after:rounded-full after:bg-ink after:transition-transform peer-checked:bg-ink peer-checked:after:translate-x-5 peer-checked:after:bg-canvas peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-canvas" />
+      <span aria-hidden className="relative mt-0.5 h-6 w-11 shrink-0 rounded-full bg-surface-strong transition-[transform,background-color] duration-300 ease-[var(--ease-snap)] group-hover:scale-105 after:absolute after:left-1 after:top-1 after:size-4 after:rounded-full after:bg-ink after:transition-transform after:duration-300 after:ease-[var(--ease-snap)] peer-checked:bg-ink peer-checked:after:translate-x-5 peer-checked:after:bg-canvas peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-canvas motion-reduce:transform-none motion-reduce:transition-none" />
     </label>
   );
 });
@@ -133,9 +133,9 @@ export const FileUpload = React.forwardRef<HTMLInputElement, FileUploadProps>(({
   const auto = React.useId();
   const fid = id ?? auto;
   return (
-    <label htmlFor={fid} className={cn("group relative flex min-h-field-tall cursor-pointer flex-col items-center justify-center border border-dashed border-line bg-surface px-6 py-8 text-center transition-colors hover:border-ink has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50", className)}>
+    <label htmlFor={fid} className={cn("group relative flex min-h-field-tall cursor-pointer flex-col items-center justify-center border border-dashed border-line bg-surface px-6 py-8 text-center transition-[transform,background-color,border-color,box-shadow] duration-300 ease-[var(--ease-snap)] hover:-translate-y-1 hover:border-ink hover:bg-canvas hover:shadow-soft has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50 motion-reduce:transform-none motion-reduce:transition-none", className)}>
       <input ref={ref} id={fid} type="file" className="peer sr-only" {...p} />
-      <svg aria-hidden viewBox="0 0 24 24" className="mb-3 size-6 text-ink" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 16V4m0 0L7 9m5-5 5 5M4 15v4h16v-4" /></svg>
+      <svg aria-hidden viewBox="0 0 24 24" className="mb-3 size-6 text-ink transition-transform duration-300 ease-[var(--ease-snap)] group-hover:-translate-y-1" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 16V4m0 0L7 9m5-5 5 5M4 15v4h16v-4" /></svg>
       <span className="font-display text-xl text-ink underline decoration-line underline-offset-4 group-hover:decoration-ink">{label}</span>
       {hint && <span className="mt-2 font-sans text-xs text-ink-muted">{hint}</span>}
       <span className="pointer-events-none absolute inset-0 peer-focus-visible:ring-2 peer-focus-visible:ring-ring" />

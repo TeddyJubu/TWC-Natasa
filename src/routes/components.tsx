@@ -101,12 +101,12 @@ function Components() {
         <aside className="md:sticky md:top-8 md:self-start">
           <K.Input aria-label="Search components" placeholder="Search…" value={q} onChange={(e) => setQ(e.target.value)} className="h-11" />
           <nav className="mt-4 flex flex-col">
-            {shown.map((s) => <a key={s.name} href={`#${s.name}`} className="rounded-xl px-3 py-1.5 text-sm text-ink-muted hover:bg-surface hover:text-ink">{s.name}</a>)}
+            {shown.map((s) => <a key={s.name} href={`#${s.name}`} className="rounded-xl px-3 py-1.5 text-sm text-ink-muted transition-[transform,background-color,color] duration-300 ease-[var(--ease-snap)] hover:translate-x-1 hover:bg-surface hover:text-ink motion-reduce:transform-none">{s.name}</a>)}
           </nav>
         </aside>
         <div className="flex min-w-0 flex-col gap-16">
           {shown.map((s) => (
-            <section key={s.name} id={s.name} className="flex scroll-mt-8 flex-col gap-6">
+            <section key={s.name} id={s.name} className="motion-scroll-reveal flex scroll-mt-8 flex-col gap-6">
               <K.Heading size="title">{s.name}</K.Heading>
               {s.render()}
             </section>

@@ -69,6 +69,10 @@
 
   --shadow-soft: 0 24px 60px -32px rgb(0 0 0 / 0.35);
   --ease-gentle: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-snap: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --duration-fast: 160ms;
+  --duration-base: 300ms;
+  --duration-slow: 700ms;
 }
 
 @layer base {
@@ -88,8 +92,42 @@
 @keyframes bl-rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
 @utility animate-rise { animation: bl-rise 1s var(--ease-gentle) both; }
 
+@keyframes bl-reveal {
+  from { opacity: 0; transform: translateY(1.25rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@utility motion-reveal {
+  animation: bl-reveal var(--duration-slow) var(--ease-gentle) both;
+}
+
+@keyframes bl-check {
+  0% { opacity: 0; transform: scale(0.45) rotate(-10deg); }
+  70% { transform: scale(1.12) rotate(0); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .motion-scroll-reveal {
+      animation: bl-reveal var(--duration-slow) var(--ease-gentle) both;
+      animation-timeline: view();
+      animation-range: entry 5% cover 24%;
+    }
+  }
+}
+
 @keyframes bl-marquee { to { transform: translateX(-50%); } }
 @utility animate-marquee { animation: bl-marquee 24s linear infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .animate-marquee { animation-play-state: paused; }
+}
 
 /* Force light tokens inside a night block (e.g. light cards on a black section) */
 .tone-light {
