@@ -1,14 +1,15 @@
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../lib/utils";
-import { Eyebrow, Heading, Text } from "./typography";
+import { Badge, Blossom, Heading, Text } from "./typography";
 
+/* ---------- ImageFrame ---------- */
 const frameVariants = cva("overflow-hidden bg-surface", {
   variants: {
-    shape: { arch: "rounded-arch", rounded: "rounded-card", circle: "rounded-full aspect-square" },
-    ratio: { portrait: "aspect-[4/5]", square: "aspect-square", landscape: "aspect-[5/4]", auto: "" },
+    shape: { card: "rounded-card", panel: "rounded-panel", thumb: "rounded-2xl" },
+    ratio: { portrait: "aspect-[4/5]", square: "aspect-square", landscape: "aspect-[4/3]", auto: "" },
   },
-  defaultVariants: { shape: "arch", ratio: "portrait" },
+  defaultVariants: { shape: "card", ratio: "portrait" },
 });
 export interface ImageFrameProps extends React.ImgHTMLAttributes<HTMLImageElement>, VariantProps<typeof frameVariants> {
   alt: string;
@@ -20,168 +21,228 @@ export const ImageFrame = React.forwardRef<HTMLImageElement, ImageFrameProps>(({
 ));
 ImageFrame.displayName = "ImageFrame";
 
+/* ---------- Hero ---------- */
 export interface HeroProps extends Omit<React.HTMLAttributes<HTMLElement>, "title"> {
-  eyebrow?: React.ReactNode;
+  image: string;
+  imageAlt?: string;
+  badge?: React.ReactNode;
   title: React.ReactNode;
   description?: React.ReactNode;
-  meta?: React.ReactNode[];
-  media?: React.ReactNode;
-  actions?: React.ReactNode;
+  /** Glass info card at the bottom (thumbnail + caption). */
+  info?: { image?: string; text: React.ReactNode };
+  /** Big stat beside the info card, e.g. a date. */
+  highlight?: { value: string; label: string };
+  nav?: React.ReactNode;
 }
 export const Hero = React.forwardRef<HTMLElement, HeroProps>(
-  ({ className, eyebrow, title, description, meta = [], media, actions, ...p }, ref) => (
-    <section ref={ref} className={cn("px-6 pb-20 pt-16 md:px-10 md:pt-24", className)} {...p}>
-      <div className="mx-auto flex max-w-4xl animate-rise flex-col items-center gap-6 text-center">
-        {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
-        <Heading as="h1" size="display">{title}</Heading>
-        {description && <Text size="lg" className="max-w-xl">{description}</Text>}
-        {meta.length > 0 && (
-          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 font-display text-xl italic text-ink">
-            {meta.map((m, i) => (
-              <React.Fragment key={i}>
-                {i > 0 && <span aria-hidden className="text-accent">·</span>}
-                <span>{m}</span>
-              </React.Fragment>
-            ))}
-          </div>
-        )}
-        {actions && <div className="flex gap-3 pt-2">{actions}</div>}
+  ({ className, image, imageAlt = "", badge, title, description, info, highlight, nav, ...p }, ref) => (
+    <section ref={ref} className={cn("relative isolate min-h-[60rem] overflow-hidden bg-sky text-white", className)} {...p}>
+      <img src={image} alt={imageAlt} className="absolute inset-0 -z-10 size-full object-cover" />
+      <div aria-hidden className="absolute inset-0 -z-10 bg-sky-fade" />
+      <div aria-hidden className="absolute inset-x-0 bottom-0 -z-10 h-48 bg-gradient-to-t from-canvas to-transparent" />
+      {nav}
+      <div className="mx-auto grid max-w-[80rem] gap-10 px-6 pt-44 md:grid-cols-[1fr_auto] md:items-end md:px-[4.5rem]">
+        <div className="flex animate-rise flex-col items-start gap-8">
+          {badge && <Badge variant="glass">{badge}</Badge>}
+          <Heading as="h1" size="display" className="max-w-2xl text-white">{title}</Heading>
+        </div>
+        {description && <Text size="md" className="max-w-[15rem] pb-4 text-white md:text-right">{description}</Text>}
       </div>
-      {media && <div className="mx-auto mt-14 max-w-md">{media}</div>}
+      {(info || highlight) && (
+        <>
+          <div aria-hidden className="mt-24 h-px w-full bg-white/60" />
+          <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-center gap-6 px-6 pt-14">
+            {info && (
+              <div className="flex items-center gap-5 rounded-card border border-glass-line bg-glass p-3 pr-6 backdrop-blur-md">
+                {info.image && <img src={info.image} alt="" className="size-32 rounded-xl object-cover" />}
+                <p className="max-w-40 text-base">{info.text}</p>
+              </div>
+            )}
+            {highlight && (
+              <div className="flex flex-col items-center gap-1 border-l border-white/70 px-6 py-4">
+                <span className="font-display text-7xl leading-none">{highlight.value}</span>
+                <span className="text-base">{highlight.label}</span>
+              </div>
+            )}
+          </div>
+        </>
+      )}
     </section>
   ),
 );
 Hero.displayName = "Hero";
 
-export interface Milestone { label: string; date: string; description?: string }
-export interface TimelineProps extends React.HTMLAttributes<HTMLOListElement> { items: Milestone[] }
-export const Timeline = React.forwardRef<HTMLOListElement, TimelineProps>(({ className, items, ...p }, ref) => (
-  <ol ref={ref} className={cn("relative flex flex-col gap-8 border-l border-line pl-8", className)} {...p}>
-    {items.map((m) => (
-      <li key={m.label} className="relative">
-        <span aria-hidden className="absolute -left-[37px] top-2 size-2.5 rounded-full bg-accent ring-4 ring-paper" />
-        <p className="font-display text-sm italic text-accent">{m.date}</p>
-        <h3 className="font-display text-2xl text-ink">{m.label}</h3>
-        {m.description && <Text size="sm" className="mt-1">{m.description}</Text>}
-      </li>
-    ))}
-  </ol>
-));
-Timeline.displayName = "Timeline";
+/* ---------- CurvedGallery: tilted photos along an arc ---------- */
+export interface CurvedGalleryProps extends React.HTMLAttributes<HTMLDivElement> {
+  images: { src: string; alt: string }[];
+}
+export const CurvedGallery = React.forwardRef<HTMLDivElement, CurvedGalleryProps>(({ className, images, ...p }, ref) => {
+  const mid = (images.length - 1) / 2;
+  return (
+    <div ref={ref} className={cn("flex justify-center gap-4 overflow-hidden py-12", className)} {...p}>
+      {images.map((im, i) => {
+        const d = i - mid;
+        return (
+          <img
+            key={im.src + i}
+            src={im.src}
+            alt={im.alt}
+            loading="lazy"
+            className="aspect-[4/5] w-56 shrink-0 object-cover md:w-80"
+            style={{ transform: `translateY(${d * d * 14}px) rotate(${d * 3}deg)` }}
+          />
+        );
+      })}
+    </div>
+  );
+});
+CurvedGallery.displayName = "CurvedGallery";
 
-const cardVariants = cva("flex flex-col overflow-hidden rounded-card transition-transform duration-500 ease-[var(--ease-gentle)]", {
+/* ---------- Ribbon: yellow scrolling marquee ---------- */
+export interface RibbonProps extends React.HTMLAttributes<HTMLDivElement> {
+  text: string;
+}
+export const Ribbon = React.forwardRef<HTMLDivElement, RibbonProps>(({ className, text, ...p }, ref) => (
+  <div ref={ref} className={cn("overflow-hidden bg-sun py-2 text-sun-ink", className)} {...p}>
+    <div className="flex w-max animate-marquee gap-6 whitespace-nowrap">
+      {Array.from({ length: 12 }).map((_, i) => (
+        <span key={i} className="flex items-center gap-6 text-sm"><span>{text}</span><Blossom /></span>
+      ))}
+    </div>
+  </div>
+));
+Ribbon.displayName = "Ribbon";
+
+/* ---------- Tabs: serif tabs with underline ---------- */
+export interface TabsProps extends React.HTMLAttributes<HTMLDivElement> {
+  items: { label: string; content: React.ReactNode }[];
+  defaultIndex?: number;
+}
+export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(({ className, items, defaultIndex = 0, ...p }, ref) => {
+  const [active, setActive] = React.useState(defaultIndex);
+  const id = React.useId();
+  return (
+    <div ref={ref} className={cn("flex flex-col gap-12", className)} {...p}>
+      <div role="tablist" className="grid border-b border-line" style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0,1fr))` }}>
+        {items.map((it, i) => (
+          <button
+            key={it.label}
+            role="tab"
+            id={`${id}-t${i}`}
+            aria-selected={active === i}
+            aria-controls={`${id}-p${i}`}
+            onClick={() => setActive(i)}
+            className={cn(
+              "-mb-px border-b-2 pb-10 font-display text-2xl transition-colors md:text-3xl focus-visible:outline-none focus-visible:text-sky",
+              active === i ? "border-ink text-ink" : "border-transparent text-ink-faint hover:text-ink-muted",
+            )}
+          >
+            {it.label}
+          </button>
+        ))}
+      </div>
+      <div role="tabpanel" id={`${id}-p${active}`} aria-labelledby={`${id}-t${active}`}>{items[active]?.content}</div>
+    </div>
+  );
+});
+Tabs.displayName = "Tabs";
+
+/* ---------- FeatureCard ---------- */
+const featureVariants = cva("relative flex flex-col justify-end overflow-hidden rounded-card p-7 min-h-80", {
   variants: {
     variant: {
-      outline: "border border-line bg-paper",
-      filled: "bg-surface",
-      ink: "bg-ink text-paper [&_h3]:text-paper [&_p]:text-paper/75",
+      soft: "bg-surface text-ink",
+      photo: "text-white",
     },
   },
-  defaultVariants: { variant: "outline" },
+  defaultVariants: { variant: "soft" },
 });
-export interface EventCardProps extends React.HTMLAttributes<HTMLElement>, VariantProps<typeof cardVariants> {
-  label: string;
-  title: string;
-  details: { term: string; value: string }[];
+export interface FeatureCardProps extends Omit<React.HTMLAttributes<HTMLElement>, "title">, VariantProps<typeof featureVariants> {
+  title: React.ReactNode;
+  description?: React.ReactNode;
+  tag?: React.ReactNode;
   image?: string;
-  imageAlt?: string;
 }
-export const EventCard = React.forwardRef<HTMLElement, EventCardProps>(
-  ({ className, variant, label, title, details, image, imageAlt = "", children, ...p }, ref) => (
-    <article ref={ref} className={cn(cardVariants({ variant }), "hover:-translate-y-1", className)} {...p}>
-      {image && <img src={image} alt={imageAlt} loading="lazy" className="aspect-[16/10] w-full object-cover" />}
-      <div className="flex flex-1 flex-col gap-4 p-8">
-        <Eyebrow>{label}</Eyebrow>
-        <h3 className="font-display text-3xl leading-tight text-ink">{title}</h3>
-        <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
-          {details.map((d) => (
-            <React.Fragment key={d.term}>
-              <dt className="uppercase tracking-widest text-ink-muted opacity-80">{d.term}</dt>
-              <dd className="text-ink">{d.value}</dd>
-            </React.Fragment>
-          ))}
-        </dl>
-        {children}
+export const FeatureCard = React.forwardRef<HTMLElement, FeatureCardProps>(
+  ({ className, variant, title, description, tag, image, ...p }, ref) => (
+    <article ref={ref} className={cn(featureVariants({ variant }), className)} {...p}>
+      {variant === "photo" && image && (
+        <>
+          <img src={image} alt="" loading="lazy" className="absolute inset-0 -z-0 size-full object-cover" />
+          <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+        </>
+      )}
+      <div className="relative flex flex-1 flex-col gap-6">
+        {tag && <span className="self-start rounded-xl bg-surface-strong px-3 py-2 text-base text-ink">{tag}</span>}
+        <span aria-hidden className={cn("h-28 w-px", variant === "photo" ? "bg-white" : "bg-ink")} />
+        <div className="mt-auto flex flex-col gap-4">
+          <h3 className="font-display text-3xl leading-tight">{title}</h3>
+          {description && <p className={cn("text-base leading-relaxed", variant === "photo" ? "text-white/90" : "text-ink-muted")}>{description}</p>}
+        </div>
       </div>
     </article>
   ),
 );
-EventCard.displayName = "EventCard";
+FeatureCard.displayName = "FeatureCard";
 
-export interface CountdownProps extends React.HTMLAttributes<HTMLDivElement> {
+/* ---------- BigCountdown: "120 ✿ Days" ---------- */
+export interface BigCountdownProps extends React.HTMLAttributes<HTMLDivElement> {
   target: Date | string;
+  /** Optional cut-out image placed between number and word. */
+  ornament?: string;
+  unit?: string;
 }
-export const Countdown = React.forwardRef<HTMLDivElement, CountdownProps>(({ className, target, ...p }, ref) => {
-  const t = new Date(target).getTime();
-  const [now, setNow] = React.useState<number | null>(null);
+export const BigCountdown = React.forwardRef<HTMLDivElement, BigCountdownProps>(({ className, target, ornament, unit = "Days", ...p }, ref) => {
+  const [days, setDays] = React.useState<number | null>(null);
   React.useEffect(() => {
-    setNow(Date.now());
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, []);
-  const diff = now === null ? 0 : Math.max(0, t - now);
-  const units = [
-    ["Days", Math.floor(diff / 864e5)],
-    ["Hours", Math.floor(diff / 36e5) % 24],
-    ["Minutes", Math.floor(diff / 6e4) % 60],
-    ["Seconds", Math.floor(diff / 1e3) % 60],
-  ] as const;
+    setDays(Math.max(0, Math.ceil((new Date(target).getTime() - Date.now()) / 864e5)));
+  }, [target]);
   return (
-    <div ref={ref} role="timer" className={cn("grid grid-cols-4 gap-3 md:gap-6", className)} {...p}>
-      {units.map(([label, v]) => (
-        <div key={label} className="flex flex-col items-center gap-1 rounded-card border border-line px-2 py-5">
-          <span className="font-display text-4xl tabular-nums text-ink md:text-6xl">{now === null ? "—" : String(v).padStart(2, "0")}</span>
-          <span className="text-[0.7rem] uppercase tracking-[var(--tracking-eyebrow)] text-ink-muted">{label}</span>
-        </div>
-      ))}
+    <div ref={ref} role="timer" aria-label={`${days ?? ""} ${unit} to go`} className={cn("flex items-start justify-center gap-2 font-display text-[clamp(5rem,14vw,12rem)] leading-none text-ink", className)} {...p}>
+      <span className="tabular-nums">{days ?? "—"}</span>
+      {ornament && <img src={ornament} alt="" className="-mt-4 h-[1.6em] w-auto" />}
+      <span>{unit}</span>
     </div>
   );
 });
-Countdown.displayName = "Countdown";
+BigCountdown.displayName = "BigCountdown";
 
-export interface ScheduleItem { time: string; title: string; description?: string; image?: string }
-export interface ScheduleProps extends React.HTMLAttributes<HTMLOListElement> { items: ScheduleItem[] }
-export const Schedule = React.forwardRef<HTMLOListElement, ScheduleProps>(({ className, items, ...p }, ref) => (
-  <ol ref={ref} className={cn("divide-y divide-line border-y border-line", className)} {...p}>
-    {items.map((it) => (
-      <li key={it.time + it.title} className="group grid grid-cols-[5.5rem_1fr] items-center gap-6 py-6 md:grid-cols-[8rem_1fr_6rem]">
-        <span className="font-display text-xl italic text-accent">{it.time}</span>
-        <div>
-          <h3 className="font-display text-2xl text-ink">{it.title}</h3>
-          {it.description && <Text size="sm" className="mt-1 max-w-lg">{it.description}</Text>}
-        </div>
-        {it.image && (
-          <img src={it.image} alt="" loading="lazy" className="hidden size-20 rounded-full object-cover grayscale-[40%] transition duration-500 group-hover:grayscale-0 md:block" />
-        )}
-      </li>
-    ))}
+/* ---------- Timeline: center line, alternating sides ---------- */
+export interface TimelineItem { time: string; title: string; description?: string; image?: string }
+export interface TimelineProps extends React.HTMLAttributes<HTMLOListElement> { items: TimelineItem[] }
+export const Timeline = React.forwardRef<HTMLOListElement, TimelineProps>(({ className, items, ...p }, ref) => (
+  <ol ref={ref} className={cn("relative mx-auto max-w-5xl", className)} {...p}>
+    <span aria-hidden className="absolute left-4 top-0 h-full w-px bg-ink/80 md:left-1/2" />
+    {items.map((it, i) => {
+      const left = i % 2 === 1;
+      return (
+        <li key={it.time + it.title} className="relative grid py-10 pl-12 md:grid-cols-2 md:pl-0">
+          <span aria-hidden className="absolute left-4 top-12 size-4 -translate-x-1/2 rounded-full bg-ink md:left-1/2" />
+          <div className={cn("flex flex-col gap-4", left ? "md:col-start-1 md:items-end md:pr-16 md:text-right" : "md:col-start-2 md:pl-16")}>
+            <span className="text-base text-ink">{it.time}</span>
+            <h3 className="font-display text-3xl text-ink">{it.title}</h3>
+            {it.description && <p className="max-w-md text-base text-ink-muted">{it.description}</p>}
+            {it.image && <img src={it.image} alt="" loading="lazy" className="size-28 rounded-2xl object-cover" />}
+          </div>
+        </li>
+      );
+    })}
   </ol>
 ));
-Schedule.displayName = "Schedule";
+Timeline.displayName = "Timeline";
 
-export interface GalleryProps extends React.HTMLAttributes<HTMLDivElement> {
-  images: { src: string; alt: string }[];
-}
-export const Gallery = React.forwardRef<HTMLDivElement, GalleryProps>(({ className, images, ...p }, ref) => (
-  <div ref={ref} className={cn("grid grid-cols-2 gap-4 md:grid-cols-[1fr_1fr_1.5fr]", className)} {...p}>
-    {images.map((im, i) => (
-      <ImageFrame key={im.src + i} src={im.src} alt={im.alt} shape={i === 0 ? "arch" : "rounded"} ratio="portrait" className={cn(i === 2 && "col-span-2 md:col-span-1")} />
-    ))}
-  </div>
-));
-Gallery.displayName = "Gallery";
-
+/* ---------- Accordion ---------- */
 export interface AccordionItem { question: string; answer: React.ReactNode }
 export interface AccordionProps extends React.HTMLAttributes<HTMLDivElement> { items: AccordionItem[] }
 export const Accordion = React.forwardRef<HTMLDivElement, AccordionProps>(({ className, items, ...p }, ref) => (
-  <div ref={ref} className={cn("divide-y divide-line border-y border-line", className)} {...p}>
+  <div ref={ref} className={cn("flex flex-col gap-3", className)} {...p}>
     {items.map((it) => (
-      <details key={it.question} className="group">
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-5 font-display text-xl text-ink focus-visible:text-accent focus-visible:outline-none [&::-webkit-details-marker]:hidden">
+      <details key={it.question} className="group rounded-card bg-surface px-7">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-6 font-display text-xl text-ink focus-visible:text-sky focus-visible:outline-none [&::-webkit-details-marker]:hidden">
           {it.question}
-          <span aria-hidden className="text-2xl text-accent transition-transform duration-300 group-open:rotate-45">+</span>
+          <span aria-hidden className="grid size-9 shrink-0 place-items-center rounded-full bg-canvas text-xl transition-transform duration-300 group-open:rotate-45">+</span>
         </summary>
-        <div className="pb-6 pr-10"><Text>{it.answer}</Text></div>
+        <div className="pb-7 pr-12"><Text tone="muted">{it.answer}</Text></div>
       </details>
     ))}
   </div>

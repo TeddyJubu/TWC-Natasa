@@ -1,71 +1,81 @@
-/* Keepsake theme — import once after `@import "tailwindcss";` */
+/* Bloom theme — import once after `@import "tailwindcss";` */
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --ks-paper: #f7f2ec;
-  --ks-surface: #efe6dc;
-  --ks-ink: #2b2522;
-  --ks-ink-muted: #6e625b;
-  --ks-accent: #b7797a;
-  --ks-accent-ink: #fbf7f3;
-  --ks-sage: #8e9a86;
-  --ks-line: #ddd1c4;
-  --ks-danger: #a4473f;
-  --ks-ring: #b7797a;
+  --bl-canvas: #fcfcfa;
+  --bl-surface: #f2f4f7;
+  --bl-surface-strong: #e6e9ee;
+  --bl-ink: #1f1f1c;
+  --bl-ink-muted: #525252;
+  --bl-ink-faint: #b9b9b4;
+  --bl-line: rgb(31 31 28 / 0.1);
+  --bl-sky: #4a8bb8;
+  --bl-sky-ink: #ffffff;
+  --bl-sun: #edd22e;
+  --bl-sun-ink: #1f1f1c;
+  --bl-glass: rgb(255 255 255 / 0.12);
+  --bl-glass-line: rgb(255 255 255 / 0.35);
+  --bl-danger: #c2412d;
 }
 
-.dark {
-  --ks-paper: #1e1916;
-  --ks-surface: #2a2320;
-  --ks-ink: #f1e9e1;
-  --ks-ink-muted: #b4a69c;
-  --ks-accent: #d39a9a;
-  --ks-accent-ink: #1e1916;
-  --ks-sage: #a7b39f;
-  --ks-line: #3d3430;
-  --ks-danger: #e07d72;
-  --ks-ring: #d39a9a;
+/* Night: black sections and dark mode. Tokens invert so components need no tone props. */
+.dark,
+.tone-night {
+  --bl-canvas: #000000;
+  --bl-surface: #121212;
+  --bl-surface-strong: #1f1f1f;
+  --bl-ink: #ffffff;
+  --bl-ink-muted: #c9c9c9;
+  --bl-ink-faint: #5c5c5c;
+  --bl-line: rgb(255 255 255 / 0.14);
+  --bl-danger: #ff8a73;
 }
+.tone-night { background: var(--bl-canvas); color: var(--bl-ink); }
 
 @theme inline {
-  --color-paper: var(--ks-paper);
-  --color-surface: var(--ks-surface);
-  --color-ink: var(--ks-ink);
-  --color-ink-muted: var(--ks-ink-muted);
-  --color-accent: var(--ks-accent);
-  --color-accent-ink: var(--ks-accent-ink);
-  --color-sage: var(--ks-sage);
-  --color-line: var(--ks-line);
-  --color-danger: var(--ks-danger);
-  --color-ring: var(--ks-ring);
+  --color-canvas: var(--bl-canvas);
+  --color-surface: var(--bl-surface);
+  --color-surface-strong: var(--bl-surface-strong);
+  --color-ink: var(--bl-ink);
+  --color-ink-muted: var(--bl-ink-muted);
+  --color-ink-faint: var(--bl-ink-faint);
+  --color-line: var(--bl-line);
+  --color-sky: var(--bl-sky);
+  --color-sky-ink: var(--bl-sky-ink);
+  --color-sun: var(--bl-sun);
+  --color-sun-ink: var(--bl-sun-ink);
+  --color-glass: var(--bl-glass);
+  --color-glass-line: var(--bl-glass-line);
+  --color-danger: var(--bl-danger);
+  --color-ring: var(--bl-sky);
 
-  --font-display: "Cormorant Garamond", Georgia, serif;
-  --font-sans: "Karla", system-ui, sans-serif;
+  --font-display: "Gilda Display", Georgia, serif;
+  --font-sans: "Inter", system-ui, sans-serif;
 
-  --radius-soft: 0.75rem;
-  --radius-card: 1.5rem;
-  --radius-arch: 999px 999px 1.5rem 1.5rem;
+  --radius-control: 0.75rem;
+  --radius-card: 1.25rem;
+  --radius-panel: 2rem;
 
-  --shadow-lift: 0 18px 40px -24px rgb(43 37 34 / 0.35);
-
-  --tracking-eyebrow: 0.28em;
+  --shadow-soft: 0 24px 60px -32px rgb(0 0 0 / 0.35);
   --ease-gentle: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @layer base {
-  html { background: var(--ks-paper); color: var(--ks-ink); }
+  html { background: var(--bl-canvas); color: var(--bl-ink); }
   body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
-  ::selection { background: var(--ks-accent); color: var(--ks-accent-ink); }
 }
 
-@utility rounded-arch {
-  border-radius: var(--radius-arch);
+/* Sky fade used behind hero photography */
+@utility bg-sky-fade {
+  background-image: linear-gradient(180deg, color-mix(in srgb, var(--bl-sky) 92%, transparent) 0%, transparent 55%);
+}
+/* Black panel with a softly arched top edge */
+@utility rounded-dome {
+  border-radius: 50% 50% 0 0 / 7rem 7rem 0 0;
 }
 
-@keyframes ks-rise {
-  from { opacity: 0; transform: translateY(14px); }
-  to { opacity: 1; transform: none; }
-}
-@utility animate-rise {
-  animation: ks-rise 0.9s var(--ease-gentle) both;
-}
+@keyframes bl-rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@utility animate-rise { animation: bl-rise 1s var(--ease-gentle) both; }
+
+@keyframes bl-marquee { to { transform: translateX(-50%); } }
+@utility animate-marquee { animation: bl-marquee 24s linear infinite; }
