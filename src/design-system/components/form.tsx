@@ -103,7 +103,7 @@ export const FormField = React.forwardRef<HTMLDivElement, FormFieldProps>(({ cla
   <div ref={ref} className={cn("flex flex-col gap-2", className)} {...p}>
     <Label htmlFor={htmlFor} index={index} optional={optional}>{label}</Label>
     {children}
-    {error ? <p role="alert" className="font-sans text-xs text-danger">{error}</p> : hint ? <p className="font-sans text-xs text-ink-muted">{hint}</p> : null}
+    {error ? <p id={`${htmlFor}-error`} role="alert" className="font-sans text-xs text-danger">{error}</p> : hint ? <p id={`${htmlFor}-hint`} className="font-sans text-xs text-ink-muted">{hint}</p> : null}
   </div>
 ));
 FormField.displayName = "FormField";

@@ -16,6 +16,8 @@ export const Route = createFileRoute("/components")({
       { name: "description", content: "Every Bloom component with its variants and states." },
       { property: "og:title", content: "Components — Bloom Design System" },
       { property: "og:description", content: "Hero, badges, tabs, ribbons, timelines, forms and more." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Components,
@@ -47,9 +49,9 @@ const sections: { name: string; render: () => React.ReactNode }[] = [
   { name: "Accordion", render: () => <Specimen label="items"><K.Accordion className="w-full" items={[{ question: "Who can apply?", answer: "Anyone building something." }, { question: "Is there a trial?", answer: "Yes, 14 days." }]} /></Specimen> },
   { name: "Input", render: () => <Specimen label='variant="editorial|boxed" · default · filled · focused · error · disabled'>
     <div className="grid w-full gap-8 md:grid-cols-2 lg:grid-cols-3">
-      <K.FormField index="01" label="Full name" htmlFor="input-default" hint="Use the name you introduce yourself with."><K.Input id="input-default" placeholder="Your name" /></K.FormField>
+      <K.FormField index="01" label="Full name" htmlFor="input-default" hint="Use the name you introduce yourself with."><K.Input id="input-default" aria-describedby="input-default-hint" placeholder="Your name" /></K.FormField>
       <K.FormField index="02" label="Studio" htmlFor="input-filled"><K.Input id="input-filled" defaultValue="Common Thread Studio" /></K.FormField>
-      <K.FormField index="03" label="Email" htmlFor="input-error" error="Enter a complete email address."><K.Input id="input-error" aria-invalid aria-describedby="input-error-copy" defaultValue="maya@studio" /></K.FormField>
+      <K.FormField index="03" label="Email" htmlFor="input-error" error="Enter a complete email address."><K.Input id="input-error" aria-invalid aria-describedby="input-error-error" defaultValue="maya@studio" /></K.FormField>
       <K.FormField label="Location" htmlFor="input-boxed"><K.Input id="input-boxed" variant="boxed" placeholder="City, country" /></K.FormField>
       <K.FormField label="Member code" htmlFor="input-disabled"><K.Input id="input-disabled" variant="boxed" disabled value="Assigned after review" readOnly /></K.FormField>
       <K.FormField label="Focus preview" htmlFor="input-focus"><K.Input id="input-focus" variant="boxed" className="border-sky ring-2 ring-ring/20" value="Active field" readOnly /></K.FormField>
