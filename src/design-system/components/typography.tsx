@@ -38,7 +38,7 @@ export const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(({ className,
 ));
 Badge.displayName = "Badge";
 
-const headingVariants = cva("font-display font-normal text-ink text-balance tracking-[-0.01em]", {
+const headingVariants = cva("font-display font-normal text-ink text-balance tracking-[-0.01em] motion-heading", {
   variants: {
     size: {
       display: "text-6xl leading-[1.05] md:text-[6rem]",
@@ -90,7 +90,7 @@ export interface StatProps extends React.HTMLAttributes<HTMLDivElement> {
   label?: string;
 }
 export const Stat = React.forwardRef<HTMLDivElement, StatProps>(({ className, value, label, ...p }, ref) => (
-  <div ref={ref} className={cn("flex flex-col gap-2", className)} {...p}>
+  <div ref={ref} className={cn("motion-stat flex flex-col gap-2", className)} {...p}>
     <span className="font-display text-7xl leading-none text-ink tabular-nums">{value}</span>
     {label && <span className="font-sans text-sm text-ink-muted">{label}</span>}
   </div>

@@ -26,7 +26,7 @@ const sectionVariants = cva("relative py-24 md:py-32", {
 });
 export interface SectionProps extends React.HTMLAttributes<HTMLElement>, VariantProps<typeof sectionVariants> {}
 export const Section = React.forwardRef<HTMLElement, SectionProps>(({ className, tone, ...p }, ref) => (
-  <section ref={ref} className={cn(sectionVariants({ tone }), className)} {...p} />
+  <section ref={ref} className={cn(sectionVariants({ tone }), "motion-section", className)} {...p} />
 ));
 Section.displayName = "Section";
 
@@ -40,7 +40,7 @@ export interface SectionHeaderProps extends Omit<React.HTMLAttributes<HTMLDivEle
 }
 export const SectionHeader = React.forwardRef<HTMLDivElement, SectionHeaderProps>(
   ({ className, badge, title, intro, align = "center", badgeVariant = "soft", ...p }, ref) => (
-    <div ref={ref} className={cn("flex max-w-3xl flex-col gap-7", align === "center" ? "mx-auto items-center text-center" : "items-start", className)} {...p}>
+    <div ref={ref} className={cn("motion-stagger flex max-w-3xl flex-col gap-7", align === "center" ? "mx-auto items-center text-center" : "items-start", className)} {...p}>
       {badge && <Badge variant={badgeVariant}>{badge}</Badge>}
       <Heading>{title}</Heading>
       {intro && <Text className="max-w-lg">{intro}</Text>}
@@ -81,7 +81,7 @@ export const Navbar = React.forwardRef<HTMLElement, NavbarProps>(({ className, v
       <div className="shrink-0">{brand}</div>
       <nav aria-label="Main" className="hidden gap-5 md:flex">
         {links.map((l) => (
-          <a key={l.href + l.label} href={l.href} className="font-sans text-base opacity-95 transition-opacity hover:opacity-70 focus-visible:underline focus-visible:outline-none">
+          <a key={l.href + l.label} href={l.href} className="font-sans text-base opacity-95 transition-[transform,opacity] duration-300 hover:-translate-y-0.5 hover:opacity-70 focus-visible:underline focus-visible:outline-none motion-reduce:transform-none">
             {l.label}
           </a>
         ))}
@@ -101,7 +101,7 @@ export interface FooterProps extends React.HTMLAttributes<HTMLElement> {
 }
 export const Footer = React.forwardRef<HTMLElement, FooterProps>(
   ({ className, brand, statement, contacts = [], links = [], note, children, ...p }, ref) => (
-    <footer ref={ref} className={cn("tone-night pt-24 pb-10", className)} {...p}>
+    <footer ref={ref} className={cn("tone-night motion-section pt-24 pb-10", className)} {...p}>
       <Container className="flex flex-col gap-16">
         <div className="grid gap-10 md:grid-cols-[1.4fr_1fr]">
           <div className="flex flex-col gap-6">
