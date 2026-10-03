@@ -14,4 +14,4 @@
 - [x] Create ten fictional member profiles with cohesive portraits and details
 - [x] Add a reusable member card and dedicated member directory page
 - [x] Reorganize the homepage into a concise member preview linking to the directory
-- [ ] Verify metadata, responsive layouts, interactions, accessibility, and build health
+- [x] Verify metadata, responsive layouts, interactions, accessibility, and build health
