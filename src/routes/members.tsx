@@ -12,8 +12,8 @@ import {
   Section,
   Text,
   buttonVariants,
-  demoMembers,
 } from "@/index";
+import { demoMembers } from "@/design-system/data/members";
 import { Shell } from "@/showcase/Shell";
 
 export const Route = createFileRoute("/members")({

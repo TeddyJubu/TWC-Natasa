@@ -1,5 +1,3 @@
-import "./styles.css";
-
 export { cn } from "./design-system/lib/utils";
 export * from "./design-system/components/brand";
 export * from "./design-system/components/typography";
@@ -11,4 +9,3 @@ export * from "./design-system/components/form";
 export * from "./design-system/components/motion";
 export * from "./design-system/components/image-trail";
 export * from "./design-system/components/member-card";
-export * from "./design-system/data/members";

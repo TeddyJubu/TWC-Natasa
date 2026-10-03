@@ -9,3 +9,7 @@ upstream_versions:
   "@tanstack/react-start": 1.168.60
   react: 19.2.7
   react-dom: 19.2.7
+  ogl: 1.0.11
+  class-variance-authority: 0.7.1
+  clsx: 2.1.1
+  tailwind-merge: 3.7.0

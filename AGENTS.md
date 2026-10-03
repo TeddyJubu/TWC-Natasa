@@ -9,4 +9,4 @@
 - The uploaded constellation artwork is the canonical logo and `ConstellationLogo` owns its fixed color variants — preserves the original geometry across every brand context.
 - Immersive image strips use the self-contained OGL circular gallery with a static reduced-motion fallback — preserves the editorial arc while remaining accessible and attach-safe.
 - Decorative pointer motion uses the self-contained flower `ImageTrail`, disabled for touch and reduced motion — keeps the playful flourish accessible and attach-safe.
-- Demo member profiles live with the design-system data and assets, while the `/members` route provides the preview directory — keeps reusable cards attach-safe and clearly separates fictional sample content.
+- Demo member profiles live in a dedicated data module outside the public barrel, while `MemberCard` remains exported — keeps the reusable API attach-safe without pulling sample portraits into consumer bundles.

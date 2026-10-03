@@ -1,8 +1,9 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import {
   Accordion, Badge, BrandLockup, ConstellationLogo, Container, FeatureCard, Footer,
-  Heading, Hero, ImageFrame, MemberCard, Navbar, Ribbon, Section, SectionHeader, Split, Statement, Text, buttonVariants, demoMembers,
+  Heading, Hero, ImageFrame, MemberCard, Navbar, Ribbon, Section, SectionHeader, Split, Statement, Text, buttonVariants,
 } from "@/index";
+import { demoMembers } from "@/design-system/data/members";
 import { Shell } from "@/showcase/Shell";
 import hero from "@/assets/photography/hero.jpg";
 import event from "@/assets/photography/event.jpg";
