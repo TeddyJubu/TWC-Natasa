@@ -51,7 +51,7 @@ export function MembershipApplication() {
       <header className="motion-stagger border-b border-line bg-paper px-6 py-12 md:px-12 md:py-16">
         <div className="flex items-center justify-between gap-5"><BrandLockup /><span className="rounded-full border border-line px-3 py-1 font-sans text-xs uppercase">New members</span></div>
         <p className="mt-16 font-sans text-xs font-medium uppercase text-ink-muted">Membership application</p>
-        <Heading as="h1" size="display" className="mt-4 max-w-3xl">Tell Us About Your Place in the Constellation</Heading>
+        <Heading as="h1" size="display" className="mt-4 max-w-3xl text-[3.25rem] leading-[1.03] sm:text-6xl md:text-[5.25rem]">Tell Us About Your Place in the Constellation</Heading>
         <Text className="mt-5 max-w-xl">Complete this application so we can learn about you, your work, and how you would like to participate in The Women’s Collective.</Text>
         <FormProgress items={progress} current={0} className="mt-12" />
       </header>
