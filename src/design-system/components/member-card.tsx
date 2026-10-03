@@ -61,7 +61,7 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
           </div>
           <div className="grid shrink-0 grid-rows-[auto_1fr_auto] justify-items-end text-xs text-ink-muted">
             <span aria-label={`Catalogue number ${catalogueNumber ?? 1}`} className={tone?.index}>{String(catalogueNumber ?? 1).padStart(2, "0")}</span>
-            <span className={cn("max-w-24 text-right leading-relaxed", tone?.label)}>{member.neighborhood}</span>
+            <span className={cn("row-start-3 max-w-24 self-start text-right leading-relaxed", tone?.label)}>{member.neighborhood}</span>
           </div>
         </div>
         <div className={cn("aspect-[4/5] overflow-hidden p-3 sm:p-4", tone?.wash ?? "bg-surface")}>
