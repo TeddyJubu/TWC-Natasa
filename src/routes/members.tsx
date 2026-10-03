@@ -35,13 +35,13 @@ const neighborhoods = ["All", ...Array.from(new Set(demoMembers.map((member) => 
 
 /** Each filter chip lights up in its neighborhood's own color when selected. */
 const neighborhoodFill: Record<string, string> = {
-  "Long Island City": "bg-lic",
-  Astoria: "bg-astoria",
-  Sunnyside: "bg-sunnyside",
-  "Jackson Heights": "bg-jackson-heights",
-  "Forest Hills": "bg-forest-hills",
-  Elmhurst: "bg-elmhurst",
-  "Rego Park": "bg-rego-park",
+  "Long Island City": "bg-lic hover:bg-lic",
+  Astoria: "bg-astoria hover:bg-astoria",
+  Sunnyside: "bg-sunnyside hover:bg-sunnyside",
+  "Jackson Heights": "bg-jackson-heights hover:bg-jackson-heights",
+  "Forest Hills": "bg-forest-hills hover:bg-forest-hills",
+  Elmhurst: "bg-elmhurst hover:bg-elmhurst",
+  "Rego Park": "bg-rego-park hover:bg-rego-park",
 };
 
 function MembersPage() {
