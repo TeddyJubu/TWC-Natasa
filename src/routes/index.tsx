@@ -1,8 +1,7 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import {
-  Accordion, BigCountdown, Container, CurvedGallery, FeatureCard, FormField, Hero, ImageFrame, Input,
-  Navbar, Ribbon, Section, SectionHeader, Select, Split, Stat, Statement, Tabs, Text, Textarea, Timeline, Footer,
-  Badge, Heading, Wordmark, buttonVariants,
+  Accordion, Badge, BrandLockup, ConstellationLogo, Container, CurvedGallery, FeatureCard, Footer,
+  Heading, Hero, ImageFrame, Navbar, Ribbon, Section, SectionHeader, Split, Statement, Text, buttonVariants,
 } from "@/index";
 import { Shell } from "@/showcase/Shell";
 import hero from "@/assets/photography/hero.jpg";
@@ -10,134 +9,123 @@ import p1 from "@/assets/photography/portrait-1.jpg";
 import p2 from "@/assets/photography/portrait-2.jpg";
 import p3 from "@/assets/photography/portrait-3.jpg";
 import event from "@/assets/photography/event.jpg";
-import flower from "@/assets/illustrations/flower.png";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Bloom — Sky, sun and serif design system" },
-      { name: "description", content: "A bright editorial design system for community and membership websites." },
-      { property: "og:title", content: "Bloom — Sky, sun and serif design system" },
-      { property: "og:description", content: "A bright editorial design system for community and membership websites." },
+      { title: "The Women’s Collective — Find your people in Queens" },
+      { name: "description", content: "A community for women founders, entrepreneurs, creatives, freelancers, professionals, and neighbors across Western Queens." },
+      { property: "og:title", content: "The Women’s Collective — Find your people in Queens" },
+      { property: "og:description", content: "Meet, share knowledge, support women’s work, and build real relationships close to home." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: Sample,
+  component: HomePage,
 });
 
 const links = [
-  { label: "About", href: "#about" },
-  { label: "Programs", href: "#programs" },
-  { label: "Events", href: "#events" },
+  { label: "Our mission", href: "#mission" },
+  { label: "Our constellation", href: "#constellation" },
+  { label: "Take part", href: "#take-part" },
   { label: "Join", href: "/join" },
 ];
 
-function StoryPanel({ img, title, year, body }: { img: string; title: string; year: string; body: string }) {
-  return (
-    <div className="grid gap-12 md:grid-cols-2">
-      <div className="flex flex-col gap-6">
-        <Text>{body}</Text>
-        <ImageFrame src={img} alt="" shape="thumb" ratio="square" className="w-32" />
-        <div className="flex items-end justify-between gap-6">
-          <Heading as="h3" size="title" className="max-w-40">{title}</Heading>
-          <Stat value={year} />
-        </div>
-      </div>
-      <div className="relative grid min-h-96 place-items-center overflow-hidden rounded-card bg-black">
-        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2"><Ribbon text={title} /></div>
-        <ImageFrame src={img} alt="" shape="card" ratio="auto" className="relative h-60 w-60" />
-      </div>
-    </div>
-  );
-}
+const neighborhoods = [
+  { name: "Long Island City", color: "bg-lic", logo: "long-island-city" as const },
+  { name: "Sunnyside", color: "bg-sunnyside", logo: "sunnyside" as const },
+  { name: "Astoria", color: "bg-astoria", logo: "astoria" as const },
+  { name: "Jackson Heights", color: "bg-jackson-heights", logo: "jackson-heights" as const },
+  { name: "Elmhurst", color: "bg-elmhurst", logo: "elmhurst" as const },
+  { name: "Forest Hills", color: "bg-forest-hills", logo: "forest-hills" as const },
+  { name: "Rego Park", color: "bg-rego-park", logo: "rego-park" as const },
+];
 
-function Sample() {
+function HomePage() {
   return (
     <Shell bare>
       <Hero
         image={hero}
-        imageAlt="Woman in a white suit standing in a yellow flower field"
-        nav={<Navbar variant="overlay" brand={<Wordmark>Bloom</Wordmark>} links={links} action={<Link to="/join" className={buttonVariants({ variant: "white" })}>Become a member</Link>} />}
-        badge="A Community of Makers"
-        title="Bold Ideas, One Brilliant Circle"
-        description="Placeholder intro line that sits quietly on the right of the hero."
-        info={{ image: event, text: "Spring Summit, Rooftop Hall" }}
-        highlight={{ value: "24", label: "April 2027" }}
+        imageAlt="Woman standing in a field beneath an open sky"
+        nav={<Navbar variant="overlay" brand={<BrandLockup logoVariant="white" compact />} links={links} action={<Link to="/join" className={buttonVariants({ variant: "white" })}>Join the collective</Link>} />}
+        badge="Western Queens, New York"
+        title="Find Your People. Help Someone Else Shine."
+        description="For women building businesses, careers, creative work, and real relationships close to home."
+        info={{ image: event, text: "A generous, engaged community across Queens." }}
+        highlight={{ value: "7", label: "Neighborhood colors" }}
       />
 
-      <Section id="about" className="pt-8">
+      <Section id="mission" className="pt-12">
         <Container className="flex flex-col items-center gap-10 text-center">
-          <Badge>A Community of Makers</Badge>
-          <Statement lead={2} text="We're building something together. A short statement fades from ink to faint grey so one phrase leads the eye." />
-          <Link to="/join" className={buttonVariants()}>Join the circle</Link>
+          <Badge>Our mission</Badge>
+          <Statement lead={4} text="The Women’s Collective brings women across Queens together to meet, share knowledge, support one another’s work, and build real relationships close to home." />
+          <Text size="lg" className="max-w-3xl">When women know who is around them, they can recommend each other, collaborate, show up for each other’s events, and create opportunities that would be harder to build alone.</Text>
+          <Link to="/join" className={buttonVariants()}>Introduce yourself</Link>
         </Container>
       </Section>
-      <CurvedGallery images={[{ src: p3, alt: "" }, { src: p1, alt: "" }, { src: p2, alt: "" }, { src: p3, alt: "" }, { src: p1, alt: "" }]} />
 
-      <Section id="programs">
+      <CurvedGallery images={[{ src: p3, alt: "Woman smiling outdoors" }, { src: p1, alt: "Creative professional portrait" }, { src: p2, alt: "Woman entrepreneur portrait" }, { src: p3, alt: "Woman smiling outdoors" }, { src: p1, alt: "Creative professional portrait" }]} />
+
+      <Section id="take-part">
         <Container className="flex flex-col gap-16">
-          <SectionHeader badge="Programs" title="Three Paths, One Shared Journey" />
-          <Tabs items={[
-            { label: "Mentorship", content: <StoryPanel img={p2} title="Mentorship" year="2019" body="Tabs swap a two-column panel: body copy, a small thumbnail, a serif label and an oversized number on the left; a black media card with a yellow ribbon on the right." /> },
-            { label: "Masterclasses", content: <StoryPanel img={p1} title="Masterclasses" year="2022" body="Each panel shares the same rhythm so switching tabs feels calm and predictable." /> },
-            { label: "Gatherings", content: <StoryPanel img={p3} title="Gatherings" year="2025" body="Keep body copy to a short paragraph — the serif headline carries the tone." /> },
-          ]} />
+          <SectionHeader badge="Inside the collective" title="Connections That Move Work Forward" intro="Not networking for networking’s sake. This is a place to build genuine relationships and support women-owned work." />
+          <div className="grid gap-3 md:grid-cols-3">
+            <FeatureCard tag="01" title="Share What You Do" description="Introduce your business, work, or project and help neighbors understand what you bring." className="bg-mint" />
+            <FeatureCard variant="photo" image={event} title="Find Collaborators" description="Build partnerships, exchange referrals, and discover opportunities through people nearby." />
+            <FeatureCard tag="03" title="Show Up Locally" description="Promote women-owned businesses and learn about gatherings, events, and meetups across Queens." className="bg-lilac" />
+          </div>
         </Container>
       </Section>
 
-      <Section tone="dome" id="events">
+      <Section tone="dome" id="constellation">
         <Container className="flex flex-col gap-16">
           <div className="flex flex-col items-center gap-7 text-center">
-            <Badge variant="solid">Save the Date</Badge>
-            <Heading className="max-w-xl">A Season Worth Showing Up For</Heading>
+            <Badge variant="solid">Our constellation</Badge>
+            <ConstellationLogo variant="white" size="display" />
+            <Heading className="max-w-3xl">Every Connection Makes the Whole Community Stronger</Heading>
+            <Text className="max-w-2xl">Each neighborhood has its own identity and color. The central star is the point where those neighborhoods and connections meet.</Text>
           </div>
-          <div className="grid gap-3 md:grid-cols-[1fr_1.9fr_1fr]">
-            <FeatureCard tag="Rooftop Hall, Level 12" title="Summit" className="tone-light" />
-            <FeatureCard variant="photo" image={event} title="Talks, Dinner & A Night to Remember" description="Photo cards carry a white rule, a serif title and a short paragraph over a soft dark gradient." />
-            <FeatureCard tag="7:00 PM" title="Mixer" className="tone-light" />
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {neighborhoods.map((item) => (
+              <article key={item.name} className={`${item.color} motion-scroll-reveal flex min-h-56 flex-col justify-between rounded-card p-6 text-white`}>
+                <ConstellationLogo variant={item.logo} size="sm" className="brightness-0 invert" aria-hidden alt="" />
+                <h3 className="font-display text-3xl">{item.name}</h3>
+              </article>
+            ))}
           </div>
+          <Split media={<ImageFrame src={p2} alt="A woman in the collective" shape="panel" ratio="square" />}>
+            <Badge variant="solid">Constellation Captain</Badge>
+            <Heading as="h3" size="section">Meet Shauna</Heading>
+            <Text size="lg">Shauna helps bring women together across the different areas and keeps the connections active and personal.</Text>
+          </Split>
         </Container>
       </Section>
-      <Section tone="night" className="pt-8">
-        <Container className="flex flex-col items-center gap-24">
-          <div className="flex flex-col items-center gap-10">
-            <Badge variant="solid">Counting Down</Badge>
-            <BigCountdown target="2027-04-24" ornament={flower} />
-          </div>
-          <SectionHeader badgeVariant="solid" badge="Agenda" title="Shape of the Day" intro="A centered line with alternating entries, small rounded thumbnails and white dots." />
-          <Timeline className="w-full" items={[
-            { time: "09:00 AM", title: "Arrival & Coffee", description: "Short description for this moment.", image: event },
-            { time: "10:30 AM", title: "Founder Keynote", description: "Short description for this moment.", image: p2 },
-            { time: "01:00 PM", title: "Roundtables", description: "Short description for this moment.", image: p1 },
-            { time: "06:30 PM", title: "Evening Mixer", description: "Short description for this moment.", image: p3 },
-          ]} />
-        </Container>
-      </Section>
+
+      <div className="overflow-hidden"><Ribbon text="Long Island City · Astoria · Sunnyside · Woodside · Jackson Heights · Elmhurst · Forest Hills · Rego Park" /></div>
 
       <Section className="bg-paper">
         <Container className="flex flex-col items-center gap-10 text-center">
-          <SectionHeader badge="Membership" title="Will You Join Us?" intro="The full application opens on its own page — answer each section at your own pace and submit when you're ready." />
+          <SectionHeader badge="Membership" title="There Is Room in This Constellation" intro="The application helps us learn about you, your work, and how you would like to participate in the community." />
           <Link to="/join" className={buttonVariants({ variant: "primary", size: "lg" })}>Start your application</Link>
         </Container>
       </Section>
 
       <Section>
         <Container width="narrow" className="flex flex-col gap-14">
-          <SectionHeader badge="FAQs" title="Questions" intro="Rounded soft panels that open with a rotating plus." />
+          <SectionHeader badge="A collective for Queens" title="Come As You Are" />
           <Accordion items={[
-            { question: "Who can apply?", answer: "Placeholder answer copy." },
-            { question: "How often do you meet?", answer: "Placeholder answer copy." },
-            { question: "Is there a trial?", answer: "Placeholder answer copy." },
+            { question: "Who is the collective for?", answer: "Women founders, entrepreneurs, creatives, freelancers, professionals, and neighbors who want to contribute to a generous, engaged community." },
+            { question: "Which neighborhoods are included?", answer: "Long Island City, Astoria, Sunnyside, Woodside, Jackson Heights, Elmhurst, East Elmhurst, Forest Hills, Rego Park, and surrounding Queens neighborhoods." },
+            { question: "Is the community inclusive?", answer: "Yes. We welcome women from all backgrounds, including moms, married and single women, LGBTQ+ members, non-binary people who feel aligned with the community, immigrants, international members, and people from diverse cultures." },
           ]} />
         </Container>
       </Section>
+
       <Footer
-        brand={<Wordmark>Bloom</Wordmark>}
-        statement="A short closing line in large serif."
-        contacts={[{ label: "Phone", value: "(000) 123-4567" }, { label: "Email", value: "hello@example.com", href: "mailto:hello@example.com" }]}
-        links={[{ label: "Privacy Policy", href: "#" }, { label: "Terms", href: "#" }]}
-        note="© 2027 Bloom"
+        brand={<BrandLockup logoVariant="white" />}
+        statement="Find your people, share what you do, and help someone else shine."
+        links={[{ label: "Our mission", href: "#mission" }, { label: "Join", href: "/join" }]}
+        note="The Women’s Collective · Western Queens"
       />
     </Shell>
   );
