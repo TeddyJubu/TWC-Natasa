@@ -55,8 +55,8 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(({ cla
   return (
     <label htmlFor={cid} className={cn("group inline-flex cursor-pointer items-start gap-3 text-sm text-ink transition-opacity has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50", className)}>
       <input ref={ref} id={cid} type="checkbox" className="peer sr-only" {...p} />
-      <span aria-hidden className="mt-0.5 grid size-5 shrink-0 place-items-center border border-line bg-canvas transition-[transform,background-color,border-color] duration-300 ease-[var(--ease-snap)] group-hover:scale-105 peer-checked:border-ink peer-checked:bg-ink peer-checked:scale-105 peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-canvas motion-reduce:transform-none motion-reduce:transition-none">
-        <svg viewBox="0 0 16 16" className="size-3 scale-50 text-canvas opacity-0 peer-checked:[animation:bl-check_var(--duration-base)_var(--ease-snap)_both]" fill="none" stroke="currentColor" strokeWidth="2"><path d="m3 8 3 3 7-7" /></svg>
+      <span aria-hidden className="mt-0.5 grid size-5 shrink-0 place-items-center border border-line bg-canvas transition-[transform,background-color,border-color] duration-300 ease-[var(--ease-snap)] group-hover:scale-105 peer-checked:scale-105 peer-checked:border-ink peer-checked:bg-ink peer-checked:[&>svg]:[animation:bl-check_var(--duration-base)_var(--ease-snap)_both] peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-canvas motion-reduce:transform-none motion-reduce:transition-none">
+        <svg viewBox="0 0 16 16" className="size-3 scale-50 text-canvas opacity-0" fill="none" stroke="currentColor" strokeWidth="2"><path d="m3 8 3 3 7-7" /></svg>
       </span>
       <span><span className="block">{label}</span>{description && <span className="mt-1 block text-xs leading-relaxed text-ink-muted">{description}</span>}</span>
     </label>
