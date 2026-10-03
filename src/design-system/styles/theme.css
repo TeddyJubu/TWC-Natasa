@@ -146,10 +146,16 @@
   70% { transform: translateX(0.2rem); }
 }
 
+@keyframes bl-route-in {
+  from { opacity: 0; transform: translateY(0.5rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 @utility motion-panel-in { animation: bl-panel-in var(--duration-base) var(--ease-gentle) both; }
 @utility motion-heading { animation: bl-heading-in var(--duration-slow) var(--ease-gentle) both; }
 @utility motion-float { transition: transform var(--duration-base) var(--ease-snap), box-shadow var(--duration-base) var(--ease-snap); }
 @utility motion-stat { transition: transform var(--duration-base) var(--ease-snap); }
+@utility motion-route-in { animation: bl-route-in var(--duration-base) var(--ease-gentle) both; }
 
 .motion-float:hover { transform: translateY(-0.25rem) rotate(-0.3deg); box-shadow: var(--shadow-soft); }
 .motion-stat:hover { transform: translateY(-0.2rem); }

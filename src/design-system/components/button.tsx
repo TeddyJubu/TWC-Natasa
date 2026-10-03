@@ -22,15 +22,22 @@ export const buttonVariants = cva(
 );
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
+  /** Visual feedback for asynchronous actions. */
+  state?: "idle" | "loading" | "success";
+  /** @deprecated Prefer `state="loading"`. */
   loading?: boolean;
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, loading, disabled, children, ...p }, ref) => (
-    <button ref={ref} className={cn(buttonVariants({ variant, size }), className)} disabled={disabled || loading} aria-busy={loading || undefined} {...p}>
-      {loading && <span aria-hidden className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />}
-      {children}
+  ({ className, variant, size, state = "idle", loading, disabled, children, ...p }, ref) => {
+    const resolvedState = loading ? "loading" : state;
+    return (
+    <button ref={ref} className={cn(buttonVariants({ variant, size }), resolvedState === "success" && "bg-mint text-ink", className)} disabled={disabled || resolvedState === "loading"} aria-busy={resolvedState === "loading" || undefined} {...p}>
+      {resolvedState === "loading" && <span aria-hidden className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />}
+      {resolvedState === "success" && <span aria-hidden className="animate-[bl-check_var(--duration-base)_var(--ease-snap)_both]">✓</span>}
+      <span>{resolvedState === "success" ? "Complete" : children}</span>
     </button>
-  ),
+    );
+  },
 );
 Button.displayName = "Button";
