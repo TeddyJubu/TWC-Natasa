@@ -9,6 +9,13 @@ import p1 from "@/assets/photography/portrait-1.jpg";
 import p2 from "@/assets/photography/portrait-2.jpg";
 import p3 from "@/assets/photography/portrait-3.jpg";
 import event from "@/assets/photography/event.jpg";
+import neighborhoodLic from "@/assets/photography/neighborhood-lic.jpg";
+import neighborhoodSunnyside from "@/assets/photography/neighborhood-sunnyside.jpg";
+import neighborhoodAstoria from "@/assets/photography/neighborhood-astoria.jpg";
+import neighborhoodJacksonHeights from "@/assets/photography/neighborhood-jackson-heights.jpg";
+import neighborhoodElmhurst from "@/assets/photography/neighborhood-elmhurst.jpg";
+import neighborhoodForestHills from "@/assets/photography/neighborhood-forest-hills.jpg";
+import neighborhoodRegoPark from "@/assets/photography/neighborhood-rego-park.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -32,13 +39,13 @@ const links = [
 ];
 
 const neighborhoods = [
-  { name: "Long Island City", color: "bg-lic", logo: "long-island-city" as const },
-  { name: "Sunnyside", color: "bg-sunnyside", logo: "sunnyside" as const },
-  { name: "Astoria", color: "bg-astoria", logo: "astoria" as const },
-  { name: "Jackson Heights", color: "bg-jackson-heights", logo: "jackson-heights" as const },
-  { name: "Elmhurst", color: "bg-elmhurst", logo: "elmhurst" as const },
-  { name: "Forest Hills", color: "bg-forest-hills", logo: "forest-hills" as const },
-  { name: "Rego Park", color: "bg-rego-park", logo: "rego-park" as const },
+  { name: "Long Island City", image: neighborhoodLic, overlay: "from-lic via-lic/55", logo: "long-island-city" as const },
+  { name: "Sunnyside", image: neighborhoodSunnyside, overlay: "from-sunnyside via-sunnyside/55", logo: "sunnyside" as const },
+  { name: "Astoria", image: neighborhoodAstoria, overlay: "from-astoria via-astoria/55", logo: "astoria" as const },
+  { name: "Jackson Heights", image: neighborhoodJacksonHeights, overlay: "from-jackson-heights via-jackson-heights/55", logo: "jackson-heights" as const },
+  { name: "Elmhurst", image: neighborhoodElmhurst, overlay: "from-elmhurst via-elmhurst/55", logo: "elmhurst" as const },
+  { name: "Forest Hills", image: neighborhoodForestHills, overlay: "from-forest-hills via-forest-hills/55", logo: "forest-hills" as const },
+  { name: "Rego Park", image: neighborhoodRegoPark, overlay: "from-rego-park via-rego-park/55", logo: "rego-park" as const },
 ];
 
 function HomePage() {
@@ -87,9 +94,13 @@ function HomePage() {
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {neighborhoods.map((item) => (
-              <article key={item.name} className={`${item.color} motion-scroll-reveal flex min-h-56 flex-col justify-between rounded-card p-6 text-white`}>
-                <ConstellationLogo variant={item.logo} size="sm" className="brightness-0 invert" aria-hidden alt="" />
-                <h3 className="font-display text-3xl">{item.name}</h3>
+              <article key={item.name} className="group motion-scroll-reveal relative flex min-h-72 overflow-hidden rounded-card text-white">
+                <img src={item.image} alt={`${item.name}, Queens`} loading="lazy" width={768} height={768} className="absolute inset-0 size-full object-cover transition-transform duration-slow ease-gentle group-hover:scale-105" />
+                <div className={`absolute inset-0 bg-gradient-to-t ${item.overlay} to-transparent`} aria-hidden />
+                <div className="relative z-10 flex w-full flex-col justify-between p-6">
+                  <ConstellationLogo variant={item.logo} size="sm" className="brightness-0 invert" aria-hidden alt="" />
+                  <h3 className="font-display text-3xl">{item.name}</h3>
+                </div>
               </article>
             ))}
           </div>
