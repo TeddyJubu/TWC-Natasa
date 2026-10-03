@@ -108,5 +108,6 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
       </>
     )}
   </article>
-));
+  );
+});
 MemberCard.displayName = "MemberCard";
