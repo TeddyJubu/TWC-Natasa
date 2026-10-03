@@ -18,7 +18,7 @@ export const Route = createFileRoute("/typography")({
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="grid gap-3 border-b border-line py-8 md:grid-cols-[14rem_1fr]">
+    <div className="motion-scroll-reveal grid gap-3 border-b border-line py-8 md:grid-cols-[14rem_1fr]">
       <code className="text-xs text-ink-muted">{label}</code>
       <div>{children}</div>
     </div>
@@ -31,8 +31,8 @@ function Typography() {
       <div className="flex flex-col gap-14">
         <SectionHeader badge="Foundations" title="Typography" />
         <div className="grid gap-5 md:grid-cols-2">
-          <div className="rounded-card bg-surface p-8"><p className="font-display text-6xl">Gilda Display</p><Text tone="muted" className="mt-3">font-display · 400 · headings, numbers, wordmark</Text></div>
-          <div className="rounded-card bg-surface p-8"><p className="font-sans text-5xl">Inter</p><Text tone="muted" className="mt-3">font-sans · 400, 500 · body, buttons, badges</Text></div>
+          <div className="motion-float rounded-card bg-surface p-8"><p className="font-display text-6xl">Gilda Display</p><Text tone="muted" className="mt-3">font-display · 400 · headings, numbers, wordmark</Text></div>
+          <div className="motion-float rounded-card bg-surface p-8"><p className="font-sans text-5xl">Inter</p><Text tone="muted" className="mt-3">font-sans · 400, 500 · body, buttons, badges</Text></div>
         </div>
         <div>
           <Row label='<Heading size="display">'><Heading as="h3" size="display">Bold Ideas, One Circle</Heading></Row>

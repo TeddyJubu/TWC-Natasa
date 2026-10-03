@@ -130,6 +130,48 @@
   100% { opacity: 1; transform: scale(1) rotate(0); }
 }
 
+@keyframes bl-panel-in {
+  from { opacity: 0; transform: translateY(0.75rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bl-heading-in {
+  from { opacity: 0; transform: translateY(0.45em); clip-path: inset(0 0 100% 0); }
+  to { opacity: 1; transform: translateY(0); clip-path: inset(0); }
+}
+
+@keyframes bl-error {
+  0%, 100% { transform: translateX(0); }
+  35% { transform: translateX(-0.2rem); }
+  70% { transform: translateX(0.2rem); }
+}
+
+@keyframes bl-route-in {
+  from { opacity: 0; transform: translateY(0.5rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@utility motion-panel-in { animation: bl-panel-in var(--duration-base) var(--ease-gentle) both; }
+@utility motion-heading { animation: bl-heading-in var(--duration-slow) var(--ease-gentle) both; }
+@utility motion-float { transition: transform var(--duration-base) var(--ease-snap), box-shadow var(--duration-base) var(--ease-snap); }
+@utility motion-stat { transition: transform var(--duration-base) var(--ease-snap); }
+@utility motion-route-in { animation: bl-route-in var(--duration-base) var(--ease-gentle) both; }
+
+.motion-float:hover { transform: translateY(-0.25rem) rotate(-0.3deg); box-shadow: var(--shadow-soft); }
+.motion-stat:hover { transform: translateY(-0.2rem); }
+.motion-stagger > * { animation: bl-reveal var(--duration-slow) var(--ease-gentle) both; }
+.motion-stagger > :nth-child(2) { animation-delay: 100ms; }
+.motion-stagger > :nth-child(3) { animation-delay: 180ms; }
+.motion-stagger > :nth-child(4) { animation-delay: 260ms; }
+[aria-invalid="true"] { animation: bl-error var(--duration-base) var(--ease-snap); }
+.motion-observed {
+  opacity: 0;
+  transform: translateY(1.25rem);
+  transition: opacity var(--duration-slow) var(--ease-gentle), transform var(--duration-slow) var(--ease-gentle), filter var(--duration-slow) var(--ease-gentle);
+}
+.motion-observed-blur { filter: blur(0.5rem); }
+.motion-observed[data-visible="true"] { opacity: 1; transform: translateY(0); filter: blur(0); }
+
 @media (prefers-reduced-motion: no-preference) {
   @supports (animation-timeline: view()) {
     .motion-scroll-reveal {
@@ -151,6 +193,8 @@
     transition-duration: 0.01ms !important;
   }
   .animate-marquee { animation-play-state: paused; }
+  .motion-observed { opacity: 1; transform: none; filter: none; }
+  .motion-gallery-item { transform: none !important; }
 }
 
 /* Force light tokens inside a night block (e.g. light cards on a black section) */

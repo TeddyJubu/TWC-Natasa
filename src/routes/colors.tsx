@@ -39,8 +39,8 @@ function Colors() {
         {["", "tone-night rounded-panel p-8"].map((wrap) => (
           <div key={wrap} className={`grid grid-cols-2 gap-5 md:grid-cols-4 ${wrap}`}>
             {tokens.map(([name, role, cls]) => (
-              <div key={name} className="flex flex-col gap-3">
-                <div className={`${cls} flex aspect-[4/3] items-end rounded-card border border-line p-5 font-display text-3xl`}>Aa</div>
+              <div key={name} className="motion-scroll-reveal group flex flex-col gap-3">
+                <div className={`${cls} flex aspect-[4/3] items-end rounded-card border border-line p-5 font-display text-3xl transition-[transform,box-shadow] duration-300 ease-[var(--ease-snap)] group-hover:-translate-y-1 group-hover:shadow-soft motion-reduce:transform-none`}>Aa</div>
                 <div><code className="text-sm text-ink">{name}</code><p className="text-sm text-ink-muted">{role}</p></div>
               </div>
             ))}

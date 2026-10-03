@@ -11,6 +11,7 @@ import p2 from "@/assets/photography/portrait-2.jpg";
 import p3 from "@/assets/photography/portrait-3.jpg";
 import event from "@/assets/photography/event.jpg";
 import flower from "@/assets/illustrations/flower.png";
+import { MembershipApplication } from "@/showcase/MembershipApplication";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -112,20 +113,13 @@ function Sample() {
             { time: "01:00 PM", title: "Roundtables", description: "Short description for this moment.", image: p1 },
             { time: "06:30 PM", title: "Evening Mixer", description: "Short description for this moment.", image: p3 },
           ]} />
-          <div id="join" className="w-full">
-            <Split media={<ImageFrame src={event} alt="Members chatting at an evening event" ratio="square" />}>
-              <Badge variant="solid" className="self-start">Membership</Badge>
-              <Heading>Will You Join Us?</Heading>
-              <Text>Forms sit on night sections with soft surface inputs and a sky-blue submit.</Text>
-              <form className="grid gap-5 md:grid-cols-2" onSubmit={(e) => e.preventDefault()}>
-                <FormField label="Name" htmlFor="n"><Input id="n" placeholder="Jane Smith" /></FormField>
-                <FormField label="Email" htmlFor="e"><Input id="e" type="email" placeholder="jane@company.com" /></FormField>
-                <FormField className="md:col-span-2" label="Plan" htmlFor="pl"><Select id="pl"><option>Founder</option><option>Studio</option></Select></FormField>
-                <FormField className="md:col-span-2" label="Message" htmlFor="m"><Textarea id="m" placeholder="Tell us about your work" /></FormField>
-                <Button className="md:col-span-2">Submit</Button>
-              </form>
-            </Split>
-          </div>
+        </Container>
+      </Section>
+
+      <Section id="join" className="bg-paper">
+        <Container>
+          <SectionHeader badge="Membership" title="Will You Join Us?" intro="A complete application built for thoughtful review, clear consent, and expressive member stories." />
+          <div className="mt-16 overflow-hidden rounded-panel border border-line shadow-soft"><MembershipApplication /></div>
         </Container>
       </Section>
 

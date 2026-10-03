@@ -42,18 +42,18 @@ export const Hero = React.forwardRef<HTMLElement, HeroProps>(
       <div aria-hidden className="absolute inset-x-0 bottom-0 -z-10 h-48 bg-gradient-to-t from-canvas to-transparent" />
       {nav}
       <div className="mx-auto grid max-w-[80rem] gap-10 px-6 pt-44 md:grid-cols-[1fr_auto] md:items-end md:px-[4.5rem]">
-        <div className="flex animate-rise flex-col items-start gap-8">
+        <div className="motion-stagger flex flex-col items-start gap-8">
           {badge && <Badge variant="glass">{badge}</Badge>}
           <Heading as="h1" size="display" className="max-w-2xl text-white">{title}</Heading>
         </div>
-        {description && <Text size="md" className="max-w-[15rem] pb-4 text-white md:text-right">{description}</Text>}
+        {description && <Text size="md" className="motion-reveal max-w-[15rem] pb-4 text-white md:text-right">{description}</Text>}
       </div>
       {(info || highlight) && (
         <>
           <div aria-hidden className="mt-24 h-px w-full bg-white/60" />
           <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-center gap-6 px-6 pt-14">
             {info && (
-              <div className="flex items-center gap-5 rounded-card border border-glass-line bg-glass p-3 pr-6 backdrop-blur-md">
+              <div className="motion-float flex items-center gap-5 rounded-card border border-glass-line bg-glass p-3 pr-6 backdrop-blur-md">
                 {info.image && <img src={info.image} alt="" className="size-32 rounded-xl object-cover" />}
                 <p className="max-w-40 text-base">{info.text}</p>
               </div>
@@ -88,7 +88,7 @@ export const CurvedGallery = React.forwardRef<HTMLDivElement, CurvedGalleryProps
             src={im.src}
             alt={im.alt}
             loading="lazy"
-            className="aspect-[4/5] w-56 shrink-0 object-cover md:w-80"
+            className="motion-gallery-item aspect-[4/5] w-56 shrink-0 object-cover transition-[filter,opacity] duration-700 md:w-80"
             style={{ transform: `translateY(${d * d * 14}px) rotate(${d * 3}deg)` }}
           />
         );
@@ -141,7 +141,7 @@ export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(({ className, it
           </button>
         ))}
       </div>
-      <div role="tabpanel" id={`${id}-p${active}`} aria-labelledby={`${id}-t${active}`}>{items[active]?.content}</div>
+      <div key={active} role="tabpanel" id={`${id}-p${active}`} aria-labelledby={`${id}-t${active}`} className="motion-panel-in">{items[active]?.content}</div>
     </div>
   );
 });
@@ -216,13 +216,13 @@ export const Timeline = React.forwardRef<HTMLOListElement, TimelineProps>(({ cla
     {items.map((it, i) => {
       const left = i % 2 === 1;
       return (
-        <li key={it.time + it.title} className="relative grid py-10 pl-12 md:grid-cols-2 md:pl-0">
+        <li key={it.time + it.title} className="motion-scroll-reveal group relative grid py-10 pl-12 md:grid-cols-2 md:pl-0">
           <span aria-hidden className="absolute left-4 top-12 size-4 -translate-x-1/2 rounded-full bg-ink md:left-1/2" />
           <div className={cn("flex flex-col gap-4", left ? "md:col-start-1 md:items-end md:pr-16 md:text-right" : "md:col-start-2 md:pl-16")}>
             <span className="text-base text-ink">{it.time}</span>
             <h3 className="font-display text-3xl text-ink">{it.title}</h3>
             {it.description && <p className="max-w-md text-base text-ink-muted">{it.description}</p>}
-            {it.image && <img src={it.image} alt="" loading="lazy" className="size-28 rounded-2xl object-cover" />}
+            {it.image && <img src={it.image} alt="" loading="lazy" className="size-28 rounded-2xl object-cover transition-transform duration-700 ease-[var(--ease-gentle)] group-hover:scale-[1.04] motion-reduce:transform-none" />}
           </div>
         </li>
       );
@@ -237,12 +237,12 @@ export interface AccordionProps extends React.HTMLAttributes<HTMLDivElement> { i
 export const Accordion = React.forwardRef<HTMLDivElement, AccordionProps>(({ className, items, ...p }, ref) => (
   <div ref={ref} className={cn("flex flex-col gap-3", className)} {...p}>
     {items.map((it) => (
-      <details key={it.question} className="group rounded-card bg-surface px-7">
+      <details key={it.question} className="group rounded-card bg-surface px-7 transition-[transform,box-shadow,background-color] duration-300 open:bg-surface-strong open:shadow-soft hover:-translate-y-0.5 motion-reduce:transform-none">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-6 font-display text-xl text-ink focus-visible:text-sky focus-visible:outline-none [&::-webkit-details-marker]:hidden">
           {it.question}
           <span aria-hidden className="grid size-9 shrink-0 place-items-center rounded-full bg-canvas text-xl transition-transform duration-300 group-open:rotate-45">+</span>
         </summary>
-        <div className="pb-7 pr-12"><Text tone="muted">{it.answer}</Text></div>
+        <div className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-500 ease-[var(--ease-gentle)] group-open:grid-rows-[1fr]"><div className="overflow-hidden"><Text tone="muted" className="pb-7 pr-12">{it.answer}</Text></div></div>
       </details>
     ))}
   </div>

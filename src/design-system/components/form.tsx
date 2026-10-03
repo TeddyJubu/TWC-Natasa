@@ -166,3 +166,70 @@ export const FormActions = React.forwardRef<HTMLDivElement, FormActionsProps>(({
   <div ref={ref} className={cn("flex flex-col-reverse gap-3 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-end", className)} {...p} />
 ));
 FormActions.displayName = "FormActions";
+
+export interface ChoiceOption {
+  value: string;
+  label: React.ReactNode;
+  description?: React.ReactNode;
+}
+export interface ChoiceGroupProps extends Omit<React.FieldsetHTMLAttributes<HTMLFieldSetElement>, "onChange"> {
+  name: string;
+  legend: React.ReactNode;
+  options: ChoiceOption[];
+  hint?: React.ReactNode;
+  columns?: 1 | 2 | 3;
+  required?: boolean;
+  onValueChange?: (values: string[]) => void;
+}
+export const ChoiceGroup = React.forwardRef<HTMLFieldSetElement, ChoiceGroupProps>(
+  ({ className, name, legend, options, hint, columns = 2, required, onValueChange, ...p }, ref) => {
+    const [values, setValues] = React.useState<string[]>([]);
+    const update = (value: string, checked: boolean) => {
+      const next = checked ? [...values, value] : values.filter((item) => item !== value);
+      setValues(next);
+      onValueChange?.(next);
+    };
+    return (
+      <fieldset ref={ref} className={cn("rounded-card border border-line bg-canvas p-5 transition-[border-color,box-shadow] duration-300 focus-within:border-sky focus-within:shadow-soft", className)} {...p}>
+        <legend className="px-1 font-sans text-xs font-medium uppercase text-ink">{legend}{required && <span className="ml-1 text-danger" aria-hidden>*</span>}</legend>
+        {hint && <p className="mb-5 mt-1 font-sans text-xs text-ink-muted">{hint}</p>}
+        <div className={cn("grid gap-x-8 gap-y-4", columns === 2 && "sm:grid-cols-2", columns === 3 && "sm:grid-cols-2 lg:grid-cols-3")}>
+          {options.map((option) => (
+            <Checkbox key={option.value} name={name} value={option.value} label={option.label} description={option.description} onChange={(event) => update(option.value, event.currentTarget.checked)} />
+          ))}
+        </div>
+      </fieldset>
+    );
+  },
+);
+ChoiceGroup.displayName = "ChoiceGroup";
+
+export interface FormNoticeProps extends Omit<React.HTMLAttributes<HTMLElement>, "title"> {
+  title: React.ReactNode;
+  tone?: "soft" | "accent";
+}
+export const FormNotice = React.forwardRef<HTMLElement, FormNoticeProps>(({ className, title, tone = "soft", children, ...p }, ref) => (
+  <aside ref={ref} className={cn("rounded-card border border-line p-5 transition-colors duration-300", tone === "accent" ? "bg-mint" : "bg-surface", className)} {...p}>
+    <h4 className="font-display text-xl font-normal text-ink">{title}</h4>
+    <div className="mt-3 font-sans text-sm leading-relaxed text-ink-muted">{children}</div>
+  </aside>
+));
+FormNotice.displayName = "FormNotice";
+
+export interface FormProgressProps extends React.HTMLAttributes<HTMLOListElement> {
+  items: string[];
+  current?: number;
+}
+export const FormProgress = React.forwardRef<HTMLOListElement, FormProgressProps>(({ className, items, current = 0, ...p }, ref) => (
+  <ol ref={ref} aria-label="Application sections" className={cn("grid grid-cols-5 gap-1 sm:grid-cols-10", className)} {...p}>
+    {items.map((item, index) => (
+      <li key={item} className="group relative">
+        <span className={cn("block h-1 overflow-hidden rounded-full bg-surface-strong", index <= current && "bg-ink")}>
+          <span className={cn("block h-full origin-left bg-sky transition-transform duration-700 ease-[var(--ease-gentle)]", index <= current ? "scale-x-100" : "scale-x-0")} />
+        </span>
+        <span className="sr-only">{index + 1}. {item}</span>
+      </li>
+    ))}
+  </ol>
+));
+FormProgress.displayName = "FormProgress";
