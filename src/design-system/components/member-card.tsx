@@ -9,6 +9,7 @@ const cardVariants = cva("group overflow-hidden border border-line bg-canvas tex
     variant: {
       grid: "rounded-card",
       featured: "grid rounded-panel md:grid-cols-[1.05fr_1fr]",
+      catalogue: "rounded-card border-white/15 bg-canvas text-ink",
     },
   },
   defaultVariants: { variant: "grid" },
@@ -26,6 +27,41 @@ export interface MemberCardProps extends Omit<React.HTMLAttributes<HTMLElement>,
  */
 export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ className, member, variant, ...props }, ref) => (
   <article ref={ref} className={cn(cardVariants({ variant }), className)} {...props}>
+    {variant === "catalogue" ? (
+      <>
+        <div className="grid min-h-32 grid-cols-[minmax(0,1fr)_auto] gap-3 border-b border-line p-4 sm:min-h-36 sm:p-5">
+          <div className="flex min-w-0 flex-col justify-between gap-4">
+            <div>
+              <p className="text-xs text-ink-muted">The Women’s Collective</p>
+              <p className="mt-0.5 text-xs text-ink-muted">Member catalogue</p>
+            </div>
+            <div className="min-w-0">
+              <h3 className="font-display text-xl leading-tight sm:text-2xl">{member.name}</h3>
+              <p className="mt-1 text-xs leading-snug text-ink-muted">{member.role}</p>
+            </div>
+          </div>
+          <div className="flex shrink-0 flex-col items-end justify-between text-xs text-ink-muted">
+            <span aria-label={`Member ${member.id}`}>{member.id.slice(0, 2).toUpperCase()}</span>
+            <span>{member.neighborhood}</span>
+          </div>
+        </div>
+        <div className="aspect-[4/5] overflow-hidden bg-surface p-3 sm:p-4">
+          <img
+            src={member.image}
+            alt={member.imageAlt}
+            loading="lazy"
+            width={768}
+            height={1024}
+            className="size-full object-cover grayscale transition-[filter,transform] duration-slow ease-gentle group-hover:scale-[1.025] group-hover:grayscale-0 motion-reduce:transform-none motion-reduce:transition-none"
+          />
+        </div>
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 border-t border-line p-4 text-xs text-ink-muted sm:p-5">
+          <p className="min-w-0 leading-relaxed">{member.business}</p>
+          <p className="shrink-0">{member.specialty}</p>
+        </div>
+      </>
+    ) : (
+      <>
     <div className={cn("relative overflow-hidden bg-surface", variant === "featured" ? "min-h-96 md:min-h-[34rem]" : "aspect-[4/5]")}>
       <img
         src={member.image}
@@ -50,6 +86,8 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ clas
         <p className="mt-2 font-display text-xl leading-snug">{member.lookingFor}</p>
       </div>
     </div>
+      </>
+    )}
   </article>
 ));
 MemberCard.displayName = "MemberCard";

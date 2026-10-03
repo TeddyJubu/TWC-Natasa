@@ -15,3 +15,4 @@
 - [x] Add a reusable member card and dedicated member directory page
 - [x] Reorganize the homepage into a concise member preview linking to the directory
 - [x] Verify metadata, responsive layouts, interactions, accessibility, and build health
+- [x] Restyle the member directory as an editorial contact-sheet catalogue
