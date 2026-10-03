@@ -105,7 +105,7 @@ function Sample() {
             <Badge variant="solid">Counting Down</Badge>
             <BigCountdown target="2027-04-24" ornament={flower} />
           </div>
-          <SectionHeader badge="Agenda" title="Shape of the Day" intro="A centered line with alternating entries, small rounded thumbnails and white dots." />
+          <SectionHeader badgeVariant="solid" badge="Agenda" title="Shape of the Day" intro="A centered line with alternating entries, small rounded thumbnails and white dots." />
           <Timeline className="w-full" items={[
             { time: "09:00 AM", title: "Arrival & Coffee", description: "Short description for this moment.", image: event },
             { time: "10:30 AM", title: "Founder Keynote", description: "Short description for this moment.", image: p2 },

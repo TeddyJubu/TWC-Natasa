@@ -35,11 +35,13 @@ export interface SectionHeaderProps extends Omit<React.HTMLAttributes<HTMLDivEle
   title: React.ReactNode;
   intro?: React.ReactNode;
   align?: "center" | "start";
+  /** Use "solid" on night sections. */
+  badgeVariant?: "soft" | "solid";
 }
 export const SectionHeader = React.forwardRef<HTMLDivElement, SectionHeaderProps>(
-  ({ className, badge, title, intro, align = "center", ...p }, ref) => (
+  ({ className, badge, title, intro, align = "center", badgeVariant = "soft", ...p }, ref) => (
     <div ref={ref} className={cn("flex max-w-3xl flex-col gap-7", align === "center" ? "mx-auto items-center text-center" : "items-start", className)} {...p}>
-      {badge && <Badge variant="soft">{badge}</Badge>}
+      {badge && <Badge variant={badgeVariant}>{badge}</Badge>}
       <Heading>{title}</Heading>
       {intro && <Text className="max-w-lg">{intro}</Text>}
     </div>
