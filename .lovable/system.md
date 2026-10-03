@@ -1,6 +1,6 @@
-# Bloom Design System
+# The Women’s Collective Design System
 
-Bloom is bright and editorial: full-bleed sky-blue photography, an elegant serif (Gilda Display) over a clean sans (Inter), soft grey pill badges with a blossom mark, and dramatic shifts into pure black "night" sections with a domed top edge. Sunflower yellow appears only as a small highlight (ribbons).
+The Women’s Collective is warm, direct, and editorial: full-bleed sky photography, an elegant serif (Gilda Display) over a clean sans (Inter), soft grey pill badges, and dramatic shifts into pure black "night" sections with a domed top edge. The uploaded halftone constellation is the canonical logo. Its seven neighborhood colors express distinct local identities while the central star represents where the community meets. Sunflower yellow appears only as a small highlight (ribbons).
 
 ## Setup
 - Import `src/design-system/styles/theme.css` right after `@import "tailwindcss";`.
@@ -18,7 +18,7 @@ Bloom is bright and editorial: full-bleed sky-blue photography, an elegant serif
 - Yellow (`sun`) only for ribbons/small highlights, never large fills or body text.
 - Forms follow an editorial zine language: numbered sections, fine rules, serif emphasis, and asymmetrical multi-column compositions. Use `FormSection` to group long applications.
 - Use `editorial` fields on feature forms and `boxed` fields in compact utility contexts. Never mix both field variants within one form.
-- Mint, lilac, and signal orange are supporting editorial accents for selected states and specimen panels; keep them subordinate to canvas, ink, and photography.
+- Mint, lilac, and signal orange are supporting editorial accents for selected states and specimen panels; keep them subordinate to canvas, ink, and photography. Neighborhood tokens are reserved for constellation and location-led storytelling.
 - No inline styles; vary via `variant`/`size` props.
 - Motion is editorial and purposeful: shared reveal, stagger, panel, hover, and feedback patterns only. Never add decorative motion that competes with content.
 - Use `Reveal` for viewport entry and `Stagger` for short sequenced groups; both preserve content and honor reduced-motion preferences.
@@ -31,4 +31,4 @@ Bloom is bright and editorial: full-bleed sky-blue photography, an elegant serif
 - Associate hints and errors with their controls using `aria-describedby`; mark invalid controls with `aria-invalid`.
 
 ## Voice
-Confident, warm, short. Headlines in Title Case, around five words.
+Warm, direct, and full of personality. Speak like a neighbor inviting someone into a conversation. Celebrate women’s work, make introductions generously, and give members a reason to participate. Keep headlines short and use Title Case.

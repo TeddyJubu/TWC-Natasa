@@ -15,8 +15,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Bloom Design System" },
-      { name: "description", content: "Sky, sun and serif: a bright editorial design system for community and membership sites." },
+      { title: "The Women’s Collective Design System" },
+      { name: "description", content: "The editorial design system for The Women’s Collective in Western Queens." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },

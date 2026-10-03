@@ -1,4 +1,4 @@
-/* Bloom theme — import once after `@import "tailwindcss";` */
+/* The Women’s Collective theme — import once after `@import "tailwindcss";` */
 @custom-variant dark (&:where(.dark, .dark *));
 
 @font-face {

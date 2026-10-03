@@ -5,10 +5,10 @@ import { Shell } from "@/showcase/Shell";
 export const Route = createFileRoute("/colors")({
   head: () => ({
     meta: [
-      { title: "Colors — Bloom Design System" },
-      { name: "description", content: "Bloom color tokens: canvas, ink, sky, sun and night." },
-      { property: "og:title", content: "Colors — Bloom Design System" },
-      { property: "og:description", content: "Canvas, ink, sky blue, sunflower yellow and night black." },
+      { title: "Colors — The Women’s Collective Design System" },
+      { name: "description", content: "The Women’s Collective color tokens, including seven neighborhood colors." },
+      { property: "og:title", content: "Colors — The Women’s Collective Design System" },
+      { property: "og:description", content: "Editorial foundations and neighborhood constellation colors." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -29,6 +29,13 @@ const tokens = [
   ["bg-mint", "Selected stories, accents", "bg-mint text-black"],
   ["bg-lilac", "Supporting editorial panels", "bg-lilac text-black"],
   ["bg-signal", "High-energy feature panels", "bg-signal text-black"],
+  ["bg-lic", "Long Island City", "bg-lic text-white"],
+  ["bg-sunnyside", "Sunnyside", "bg-sunnyside text-white"],
+  ["bg-astoria", "Astoria", "bg-astoria text-white"],
+  ["bg-jackson-heights", "Jackson Heights", "bg-jackson-heights text-white"],
+  ["bg-elmhurst", "Elmhurst", "bg-elmhurst text-white"],
+  ["bg-forest-hills", "Forest Hills", "bg-forest-hills text-white"],
+  ["bg-rego-park", "Rego Park", "bg-rego-park text-white"],
 ] as const;
 
 function Colors() {

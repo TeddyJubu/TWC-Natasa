@@ -5,9 +5,9 @@ import { Shell } from "@/showcase/Shell";
 export const Route = createFileRoute("/typography")({
   head: () => ({
     meta: [
-      { title: "Typography — Bloom Design System" },
-      { name: "description", content: "Gilda Display and Inter, and the full Bloom type scale." },
-      { property: "og:title", content: "Typography — Bloom Design System" },
+      { title: "Typography — The Women’s Collective Design System" },
+      { name: "description", content: "Gilda Display, Inter, and The Women’s Collective type scale." },
+      { property: "og:title", content: "Typography — The Women’s Collective Design System" },
       { property: "og:description", content: "Elegant serif display with a clean sans for body." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -35,12 +35,12 @@ function Typography() {
           <div className="motion-float rounded-card bg-surface p-8"><p className="font-sans text-5xl">Inter</p><Text tone="muted" className="mt-3">font-sans · 400, 500 · body, buttons, badges</Text></div>
         </div>
         <div>
-          <Row label='<Heading size="display">'><Heading as="h3" size="display">Bold Ideas, One Circle</Heading></Row>
-          <Row label="<Heading>"><Heading as="h3">Shape of the Day</Heading></Row>
-          <Row label='<Heading size="title">'><Heading as="h3" size="title">Evening Mixer</Heading></Row>
-          <Row label="<Statement lead={2}>"><Statement lead={2} text="We're building something together, one conversation at a time." /></Row>
-          <Row label="<Stat>"><Stat value="2019" label="Founded" /></Row>
-          <Row label="<Badge>"><Badge>Programs</Badge></Row>
+          <Row label='<Heading size="display">'><Heading as="h3" size="display">Find Your People</Heading></Row>
+          <Row label="<Heading>"><Heading as="h3">Our Constellation</Heading></Row>
+          <Row label='<Heading size="title">'><Heading as="h3" size="title">Share What You Do</Heading></Row>
+          <Row label="<Statement lead={2}>"><Statement lead={2} text="Every connection makes the whole community stronger." /></Row>
+          <Row label="<Stat>"><Stat value="07" label="Neighborhood colors" /></Row>
+          <Row label="<Badge>"><Badge>Western Queens</Badge></Row>
           <Row label='<Text size="lg">'><Text size="lg">Large body copy for intros.</Text></Row>
           <Row label="<Text>"><Text>Default body copy stays short and plain.</Text></Row>
           <Row label='<Text tone="muted" size="sm">'><Text tone="muted" size="sm">Captions and fine print.</Text></Row>
