@@ -13,6 +13,10 @@
   --bl-sky-ink: #ffffff;
   --bl-sun: #edd22e;
   --bl-sun-ink: #1f1f1c;
+  --bl-paper: #f3f0e8;
+  --bl-mint: #c6f3df;
+  --bl-lilac: #d8cdf8;
+  --bl-signal: #ff5a1f;
   --bl-glass: rgb(255 255 255 / 0.12);
   --bl-glass-line: rgb(255 255 255 / 0.35);
   --bl-danger: #c2412d;
@@ -44,6 +48,10 @@
   --color-sky-ink: var(--bl-sky-ink);
   --color-sun: var(--bl-sun);
   --color-sun-ink: var(--bl-sun-ink);
+  --color-paper: var(--bl-paper);
+  --color-mint: var(--bl-mint);
+  --color-lilac: var(--bl-lilac);
+  --color-signal: var(--bl-signal);
   --color-glass: var(--bl-glass);
   --color-glass-line: var(--bl-glass-line);
   --color-danger: var(--bl-danger);
@@ -55,6 +63,9 @@
   --radius-control: 0.75rem;
   --radius-card: 1.25rem;
   --radius-panel: 2rem;
+
+  --spacing-field: 3.5rem;
+  --spacing-field-tall: 9rem;
 
   --shadow-soft: 0 24px 60px -32px rgb(0 0 0 / 0.35);
   --ease-gentle: cubic-bezier(0.22, 1, 0.36, 1);

@@ -16,12 +16,16 @@ Bloom is bright and editorial: full-bleed sky-blue photography, an elegant serif
 - Rhythm: light sections → `tone="dome"` black panel → `tone="night"` continuation → light again. Don't scatter random greys.
 - Buttons have 12px corners (`rounded-control`), not pills; badges are pills. Cards use `rounded-card`.
 - Yellow (`sun`) only for ribbons/small highlights, never large fills or body text.
+- Forms follow an editorial zine language: numbered sections, fine rules, serif emphasis, and asymmetrical multi-column compositions. Use `FormSection` to group long applications.
+- Use `editorial` fields on feature forms and `boxed` fields in compact utility contexts. Never mix both field variants within one form.
+- Mint, lilac, and signal orange are supporting editorial accents for selected states and specimen panels; keep them subordinate to canvas, ink, and photography.
 - No inline styles; vary via `variant`/`size` props.
 
 ## Accessibility
 - White text on photos needs the built-in gradients (`bg-sky-fade`, card overlays); don't remove them.
 - `text-ink-faint` is decorative (fading statements, idle tabs) — never for essential copy.
 - Keep focus rings; wrap inputs in `FormField`.
+- Associate hints and errors with their controls using `aria-describedby`; mark invalid controls with `aria-invalid`.
 
 ## Voice
 Confident, warm, short. Headlines in Title Case, around five words.
