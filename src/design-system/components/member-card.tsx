@@ -50,18 +50,16 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
   <article ref={ref} className={cn(cardVariants({ variant }), className)} {...props}>
     {variant === "catalogue" ? (
       <>
-        <div className={cn("grid min-h-40 grid-cols-[minmax(0,1fr)_auto] gap-4 border-b border-line p-4 sm:p-5", tone?.rule)}>
-          <div className="flex min-w-0 flex-col justify-between gap-5">
+        <div className={cn("grid h-52 grid-cols-[minmax(0,1fr)_auto] gap-4 border-b border-line p-4 sm:p-5", tone?.rule)}>
+          <div className="grid min-w-0 grid-rows-[auto_1fr_auto]">
             <div>
               <p className="text-xs text-ink-muted">The Women’s Collective</p>
               <p className="mt-0.5 text-xs text-ink-muted">Member catalogue</p>
             </div>
-            <div className="min-w-0">
-              <h3 className="font-display text-xl leading-tight sm:text-2xl">{member.name}</h3>
-              <p className="mt-2 text-xs leading-relaxed text-ink-muted">{member.role}</p>
-            </div>
+            <h3 className="min-w-0 self-end font-display text-xl leading-tight sm:text-2xl">{member.name}</h3>
+            <p className="mt-2 min-w-0 text-xs leading-relaxed text-ink-muted">{member.role}</p>
           </div>
-          <div className="flex shrink-0 flex-col items-end justify-between text-xs text-ink-muted">
+          <div className="grid shrink-0 grid-rows-[auto_1fr_auto] justify-items-end text-xs text-ink-muted">
             <span aria-label={`Catalogue number ${catalogueNumber ?? 1}`} className={tone?.index}>{String(catalogueNumber ?? 1).padStart(2, "0")}</span>
             <span className={cn("max-w-24 text-right leading-relaxed", tone?.label)}>{member.neighborhood}</span>
           </div>
