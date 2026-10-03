@@ -9,3 +9,4 @@ export * from "./design-system/components/content";
 export * from "./design-system/components/circular-gallery";
 export * from "./design-system/components/form";
 export * from "./design-system/components/motion";
+export * from "./design-system/components/image-trail";

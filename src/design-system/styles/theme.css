@@ -186,6 +186,30 @@
 .motion-observed-blur { filter: blur(0.5rem); }
 .motion-observed[data-visible="true"] { opacity: 1; transform: translateY(0); filter: blur(0); }
 
+.image-trail {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict;
+}
+.image-trail-item {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  object-fit: contain;
+  opacity: 0;
+  will-change: transform, opacity;
+  filter: drop-shadow(0 0.2rem 0.25rem rgb(31 31 28 / 0.1));
+}
+.image-trail[data-size="small"] .image-trail-item { width: 3rem; height: 3rem; }
+
+@media (hover: none), (pointer: coarse) {
+  .image-trail { display: none; }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   @supports (animation-timeline: view()) {
     .motion-scroll-reveal {
@@ -209,6 +233,7 @@
   .animate-marquee { animation-play-state: paused; }
   .motion-observed { opacity: 1; transform: none; filter: none; }
   .motion-gallery-item { transform: none !important; }
+  .image-trail { display: none; }
 }
 
 /* Force light tokens inside a night block (e.g. light cards on a black section) */

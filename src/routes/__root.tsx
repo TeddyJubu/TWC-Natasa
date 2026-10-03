@@ -9,6 +9,7 @@ import {
 import type { ReactNode } from "react";
 
 import appCss from "../styles.css?url";
+import { ImageTrail } from "../design-system/components/image-trail";
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
@@ -56,6 +57,7 @@ function RootComponent() {
       <div key={location.pathname} className="motion-route-in">
         <Outlet />
       </div>
+      <ImageTrail />
     </QueryClientProvider>
   );
 }
