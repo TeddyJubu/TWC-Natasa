@@ -58,7 +58,7 @@ function Sample() {
       <Hero
         image={hero}
         imageAlt="Woman in a white suit standing in a yellow flower field"
-        nav={<Navbar variant="overlay" brand={<Wordmark>Bloom</Wordmark>} links={links} action={<Button variant="white">Become a member</Button>} />}
+        nav={<Navbar variant="overlay" brand={<Wordmark>Bloom</Wordmark>} links={links} action={<Link to="/join" className={buttonVariants({ variant: "white" })}>Become a member</Link>} />}
         badge="A Community of Makers"
         title="Bold Ideas, One Brilliant Circle"
         description="Placeholder intro line that sits quietly on the right of the hero."
@@ -70,7 +70,7 @@ function Sample() {
         <Container className="flex flex-col items-center gap-10 text-center">
           <Badge>A Community of Makers</Badge>
           <Statement lead={2} text="We're building something together. A short statement fades from ink to faint grey so one phrase leads the eye." />
-          <Button>Join the circle</Button>
+          <Link to="/join" className={buttonVariants()}>Join the circle</Link>
         </Container>
       </Section>
       <CurvedGallery images={[{ src: p3, alt: "" }, { src: p1, alt: "" }, { src: p2, alt: "" }, { src: p3, alt: "" }, { src: p1, alt: "" }]} />
@@ -115,10 +115,10 @@ function Sample() {
         </Container>
       </Section>
 
-      <Section id="join" className="bg-paper">
-        <Container>
-          <SectionHeader badge="Membership" title="Will You Join Us?" intro="A complete application built for thoughtful review, clear consent, and expressive member stories." />
-          <div className="mt-16 overflow-hidden rounded-panel border border-line shadow-soft"><MembershipApplication /></div>
+      <Section className="bg-paper">
+        <Container className="flex flex-col items-center gap-10 text-center">
+          <SectionHeader badge="Membership" title="Will You Join Us?" intro="The full application opens on its own page — answer each section at your own pace and submit when you're ready." />
+          <Link to="/join" className={buttonVariants({ variant: "primary", size: "lg" })}>Start your application</Link>
         </Container>
       </Section>
 
