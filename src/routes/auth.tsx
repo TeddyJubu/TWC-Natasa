@@ -76,7 +76,7 @@ function AuthPage() {
         <div className="relative flex h-full flex-col justify-between p-12 text-white">
           <Link to="/" aria-label="Home"><BrandLockup logoVariant="white" /></Link>
           <div className="motion-stagger flex max-w-md flex-col gap-6">
-            <Badge variant="glass">Members only</Badge>
+            <Badge variant="glass" className="self-start">Members only</Badge>
             <p className="font-display text-5xl leading-[1.1]">Your profile, your gatherings, your introductions.</p>
             <p className="text-white/85">Accounts open fully once your membership application is approved.</p>
           </div>
@@ -106,7 +106,7 @@ function AuthPage() {
           {mode !== "forgot" && (
             <>
               <Button type="button" variant="outline" size="lg" onClick={google} className="w-full">
-                <svg aria-hidden viewBox="0 0 24 24" className="size-5"><path fill="currentColor" d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.3ZM12 22c2.7 0 5-.9 6.6-2.4l-3.2-2.5c-.9.6-2 1-3.4 1-2.6 0-4.8-1.8-5.6-4.1H3.1v2.6A10 10 0 0 0 12 22Zm-5.6-8c-.2-.6-.3-1.3-.3-2s.1-1.4.3-2V7.4H3.1a10 10 0 0 0 0 9.2L6.4 14ZM12 6c1.5 0 2.8.5 3.8 1.5l2.9-2.9A10 10 0 0 0 3.1 7.4L6.4 10C7.2 7.7 9.4 6 12 6Z" /></svg>
+                <svg aria-hidden viewBox="0 0 24 24" className="mr-2 inline-block size-5 align-[-4px]"><path fill="currentColor" d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.3ZM12 22c2.7 0 5-.9 6.6-2.4l-3.2-2.5c-.9.6-2 1-3.4 1-2.6 0-4.8-1.8-5.6-4.1H3.1v2.6A10 10 0 0 0 12 22Zm-5.6-8c-.2-.6-.3-1.3-.3-2s.1-1.4.3-2V7.4H3.1a10 10 0 0 0 0 9.2L6.4 14ZM12 6c1.5 0 2.8.5 3.8 1.5l2.9-2.9A10 10 0 0 0 3.1 7.4L6.4 10C7.2 7.7 9.4 6 12 6Z" /></svg>
                 Continue with Google
               </Button>
               <div className="flex items-center gap-4 text-xs uppercase text-ink-muted"><span className="h-px flex-1 bg-line" />or with email<span className="h-px flex-1 bg-line" /></div>
