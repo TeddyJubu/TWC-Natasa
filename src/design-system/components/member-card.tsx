@@ -1,15 +1,17 @@
 import * as React from "react";
+import { CurvedLoop } from "./curved-loop";
+import { BorderGlow } from "./border-glow";
 import { ProximityText } from "./proximity-text";
 import { cva, type VariantProps } from "class-variance-authority";
 import type { MemberProfile } from "../data/members";
 import { cn } from "../lib/utils";
 import { Badge } from "./typography";
 
-const cardVariants = cva("group overflow-hidden border border-line bg-canvas text-ink transition-[transform,box-shadow] duration-base ease-gentle hover:-translate-y-1 hover:shadow-soft motion-reduce:transform-none motion-reduce:transition-none", {
+const cardVariants = cva("group border border-line bg-canvas text-ink transition-[transform,box-shadow] duration-base ease-gentle hover:-translate-y-1 hover:shadow-soft motion-reduce:transform-none motion-reduce:transition-none", {
   variants: {
     variant: {
-      grid: "rounded-card",
-      featured: "grid rounded-panel md:grid-cols-[1.05fr_1fr]",
+      grid: "rounded-card overflow-hidden",
+      featured: "grid rounded-panel overflow-hidden md:grid-cols-[1.05fr_1fr]",
       catalogue: "rounded-panel bg-canvas text-ink hover:-translate-y-1.5",
     },
   },
