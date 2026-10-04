@@ -64,19 +64,22 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
             </span>
           </div>
 
-          <h3 className="mt-auto max-w-[10ch] text-balance font-display text-5xl font-normal leading-[0.96] sm:text-6xl lg:text-7xl xl:text-5xl">
-            {member.name}
-          </h3>
-
-          <div className="mt-7 grid gap-3 text-sm text-ink-muted sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-center sm:text-base xl:mt-5 xl:grid-cols-1 xl:gap-2 xl:text-sm">
-            <p className="min-w-0 leading-snug">{member.role}</p>
-            <span aria-hidden className="hidden h-px w-10 bg-line sm:block xl:hidden" />
-            <p className={cn("flex min-w-0 items-start gap-2 leading-snug sm:justify-end sm:text-right xl:justify-start xl:text-left", tone?.label)}>
-              <svg viewBox="0 0 24 24" aria-hidden className="mt-0.5 size-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.8">
+          <div className="mt-auto flex items-end justify-between gap-5">
+            <div className="min-w-0">
+              <h3 className="max-w-[10ch] text-balance font-display text-5xl font-normal leading-[0.96] sm:text-6xl lg:text-7xl xl:text-5xl">
+                {member.name}
+              </h3>
+              <div className="mt-5 flex items-center gap-4 text-sm text-ink-muted sm:text-base xl:mt-4 xl:text-sm">
+                <span aria-hidden className="hidden h-px w-10 bg-line sm:block" />
+                <p className="min-w-0 leading-snug">{member.role}</p>
+              </div>
+            </div>
+            <p className={cn("flex shrink-0 items-start gap-3 [writing-mode:vertical-rl]", tone?.label)}>
+              <svg viewBox="0 0 24 24" aria-hidden className="size-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.8">
                 <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" />
                 <circle cx="12" cy="10" r="2.25" />
               </svg>
-              <span>{member.neighborhood}</span>
+              <span className="leading-none">{member.neighborhood}</span>
             </p>
           </div>
         </div>
