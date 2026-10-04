@@ -22,3 +22,5 @@
 - [x] Verify the redesigned cards on desktop and mobile
 - [x] Show four catalogue cards per row and scale their type to fit
 - [x] Verify the four-column directory on desktop and mobile
+- [x] Add the curved-loop marquee to catalogue card labels
+- [x] Add the border-glow effect to catalogue cards

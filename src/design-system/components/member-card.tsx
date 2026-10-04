@@ -1,15 +1,17 @@
 import * as React from "react";
+import { CurvedLoop } from "./curved-loop";
+import { BorderGlow } from "./border-glow";
 import { ProximityText } from "./proximity-text";
 import { cva, type VariantProps } from "class-variance-authority";
 import type { MemberProfile } from "../data/members";
 import { cn } from "../lib/utils";
 import { Badge } from "./typography";
 
-const cardVariants = cva("group overflow-hidden border border-line bg-canvas text-ink transition-[transform,box-shadow] duration-base ease-gentle hover:-translate-y-1 hover:shadow-soft motion-reduce:transform-none motion-reduce:transition-none", {
+const cardVariants = cva("group border border-line bg-canvas text-ink transition-[transform,box-shadow] duration-base ease-gentle hover:-translate-y-1 hover:shadow-soft motion-reduce:transform-none motion-reduce:transition-none", {
   variants: {
     variant: {
-      grid: "rounded-card",
-      featured: "grid rounded-panel md:grid-cols-[1.05fr_1fr]",
+      grid: "rounded-card overflow-hidden",
+      featured: "grid rounded-panel overflow-hidden md:grid-cols-[1.05fr_1fr]",
       catalogue: "rounded-panel bg-canvas text-ink hover:-translate-y-1.5",
     },
   },
@@ -21,14 +23,14 @@ const cardVariants = cva("group overflow-hidden border border-line bg-canvas tex
  * a glance from the shared palette. Unknown neighborhoods fall back to the
  * neutral catalogue look.
  */
-const catalogueTones: Record<string, { rule: string; label: string; index: string; wash: string }> = {
-  "Long Island City": { rule: "border-lic", label: "text-lic", index: "text-lic", wash: "bg-lic" },
-  Astoria: { rule: "border-astoria", label: "text-astoria", index: "text-astoria", wash: "bg-astoria" },
-  Sunnyside: { rule: "border-sunnyside", label: "text-sunnyside", index: "text-sunnyside", wash: "bg-sunnyside" },
-  "Jackson Heights": { rule: "border-jackson-heights", label: "text-jackson-heights", index: "text-jackson-heights", wash: "bg-jackson-heights" },
-  "Forest Hills": { rule: "border-forest-hills", label: "text-forest-hills", index: "text-forest-hills", wash: "bg-forest-hills" },
-  Elmhurst: { rule: "border-elmhurst", label: "text-elmhurst", index: "text-elmhurst", wash: "bg-elmhurst" },
-  "Rego Park": { rule: "border-rego-park", label: "text-rego-park", index: "text-rego-park", wash: "bg-rego-park" },
+const catalogueTones: Record<string, { rule: string; label: string; index: string; wash: string; glow: string }> = {
+  "Long Island City": { rule: "border-lic", label: "text-lic", index: "text-lic", wash: "bg-lic", glow: "--color-lic" },
+  Astoria: { rule: "border-astoria", label: "text-astoria", index: "text-astoria", wash: "bg-astoria", glow: "--color-astoria" },
+  Sunnyside: { rule: "border-sunnyside", label: "text-sunnyside", index: "text-sunnyside", wash: "bg-sunnyside", glow: "--color-sunnyside" },
+  "Jackson Heights": { rule: "border-jackson-heights", label: "text-jackson-heights", index: "text-jackson-heights", wash: "bg-jackson-heights", glow: "--color-jackson-heights" },
+  "Forest Hills": { rule: "border-forest-hills", label: "text-forest-hills", index: "text-forest-hills", wash: "bg-forest-hills", glow: "--color-forest-hills" },
+  Elmhurst: { rule: "border-elmhurst", label: "text-elmhurst", index: "text-elmhurst", wash: "bg-elmhurst", glow: "--color-elmhurst" },
+  "Rego Park": { rule: "border-rego-park", label: "text-rego-park", index: "text-rego-park", wash: "bg-rego-park", glow: "--color-rego-park" },
 };
 
 export interface MemberCardProps extends Omit<React.HTMLAttributes<HTMLElement>, "children">, VariantProps<typeof cardVariants> {
@@ -51,12 +53,15 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
   <article ref={ref} className={cn(cardVariants({ variant }), className)} {...props}>
     {variant === "catalogue" ? (
       <>
-        <div className={cn("flex min-h-[20rem] flex-col border-b border-line p-6 sm:min-h-[23rem] sm:p-8 xl:min-h-[18rem] xl:p-5", tone?.rule)}>
+        <BorderGlow className="rounded-panel" glowVar={tone?.glow ?? "--color-sky"} glowRadius={28} fillOpacity={0.25}>
+          <div className={cn("flex min-h-[20rem] flex-col border-b border-line p-6 sm:min-h-[23rem] sm:p-8 xl:min-h-[18rem] xl:p-5", tone?.rule)}>
           <div className="flex items-start justify-between gap-4 xl:gap-2">
-            <div className="text-xs uppercase leading-relaxed text-ink-muted xl:text-[0.6875rem]">
-              <p>The Women’s Collective</p>
-              <p>Member catalogue</p>
-            </div>
+            <CurvedLoop
+              marqueeText="The Women’s Collective ✦ Member catalogue"
+              className="min-w-0 max-w-[14rem] flex-1 text-ink-muted xl:max-w-[12rem]"
+              speed={0.8}
+              curveAmount={48}
+            />
             <span
               aria-label={`Catalogue number ${catalogueNumber ?? 1}`}
               className={cn("grid size-14 shrink-0 place-items-center rounded-full border text-lg tabular-nums sm:size-16 sm:text-xl xl:size-12 xl:text-base", tone?.rule, tone?.index)}
@@ -87,7 +92,8 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
               <span className="leading-none">{member.neighborhood}</span>
             </p>
           </div>
-        </div>
+          </div>
+        </BorderGlow>
 
         <div className={cn("p-3 sm:p-4 xl:p-3", tone?.wash ?? "bg-surface")}>
           <div className="aspect-[4/5] overflow-hidden rounded-card bg-surface">
