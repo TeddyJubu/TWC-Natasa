@@ -9,7 +9,7 @@ const cardVariants = cva("group overflow-hidden border border-line bg-canvas tex
     variant: {
       grid: "rounded-card",
       featured: "grid rounded-panel md:grid-cols-[1.05fr_1fr]",
-      catalogue: "rounded-card bg-canvas text-ink",
+      catalogue: "rounded-panel bg-canvas text-ink hover:-translate-y-1.5",
     },
   },
   defaultVariants: { variant: "grid" },
@@ -50,33 +50,57 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
   <article ref={ref} className={cn(cardVariants({ variant }), className)} {...props}>
     {variant === "catalogue" ? (
       <>
-        <div className={cn("grid h-52 grid-cols-[minmax(0,1fr)_auto] gap-4 border-b border-line p-4 sm:p-5", tone?.rule)}>
-          <div className="grid min-w-0 grid-rows-[auto_1fr_auto]">
-            <div>
-              <p className="text-xs text-ink-muted">The Women’s Collective</p>
-              <p className="mt-0.5 text-xs text-ink-muted">Member catalogue</p>
+        <div className={cn("flex min-h-[20rem] flex-col border-b border-line p-6 sm:min-h-[23rem] sm:p-8", tone?.rule)}>
+          <div className="flex items-start justify-between gap-5">
+            <div className="text-xs uppercase leading-relaxed text-ink-muted">
+              <p>The Women’s Collective</p>
+              <p>Member catalogue</p>
             </div>
-            <h3 className="min-w-0 self-end font-display text-xl leading-tight sm:text-2xl">{member.name}</h3>
-            <p className="mt-2 min-w-0 text-xs leading-relaxed text-ink-muted">{member.role}</p>
+            <span
+              aria-label={`Catalogue number ${catalogueNumber ?? 1}`}
+              className={cn("grid size-14 shrink-0 place-items-center rounded-full border text-lg tabular-nums sm:size-16 sm:text-xl", tone?.rule, tone?.index)}
+            >
+              {String(catalogueNumber ?? 1).padStart(2, "0")}
+            </span>
           </div>
-          <div className="grid shrink-0 grid-rows-[auto_1fr_auto] justify-items-end text-xs text-ink-muted">
-            <span aria-label={`Catalogue number ${catalogueNumber ?? 1}`} className={tone?.index}>{String(catalogueNumber ?? 1).padStart(2, "0")}</span>
-            <span className={cn("row-start-3 max-w-24 self-start text-right leading-relaxed", tone?.label)}>{member.neighborhood}</span>
+
+          <h3 className="mt-auto max-w-[10ch] text-balance font-display text-5xl font-normal leading-[0.96] sm:text-6xl lg:text-7xl">
+            {member.name}
+          </h3>
+
+          <div className="mt-7 grid gap-3 text-sm text-ink-muted sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-center sm:text-base">
+            <p className="min-w-0 leading-snug">{member.role}</p>
+            <span aria-hidden className="hidden h-px w-10 bg-line sm:block" />
+            <p className={cn("flex min-w-0 items-start gap-2 leading-snug sm:justify-end sm:text-right", tone?.label)}>
+              <svg viewBox="0 0 24 24" aria-hidden className="mt-0.5 size-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" />
+                <circle cx="12" cy="10" r="2.25" />
+              </svg>
+              <span>{member.neighborhood}</span>
+            </p>
           </div>
         </div>
-        <div className={cn("aspect-[4/5] overflow-hidden p-3 sm:p-4", tone?.wash ?? "bg-surface")}>
-          <img
-            src={member.image}
-            alt={member.imageAlt}
-            loading="lazy"
-            width={768}
-            height={1024}
-            className="size-full object-cover grayscale transition-[filter,transform] duration-slow ease-gentle group-hover:scale-[1.025] group-hover:grayscale-0 motion-reduce:transform-none motion-reduce:transition-none"
-          />
+
+        <div className={cn("p-3 sm:p-4", tone?.wash ?? "bg-surface")}>
+          <div className="aspect-[4/5] overflow-hidden rounded-card bg-surface">
+            <img
+              src={member.image}
+              alt={member.imageAlt}
+              loading="lazy"
+              width={768}
+              height={1024}
+              className="size-full object-cover grayscale transition-[filter,transform] duration-slow ease-gentle group-hover:scale-[1.025] group-hover:grayscale-0 motion-reduce:transform-none motion-reduce:transition-none"
+            />
+          </div>
         </div>
-        <div className="flex min-h-24 flex-col justify-between gap-3 border-t border-line p-4 text-xs text-ink-muted sm:p-5">
-          <p className="leading-relaxed text-ink">{member.business}</p>
-          <p className="leading-relaxed">{member.specialty}</p>
+
+        <div className="grid min-h-32 grid-cols-[minmax(0,1fr)_auto] items-center gap-6 border-t border-line p-6 sm:p-8">
+          <div className="min-w-0">
+            <span aria-hidden className={cn("mb-4 block h-0.5 w-7", tone?.wash ?? "bg-surface-strong")} />
+            <p className="font-display text-2xl font-normal leading-tight text-ink sm:text-3xl">{member.business}</p>
+            <p className="mt-2 text-xs uppercase leading-relaxed text-ink-muted">{member.specialty}</p>
+          </div>
+          <span aria-hidden className={cn("grid size-14 shrink-0 place-items-center rounded-full border text-2xl transition-transform duration-base ease-gentle group-hover:translate-x-1 motion-reduce:transform-none", tone?.rule, tone?.index)}>→</span>
         </div>
       </>
     ) : (
