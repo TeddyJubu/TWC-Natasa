@@ -20,3 +20,5 @@
 - [x] Hide the navigation bar on scroll down and return it on scroll up
 - [x] Redesign catalogue member cards as tall editorial profile cards
 - [x] Verify the redesigned cards on desktop and mobile
+- [x] Show four catalogue cards per row and scale their type to fit
+- [x] Verify the four-column directory on desktop and mobile
