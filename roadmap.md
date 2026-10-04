@@ -18,3 +18,5 @@
 - [x] Restyle the member directory as an editorial contact-sheet catalogue
 - [x] Align catalogue card headers and portrait start lines
 - [x] Hide the navigation bar on scroll down and return it on scroll up
+- [ ] Redesign catalogue member cards as tall editorial profile cards
+- [ ] Verify the redesigned cards on desktop and mobile
