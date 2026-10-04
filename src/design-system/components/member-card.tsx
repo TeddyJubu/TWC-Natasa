@@ -1,4 +1,5 @@
 import * as React from "react";
+import { ProximityText } from "./proximity-text";
 import { cva, type VariantProps } from "class-variance-authority";
 import type { MemberProfile } from "../data/members";
 import { cn } from "../lib/utils";
@@ -67,7 +68,7 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
           <div className="mt-auto flex items-end justify-between gap-5">
             <div className="min-w-0">
               <h3 className="max-w-[10ch] text-balance font-display text-5xl font-normal leading-[0.96] sm:text-6xl lg:text-7xl xl:text-5xl">
-                {member.name}
+                <ProximityText text={member.name} />
               </h3>
               <div className="mt-5 flex items-center gap-4 text-sm text-ink-muted sm:text-base xl:mt-4 xl:text-sm">
                 <span aria-hidden className="hidden h-px w-10 bg-line sm:block" />

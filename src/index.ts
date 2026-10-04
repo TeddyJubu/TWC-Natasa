@@ -10,3 +10,4 @@ export * from "./design-system/components/motion";
 export * from "./design-system/components/image-trail";
 export * from "./design-system/components/member-card";
 export type { MemberProfile } from "./design-system/data/members";
+export * from "./design-system/components/proximity-text";
