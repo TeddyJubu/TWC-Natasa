@@ -71,7 +71,6 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
                 <ProximityText text={member.name} />
               </h3>
               <div className="mt-5 flex items-center gap-4 text-sm text-ink-muted sm:text-base xl:mt-4 xl:text-sm">
-                <span aria-hidden className="hidden h-px w-10 bg-line sm:block" />
                 <p className="min-w-0 leading-snug">{member.role}</p>
               </div>
             </div>
