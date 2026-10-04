@@ -6,6 +6,8 @@ export interface CurvedLoopProps {
   marqueeText?: string;
   speed?: number;
   curveAmount?: number;
+  path?: string;
+  viewBox?: string;
   direction?: "left" | "right";
   interactive?: boolean;
   className?: string;
@@ -21,6 +23,8 @@ export function CurvedLoop({
   marqueeText = "",
   speed = 1,
   curveAmount = 48,
+  path,
+  viewBox = "0 0 1440 120",
   direction = "left",
   interactive = false,
   className,
@@ -37,7 +41,7 @@ export function CurvedLoop({
   const [ready, setReady] = useState(false);
   const uid = useId();
   const pathId = `curve-${uid}`;
-  const pathD = `M-100,40 Q500,${40 + curveAmount} 1540,40`;
+  const pathD = path ?? `M-100,40 Q500,${40 + curveAmount} 1540,40`;
 
   const dragRef = useRef(false);
   const lastXRef = useRef(0);
@@ -135,7 +139,7 @@ export function CurvedLoop({
       <span className="sr-only">{marqueeText}</span>
       <svg
         ref={svgRef}
-        viewBox="0 0 1440 120"
+        viewBox={viewBox}
         aria-hidden
         className={cn("block w-full overflow-visible select-none font-medium text-[6rem] leading-none", !ready && "invisible")}
       >
