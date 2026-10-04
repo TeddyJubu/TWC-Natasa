@@ -54,7 +54,7 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
   <article ref={ref} className={cn(cardVariants({ variant }), className)} {...props}>
     {variant === "catalogue" ? (
       <>
-        <BorderGlow className="rounded-panel" glowVar={tone?.glow ?? "--color-sky"} glowRadius={28} fillOpacity={0.25}>
+        <BorderGlow className="rounded-panel overflow-hidden" glowVar={tone?.glow ?? "--color-sky"} glowRadius={28} fillOpacity={0.25}>
           <div className={cn("relative flex min-h-[20rem] flex-col overflow-hidden border-b border-line p-6 sm:min-h-[23rem] sm:p-8 xl:min-h-[18rem] xl:p-5", tone?.rule)}>
             <span
               aria-label={`Catalogue number ${catalogueNumber ?? 1}`}
@@ -105,7 +105,6 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
             </p>
           </div>
           </div>
-        </BorderGlow>
 
         <div className={cn("p-3 sm:p-4 xl:p-3", tone?.wash ?? "bg-surface")}>
           <div className="aspect-[4/5] overflow-hidden rounded-card bg-surface">
@@ -128,6 +127,7 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
           </div>
           <span aria-hidden className={cn("grid size-14 shrink-0 place-items-center rounded-full border text-2xl transition-transform duration-base ease-gentle group-hover:translate-x-1 motion-reduce:transform-none xl:size-11 xl:text-xl", tone?.rule, tone?.index)}>→</span>
         </div>
+        </BorderGlow>
       </>
     ) : (
       <>
