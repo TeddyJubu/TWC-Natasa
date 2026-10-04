@@ -25,3 +25,4 @@
 - [x] Add the curved-loop marquee to catalogue card labels
 - [x] Add the border-glow effect to catalogue cards
 - [x] Refine the catalogue corner circle and curved label so they remain separate and legible
+- [x] Wrap the catalogue label around the corner number circle and sweep it across the card
