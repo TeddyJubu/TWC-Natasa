@@ -68,10 +68,10 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
             </span>
             <CurvedLoop
               marqueeText="The Women’s Collective ✦ Member catalogue"
-              className="pointer-events-none absolute inset-x-0 top-0 z-10 h-32 overflow-hidden text-ink-muted [&_svg]:h-32 [&_svg]:text-[1.65rem] sm:h-36 sm:[&_svg]:h-36 sm:[&_svg]:text-[1.75rem] xl:h-28 xl:[&_svg]:h-28 xl:[&_svg]:text-[1.45rem]"
-              speed={0.38}
-              path="M-35,122 C18,182 112,187 151,126 C177,85 160,42 191,36 C222,30 229,55 211,59 C289,49 361,61 438,94 C531,134 597,111 735,68"
-              viewBox="0 0 700 190"
+              className="pointer-events-none absolute -left-8 -top-8 z-30 size-36 text-ink-muted [&_svg]:size-36 [&_svg]:text-[0.72rem] sm:-left-9 sm:-top-9 sm:size-40 sm:[&_svg]:size-40 sm:[&_svg]:text-[0.76rem] xl:-left-8 xl:-top-8 xl:size-36 xl:[&_svg]:size-36 xl:[&_svg]:text-[0.72rem]"
+              speed={0.22}
+              path="M72,8 A64,64 0 1,1 71.9,8"
+              viewBox="0 0 144 144"
             />
 
           <div className="relative z-20 mt-auto flex items-end justify-between gap-5">
