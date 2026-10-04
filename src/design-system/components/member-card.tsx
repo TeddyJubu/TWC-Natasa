@@ -54,21 +54,24 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
     {variant === "catalogue" ? (
       <>
         <BorderGlow className="rounded-panel" glowVar={tone?.glow ?? "--color-sky"} glowRadius={28} fillOpacity={0.25}>
-          <div className={cn("flex min-h-[20rem] flex-col border-b border-line p-6 sm:min-h-[23rem] sm:p-8 xl:min-h-[18rem] xl:p-5", tone?.rule)}>
-          <div className="flex items-start justify-between gap-4 xl:gap-2">
-            <CurvedLoop
-              marqueeText="The Women’s Collective ✦ Member catalogue"
-              className="min-w-0 max-w-[14rem] flex-1 text-ink-muted xl:max-w-[12rem]"
-              speed={0.8}
-              curveAmount={48}
-            />
+          <div className={cn("relative flex min-h-[20rem] flex-col overflow-hidden border-b border-line p-6 sm:min-h-[23rem] sm:p-8 xl:min-h-[18rem] xl:p-5", tone?.rule)}>
             <span
               aria-label={`Catalogue number ${catalogueNumber ?? 1}`}
-              className={cn("grid size-14 shrink-0 place-items-center rounded-full border text-lg tabular-nums sm:size-16 sm:text-xl xl:size-12 xl:text-base", tone?.rule, tone?.index)}
+              className={cn(
+                "absolute -left-7 -top-7 z-10 grid size-28 place-items-end justify-items-end rounded-full p-5 sm:size-32 sm:p-6 xl:size-24 xl:p-4",
+                tone?.wash ?? "bg-surface",
+              )}
             >
-              {String(catalogueNumber ?? 1).padStart(2, "0")}
+              <span className="font-display text-2xl leading-none tabular-nums text-canvas sm:text-3xl xl:text-2xl">
+                {String(catalogueNumber ?? 1).padStart(2, "0")}
+              </span>
             </span>
-          </div>
+            <CurvedLoop
+              marqueeText="The Women’s Collective ✦ Member catalogue"
+              className="relative z-20 min-w-0 max-w-[14rem] flex-1 text-ink-muted xl:max-w-[12rem]"
+              speed={0.8}
+              curveAmount={520}
+            />
 
           <div className="mt-auto flex items-end justify-between gap-5">
             <div className="min-w-0">
