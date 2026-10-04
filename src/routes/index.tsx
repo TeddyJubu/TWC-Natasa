@@ -154,7 +154,7 @@ function HomePage() {
       <Footer
         brand={<BrandLockup logoVariant="white" />}
         statement="Find your people, share what you do, and help someone else shine."
-        links={[{ label: "Our mission", href: "#mission" }, { label: "Members", href: "/members" }, { label: "Join", href: "/join" }]}
+        links={[{ label: "Our mission", href: "#mission" }, { label: "Members", href: "/members" }, { label: "Join", href: "/join" }, { label: "Sign in", href: "/account" }]}
         note="The Women’s Collective · Western Queens"
       />
     </Shell>

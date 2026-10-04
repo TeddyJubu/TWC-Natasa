@@ -7,7 +7,7 @@ export async function avatarUrls(paths: (string | null | undefined)[]) {
   const list = paths.filter((p): p is string => !!p);
   if (!list.length) return {} as Record<string, string>;
   const { data } = await supabase.storage.from("avatars").createSignedUrls(list, 60 * 60);
-  return Object.fromEntries((data ?? []).filter((d) => d.signedUrl && d.path).map((d) => [d.path as string, d.signedUrl]));
+  return Object.fromEntries((data ?? []).filter((d) => d.signedUrl && d.path).map((d) => [d.path as string, d.signedUrl as string])) as Record<string, string>;
 }
 
 export function initials(name: string) {
