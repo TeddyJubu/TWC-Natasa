@@ -61,35 +61,90 @@ export const Split = React.forwardRef<HTMLDivElement, SplitProps>(({ className, 
 ));
 Split.displayName = "Split";
 
-const navVariants = cva("z-30 w-full", {
-  variants: {
-    variant: {
-      overlay: "absolute inset-x-0 top-0 text-white",
-      solid: "sticky top-0 border-b border-line bg-canvas/85 text-ink backdrop-blur",
+/* Scroll chrome: a pinned bar lifts away on scroll down and returns on scroll up. */
+const NAV_EDGE = 8;
+const NAV_TOP = 120;
+function useScrollChrome() {
+  const [chrome, setChrome] = React.useState({ hidden: false, scrolled: false });
+  const last = React.useRef(0);
+  React.useEffect(() => {
+    last.current = window.scrollY;
+    setChrome({ hidden: false, scrolled: window.scrollY > 24 });
+    let frame = 0;
+    const onScroll = () => {
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        const y = window.scrollY;
+        const delta = y - last.current;
+        if (Math.abs(delta) < NAV_EDGE) return;
+        last.current = y;
+        const next = { hidden: y > NAV_TOP && delta > 0, scrolled: y > 24 };
+        setChrome((prev) => (prev.hidden === next.hidden && prev.scrolled === next.scrolled ? prev : next));
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, []);
+  return chrome;
+}
+
+const navVariants = cva(
+  "z-30 w-full transition-[transform,background-color,color,border-color,backdrop-filter] duration-base ease-gentle motion-reduce:transition-none",
+  {
+    variants: {
+      variant: {
+        overlay: "absolute inset-x-0 top-0 text-white",
+        solid: "sticky top-0 border-b border-line bg-canvas/85 text-ink backdrop-blur",
+        /** Transparent over hero photography, then black glass once the page moves. */
+        hero: "sticky top-0 -mb-28 z-40 text-white",
+      },
     },
+    defaultVariants: { variant: "solid" },
   },
-  defaultVariants: { variant: "solid" },
-});
+);
 export interface NavbarProps extends React.HTMLAttributes<HTMLElement>, VariantProps<typeof navVariants> {
   brand: React.ReactNode;
   links?: { label: string; href: string }[];
   action?: React.ReactNode;
+  /** Lift the bar out of view while scrolling down, return it on scroll up. */
+  hideOnScroll?: boolean;
 }
-export const Navbar = React.forwardRef<HTMLElement, NavbarProps>(({ className, variant, brand, links = [], action, ...p }, ref) => (
-  <header ref={ref} className={cn(navVariants({ variant }), className)} {...p}>
-    <Container className="flex h-28 items-center justify-between gap-6">
-      <div className="shrink-0">{brand}</div>
-      <nav aria-label="Main" className="hidden gap-5 md:flex">
-        {links.map((l) => (
-          <a key={l.href + l.label} href={l.href} className="font-sans text-base opacity-95 transition-[transform,opacity] duration-300 hover:-translate-y-0.5 hover:opacity-70 focus-visible:underline focus-visible:outline-none motion-reduce:transform-none">
-            {l.label}
-          </a>
-        ))}
-      </nav>
-      <div className="shrink-0">{action}</div>
-    </Container>
-  </header>
-));
+export const Navbar = React.forwardRef<HTMLElement, NavbarProps>(({ className, variant = "solid", brand, links = [], action, hideOnScroll = true, ...p }, ref) => {
+  const pinned = variant === "solid" || variant === "hero";
+  const chrome = useScrollChrome();
+  const [focused, setFocused] = React.useState(false);
+  const hidden = hideOnScroll && pinned && chrome.hidden && !focused;
+  return (
+    <header
+      ref={ref}
+      onFocusCapture={() => setFocused(true)}
+      onBlurCapture={() => setFocused(false)}
+      className={cn(
+        navVariants({ variant }),
+        variant === "hero" && (chrome.scrolled ? "border-b border-white/10 bg-ink/90 text-white backdrop-blur" : "border-b border-transparent"),
+        hidden && "-translate-y-full",
+        className,
+      )}
+      {...p}
+    >
+      <Container className="flex h-28 items-center justify-between gap-6">
+        <div className="shrink-0">{brand}</div>
+        <nav aria-label="Main" className="hidden gap-5 md:flex">
+          {links.map((l) => (
+            <a key={l.href + l.label} href={l.href} className="font-sans text-base opacity-95 transition-[transform,opacity] duration-300 hover:-translate-y-0.5 hover:opacity-70 focus-visible:underline focus-visible:outline-none motion-reduce:transform-none">
+              {l.label}
+            </a>
+          ))}
+        </nav>
+        <div className="shrink-0">{action}</div>
+      </Container>
+    </header>
+  );
+});
 Navbar.displayName = "Navbar";
 
 export interface FooterProps extends React.HTMLAttributes<HTMLElement> {

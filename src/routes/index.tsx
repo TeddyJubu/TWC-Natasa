@@ -52,10 +52,10 @@ const neighborhoods = [
 function HomePage() {
   return (
     <Shell bare>
+      <Navbar variant="hero" brand={<BrandLockup logoVariant="white" compact />} links={links} action={<Link to="/join" className={buttonVariants({ variant: "white" })}>Join the collective</Link>} />
       <Hero
         image={hero}
         imageAlt="Woman standing in a field beneath an open sky"
-        nav={<Navbar variant="overlay" brand={<BrandLockup logoVariant="white" compact />} links={links} action={<Link to="/join" className={buttonVariants({ variant: "white" })}>Join the collective</Link>} />}
         badge="Western Queens, New York"
         title="Find Your People. Help Someone Else Shine."
         description="For women building businesses, careers, creative work, and real relationships close to home."
