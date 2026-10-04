@@ -10,3 +10,4 @@
 - Immersive image strips use the self-contained OGL circular gallery with a static reduced-motion fallback — preserves the editorial arc while remaining accessible and attach-safe.
 - Decorative pointer motion uses the self-contained flower `ImageTrail`, disabled for touch and reduced motion — keeps the playful flourish accessible and attach-safe.
 - Demo member profiles live in a dedicated data module outside the public barrel; only `MemberProfile` is type-exported with `MemberCard` — keeps the reusable API typed without pulling sample portraits into consumer bundles.
+- Member accounts use Lovable Cloud auth; membership status, catalogue number, and member-since are admin-only fields guarded by a database trigger — members can never self-approve.
