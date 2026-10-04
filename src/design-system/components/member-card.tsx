@@ -53,12 +53,15 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
   <article ref={ref} className={cn(cardVariants({ variant }), className)} {...props}>
     {variant === "catalogue" ? (
       <>
-        <div className={cn("flex min-h-[20rem] flex-col border-b border-line p-6 sm:min-h-[23rem] sm:p-8 xl:min-h-[18rem] xl:p-5", tone?.rule)}>
+        <BorderGlow className="rounded-panel" glowVar={tone?.glow ?? "--color-sky"} glowRadius={28} fillOpacity={0.25}>
+          <div className={cn("flex min-h-[20rem] flex-col border-b border-line p-6 sm:min-h-[23rem] sm:p-8 xl:min-h-[18rem] xl:p-5", tone?.rule)}>
           <div className="flex items-start justify-between gap-4 xl:gap-2">
-            <div className="text-xs uppercase leading-relaxed text-ink-muted xl:text-[0.6875rem]">
-              <p>The Women’s Collective</p>
-              <p>Member catalogue</p>
-            </div>
+            <CurvedLoop
+              marqueeText="The Women’s Collective ✦ Member catalogue"
+              className="min-w-0 max-w-[14rem] flex-1 text-ink-muted xl:max-w-[12rem]"
+              speed={0.8}
+              curveAmount={48}
+            />
             <span
               aria-label={`Catalogue number ${catalogueNumber ?? 1}`}
               className={cn("grid size-14 shrink-0 place-items-center rounded-full border text-lg tabular-nums sm:size-16 sm:text-xl xl:size-12 xl:text-base", tone?.rule, tone?.index)}
@@ -89,7 +92,8 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
               <span className="leading-none">{member.neighborhood}</span>
             </p>
           </div>
-        </div>
+          </div>
+        </BorderGlow>
 
         <div className={cn("p-3 sm:p-4 xl:p-3", tone?.wash ?? "bg-surface")}>
           <div className="aspect-[4/5] overflow-hidden rounded-card bg-surface">
