@@ -50,28 +50,28 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
   <article ref={ref} className={cn(cardVariants({ variant }), className)} {...props}>
     {variant === "catalogue" ? (
       <>
-        <div className={cn("flex min-h-[20rem] flex-col border-b border-line p-6 sm:min-h-[23rem] sm:p-8", tone?.rule)}>
-          <div className="flex items-start justify-between gap-5">
-            <div className="text-xs uppercase leading-relaxed text-ink-muted">
+        <div className={cn("flex min-h-[20rem] flex-col border-b border-line p-6 sm:min-h-[23rem] sm:p-8 xl:min-h-[18rem] xl:p-5", tone?.rule)}>
+          <div className="flex items-start justify-between gap-4 xl:gap-2">
+            <div className="text-xs uppercase leading-relaxed text-ink-muted xl:text-[0.6875rem]">
               <p>The Women’s Collective</p>
               <p>Member catalogue</p>
             </div>
             <span
               aria-label={`Catalogue number ${catalogueNumber ?? 1}`}
-              className={cn("grid size-14 shrink-0 place-items-center rounded-full border text-lg tabular-nums sm:size-16 sm:text-xl", tone?.rule, tone?.index)}
+              className={cn("grid size-14 shrink-0 place-items-center rounded-full border text-lg tabular-nums sm:size-16 sm:text-xl xl:size-12 xl:text-base", tone?.rule, tone?.index)}
             >
               {String(catalogueNumber ?? 1).padStart(2, "0")}
             </span>
           </div>
 
-          <h3 className="mt-auto max-w-[10ch] text-balance font-display text-5xl font-normal leading-[0.96] sm:text-6xl lg:text-7xl">
+          <h3 className="mt-auto max-w-[10ch] text-balance font-display text-5xl font-normal leading-[0.96] sm:text-6xl lg:text-7xl xl:text-5xl">
             {member.name}
           </h3>
 
-          <div className="mt-7 grid gap-3 text-sm text-ink-muted sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-center sm:text-base">
+          <div className="mt-7 grid gap-3 text-sm text-ink-muted sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-center sm:text-base xl:mt-5 xl:grid-cols-1 xl:gap-2 xl:text-sm">
             <p className="min-w-0 leading-snug">{member.role}</p>
-            <span aria-hidden className="hidden h-px w-10 bg-line sm:block" />
-            <p className={cn("flex min-w-0 items-start gap-2 leading-snug sm:justify-end sm:text-right", tone?.label)}>
+            <span aria-hidden className="hidden h-px w-10 bg-line sm:block xl:hidden" />
+            <p className={cn("flex min-w-0 items-start gap-2 leading-snug sm:justify-end sm:text-right xl:justify-start xl:text-left", tone?.label)}>
               <svg viewBox="0 0 24 24" aria-hidden className="mt-0.5 size-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.8">
                 <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" />
                 <circle cx="12" cy="10" r="2.25" />
@@ -81,7 +81,7 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
           </div>
         </div>
 
-        <div className={cn("p-3 sm:p-4", tone?.wash ?? "bg-surface")}>
+        <div className={cn("p-3 sm:p-4 xl:p-3", tone?.wash ?? "bg-surface")}>
           <div className="aspect-[4/5] overflow-hidden rounded-card bg-surface">
             <img
               src={member.image}
@@ -94,13 +94,13 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
           </div>
         </div>
 
-        <div className="grid min-h-32 grid-cols-[minmax(0,1fr)_auto] items-center gap-6 border-t border-line p-6 sm:p-8">
+        <div className="grid min-h-32 grid-cols-[minmax(0,1fr)_auto] items-center gap-6 border-t border-line p-6 sm:p-8 xl:min-h-28 xl:gap-3 xl:p-5">
           <div className="min-w-0">
-            <span aria-hidden className={cn("mb-4 block h-0.5 w-7", tone?.wash ?? "bg-surface-strong")} />
-            <p className="font-display text-2xl font-normal leading-tight text-ink sm:text-3xl">{member.business}</p>
+            <span aria-hidden className={cn("mb-4 block h-0.5 w-7 xl:mb-3", tone?.wash ?? "bg-surface-strong")} />
+            <p className="font-display text-2xl font-normal leading-tight text-ink sm:text-3xl xl:text-xl">{member.business}</p>
             <p className="mt-2 text-xs uppercase leading-relaxed text-ink-muted">{member.specialty}</p>
           </div>
-          <span aria-hidden className={cn("grid size-14 shrink-0 place-items-center rounded-full border text-2xl transition-transform duration-base ease-gentle group-hover:translate-x-1 motion-reduce:transform-none", tone?.rule, tone?.index)}>→</span>
+          <span aria-hidden className={cn("grid size-14 shrink-0 place-items-center rounded-full border text-2xl transition-transform duration-base ease-gentle group-hover:translate-x-1 motion-reduce:transform-none xl:size-11 xl:text-xl", tone?.rule, tone?.index)}>→</span>
         </div>
       </>
     ) : (
