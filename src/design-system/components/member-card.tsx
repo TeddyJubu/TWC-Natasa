@@ -23,14 +23,14 @@ const cardVariants = cva("group border border-line bg-canvas text-ink transition
  * a glance from the shared palette. Unknown neighborhoods fall back to the
  * neutral catalogue look.
  */
-const catalogueTones: Record<string, { rule: string; label: string; index: string; wash: string }> = {
-  "Long Island City": { rule: "border-lic", label: "text-lic", index: "text-lic", wash: "bg-lic" },
-  Astoria: { rule: "border-astoria", label: "text-astoria", index: "text-astoria", wash: "bg-astoria" },
-  Sunnyside: { rule: "border-sunnyside", label: "text-sunnyside", index: "text-sunnyside", wash: "bg-sunnyside" },
-  "Jackson Heights": { rule: "border-jackson-heights", label: "text-jackson-heights", index: "text-jackson-heights", wash: "bg-jackson-heights" },
-  "Forest Hills": { rule: "border-forest-hills", label: "text-forest-hills", index: "text-forest-hills", wash: "bg-forest-hills" },
-  Elmhurst: { rule: "border-elmhurst", label: "text-elmhurst", index: "text-elmhurst", wash: "bg-elmhurst" },
-  "Rego Park": { rule: "border-rego-park", label: "text-rego-park", index: "text-rego-park", wash: "bg-rego-park" },
+const catalogueTones: Record<string, { rule: string; label: string; index: string; wash: string; glow: string }> = {
+  "Long Island City": { rule: "border-lic", label: "text-lic", index: "text-lic", wash: "bg-lic", glow: "--color-lic" },
+  Astoria: { rule: "border-astoria", label: "text-astoria", index: "text-astoria", wash: "bg-astoria", glow: "--color-astoria" },
+  Sunnyside: { rule: "border-sunnyside", label: "text-sunnyside", index: "text-sunnyside", wash: "bg-sunnyside", glow: "--color-sunnyside" },
+  "Jackson Heights": { rule: "border-jackson-heights", label: "text-jackson-heights", index: "text-jackson-heights", wash: "bg-jackson-heights", glow: "--color-jackson-heights" },
+  "Forest Hills": { rule: "border-forest-hills", label: "text-forest-hills", index: "text-forest-hills", wash: "bg-forest-hills", glow: "--color-forest-hills" },
+  Elmhurst: { rule: "border-elmhurst", label: "text-elmhurst", index: "text-elmhurst", wash: "bg-elmhurst", glow: "--color-elmhurst" },
+  "Rego Park": { rule: "border-rego-park", label: "text-rego-park", index: "text-rego-park", wash: "bg-rego-park", glow: "--color-rego-park" },
 };
 
 export interface MemberCardProps extends Omit<React.HTMLAttributes<HTMLElement>, "children">, VariantProps<typeof cardVariants> {
