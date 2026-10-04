@@ -36,6 +36,7 @@ const links = [
   { label: "Our constellation", href: "#constellation" },
   { label: "Take part", href: "#take-part" },
   { label: "Join", href: "/join" },
+  { label: "Sign in", href: "/account" },
 ];
 
 const neighborhoods = [
