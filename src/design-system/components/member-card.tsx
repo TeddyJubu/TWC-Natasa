@@ -54,7 +54,7 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
   <article ref={ref} className={cn(cardVariants({ variant }), className)} {...props}>
     {variant === "catalogue" ? (
       <>
-        <BorderGlow className="rounded-panel overflow-hidden" glowVar={tone?.glow ?? "--color-sky"} glowRadius={28} fillOpacity={0.25}>
+        <BorderGlow className="rounded-panel" glowVar={tone?.glow ?? "--color-sky"} glowRadius={28} fillOpacity={0.25}>
           <div className={cn("relative flex min-h-[20rem] flex-col overflow-hidden border-b border-line p-6 sm:min-h-[23rem] sm:p-8 xl:min-h-[18rem] xl:p-5", tone?.rule)}>
             <span
               aria-label={`Catalogue number ${catalogueNumber ?? 1}`}
@@ -119,7 +119,7 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
           </div>
         </div>
 
-        <div className="grid min-h-32 grid-cols-[minmax(0,1fr)_auto] items-center gap-6 border-t border-line p-6 sm:p-8 xl:min-h-28 xl:gap-3 xl:p-5">
+        <div className="grid min-h-32 grid-cols-[minmax(0,1fr)_auto] items-center gap-6 overflow-hidden rounded-b-[31px] border-t border-line p-6 sm:p-8 xl:min-h-28 xl:gap-3 xl:p-5">
           <div className="min-w-0">
             <span aria-hidden className={cn("mb-4 block h-0.5 w-7 xl:mb-3", tone?.wash ?? "bg-surface-strong")} />
             <p className="font-display text-2xl font-normal leading-tight text-ink sm:text-3xl xl:text-xl">{member.business}</p>
