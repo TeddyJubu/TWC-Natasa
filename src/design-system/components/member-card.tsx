@@ -1,6 +1,7 @@
 import * as React from "react";
 import { CurvedLoop } from "./curved-loop";
 import { BorderGlow } from "./border-glow";
+import { ConstellationLogo } from "./brand";
 import { ProximityText } from "./proximity-text";
 import { cva, type VariantProps } from "class-variance-authority";
 import type { MemberProfile } from "../data/members";
@@ -66,13 +67,20 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
                 {String(catalogueNumber ?? 1).padStart(2, "0")}
               </span>
             </span>
-            <CurvedLoop
-              marqueeText="The Women’s Collective ✦ Member catalogue"
-              className="pointer-events-none absolute -left-8 -top-8 z-30 size-36 text-ink-muted [&_svg]:size-36 [&_svg]:text-[0.72rem] sm:-left-9 sm:-top-9 sm:size-40 sm:[&_svg]:size-40 sm:[&_svg]:text-[0.76rem] xl:-left-8 xl:-top-8 xl:size-36 xl:[&_svg]:size-36 xl:[&_svg]:text-[0.72rem]"
-              speed={0.22}
-              path="M72,8 A64,64 0 1,1 71.9,8"
-              viewBox="0 0 144 144"
-            />
+            <div className="pointer-events-none absolute -right-8 -top-8 z-30 size-36 text-ink-muted sm:-right-9 sm:-top-9 sm:size-40 xl:-right-8 xl:-top-8 xl:size-36">
+              <CurvedLoop
+                marqueeText="The Women’s Collective ✦ Member catalogue"
+                className="size-full [&_svg]:size-full [&_svg]:text-[0.72rem] sm:[&_svg]:text-[0.76rem]"
+                speed={0.22}
+                path="M72,8 A64,64 0 1,1 71.9,8"
+                viewBox="0 0 144 144"
+              />
+              <ConstellationLogo
+                variant="white"
+                alt="The Women’s Collective"
+                className="absolute left-1/2 top-1/2 size-12 -translate-x-1/2 -translate-y-1/2"
+              />
+            </div>
 
           <div className="relative z-20 mt-auto flex items-end justify-between gap-5">
             <div className="min-w-0">
