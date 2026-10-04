@@ -105,7 +105,6 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
             </p>
           </div>
           </div>
-        </BorderGlow>
 
         <div className={cn("p-3 sm:p-4 xl:p-3", tone?.wash ?? "bg-surface")}>
           <div className="aspect-[4/5] overflow-hidden rounded-card bg-surface">
@@ -120,7 +119,7 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
           </div>
         </div>
 
-        <div className="grid min-h-32 grid-cols-[minmax(0,1fr)_auto] items-center gap-6 border-t border-line p-6 sm:p-8 xl:min-h-28 xl:gap-3 xl:p-5">
+        <div className="grid min-h-32 grid-cols-[minmax(0,1fr)_auto] items-center gap-6 overflow-hidden rounded-b-[31px] border-t border-line p-6 sm:p-8 xl:min-h-28 xl:gap-3 xl:p-5">
           <div className="min-w-0">
             <span aria-hidden className={cn("mb-4 block h-0.5 w-7 xl:mb-3", tone?.wash ?? "bg-surface-strong")} />
             <p className="font-display text-2xl font-normal leading-tight text-ink sm:text-3xl xl:text-xl">{member.business}</p>
@@ -128,6 +127,7 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
           </div>
           <span aria-hidden className={cn("grid size-14 shrink-0 place-items-center rounded-full border text-2xl transition-transform duration-base ease-gentle group-hover:translate-x-1 motion-reduce:transform-none xl:size-11 xl:text-xl", tone?.rule, tone?.index)}>→</span>
         </div>
+        </BorderGlow>
       </>
     ) : (
       <>
