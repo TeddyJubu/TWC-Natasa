@@ -113,7 +113,7 @@ export interface NavbarProps extends React.HTMLAttributes<HTMLElement>, VariantP
   /** Lift the bar out of view while scrolling down, return it on scroll up. */
   hideOnScroll?: boolean;
 }
-export const Navbar = React.forwardRef<HTMLElement, NavbarProps>(({ className, variant, brand, links = [], action, hideOnScroll = true, ...p }, ref) => {
+export const Navbar = React.forwardRef<HTMLElement, NavbarProps>(({ className, variant = "solid", brand, links = [], action, hideOnScroll = true, ...p }, ref) => {
   const pinned = variant === "solid" || variant === "hero";
   const chrome = useScrollChrome();
   const [focused, setFocused] = React.useState(false);
