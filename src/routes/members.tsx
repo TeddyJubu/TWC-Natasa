@@ -16,6 +16,10 @@ import {
 } from "@/index";
 import { demoMembers } from "@/design-system/data/members";
 import { Shell } from "@/showcase/Shell";
+import { supabase } from "@/integrations/supabase/client";
+import { avatarUrls } from "@/lib/account";
+import type { MemberProfile } from "@/index";
+import heroImage from "@/assets/photography/hero.jpg";
 
 export const Route = createFileRoute("/members")({
   head: () => ({
@@ -46,15 +50,29 @@ const neighborhoodFill: Record<string, string> = {
 
 function MembersPage() {
   const [activeNeighborhood, setActiveNeighborhood] = React.useState<string>("All");
+  const [realMembers, setRealMembers] = React.useState<MemberProfile[]>([]);
+  React.useEffect(() => {
+    void (async () => {
+      const { data } = await supabase.rpc("public_directory");
+      if (!data?.length) return;
+      const urls = await avatarUrls(data.map((d) => d.avatar_path));
+      setRealMembers(data.map((d) => ({
+        id: d.id, name: d.full_name, role: d.role_title, business: d.business, neighborhood: d.neighborhood,
+        specialty: d.specialty, bio: d.bio, lookingFor: d.looking_for,
+        image: (d.avatar_path && urls[d.avatar_path]) || heroImage, imageAlt: `Portrait of ${d.full_name}`,
+      })));
+    })();
+  }, []);
+  const all = [...realMembers, ...demoMembers];
   const members = activeNeighborhood === "All"
-    ? demoMembers
-    : demoMembers.filter((member) => member.neighborhood === activeNeighborhood);
+    ? all
+    : all.filter((member) => member.neighborhood === activeNeighborhood);
 
   return (
     <Shell bare>
       <Navbar
         brand={<Link to="/" aria-label="The Women’s Collective home"><BrandLockup compact /></Link>}
-        links={[{ label: "Home", href: "/" }, { label: "Members", href: "/members" }, { label: "Join", href: "/join" }]}
+        links={[{ label: "Home", href: "/" }, { label: "Members", href: "/members" }, { label: "Join", href: "/join" }, { label: "Sign in", href: "/account" }]}
         action={<Link to="/join" className={buttonVariants({ variant: "ink", size: "sm" })}>Join<span className="hidden sm:inline"> the collective</span></Link>}
       />
 
