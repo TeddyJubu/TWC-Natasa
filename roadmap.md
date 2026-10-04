@@ -24,3 +24,4 @@
 - [x] Verify the four-column directory on desktop and mobile
 - [x] Add the curved-loop marquee to catalogue card labels
 - [x] Add the border-glow effect to catalogue cards
+- [x] Refine the catalogue corner circle and curved label so they remain separate and legible

@@ -58,7 +58,7 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
             <span
               aria-label={`Catalogue number ${catalogueNumber ?? 1}`}
               className={cn(
-                "absolute -left-7 -top-7 z-10 grid size-28 place-items-end justify-items-end rounded-full p-5 sm:size-32 sm:p-6 xl:size-24 xl:p-4",
+                "absolute -left-6 -top-6 z-20 grid size-24 place-items-end justify-items-end rounded-full p-5 sm:-left-7 sm:-top-7 sm:size-28 sm:p-6 xl:-left-6 xl:-top-6 xl:size-24 xl:p-5",
                 tone?.wash ?? "bg-surface",
               )}
             >
@@ -68,9 +68,9 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
             </span>
             <CurvedLoop
               marqueeText="The Women’s Collective ✦ Member catalogue"
-              className="relative z-20 min-w-0 max-w-[14rem] flex-1 text-ink-muted xl:max-w-[12rem]"
-              speed={0.8}
-              curveAmount={520}
+              className="relative z-10 ml-16 mt-1 w-[calc(100%-4rem)] max-w-none flex-none text-ink-muted [&_svg]:h-20 [&_svg]:text-[3rem] sm:ml-20 sm:w-[calc(100%-5rem)] sm:[&_svg]:h-24 sm:[&_svg]:text-[3.25rem] xl:ml-16 xl:w-[calc(100%-4rem)] xl:[&_svg]:h-20 xl:[&_svg]:text-[2.75rem]"
+              speed={0.55}
+              curveAmount={180}
             />
 
           <div className="mt-auto flex items-end justify-between gap-5">
