@@ -18,6 +18,7 @@ import { demoMembers } from "@/design-system/data/members";
 import { Shell } from "@/showcase/Shell";
 import { supabase } from "@/integrations/supabase/client";
 import { avatarUrls } from "@/lib/account";
+import { JOIN_URL } from "@/lib/site";
 import type { MemberProfile } from "@/index";
 import heroImage from "@/assets/photography/hero.jpg";
 
@@ -25,9 +26,9 @@ export const Route = createFileRoute("/members")({
   head: () => ({
     meta: [
       { title: "Member Directory — The Women’s Collective" },
-      { name: "description", content: "Meet a diverse community of women founders, creatives, professionals, and local leaders across Queens." },
+      { name: "description", content: "Meet a diverse community of women founders, creatives, professionals, and local leaders across Brooklyn and Queens." },
       { property: "og:title", content: "Member Directory — The Women’s Collective" },
-      { property: "og:description", content: "Discover women doing remarkable work across Queens and the connections they hope to build." },
+      { property: "og:description", content: "Discover women doing remarkable work across Brooklyn and Queens and the connections they hope to build." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -69,11 +70,11 @@ function MembersPage() {
     : all.filter((member) => member.neighborhood === activeNeighborhood);
 
   return (
-    <Shell bare>
+    <Shell bare toolbar={false}>
       <Navbar
         brand={<Link to="/" aria-label="The Women’s Collective home"><BrandLockup compact /></Link>}
-        links={[{ label: "Home", href: "/" }, { label: "Members", href: "/members" }, { label: "Join", href: "/join" }, { label: "Sign in", href: "/account" }]}
-        action={<Link to="/join" className={buttonVariants({ variant: "ink", size: "sm" })}>Join<span className="hidden sm:inline"> the collective</span></Link>}
+        links={[{ label: "Home", href: "/" }, { label: "Members", href: "/members" }, { label: "Join", href: JOIN_URL }]}
+        action={<a href={JOIN_URL} className={buttonVariants({ variant: "ink", size: "sm" })}>Join<span className="hidden sm:inline"> the collective</span></a>}
       />
 
       <header className="overflow-hidden bg-paper pt-20 md:pt-28">
@@ -127,15 +128,15 @@ function MembersPage() {
           <Badge variant="solid">Add your light</Badge>
           <Heading className="max-w-3xl">Your Work Belongs in the Conversation</Heading>
           <Text className="max-w-xl">Tell us about your work, the people you hope to meet, and how you want to contribute.</Text>
-          <Link to="/join" className={buttonVariants({ variant: "white", size: "lg" })}>Start your application</Link>
+          <a href={JOIN_URL} className={buttonVariants({ variant: "white", size: "lg" })}>Start your application</a>
         </Container>
       </Section>
 
       <Footer
         brand={<BrandLockup logoVariant="white" />}
         statement="Find your people, share what you do, and help someone else shine."
-        links={[{ label: "Home", href: "/" }, { label: "Join", href: "/join" }]}
-        note="The Women’s Collective · Western Queens"
+        links={[{ label: "Home", href: "/" }, { label: "Join", href: JOIN_URL }]}
+        note="The Women’s Collective · Brooklyn & Queens"
       />
     </Shell>
   );

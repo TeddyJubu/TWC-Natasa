@@ -40,7 +40,7 @@ function Typography() {
           <Row label='<Heading size="title">'><Heading as="h3" size="title">Share What You Do</Heading></Row>
           <Row label="<Statement lead={2}>"><Statement lead={2} text="Every connection makes the whole community stronger." /></Row>
           <Row label="<Stat>"><Stat value="07" label="Neighborhood colors" /></Row>
-          <Row label="<Badge>"><Badge>Western Queens</Badge></Row>
+          <Row label="<Badge>"><Badge>Brooklyn &amp; Queens</Badge></Row>
           <Row label='<Text size="lg">'><Text size="lg">Large body copy for intros.</Text></Row>
           <Row label="<Text>"><Text>Default body copy stays short and plain.</Text></Row>
           <Row label='<Text tone="muted" size="sm">'><Text tone="muted" size="sm">Captions and fine print.</Text></Row>

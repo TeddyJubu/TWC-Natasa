@@ -51,6 +51,10 @@
   --bl-elmhurst: #12d9bd;
   --bl-forest-hills: #5fd35f;
   --bl-rego-park: #ff4438;
+  /* North Brooklyn: deeper tones, kept clearly apart from the seven Queens colors. */
+  --bl-greenpoint: #0f766e;
+  --bl-williamsburg: #1f3a93;
+  --bl-bushwick: #a4462a;
 }
 
 /* Night: black sections and dark mode. Tokens invert so components need no tone props. */
@@ -93,6 +97,9 @@
   --color-elmhurst: var(--bl-elmhurst);
   --color-forest-hills: var(--bl-forest-hills);
   --color-rego-park: var(--bl-rego-park);
+  --color-greenpoint: var(--bl-greenpoint);
+  --color-williamsburg: var(--bl-williamsburg);
+  --color-bushwick: var(--bl-bushwick);
   --color-ring: var(--bl-sky);
 
   --font-display: "Gilda Display", Georgia, serif;
