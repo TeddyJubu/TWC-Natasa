@@ -73,8 +73,9 @@ function MembersPage() {
     <Shell bare toolbar={false}>
       <Navbar
         brand={<Link to="/" aria-label="The Women’s Collective home"><BrandLockup compact /></Link>}
-        links={[{ label: "Home", href: "/" }, { label: "Members", href: "/members" }, { label: "Join", href: JOIN_URL }]}
-        action={<a href={JOIN_URL} className={buttonVariants({ variant: "ink", size: "sm" })}>Join<span className="hidden sm:inline"> the collective</span></a>}
+        links={[{ label: "Home", href: "/" }, { label: "Members", href: "/members" }]}
+        action={<a href={JOIN_URL} className={buttonVariants({ size: "sm" })}><span>Join<span className="hidden sm:inline"> the collective</span></span></a>}
+        menuAction={<a href={JOIN_URL} className={cn(buttonVariants({ size: "lg" }), "w-full")}>Join the collective</a>}
       />
 
       <header className="overflow-hidden bg-paper pt-20 md:pt-28">
@@ -128,14 +129,14 @@ function MembersPage() {
           <Badge variant="solid">Add your light</Badge>
           <Heading className="max-w-3xl">Your Work Belongs in the Conversation</Heading>
           <Text className="max-w-xl">Tell us about your work, the people you hope to meet, and how you want to contribute.</Text>
-          <a href={JOIN_URL} className={buttonVariants({ variant: "white", size: "lg" })}>Start your application</a>
+          <a href={JOIN_URL} className={buttonVariants({ size: "lg" })}>Join the collective</a>
         </Container>
       </Section>
 
       <Footer
         brand={<BrandLockup logoVariant="white" />}
         statement="Find your people, share what you do, and help someone else shine."
-        links={[{ label: "Home", href: "/" }, { label: "Join", href: JOIN_URL }]}
+        links={[{ label: "Home", href: "/" }, { label: "Join the collective", href: JOIN_URL }]}
         note="The Women’s Collective · Brooklyn & Queens"
       />
     </Shell>

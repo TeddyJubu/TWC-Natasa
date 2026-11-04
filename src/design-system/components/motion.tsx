@@ -37,7 +37,7 @@ export const Reveal = React.forwardRef<HTMLDivElement, RevealProps>(({ className
 });
 Reveal.displayName = "Reveal";
 
-export interface StaggerProps extends React.HTMLAttributes<HTMLDivElement> {}
+export type StaggerProps = React.HTMLAttributes<HTMLDivElement>;
 
 /** Use for short groups whose children should enter in sequence. */
 export const Stagger = React.forwardRef<HTMLDivElement, StaggerProps>(({ className, ...p }, ref) => (

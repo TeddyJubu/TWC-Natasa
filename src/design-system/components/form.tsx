@@ -161,7 +161,7 @@ export const FormSection = React.forwardRef<HTMLFieldSetElement, FormSectionProp
 ));
 FormSection.displayName = "FormSection";
 
-export interface FormActionsProps extends React.HTMLAttributes<HTMLDivElement> {}
+export type FormActionsProps = React.HTMLAttributes<HTMLDivElement>;
 export const FormActions = React.forwardRef<HTMLDivElement, FormActionsProps>(({ className, ...p }, ref) => (
   <div ref={ref} className={cn("flex flex-col-reverse gap-3 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-end", className)} {...p} />
 ));

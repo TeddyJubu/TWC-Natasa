@@ -182,19 +182,21 @@ export interface FeatureCardProps extends Omit<React.HTMLAttributes<HTMLElement>
   description?: React.ReactNode;
   tag?: React.ReactNode;
   image?: string;
+  /** Describe the photo when it carries meaning; leave empty only for pure decoration. */
+  imageAlt?: string;
 }
+/* Every card shares one structure: tag at the top, title and description at the foot. */
 export const FeatureCard = React.forwardRef<HTMLElement, FeatureCardProps>(
-  ({ className, variant, title, description, tag, image, ...p }, ref) => (
+  ({ className, variant, title, description, tag, image, imageAlt = "", ...p }, ref) => (
     <article ref={ref} className={cn(featureVariants({ variant }), className)} {...p}>
       {variant === "photo" && image && (
         <>
-          <img src={image} alt="" loading="lazy" className="absolute inset-0 -z-0 size-full object-cover transition-transform duration-700 ease-[var(--ease-gentle)] group-hover:scale-[1.03] motion-reduce:transform-none motion-reduce:transition-none" />
-          <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+          <img src={image} alt={imageAlt} loading="lazy" className="absolute inset-0 -z-0 size-full object-cover transition-transform duration-700 ease-[var(--ease-gentle)] group-hover:scale-[1.03] motion-reduce:transform-none motion-reduce:transition-none" />
+          <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/10" />
         </>
       )}
       <div className="relative flex flex-1 flex-col gap-6">
         {tag && <span className="self-start rounded-xl bg-surface-strong px-3 py-2 text-base text-ink">{tag}</span>}
-        <span aria-hidden className={cn("h-28 w-px", variant === "photo" ? "bg-white" : "bg-ink")} />
         <div className="mt-auto flex flex-col gap-4">
           <h3 className="font-display text-3xl leading-tight">{title}</h3>
           {description && <p className={cn("text-base leading-relaxed", variant === "photo" ? "text-white/90" : "text-ink-muted")}>{description}</p>}

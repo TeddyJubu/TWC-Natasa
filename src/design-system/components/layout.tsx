@@ -62,6 +62,24 @@ export const Split = React.forwardRef<HTMLDivElement, SplitProps>(({ className, 
 ));
 Split.displayName = "Split";
 
+/** First focusable element on a page: hidden above the viewport until it receives keyboard focus. */
+export const SkipLink = React.forwardRef<HTMLAnchorElement, React.AnchorHTMLAttributes<HTMLAnchorElement>>(
+  ({ className, href = "#main", children = "Skip to content", ...p }, ref) => (
+    <a
+      ref={ref}
+      href={href}
+      className={cn(
+        "fixed left-4 top-4 z-[70] inline-flex min-h-11 -translate-y-[200%] items-center rounded-control bg-ink px-5 text-base text-canvas shadow-soft focus:translate-y-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-safe:transition-transform",
+        className,
+      )}
+      {...p}
+    >
+      {children}
+    </a>
+  ),
+);
+SkipLink.displayName = "SkipLink";
+
 /* Scroll chrome: a pinned bar lifts away on scroll down and returns on scroll up. */
 const NAV_EDGE = 8;
 const NAV_TOP = 120;

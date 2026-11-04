@@ -31,9 +31,11 @@
   --bl-surface-strong: #e6e9ee;
   --bl-ink: #1f1f1c;
   --bl-ink-muted: #525252;
-  --bl-ink-faint: #b9b9b4;
+  /* 3.4:1 on canvas: enough for the large serif statement words and idle tabs it is used for. */
+  --bl-ink-faint: #8a8a85;
   --bl-line: rgb(31 31 28 / 0.1);
-  --bl-sky: #1f8ad6;
+  /* 4.9:1 with white button text (WCAG AA). */
+  --bl-sky: #1a75b6;
   --bl-sky-ink: #ffffff;
   --bl-sun: #edd22e;
   --bl-sun-ink: #1f1f1c;
@@ -227,6 +229,18 @@
   }
 }
 
+/* Statement words darken from faint to full ink as the sentence scrolls into view. */
+@keyframes bl-ink-in { from { color: var(--bl-ink-faint); } to { color: var(--bl-ink); } }
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .motion-ink-reveal {
+      animation: bl-ink-in linear both;
+      animation-timeline: view();
+      animation-range: entry 100% cover 50%;
+    }
+  }
+}
+
 @keyframes bl-marquee { to { transform: translateX(-50%); } }
 @utility animate-marquee { animation: bl-marquee 24s linear infinite; }
 
@@ -246,5 +260,5 @@
 /* Force light tokens inside a night block (e.g. light cards on a black section) */
 .tone-light {
   --bl-canvas: #fcfcfa; --bl-surface: #f2f4f7; --bl-surface-strong: #e6e9ee;
-  --bl-ink: #1f1f1c; --bl-ink-muted: #525252; --bl-ink-faint: #b9b9b4; --bl-line: rgb(31 31 28 / 0.1);
+  --bl-ink: #1f1f1c; --bl-ink-muted: #525252; --bl-ink-faint: #8a8a85; --bl-line: rgb(31 31 28 / 0.1);
 }
