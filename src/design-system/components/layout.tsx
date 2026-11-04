@@ -1,4 +1,5 @@
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../lib/utils";
 import { Badge, Heading, Text } from "./typography";
@@ -110,15 +111,74 @@ export interface NavbarProps extends React.HTMLAttributes<HTMLElement>, VariantP
   brand: React.ReactNode;
   links?: { label: string; href: string }[];
   action?: React.ReactNode;
+  /** Shown at the foot of the mobile menu instead of `action`, e.g. a full-width join button. */
+  menuAction?: React.ReactNode;
   /** Lift the bar out of view while scrolling down, return it on scroll up. */
   hideOnScroll?: boolean;
 }
-export const Navbar = React.forwardRef<HTMLElement, NavbarProps>(({ className, variant = "solid", brand, links = [], action, hideOnScroll = true, ...p }, ref) => {
+
+/* Below md the links move into a full-screen menu: Escape or the close button shuts it and focus returns to the menu button. */
+function useMobileMenu() {
+  const [open, setOpen] = React.useState(false);
+  const [mounted, setMounted] = React.useState(false);
+  const id = React.useId();
+  const buttonRef = React.useRef<HTMLButtonElement>(null);
+  const panelRef = React.useRef<HTMLDivElement>(null);
+  React.useEffect(() => setMounted(true), []);
+  const close = React.useCallback(() => {
+    setOpen(false);
+    buttonRef.current?.focus();
+  }, []);
+  React.useEffect(() => {
+    if (!open) return;
+    const focusables = () => Array.from(panelRef.current?.querySelectorAll<HTMLElement>("a[href], button:not([disabled])") ?? []);
+    focusables()[0]?.focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        close();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const items = focusables();
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (!first || !last) return;
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    const desktop = window.matchMedia("(min-width: 48rem)");
+    const onDesktop = () => {
+      if (desktop.matches) setOpen(false);
+    };
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", onKey);
+    desktop.addEventListener("change", onDesktop);
+    return () => {
+      document.body.style.overflow = overflow;
+      document.removeEventListener("keydown", onKey);
+      desktop.removeEventListener("change", onDesktop);
+    };
+  }, [open, close]);
+  return { open, setOpen, close, mounted, id, buttonRef, panelRef };
+}
+
+const menuIconButton = "grid size-11 shrink-0 place-items-center rounded-full border border-current/30 transition-[background-color,border-color] duration-300 hover:bg-current/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-canvas md:hidden";
+
+export const Navbar = React.forwardRef<HTMLElement, NavbarProps>(({ className, variant = "solid", brand, links = [], action, menuAction, hideOnScroll = true, ...p }, ref) => {
   const pinned = variant === "solid" || variant === "hero";
   const chrome = useScrollChrome();
+  const menu = useMobileMenu();
   const [focused, setFocused] = React.useState(false);
-  const hidden = hideOnScroll && pinned && chrome.hidden && !focused;
+  const hidden = hideOnScroll && pinned && chrome.hidden && !focused && !menu.open;
   return (
+    <>
     <header
       ref={ref}
       onFocusCapture={() => setFocused(true)}
@@ -131,18 +191,51 @@ export const Navbar = React.forwardRef<HTMLElement, NavbarProps>(({ className, v
       )}
       {...p}
     >
-      <Container className="flex h-28 items-center justify-between gap-6">
+      <Container className="flex h-28 items-center justify-between gap-3 md:gap-6">
         <div className="shrink-0">{brand}</div>
         <nav aria-label="Main" className="hidden gap-5 md:flex">
           {links.map((l) => (
-            <a key={l.href + l.label} href={l.href} className="font-sans text-base opacity-95 transition-[transform,opacity] duration-300 hover:-translate-y-0.5 hover:opacity-70 focus-visible:underline focus-visible:outline-none motion-reduce:transform-none">
+            <a key={l.href + l.label} href={l.href} className="inline-flex min-h-11 items-center font-sans text-base opacity-95 transition-[transform,opacity] duration-300 hover:-translate-y-0.5 hover:opacity-70 focus-visible:underline focus-visible:outline-none motion-reduce:transform-none">
               {l.label}
             </a>
           ))}
         </nav>
-        <div className="shrink-0">{action}</div>
+        <div className="flex shrink-0 items-center gap-2">
+          {action}
+          {links.length > 0 && (
+            <button ref={menu.buttonRef} type="button" className={menuIconButton} aria-label="Open menu" aria-expanded={menu.open} aria-controls={menu.id} onClick={() => menu.setOpen(true)}>
+              <svg aria-hidden viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M4 8h16M4 16h16" /></svg>
+            </button>
+          )}
+        </div>
       </Container>
     </header>
+    {menu.mounted && links.length > 0 && createPortal(
+      <div id={menu.id} ref={menu.panelRef} role="dialog" aria-modal="true" aria-label="Menu" hidden={!menu.open} className="tone-night fixed inset-0 z-[60] flex flex-col overflow-y-auto motion-panel-in md:hidden">
+        <Container className="flex h-28 shrink-0 items-center justify-between gap-3">
+          <span className="font-display text-2xl">Menu</span>
+          <button type="button" className={menuIconButton} aria-label="Close menu" onClick={menu.close}>
+            <svg aria-hidden viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+          </button>
+        </Container>
+        <Container className="flex flex-1 flex-col gap-10 pb-10">
+          <nav aria-label="Main">
+            <ul className="flex flex-col border-t border-line">
+              {links.map((l) => (
+                <li key={l.href + l.label}>
+                  <a href={l.href} onClick={() => menu.setOpen(false)} className="flex min-h-16 items-center border-b border-line font-display text-3xl focus-visible:text-sky focus-visible:outline-none">
+                    {l.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          {(menuAction ?? action) && <div className="flex flex-col gap-3">{menuAction ?? action}</div>}
+        </Container>
+      </div>,
+      document.body,
+    )}
+    </>
   );
 });
 Navbar.displayName = "Navbar";
@@ -175,8 +268,8 @@ export const Footer = React.forwardRef<HTMLElement, FooterProps>(
         </div>
         <div className="flex flex-col justify-between gap-4 border-t border-line pt-8 text-sm text-ink-muted md:flex-row">
           <span>{note}</span>
-          <nav aria-label="Footer" className="flex flex-wrap gap-6">
-            {links.map((l) => <a key={l.label} href={l.href} className="hover:text-ink">{l.label}</a>)}
+          <nav aria-label="Footer" className="flex flex-wrap gap-x-6">
+            {links.map((l) => <a key={l.label} href={l.href} className="inline-flex min-h-11 items-center hover:text-ink md:min-h-6">{l.label}</a>)}
           </nav>
         </div>
       </Container>

@@ -1,12 +1,13 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import {
   Accordion, Badge, BrandLockup, ConstellationLogo, Container, FeatureCard, Footer,
-  Heading, Hero, ImageFrame, Navbar, Ribbon, Section, SectionHeader, Split, Statement, Text, buttonVariants,
+  Heading, Hero, ImageFrame, Navbar, Ribbon, Section, SectionHeader, Split, Statement, Text, buttonVariants, cn,
 } from "@/index";
 import { Shell } from "@/showcase/Shell";
 import { JOIN_URL, SITE_URL } from "@/lib/site";
-import hero from "@/assets/photography/hero.jpg";
 import event from "@/assets/photography/event.jpg";
+// Same photo cropped above the name badges, for the full-bleed hero.
+import eventHero from "@/assets/photography/event-hero.jpg";
 import neighborhoodLic from "@/assets/photography/neighborhood-lic.jpg";
 import neighborhoodSunnyside from "@/assets/photography/neighborhood-sunnyside.jpg";
 import neighborhoodAstoria from "@/assets/photography/neighborhood-astoria.jpg";
@@ -43,7 +44,6 @@ const links = [
   { label: "Members", href: "/members" },
   { label: "Our constellation", href: "#constellation" },
   { label: "Take part", href: "#take-part" },
-  { label: "Join", href: JOIN_URL },
 ];
 
 const brooklyn = [
@@ -73,14 +73,25 @@ const marquee = boroughs.flatMap((borough) => borough.neighborhoods.map((item) =
 function HomePage() {
   return (
     <Shell bare toolbar={false}>
-      <Navbar variant="hero" brand={<BrandLockup logoVariant="white" compact />} links={links} action={<a href={JOIN_URL} className={buttonVariants({ variant: "white" })}>Join the collective</a>} />
+      <Navbar
+        variant="hero"
+        brand={<BrandLockup logoVariant="white" compact />}
+        links={links}
+        action={<a href={JOIN_URL} className={buttonVariants({ variant: "white" })}><span>Join<span className="hidden sm:inline"> the collective</span></span></a>}
+        menuAction={<a href={JOIN_URL} className={cn(buttonVariants({ size: "lg" }), "w-full")}>Join the collective</a>}
+      />
       <Hero
-        image={hero}
-        imageAlt="Woman standing in a field beneath an open sky"
+        image={eventHero}
+        imageAlt="Members laughing together at a rooftop evening event"
+        imagePosition="40% 30%"
         badge="Brooklyn & Queens, New York"
         title="Find Your People. Help Someone Else Shine."
         description="For women building businesses, careers, creative work, and real relationships close to home."
-        info={{ image: event, text: "A generous, engaged community across Brooklyn and Queens." }}
+        actions={<>
+          <a href={JOIN_URL} className={buttonVariants({ size: "lg" })}>Join the collective</a>
+          <Link to="/members" className={buttonVariants({ variant: "outline", size: "lg" })}>Meet the members</Link>
+        </>}
+        info={{ text: "A generous, engaged community across Brooklyn and Queens." }}
         highlight={{ value: "10", label: "Neighborhoods" }}
       />
 
