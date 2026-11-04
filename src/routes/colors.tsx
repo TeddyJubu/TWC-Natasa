@@ -36,6 +36,9 @@ const tokens = [
   ["bg-elmhurst", "Elmhurst", "bg-elmhurst text-white"],
   ["bg-forest-hills", "Forest Hills", "bg-forest-hills text-white"],
   ["bg-rego-park", "Rego Park", "bg-rego-park text-white"],
+  ["bg-greenpoint", "Greenpoint", "bg-greenpoint text-white"],
+  ["bg-williamsburg", "Williamsburg", "bg-williamsburg text-white"],
+  ["bg-bushwick", "Bushwick", "bg-bushwick text-white"],
 ] as const;
 
 function Colors() {

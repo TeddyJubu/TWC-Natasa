@@ -26,48 +26,52 @@ ImageFrame.displayName = "ImageFrame";
 export interface HeroProps extends Omit<React.HTMLAttributes<HTMLElement>, "title"> {
   image: string;
   imageAlt?: string;
+  /** CSS object-position for the photo, so narrow screens keep the subject in frame. */
+  imagePosition?: string;
   badge?: React.ReactNode;
   title: React.ReactNode;
   description?: React.ReactNode;
-  /** Glass info card at the bottom (thumbnail + caption). */
+  /** Calls to action under the description: one primary button, optionally one secondary. */
+  actions?: React.ReactNode;
+  /** Small caption card at the bottom (optional thumbnail + text). */
   info?: { image?: string; text: React.ReactNode };
-  /** Big stat beside the info card, e.g. a date. */
+  /** Big stat beside the info card, e.g. a count or a date. */
   highlight?: { value: string; label: string };
   nav?: React.ReactNode;
 }
+const heroCard = "rounded-card border border-white/15 bg-[rgb(16_16_16/0.55)] text-white backdrop-blur-md";
 export const Hero = React.forwardRef<HTMLElement, HeroProps>(
-  ({ className, image, imageAlt = "", badge, title, description, info, highlight, nav, ...p }, ref) => (
-    <section ref={ref} className={cn("relative isolate min-h-[60rem] overflow-hidden bg-sky text-white", className)} {...p}>
-      <img src={image} alt={imageAlt} className="absolute inset-0 -z-10 size-full object-cover" />
-      <div aria-hidden className="absolute inset-0 -z-10 bg-sky-fade" />
-      <div aria-hidden className="absolute inset-x-0 bottom-0 -z-10 h-48 bg-gradient-to-t from-canvas to-transparent" />
+  ({ className, image, imageAlt = "", imagePosition = "50% 35%", badge, title, description, actions, info, highlight, nav, ...p }, ref) => (
+    <section ref={ref} className={cn("tone-night relative isolate flex min-h-[100svh] flex-col overflow-hidden text-white", className)} {...p}>
+      <img src={image} alt={imageAlt} style={{ objectPosition: imagePosition }} className="absolute inset-0 -z-10 size-full object-cover" />
+      {/* Dark scrim on the text side (bottom on phones, left on wider screens) keeps type readable over any photo. */}
+      <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-t from-black/85 via-black/60 to-black/45 md:bg-gradient-to-r md:from-black/85 md:via-black/55 md:to-black/10" />
+      <div aria-hidden className="absolute inset-x-0 top-0 -z-10 h-40 bg-gradient-to-b from-black/55 to-transparent" />
       {nav}
-      <div className="mx-auto grid max-w-[80rem] gap-10 px-6 pt-44 md:grid-cols-[1fr_auto] md:items-end md:px-[4.5rem]">
-        <div className="motion-stagger flex flex-col items-start gap-8">
+      <div className="mx-auto flex w-full max-w-[80rem] flex-1 flex-col justify-end gap-12 px-6 pb-12 pt-36 md:justify-between md:px-[4.5rem] md:pb-16 md:pt-44">
+        <div className="motion-stagger flex max-w-3xl flex-col items-start gap-6 md:gap-7">
           {badge && <Badge variant="glass">{badge}</Badge>}
-          <Heading as="h1" size="display" className="max-w-2xl text-white">{title}</Heading>
+          <Heading as="h1" size="display" className="text-5xl text-white sm:text-6xl md:text-[5rem] md:leading-[1.02]">{title}</Heading>
+          {description && <Text className="max-w-xl text-lg text-white/90 md:text-xl">{description}</Text>}
+          {actions && <div className="flex flex-wrap items-center gap-3 pt-2">{actions}</div>}
         </div>
-        {description && <Text size="md" className="motion-reveal max-w-[15rem] pb-4 text-white md:text-right">{description}</Text>}
-      </div>
-      {(info || highlight) && (
-        <>
-          <div aria-hidden className="mt-24 h-px w-full bg-white/60" />
-          <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-center gap-6 px-6 pt-14">
+        {(info || highlight) && (
+          <div className="flex flex-wrap items-stretch gap-3 md:justify-end">
             {info && (
-              <div className="motion-float flex items-center gap-5 rounded-card border border-glass-line bg-glass p-3 pr-6 backdrop-blur-md">
-                {info.image && <img src={info.image} alt="" className="size-32 rounded-xl object-cover" />}
-                <p className="max-w-40 text-base">{info.text}</p>
+              <div className={cn(heroCard, "motion-float flex items-center gap-4 p-3 pr-6")}>
+                {info.image && <img src={info.image} alt="" className="size-20 rounded-xl object-cover" />}
+                <p className={cn("max-w-56 text-base", !info.image && "py-3 pl-3")}>{info.text}</p>
               </div>
             )}
             {highlight && (
-              <div className="flex flex-col items-center gap-1 border-l border-white/70 px-6 py-4">
-                <span className="font-display text-7xl leading-none">{highlight.value}</span>
+              <div className={cn(heroCard, "flex items-center gap-4 px-6 py-4")}>
+                <span className="font-display text-6xl leading-none">{highlight.value}</span>
                 <span className="text-base">{highlight.label}</span>
               </div>
             )}
           </div>
-        </>
-      )}
+        )}
+      </div>
     </section>
   ),
 );
@@ -178,19 +182,21 @@ export interface FeatureCardProps extends Omit<React.HTMLAttributes<HTMLElement>
   description?: React.ReactNode;
   tag?: React.ReactNode;
   image?: string;
+  /** Describe the photo when it carries meaning; leave empty only for pure decoration. */
+  imageAlt?: string;
 }
+/* Every card shares one structure: tag at the top, title and description at the foot. */
 export const FeatureCard = React.forwardRef<HTMLElement, FeatureCardProps>(
-  ({ className, variant, title, description, tag, image, ...p }, ref) => (
+  ({ className, variant, title, description, tag, image, imageAlt = "", ...p }, ref) => (
     <article ref={ref} className={cn(featureVariants({ variant }), className)} {...p}>
       {variant === "photo" && image && (
         <>
-          <img src={image} alt="" loading="lazy" className="absolute inset-0 -z-0 size-full object-cover transition-transform duration-700 ease-[var(--ease-gentle)] group-hover:scale-[1.03] motion-reduce:transform-none motion-reduce:transition-none" />
-          <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+          <img src={image} alt={imageAlt} loading="lazy" className="absolute inset-0 -z-0 size-full object-cover transition-transform duration-700 ease-[var(--ease-gentle)] group-hover:scale-[1.03] motion-reduce:transform-none motion-reduce:transition-none" />
+          <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/10" />
         </>
       )}
       <div className="relative flex flex-1 flex-col gap-6">
         {tag && <span className="self-start rounded-xl bg-surface-strong px-3 py-2 text-base text-ink">{tag}</span>}
-        <span aria-hidden className={cn("h-28 w-px", variant === "photo" ? "bg-white" : "bg-ink")} />
         <div className="mt-auto flex flex-col gap-4">
           <h3 className="font-display text-3xl leading-tight">{title}</h3>
           {description && <p className={cn("text-base leading-relaxed", variant === "photo" ? "text-white/90" : "text-ink-muted")}>{description}</p>}

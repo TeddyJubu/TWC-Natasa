@@ -10,6 +10,9 @@ import jacksonHeightsLogo from "../assets/logos/the-womens-collective-jackson-he
 import elmhurstLogo from "../assets/logos/the-womens-collective-elmhurst.png";
 import forestHillsLogo from "../assets/logos/the-womens-collective-forest-hills.png";
 import regoParkLogo from "../assets/logos/the-womens-collective-rego-park.png";
+import greenpointLogo from "../assets/logos/the-womens-collective-greenpoint.png";
+import williamsburgLogo from "../assets/logos/the-womens-collective-williamsburg.png";
+import bushwickLogo from "../assets/logos/the-womens-collective-bushwick.png";
 
 const logoSources = {
   ink: inkLogo,
@@ -21,6 +24,9 @@ const logoSources = {
   elmhurst: elmhurstLogo,
   "forest-hills": forestHillsLogo,
   "rego-park": regoParkLogo,
+  greenpoint: greenpointLogo,
+  williamsburg: williamsburgLogo,
+  bushwick: bushwickLogo,
 } as const;
 
 const logoVariants = cva("block h-auto object-contain", {

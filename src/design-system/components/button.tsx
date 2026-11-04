@@ -7,11 +7,12 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: "bg-sky text-sky-ink hover:brightness-110",
+        primary: "bg-sky text-sky-ink hover:brightness-90",
         white: "bg-white text-black hover:bg-surface-strong",
         ink: "bg-ink text-canvas hover:opacity-85",
         sun: "bg-sun text-sun-ink hover:brightness-105",
-        outline: "border border-line text-ink hover:bg-surface",
+        /** Secondary: works on light, night and photo backgrounds because it follows the ink token. */
+        outline: "border border-ink/30 text-ink hover:border-ink/55 hover:bg-ink/5",
         link: "rounded-none text-ink underline underline-offset-4 hover:translate-y-0 hover:text-sky hover:shadow-none active:scale-100",
       },
       size: { sm: "h-10 px-4 text-sm", md: "h-[3.25rem] px-6 text-base", lg: "h-14 px-8 text-lg" },

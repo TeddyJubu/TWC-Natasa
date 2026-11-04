@@ -32,6 +32,9 @@ const catalogueTones: Record<string, { rule: string; label: string; index: strin
   "Forest Hills": { rule: "border-forest-hills", label: "text-forest-hills", index: "text-forest-hills", wash: "bg-forest-hills", glow: "--color-forest-hills" },
   Elmhurst: { rule: "border-elmhurst", label: "text-elmhurst", index: "text-elmhurst", wash: "bg-elmhurst", glow: "--color-elmhurst" },
   "Rego Park": { rule: "border-rego-park", label: "text-rego-park", index: "text-rego-park", wash: "bg-rego-park", glow: "--color-rego-park" },
+  Greenpoint: { rule: "border-greenpoint", label: "text-greenpoint", index: "text-greenpoint", wash: "bg-greenpoint", glow: "--color-greenpoint" },
+  Williamsburg: { rule: "border-williamsburg", label: "text-williamsburg", index: "text-williamsburg", wash: "bg-williamsburg", glow: "--color-williamsburg" },
+  Bushwick: { rule: "border-bushwick", label: "text-bushwick", index: "text-bushwick", wash: "bg-bushwick", glow: "--color-bushwick" },
 };
 
 export interface MemberCardProps extends Omit<React.HTMLAttributes<HTMLElement>, "children">, VariantProps<typeof cardVariants> {

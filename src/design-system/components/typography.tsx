@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../lib/utils";
 
 /** Small blossom mark used inside badges and ribbons. */
-export interface BlossomProps extends React.SVGAttributes<SVGSVGElement> {}
+export type BlossomProps = React.SVGAttributes<SVGSVGElement>;
 export const Blossom = React.forwardRef<SVGSVGElement, BlossomProps>(({ className, ...p }, ref) => (
   <svg ref={ref} viewBox="0 0 16 16" aria-hidden className={cn("size-4 shrink-0", className)} fill="currentColor" {...p}>
     <circle cx="8" cy="4.2" r="3.2" />
@@ -69,7 +69,7 @@ export const Text = React.forwardRef<HTMLParagraphElement, TextProps>(({ classNa
 ));
 Text.displayName = "Text";
 
-/** Large serif statement: the first `lead` words in ink, the rest fade to faint. */
+/** Large serif statement: the first `lead` words in ink, the rest start faint and darken as they scroll into view (full ink with reduced motion). */
 export interface StatementProps extends React.HTMLAttributes<HTMLParagraphElement> {
   text: string;
   lead?: number;
@@ -77,8 +77,8 @@ export interface StatementProps extends React.HTMLAttributes<HTMLParagraphElemen
 export const Statement = React.forwardRef<HTMLParagraphElement, StatementProps>(({ className, text, lead = 1, ...p }, ref) => {
   const words = text.split(" ");
   return (
-    <p ref={ref} className={cn("font-display text-3xl leading-[1.3] text-ink-faint md:text-[2.75rem] text-balance", className)} {...p}>
-      <span className="text-ink">{words.slice(0, lead).join(" ")}</span> {words.slice(lead).join(" ")}
+    <p ref={ref} className={cn("font-display text-3xl leading-[1.3] text-ink md:text-[2.75rem] text-balance", className)} {...p}>
+      <span>{words.slice(0, lead).join(" ")}</span> <span className="motion-ink-reveal text-ink-faint motion-reduce:text-ink">{words.slice(lead).join(" ")}</span>
     </p>
   );
 });
@@ -98,7 +98,7 @@ export const Stat = React.forwardRef<HTMLDivElement, StatProps>(({ className, va
 Stat.displayName = "Stat";
 
 /** Serif wordmark, e.g. "W&R". */
-export interface WordmarkProps extends React.HTMLAttributes<HTMLSpanElement> {}
+export type WordmarkProps = React.HTMLAttributes<HTMLSpanElement>;
 export const Wordmark = React.forwardRef<HTMLSpanElement, WordmarkProps>(({ className, ...p }, ref) => (
   <span ref={ref} className={cn("font-display text-3xl leading-none tracking-tight", className)} {...p} />
 ));
