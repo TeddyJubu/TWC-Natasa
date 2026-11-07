@@ -15,7 +15,7 @@ export default defineConfig(({ command, mode }) => {
 
   return {
     server: {
-      host: "::",
+      host: "localhost",
       port: 8080,
     },
     resolve: {
