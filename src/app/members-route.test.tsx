@@ -76,7 +76,10 @@ describe("/members", () => {
     const alert = await screen.findByRole("alert");
     expect(alert.textContent).toMatch(/couldn’t load/i);
     expect(fake.calls).toEqual([["getSession"]]); // the viewer, not another query, took the error
-    fake.results = [{ data: { session: null }, error: null }, { data: [card("Pia Lund", 21)], error: null }];
+    // Raw public_profiles() rows (not MemberProfile cards): the query maps them itself.
+    const row = { full_name: "Pia Lund", role_title: "Founder", business: "Pia Co", neighborhood: "Astoria",
+      specialty: "Food", bio: "", looking_for: "", website: "", avatar_path: null, catalogue_number: 21 };
+    fake.results = [{ data: { session: null }, error: null }, { data: [row], error: null }];
     fireEvent.click(within(alert).getByRole("button", { name: "Retry" }));
     await waitFor(() => expect(fake.calls.filter((c) => c[0] === "getSession")).toHaveLength(2));
     await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
