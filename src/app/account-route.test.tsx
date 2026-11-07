@@ -239,6 +239,26 @@ describe("/account", () => {
       renderAccount();
       expect(screen.getByLabelText(/preferred date/i).getAttribute("min")).toBe("2026-11-08");
     });
+
+    // T6: the member sees what an admin decided, not "Request received" forever.
+    it.each([
+      ["requested", /request received/i, /we’ll confirm it here/i],
+      ["confirmed", /session confirmed/i, /changing it sends it back/i],
+      ["declined", /we couldn’t fit this one in/i, /choose another date/i],
+    ])("shows a %s headshot request's status", (status, title, body) => {
+      const booking = { id: "b1", user_id: "u1", preferred_date: "2026-12-03", preferred_time: "Morning", notes: "", status, created_at: "" };
+      renderWithQueries(<Page />, [
+        viewer(),
+        [["profile", "u1"], { profile: base, avatarUrl: undefined }],
+        [["events"], []],
+        [["rsvps", "u1"], []],
+        [["booking", "u1"], booking],
+        [["intros", "u1", base.neighborhood], []],
+      ]);
+      expect(screen.getByText(title)).toBeTruthy();
+      expect(screen.getByText(body)).toBeTruthy();
+      expect(screen.getByText(/Thursday, December 3 · Morning/)).toBeTruthy();
+    });
   });
 
   it("rejects an oversized portrait before uploading", async () => {

@@ -18,7 +18,8 @@ update profiles set status = 'approved', directory_visible = true, full_name = '
   where id = '00000000-0000-4000-8000-00000000000b';
 insert into storage.objects (bucket_id, name) values
   ('avatars', '00000000-0000-4000-8000-00000000000b/avatar-1.jpg'),
-  ('avatars', '00000000-0000-4000-8000-00000000000c/avatar-1.jpg');
+  ('avatars', '00000000-0000-4000-8000-00000000000c/avatar-1.jpg'),
+  ('avatars', '00000000-0000-4000-8000-00000000000c/avatar-old.jpg');
 
 -- Anonymous visitor
 set role anon;
@@ -34,6 +35,9 @@ end $$;
 select pg_temp.ok((select count(*) from storage.objects where bucket_id = 'avatars') = 0, 'anon sees no portraits');
 reset role;
 
+select id as event_id from events order by starts_at limit 1 \gset
+set test.event_id = :'event_id';
+
 -- Pending member
 set role authenticated;
 set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000000c';
@@ -47,9 +51,32 @@ do $$ begin
   raise exception 'FAIL: borrowed another member''s portrait';
 exception when check_violation then raise notice 'ok  cannot point avatar at another member''s file';
 end $$;
-select pg_temp.ok((select count(*) from storage.objects where name like '00000000-0000-4000-8000-00000000000c/%') = 1, 'pending member sees own portrait');
+select pg_temp.ok((select count(*) from storage.objects where name like '00000000-0000-4000-8000-00000000000c/%') = 2, 'pending member sees own portrait');
 select pg_temp.ok((select count(*) from storage.objects where name like '00000000-0000-4000-8000-00000000000b/%') = 0, 'pending member cannot see member portraits');
+-- T3: approval gates RSVPs and bookings, not just reading events.
+do $$ begin
+  insert into event_rsvps (user_id, event_id) values (auth.uid(), current_setting('test.event_id')::uuid);
+  raise exception 'FAIL: pending member RSVPed';
+exception when insufficient_privilege then raise notice 'ok  pending member cannot RSVP';
+end $$;
+do $$ begin
+  insert into headshot_bookings (user_id, preferred_date, preferred_time) values (auth.uid(), current_date + 7, 'Morning');
+  raise exception 'FAIL: pending member booked a headshot';
+exception when insufficient_privilege then raise notice 'ok  pending member cannot book a headshot';
+end $$;
+-- T4: the old probing helper stays closed too.
+select pg_temp.ok(not has_function_privilege('public.is_approved(uuid)', 'execute'), 'is_approved is not callable');
+-- T2: owners delete their own portraits (a spare file, so later visibility checks keep theirs) …
+delete from storage.objects where name = '00000000-0000-4000-8000-00000000000c/avatar-old.jpg';
+-- … and someone who can see a portrait still can't delete it.
+set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000000a';
+select pg_temp.ok((select count(*) from storage.objects where name = '00000000-0000-4000-8000-00000000000b/avatar-1.jpg') = 1, 'fixture: admin sees the member''s portrait');
+delete from storage.objects where name = '00000000-0000-4000-8000-00000000000b/avatar-1.jpg';
 reset role;
+select pg_temp.ok((select count(*) from storage.objects where name = '00000000-0000-4000-8000-00000000000b/avatar-1.jpg') = 1, 'cannot delete another member''s portrait');
+select pg_temp.ok((select count(*) from storage.objects where name = '00000000-0000-4000-8000-00000000000c/avatar-old.jpg') = 0, 'owner can delete her own portrait');
+select pg_temp.ok((select public = false and file_size_limit = 5242880 and allowed_mime_types = array['image/jpeg', 'image/png', 'image/webp']
+  from storage.buckets where id = 'avatars'), 'avatars bucket is private, images only, 5 MB');
 
 -- Approved member
 set role authenticated;
@@ -62,6 +89,22 @@ select pg_temp.ok((select status from headshot_bookings where user_id = auth.uid
 select pg_temp.ok((select count(*) from storage.objects where name like '00000000-0000-4000-8000-00000000000b/%') = 1, 'member sees visible member portraits');
 select pg_temp.ok((select count(*) from storage.objects where name like '00000000-0000-4000-8000-00000000000c/%') = 0, 'member cannot see pending portraits');
 select pg_temp.ok((select count(*) from applications) = 0, 'member cannot read others'' applications');
+-- T7: card fields are checked in the database, not only in the form.
+do $$ begin
+  update profiles set website = 'javascript:alert(1)' where id = auth.uid();
+  raise exception 'FAIL: saved a non-http website';
+exception when check_violation then raise notice 'ok  website must be http(s)';
+end $$;
+do $$ begin
+  update profiles set bio = repeat('x', 401) where id = auth.uid();
+  raise exception 'FAIL: saved a 401-character bio';
+exception when check_violation then raise notice 'ok  bio is capped at 400 characters';
+end $$;
+do $$ begin
+  update profiles set neighborhood = 'Atlantis' where id = auth.uid();
+  raise exception 'FAIL: saved an unknown neighborhood';
+exception when foreign_key_violation then raise notice 'ok  neighborhood must be a known one';
+end $$;
 reset role;
 
 -- A second member hides herself: her earlier portraits disappear for other members.
@@ -158,11 +201,21 @@ update headshot_bookings set status = 'confirmed';
 select pg_temp.ok((select status from headshot_bookings limit 1) = 'confirmed', 'admin can confirm bookings');
 insert into neighborhoods (slug, name, color) values ('woodside', 'Woodside', '#3a7d44');
 select pg_temp.ok(true, 'admin can add a neighborhood');
+-- T6: a member changing a confirmed booking sends it back to "requested".
+set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000000b';
+update headshot_bookings set preferred_time = 'Evening' where user_id = auth.uid();
+select pg_temp.ok((select status from headshot_bookings where user_id = auth.uid()) = 'requested', 'member changing a confirmed booking resets it to requested');
+-- An approved member can RSVP (the control for the pending check), and the RSVP goes with her login below.
+insert into event_rsvps (user_id, event_id) values (auth.uid(), current_setting('test.event_id')::uuid);
 reset role;
 
 -- Deleting a login removes the member everywhere.
 delete from auth.users where id = '00000000-0000-4000-8000-00000000000b';
 select pg_temp.ok(not exists (select 1 from profiles where id = '00000000-0000-4000-8000-00000000000b'), 'deleted user leaves the directory');
+select pg_temp.ok(not exists (select 1 from user_roles where user_id = '00000000-0000-4000-8000-00000000000b')
+  and not exists (select 1 from event_rsvps where user_id = '00000000-0000-4000-8000-00000000000b')
+  and not exists (select 1 from headshot_bookings where user_id = '00000000-0000-4000-8000-00000000000b'),
+  'deleted user''s roles, RSVPs and booking go too');
 
 -- ---------- Admin review (0003) ----------
 -- 11: approved before she signs up, confirms later. 12: approved, signs up already confirmed.

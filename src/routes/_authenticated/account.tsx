@@ -47,6 +47,14 @@ function readCard(form: HTMLFormElement, profile: Profile): ProfilePatch {
   };
 }
 
+/** What the member sees for each headshot booking status (the database allows only these three). */
+const BOOKING_COPY: Record<string, { title: string; body: string }> = {
+  requested: { title: "Request received", body: "We’ll confirm it here once it’s scheduled." },
+  confirmed: { title: "Session confirmed", body: "See you then. Changing it sends it back for confirmation." },
+  declined: { title: "We couldn’t fit this one in", body: "Please choose another date." },
+};
+const bookingCopy = (status: string) => BOOKING_COPY[status] ?? BOOKING_COPY.requested;
+
 const errorMessage = (error: unknown) =>
   (error as { message?: string } | null)?.message || "Something went wrong. Please try again.";
 
@@ -300,8 +308,8 @@ function AccountPage() {
                 {bookingState.isError ? (
                   <div className="mt-6"><InlineError message="We couldn’t load your headshot request." onRetry={() => void bookingState.refetch()} /></div>
                 ) : booking ? (
-                  <FormNotice className="mt-6" title="Request received" tone="accent">
-                    {new Date(booking.preferred_date + "T12:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })} · {booking.preferred_time}. We’ll confirm by email.
+                  <FormNotice className="mt-6" title={bookingCopy(booking.status).title} tone={booking.status === "confirmed" ? "accent" : "soft"}>
+                    {new Date(booking.preferred_date + "T12:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })} · {booking.preferred_time}. {bookingCopy(booking.status).body}
                     <button type="button" className="mt-3 block underline underline-offset-4" onClick={() => { book.reset(); setChangingBooking(true); }}>Change request</button>
                   </FormNotice>
                 ) : (
