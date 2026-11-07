@@ -5,7 +5,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import hero from "@/assets/photography/hero.jpg";
 
+type Mode = "signin" | "signup" | "forgot";
+const MODES: readonly string[] = ["signin", "signup", "forgot"];
+
 export const Route = createFileRoute("/auth")({
+  // `/auth?mode=forgot` lets other pages (e.g. an expired reset link) open the right form.
+  validateSearch: (search: Record<string, unknown>): { mode?: Mode } =>
+    typeof search.mode === "string" && MODES.includes(search.mode) ? { mode: search.mode as Mode } : {},
   head: () => ({
     meta: [
       { title: "Member Sign In — The Women’s Collective" },
@@ -19,14 +25,24 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
-type Mode = "signin" | "signup" | "forgot";
+// One message for every sign-in failure, so the form never reveals which emails have accounts.
+const SIGN_IN_FAILED = "That email or password didn’t match. Try again, or reset your password.";
+// New and existing emails get the same sign-up notice, so the form can't be used to probe for accounts.
+const SIGNUP_SENT = "Check your inbox: if this email is new to us, a confirmation link is on its way. Once confirmed, sign in to finish your profile. Already have an account? Sign in, or reset your password.";
+const RESET_SENT = "If that email belongs to a member, a reset link is on its way.";
+const isRateLimit = (code?: string) => code === "over_email_send_rate_limit" || code === "over_request_rate_limit";
 
 function AuthPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = React.useState<Mode>("signin");
+  const [mode, setModeState] = React.useState<Mode>(Route.useSearch().mode ?? "signin");
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [notice, setNotice] = React.useState<string | null>(null);
+  const setMode = (next: Mode) => {
+    setModeState(next);
+    setError(null);
+    setNotice(null);
+  };
 
   React.useEffect(() => {
     supabase.auth.getSession().then(({ data }) => { if (data.session) navigate({ to: "/account" }); });
@@ -44,18 +60,24 @@ function AuthPage() {
     setBusy(true); setError(null); setNotice(null);
     if (mode === "signin") {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) setError(error.message);
+      if (error) setError(SIGN_IN_FAILED);
     } else if (mode === "signup") {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email, password,
         options: { emailRedirectTo: window.location.origin + "/account", data: { full_name: String(f.get("name") ?? "") } },
       });
-      if (error) setError(error.message);
-      else setNotice("Check your inbox to confirm your email. Once confirmed, sign in to finish your profile.");
+      // Supabase answers an existing, confirmed email with a user that has no identities (or, with
+      // confirmations off, an "already registered" error). Either way: neutral, no account disclosure.
+      const existing = error?.code === "user_already_exists" || /already registered/i.test(error?.message ?? "")
+        || (!error && data.user?.identities?.length === 0);
+      if (existing || !error) setNotice(SIGNUP_SENT);
+      else if (error.code === "weak_password") setError(error.message); // the password rule, nothing about the email
+      else setError("We couldn’t create your account right now. Please try again in a minute.");
     } else {
       const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + "/reset-password" });
-      if (error) setError(error.message);
-      else setNotice("If that email belongs to a member, a reset link is on its way.");
+      // Rate limits are per address, so reporting one would confirm the account exists.
+      if (!error || isRateLimit(error.code)) setNotice(RESET_SENT);
+      else setError("We couldn’t send a link right now. Please try again in a minute.");
     }
     setBusy(false);
   }
@@ -89,7 +111,7 @@ function AuthPage() {
           {mode !== "forgot" && (
             <div role="tablist" aria-label="Account" className="grid grid-cols-2 border-b border-line">
               {(["signin", "signup"] as const).map((m) => (
-                <button key={m} role="tab" type="button" aria-selected={mode === m} onClick={() => { setMode(m); setError(null); setNotice(null); }}
+                <button key={m} role="tab" type="button" aria-selected={mode === m} onClick={() => setMode(m)}
                   className={cn("-mb-px border-b-2 pb-3 text-left text-sm transition-colors", mode === m ? "border-ink text-ink" : "border-transparent text-ink-muted hover:text-ink")}>
                   {m === "signin" ? "01 — Sign in" : "02 — Create account"}
                 </button>
@@ -124,7 +146,7 @@ function AuthPage() {
               </FormField>
             )}
             {error && <p role="alert" className="text-sm text-danger">{error}</p>}
-            {notice && <FormNotice title="Almost there" tone="accent">{notice}</FormNotice>}
+            {notice && <FormNotice role="status" title="Almost there" tone="accent">{notice}</FormNotice>}
             <Button type="submit" variant="ink" size="lg" state={busy ? "loading" : "idle"} className="w-full">
               {mode === "signin" ? "Sign in" : mode === "signup" ? "Create account" : "Send reset link"}
             </Button>
