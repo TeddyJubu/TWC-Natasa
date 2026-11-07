@@ -53,19 +53,19 @@ const sections: { name: string; render: () => React.ReactNode }[] = [
   { name: "Accordion", render: () => <Specimen label="items"><K.Accordion className="w-full" items={[{ question: "Who can apply?", answer: "Women across Western Queens who feel aligned with the community." }, { question: "Where is it based?", answer: "Across Western Queens neighborhoods." }]} /></Specimen> },
   { name: "Input", render: () => <Specimen label='variant="editorial|boxed" · default · filled · focused · error · disabled'>
     <div className="grid w-full gap-8 md:grid-cols-2 lg:grid-cols-3">
-      <K.FormField index="01" label="Full name" htmlFor="input-default" hint="Use the name you introduce yourself with."><K.Input id="input-default" aria-describedby="input-default-hint" placeholder="Your name" /></K.FormField>
-      <K.FormField index="02" label="Studio" htmlFor="input-filled"><K.Input id="input-filled" defaultValue="Common Thread Studio" /></K.FormField>
-      <K.FormField index="03" label="Email" htmlFor="input-error" error="Enter a complete email address."><K.Input id="input-error" aria-invalid aria-describedby="input-error-error" defaultValue="maya@studio" /></K.FormField>
-      <K.FormField label="Location" htmlFor="input-boxed"><K.Input id="input-boxed" variant="boxed" placeholder="City, country" /></K.FormField>
-      <K.FormField label="Member code" htmlFor="input-disabled"><K.Input id="input-disabled" variant="boxed" disabled value="Assigned after review" readOnly /></K.FormField>
-      <K.FormField label="Focus preview" htmlFor="input-focus"><K.Input id="input-focus" variant="boxed" className="border-sky ring-2 ring-ring/20" value="Active field" readOnly /></K.FormField>
+      <K.FormField index="01" label="Full name" htmlFor="input-default" hint="Use the name you introduce yourself with."><K.Input placeholder="Your name" /></K.FormField>
+      <K.FormField index="02" label="Studio" htmlFor="input-filled"><K.Input defaultValue="Common Thread Studio" /></K.FormField>
+      <K.FormField index="03" label="Email" htmlFor="input-error" error="Enter a complete email address."><K.Input defaultValue="maya@studio" /></K.FormField>
+      <K.FormField label="Location" htmlFor="input-boxed"><K.Input variant="boxed" placeholder="City, country" /></K.FormField>
+      <K.FormField label="Member code" htmlFor="input-disabled"><K.Input variant="boxed" disabled value="Assigned after review" readOnly /></K.FormField>
+      <K.FormField label="Focus preview" htmlFor="input-focus"><K.Input variant="boxed" className="border-sky ring-2 ring-ring/20" value="Active field" readOnly /></K.FormField>
     </div>
   </Specimen> },
   { name: "Textarea", render: () => <Specimen label='variant="editorial|boxed" · resize enabled'>
-    <div className="grid w-full gap-8 md:grid-cols-2"><K.FormField index="04" label="The work" htmlFor="textarea-a" hint="A few sentences are enough."><K.Textarea id="textarea-a" placeholder="Tell us what you are building and why it matters…" /></K.FormField><K.FormField label="A recent win" htmlFor="textarea-b"><K.Textarea id="textarea-b" variant="boxed" defaultValue="We brought our first collection into three independent stores." /></K.FormField></div>
+    <div className="grid w-full gap-8 md:grid-cols-2"><K.FormField index="04" label="The work" htmlFor="textarea-a" hint="A few sentences are enough."><K.Textarea placeholder="Tell us what you are building and why it matters…" /></K.FormField><K.FormField label="A recent win" htmlFor="textarea-b"><K.Textarea variant="boxed" defaultValue="We brought our first collection into three independent stores." /></K.FormField></div>
   </Specimen> },
   { name: "Select", render: () => <Specimen label='variant="editorial|boxed"'>
-    <div className="grid w-full gap-8 md:grid-cols-2"><K.FormField index="05" label="Business stage" htmlFor="select-a"><K.Select id="select-a" defaultValue="growing"><option value="starting">Starting out</option><option value="growing">Growing steadily</option><option value="scaling">Scaling a team</option></K.Select></K.FormField><K.FormField label="Time zone" htmlFor="select-b"><K.Select id="select-b" variant="boxed"><option>Europe / London</option><option>America / New York</option><option>Asia / Singapore</option></K.Select></K.FormField></div>
+    <div className="grid w-full gap-8 md:grid-cols-2"><K.FormField index="05" label="Business stage" htmlFor="select-a"><K.Select defaultValue="growing"><option value="starting">Starting out</option><option value="growing">Growing steadily</option><option value="scaling">Scaling a team</option></K.Select></K.FormField><K.FormField label="Time zone" htmlFor="select-b"><K.Select variant="boxed"><option>Europe / London</option><option>America / New York</option><option>Asia / Singapore</option></K.Select></K.FormField></div>
   </Specimen> },
   { name: "Checkbox", render: () => <Specimen label="label · description · checked · disabled">
     <div className="grid w-full gap-6 md:grid-cols-3"><K.Checkbox label="Monthly field notes" description="A considered edit of events and member stories." defaultChecked /><K.Checkbox label="Partner introductions" description="Occasional introductions when there is a clear fit." /><K.Checkbox label="Applications closed" disabled /></div>

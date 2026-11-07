@@ -137,12 +137,12 @@ function AuthPage() {
 
           <form onSubmit={submit} className="flex flex-col gap-8" noValidate={false}>
             {mode === "signup" && (
-              <FormField label="Full name" htmlFor="name" index="01"><Input id="name" name="name" required autoComplete="name" /></FormField>
+              <FormField label="Full name" htmlFor="name" index="01"><Input name="name" required autoComplete="name" /></FormField>
             )}
-            <FormField label="Email" htmlFor="email" index={mode === "signup" ? "02" : "01"}><Input id="email" name="email" type="email" required autoComplete="email" /></FormField>
+            <FormField label="Email" htmlFor="email" index={mode === "signup" ? "02" : "01"}><Input name="email" type="email" required autoComplete="email" /></FormField>
             {mode !== "forgot" && (
               <FormField label="Password" htmlFor="password" index={mode === "signup" ? "03" : "02"} hint={mode === "signup" ? "At least 8 characters." : undefined}>
-                <Input id="password" name="password" type="password" required minLength={8} autoComplete={mode === "signup" ? "new-password" : "current-password"} aria-describedby={mode === "signup" ? "password-hint" : undefined} />
+                <Input name="password" type="password" required minLength={8} autoComplete={mode === "signup" ? "new-password" : "current-password"} />
               </FormField>
             )}
             {error && <p role="alert" className="text-sm text-danger">{error}</p>}

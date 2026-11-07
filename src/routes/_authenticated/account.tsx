@@ -201,20 +201,20 @@ function AccountPage() {
             <form onSubmit={saveProfile} onChange={(e) => setDraft(readCard(e.currentTarget, profile))} className="flex flex-col gap-14">
               <FormSection index="A" title="The Basics" description="Your name and the work you’re known for.">
                 <div className="grid gap-8 md:grid-cols-2">
-                  <FormField label="Full name" htmlFor="full_name" index="01"><Input id="full_name" name="full_name" defaultValue={profile.full_name} required maxLength={80} /></FormField>
-                  <FormField label="Role" htmlFor="role_title" index="02"><Input id="role_title" name="role_title" defaultValue={profile.role_title} maxLength={80} placeholder="Founder & Designer" /></FormField>
-                  <FormField label="Business" htmlFor="business" index="03"><Input id="business" name="business" defaultValue={profile.business} maxLength={80} /></FormField>
-                  <FormField label="Specialty" htmlFor="specialty" index="04"><Input id="specialty" name="specialty" defaultValue={profile.specialty} maxLength={60} placeholder="Food & hospitality" /></FormField>
+                  <FormField label="Full name" htmlFor="full_name" index="01"><Input name="full_name" defaultValue={profile.full_name} required maxLength={80} /></FormField>
+                  <FormField label="Role" htmlFor="role_title" index="02"><Input name="role_title" defaultValue={profile.role_title} maxLength={80} placeholder="Founder & Designer" /></FormField>
+                  <FormField label="Business" htmlFor="business" index="03"><Input name="business" defaultValue={profile.business} maxLength={80} /></FormField>
+                  <FormField label="Specialty" htmlFor="specialty" index="04"><Input name="specialty" defaultValue={profile.specialty} maxLength={60} placeholder="Food & hospitality" /></FormField>
                   <FormField label="Neighborhood" htmlFor="neighborhood" index="05">
-                    <Select id="neighborhood" name="neighborhood" defaultValue={profile.neighborhood}>{neighborhoodOptions.map((x) => <option key={x}>{x}</option>)}</Select>
+                    <Select name="neighborhood" defaultValue={profile.neighborhood}>{neighborhoodOptions.map((x) => <option key={x}>{x}</option>)}</Select>
                   </FormField>
-                  <FormField label="Website" htmlFor="website" index="06" optional><Input id="website" name="website" type="url" defaultValue={profile.website} maxLength={200} placeholder="https://" /></FormField>
+                  <FormField label="Website" htmlFor="website" index="06" optional><Input name="website" type="url" defaultValue={profile.website} maxLength={200} placeholder="https://" /></FormField>
                 </div>
               </FormSection>
               <FormSection index="B" title="In Your Words" description="Short and warm beats long and formal.">
                 <div className="flex flex-col gap-8">
-                  <FormField label="Bio" htmlFor="bio" index="07" hint="Up to 400 characters."><Textarea id="bio" name="bio" defaultValue={profile.bio} maxLength={400} aria-describedby="bio-hint" /></FormField>
-                  <FormField label="Looking to meet" htmlFor="looking_for" index="08"><Input id="looking_for" name="looking_for" defaultValue={profile.looking_for} maxLength={160} placeholder="Retail partners and fellow makers" /></FormField>
+                  <FormField label="Bio" htmlFor="bio" index="07" hint="Up to 400 characters."><Textarea name="bio" defaultValue={profile.bio} maxLength={400} /></FormField>
+                  <FormField label="Looking to meet" htmlFor="looking_for" index="08"><Input name="looking_for" defaultValue={profile.looking_for} maxLength={160} placeholder="Retail partners and fellow makers" /></FormField>
                 </div>
               </FormSection>
               <FormSection index="C" title="Portrait & Visibility">
@@ -299,9 +299,9 @@ function AccountPage() {
                   </FormNotice>
                 ) : (
                   <form onSubmit={bookHeadshot} className="mt-6 flex flex-col gap-6">
-                    <FormField label="Preferred date" htmlFor="date"><Input id="date" name="date" type="date" required min={localDateISO()} /></FormField>
-                    <FormField label="Time of day" htmlFor="time"><Select id="time" name="time"><option>Morning</option><option>Afternoon</option><option>Evening</option></Select></FormField>
-                    <FormField label="Notes" htmlFor="notes" optional><Input id="notes" name="notes" maxLength={300} placeholder="Bringing products, a team…" /></FormField>
+                    <FormField label="Preferred date" htmlFor="date"><Input name="date" type="date" required min={localDateISO()} /></FormField>
+                    <FormField label="Time of day" htmlFor="time"><Select name="time"><option>Morning</option><option>Afternoon</option><option>Evening</option></Select></FormField>
+                    <FormField label="Notes" htmlFor="notes" optional><Input name="notes" maxLength={300} placeholder="Bringing products, a team…" /></FormField>
                     {book.isError && <p role="alert" className="text-sm text-danger">{errorMessage(book.error)}</p>}
                     <Button type="submit" variant="white" disabled={book.isPending}>Request my session</Button>
                   </form>

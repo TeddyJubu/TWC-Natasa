@@ -92,7 +92,7 @@ function ResetPassword() {
         {status === "ready" && (
           <form onSubmit={submit} className="flex w-full max-w-md flex-col gap-8">
             <FormField label="New password" htmlFor="password" error={error ?? undefined}>
-              <Input id="password" name="password" type="password" minLength={8} required autoComplete="new-password" aria-invalid={!!error} aria-describedby={error ? "password-error" : undefined} />
+              <Input name="password" type="password" minLength={8} required autoComplete="new-password" />
             </FormField>
             <Button type="submit" variant="ink" state={busy ? "loading" : "idle"}>Save password</Button>
           </form>

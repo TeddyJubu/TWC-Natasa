@@ -68,18 +68,22 @@ export interface RadioGroupProps extends Omit<React.FieldsetHTMLAttributes<HTMLF
   name: string;
   legend: React.ReactNode;
   options: { value: string; label: string }[];
+  /** Controlled selection; pair with `onValueChange`. */
+  value?: string;
   defaultValue?: string;
   onValueChange?: (v: string) => void;
+  /** Native radio validation: the form cannot submit until one option is chosen. */
+  required?: boolean;
   variant?: "pills" | "list";
 }
 export const RadioGroup = React.forwardRef<HTMLFieldSetElement, RadioGroupProps>(
-  ({ className, name, legend, options, defaultValue, onValueChange, variant = "pills", ...p }, ref) => (
+  ({ className, name, legend, options, value, defaultValue, onValueChange, required, variant = "pills", ...p }, ref) => (
     <fieldset ref={ref} className={cn("flex flex-col", className)} {...p}>
       <legend className="mb-4 font-sans text-xs font-medium uppercase text-ink">{legend}</legend>
       <div className={cn("flex gap-2", variant === "pills" ? "flex-wrap" : "flex-col border-y border-line")}>
         {options.map((o) => (
           <label key={o.value} className={cn("cursor-pointer has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50", variant === "list" && "border-b border-line last:border-b-0")}>
-            <input type="radio" name={name} value={o.value} defaultChecked={defaultValue === o.value} onChange={() => onValueChange?.(o.value)} className="peer sr-only" />
+            <input type="radio" name={name} value={o.value} {...(value !== undefined ? { checked: value === o.value } : { defaultChecked: defaultValue === o.value })} required={required} onChange={() => onValueChange?.(o.value)} className="peer sr-only" />
             <span className={cn("inline-flex items-center font-sans text-sm text-ink transition-[transform,background-color,border-color,color] duration-300 ease-[var(--ease-snap)] hover:-translate-y-0.5 peer-focus-visible:ring-2 peer-focus-visible:ring-ring motion-reduce:transform-none motion-reduce:transition-none", variant === "pills" ? "h-11 rounded-full border border-line px-5 peer-checked:border-ink peer-checked:bg-ink peer-checked:text-canvas peer-checked:shadow-soft" : "min-h-field w-full justify-between py-3 peer-checked:font-medium peer-checked:[&>span]:scale-125 peer-checked:[&>span]:border-ink peer-checked:[&>span]:bg-ink")}>
               {o.label}{variant === "list" && <span aria-hidden className="size-3 rounded-full border border-line transition-[transform,background-color,border-color] duration-300 peer-checked:border-ink peer-checked:bg-ink" />}
             </span>
@@ -99,13 +103,38 @@ export interface FormFieldProps extends React.HTMLAttributes<HTMLDivElement> {
   index?: string;
   optional?: boolean;
 }
-export const FormField = React.forwardRef<HTMLDivElement, FormFieldProps>(({ className, label, htmlFor, hint, error, index, optional, children, ...p }, ref) => (
-  <div ref={ref} className={cn("group/form-field flex flex-col gap-2", className)} {...p}>
-    <Label htmlFor={htmlFor} index={index} optional={optional} className="transition-colors duration-300 group-focus-within/form-field:text-sky">{label}</Label>
-    {children}
-    {error ? <p id={`${htmlFor}-error`} role="alert" className="font-sans text-xs text-danger">{error}</p> : hint ? <p id={`${htmlFor}-hint`} className="font-sans text-xs text-ink-muted">{hint}</p> : null}
-  </div>
-));
+type ControlProps = { id?: string; "aria-describedby"?: string; "aria-invalid"?: React.AriaAttributes["aria-invalid"] };
+
+/** Space-separated id list with duplicates and empties removed; undefined when nothing is left. */
+const joinIds = (...lists: (string | undefined)[]) => {
+  const ids = [...new Set(lists.flatMap((list) => list?.split(/\s+/) ?? []).filter(Boolean))];
+  return ids.length ? ids.join(" ") : undefined;
+};
+
+/**
+ * The single child must be the control itself (or a component that forwards `id` and `aria-*` props to it).
+ * Labels its single child control: injects `id={htmlFor}` (unless the child has one), `aria-describedby`
+ * pointing at the rendered hint or error (merged with the child's own), and `aria-invalid` when `error` is set.
+ */
+export const FormField = React.forwardRef<HTMLDivElement, FormFieldProps>(({ className, label, htmlFor, hint, error, index, optional, children, ...p }, ref) => {
+  const messageId = error ? `${htmlFor}-error` : hint ? `${htmlFor}-hint` : undefined;
+  let control = children;
+  if (React.isValidElement<ControlProps>(children) && children.type !== React.Fragment) {
+    const own = children.props;
+    control = React.cloneElement(children, {
+      id: own.id ?? htmlFor,
+      "aria-describedby": joinIds(own["aria-describedby"], messageId),
+      "aria-invalid": error ? true : own["aria-invalid"],
+    });
+  }
+  return (
+    <div ref={ref} className={cn("group/form-field flex flex-col gap-2", className)} {...p}>
+      <Label htmlFor={htmlFor} index={index} optional={optional} className="transition-colors duration-300 group-focus-within/form-field:text-sky">{label}</Label>
+      {control}
+      {error ? <p id={`${htmlFor}-error`} role="alert" className="font-sans text-xs text-danger">{error}</p> : hint ? <p id={`${htmlFor}-hint`} className="font-sans text-xs text-ink-muted">{hint}</p> : null}
+    </div>
+  );
+});
 FormField.displayName = "FormField";
 
 export interface SwitchProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type"> {
@@ -178,26 +207,91 @@ export interface ChoiceGroupProps extends Omit<React.FieldsetHTMLAttributes<HTML
   options: ChoiceOption[];
   hint?: React.ReactNode;
   columns?: 1 | 2 | 3;
+  /** At least one box must be checked before the form can submit. */
   required?: boolean;
+  /** Shown (and used as the native validation message) when `required` and nothing is checked. */
+  requiredMessage?: string;
+  /** Controlled selection; pair with `onValueChange`. */
+  value?: string[];
+  /** Initial selection when uncontrolled. */
+  defaultValue?: string[];
   onValueChange?: (values: string[]) => void;
 }
+const checkboxesIn = (node: HTMLFieldSetElement | null) => [...(node?.querySelectorAll<HTMLInputElement>('input[type="checkbox"]') ?? [])];
 export const ChoiceGroup = React.forwardRef<HTMLFieldSetElement, ChoiceGroupProps>(
-  ({ className, name, legend, options, hint, columns = 2, required, onValueChange, ...p }, ref) => {
-    const [values, setValues] = React.useState<string[]>([]);
-    const update = (value: string, checked: boolean) => {
-      const next = checked ? [...values, value] : values.filter((item) => item !== value);
-      setValues(next);
+  ({ className, name, legend, options, hint, columns = 2, required, requiredMessage = "Choose at least one option.", value, defaultValue, onValueChange, "aria-describedby": describedBy, ...p }, ref) => {
+    const controlled = value !== undefined;
+    const [inner, setInner] = React.useState<string[]>(() => defaultValue ?? []);
+    const values = controlled ? value : inner;
+    const [invalidShown, setInvalidShown] = React.useState(false);
+    const errorId = `${React.useId()}-error`;
+    const missing = !!required && values.length === 0;
+    // A group that becomes non-empty by any route (click, controlled value, reset) forgets the shown error;
+    // it only reappears on a new `invalid` event.
+    if (invalidShown && values.length > 0) setInvalidShown(false);
+    const showError = invalidShown && missing;
+
+    const fieldset = React.useRef<HTMLFieldSetElement | null>(null);
+    const setFieldset = React.useCallback((node: HTMLFieldSetElement | null) => {
+      fieldset.current = node;
+      if (typeof ref === "function") ref(node);
+      else if (ref) ref.current = node;
+    }, [ref]);
+
+    // Native constraint validation, read from the DOM: the message sits on whichever box is first right now
+    // (so the browser blocks submission and focuses it) and is cleared on every other box.
+    const syncValidity = React.useCallback(() => {
+      const all = checkboxesIn(fieldset.current);
+      const empty = !!required && !all.some((box) => box.checked);
+      all.forEach((box, i) => box.setCustomValidity(empty && i === 0 ? requiredMessage : ""));
+    }, [required, requiredMessage]);
+    React.useLayoutEffect(syncValidity);
+
+    // `reset` fires before the form restores its controls, so re-read the DOM on the next task.
+    React.useEffect(() => {
+      const form = fieldset.current?.form;
+      if (!form) return;
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      const onReset = () => {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          if (!controlled) setInner(checkboxesIn(fieldset.current).filter((box) => box.checked).map((box) => box.value));
+          setInvalidShown(false);
+          syncValidity();
+        }, 0);
+      };
+      form.addEventListener("reset", onReset);
+      return () => { form.removeEventListener("reset", onReset); clearTimeout(timer); };
+    }, [controlled, syncValidity]);
+
+    const update = (option: string, checked: boolean) => {
+      const next = checked ? [...values, option] : values.filter((item) => item !== option);
+      if (!controlled) {
+        setInner(next);
+        syncValidity();
+      }
       onValueChange?.(next);
     };
     return (
-      <fieldset ref={ref} className={cn("rounded-card border border-line bg-canvas p-5 transition-[border-color,box-shadow] duration-300 focus-within:border-sky focus-within:shadow-soft", className)} {...p}>
+      <fieldset ref={setFieldset} aria-describedby={joinIds(describedBy, showError ? errorId : undefined)} className={cn("rounded-card border border-line bg-canvas p-5 transition-[border-color,box-shadow] duration-300 focus-within:border-sky focus-within:shadow-soft", className)} {...p}>
         <legend className="px-1 font-sans text-xs font-medium uppercase text-ink">{legend}{required && <span className="ml-1 text-danger" aria-hidden>*</span>}</legend>
         {hint && <p className="mb-5 mt-1 font-sans text-xs text-ink-muted">{hint}</p>}
         <div className={cn("grid gap-x-8 gap-y-4", columns === 2 && "sm:grid-cols-2", columns === 3 && "sm:grid-cols-2 lg:grid-cols-3")}>
-          {options.map((option) => (
-            <Checkbox key={option.value} name={name} value={option.value} label={option.label} description={option.description} onChange={(event) => update(option.value, event.currentTarget.checked)} />
+          {options.map((option, i) => (
+            <Checkbox
+              key={option.value}
+              name={name}
+              value={option.value}
+              label={option.label}
+              description={option.description}
+              {...(controlled ? { checked: values.includes(option.value) } : { defaultChecked: defaultValue?.includes(option.value) })}
+              aria-describedby={i === 0 && showError ? errorId : undefined}
+              onInvalid={i === 0 ? () => setInvalidShown(true) : undefined}
+              onChange={(event) => update(option.value, event.currentTarget.checked)}
+            />
           ))}
         </div>
+        {showError && <p id={errorId} role="alert" className="mt-4 font-sans text-xs text-danger">{requiredMessage}</p>}
       </fieldset>
     );
   },
