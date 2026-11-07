@@ -28,7 +28,7 @@ function autoBind(instance: object): void {
   });
 }
 
-const DEFAULT_FONT = '400 30px \"Gilda Display\"';
+const DEFAULT_FONT = '400 30px "Gilda Display"';
 async function resolveFont(font: string): Promise<string> {
   await document.fonts?.load(font);
   return font;

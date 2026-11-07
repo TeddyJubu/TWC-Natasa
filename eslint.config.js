@@ -5,7 +5,21 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist", ".output", ".nitro", ".tanstack", ".wrangler", "src/routeTree.gen.ts"] },
+  {
+    // Generated or plugin-installed files are never hand-edited, so they aren't linted:
+    // Lovable writes src/integrations/** (Supabase/Lovable clients and types), TanStack Router writes
+    // routeTree.gen.ts, and the mockup preview plugin installs the [__*].preview.$ routes.
+    ignores: [
+      "dist",
+      ".output",
+      ".nitro",
+      ".tanstack",
+      ".wrangler",
+      "src/routeTree.gen.ts",
+      "src/integrations/**",
+      "src/routes/[[]__*[]].preview.$.tsx",
+    ],
+  },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
@@ -19,8 +33,14 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
-      "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
-      "@typescript-eslint/no-unused-vars": "off",
+      "react-refresh/only-export-components": [
+        "warn",
+        { allowConstantExport: true, allowExportNames: ["buttonVariants"] },
+      ],
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+      ],
     },
   },
   // Boundary (a): design-system source may only import from itself (attach copies only that subtree).
