@@ -69,8 +69,14 @@ set in production.
 | `bun run test` | Vitest (unit and route tests, jsdom) |
 | `bun run test:db` | Database migrations + row-level-security checks (`drizzle/test/run.sh`, below) |
 | `bun run build` | Production build (Cloudflare Worker output) |
-| `bun run check` | typecheck + lint + test + build |
+| `bun run check` | typecheck + lint + test + build (CI runs the same, plus `test:db`; see below) |
 | `bun run deploy` | `vite build && wrangler deploy`, a manual deploy outside Lovable (needs Cloudflare login) |
+
+## CI
+
+`.github/workflows/check.yml` runs on pull requests and on pushes to any branch except `main`:
+`bun install --frozen-lockfile`, then typecheck, lint, test and build; a second job runs
+`drizzle/test/run.sh` against a `postgres:17` service container.
 
 ## Database tests
 
@@ -81,6 +87,9 @@ bun run test:db    # or drizzle/test/run.sh
 Starts a throwaway local Postgres, loads Supabase stubs, applies every migration in
 `drizzle/migrations/` and runs the row-level-security checks in `drizzle/test/rls.sql`. It needs the
 local Postgres binaries (`initdb`, `pg_ctl`, `psql`) on `PATH` and ends with `all checks passed`.
+With `TEST_DB_EXISTING=1` it uses an existing server instead, via the libpq env (`PGHOST`, `PGPORT`,
+`PGUSER`, `PGPASSWORD`, `PGDATABASE`). That server must be fresh, because the stub creates cluster-wide
+roles. CI uses this mode; it is opt-in so a `PGHOST` set for other work is never touched.
 
 ## Database & go-live
 
