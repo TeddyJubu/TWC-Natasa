@@ -5,6 +5,7 @@ import type { MemberProfile } from "@/index";
 import { demoMembers } from "@/showcase/demo-members";
 import type { Profile } from "@/features/members/queries";
 import { renderWithQueries } from "@/test/dom";
+import { restoreTz, setTz } from "@/test/tz";
 import { fake } from "@/test/fake-supabase";
 
 vi.mock("@/app/supabase", async () => (await import("@/test/fake-supabase")).fakeSupabaseModule);
@@ -31,11 +32,11 @@ const card = (name: string, n: number): MemberProfile => ({
   bio: "", lookingFor: "", image: "x.jpg", imageAlt: `Portrait of ${name}`, catalogueNumber: n,
 });
 
-function renderAccount(over: Partial<Profile> = {}, intros: MemberProfile[] = []) {
+function renderAccount(over: Partial<Profile> = {}, intros: MemberProfile[] = [], events: unknown[] = []) {
   const profile = { ...base, ...over };
   return renderWithQueries(<Page />, [
     [["profile", "u1"], { profile, avatarUrl: undefined }],
-    [["events"], []],
+    [["events"], events],
     [["rsvps", "u1"], []],
     [["booking", "u1"], null],
     [["intros", "u1", profile.neighborhood], intros],
@@ -155,6 +156,50 @@ describe("/account", () => {
     fireEvent.click(screen.getByRole("button", { name: /save my card/i }));
     await waitFor(() => expect(within(preview).queryByText(/unsaved/i)).toBeNull());
     expect(within(preview).getAllByText("Rosa M. Diaz").length).toBeGreaterThan(0);
+  });
+
+  describe("gatherings and headshot dates", () => {
+    afterEach(() => {
+      restoreTz();
+      vi.useRealTimers();
+    });
+
+    it("shows an empty state when nothing is scheduled", () => {
+      renderAccount({}, [], []);
+      expect(screen.getByText(/no gatherings on the calendar yet/i)).toBeTruthy();
+    });
+
+    it.each([
+      ["loading", new Promise(() => {})],
+      ["failed", { data: null, error: { message: "offline" } }],
+    ])("hides the empty state while events are %s", async (_label, result) => {
+      fake.results = [result as never];
+      renderWithQueries(<Page />, [
+        [["profile", "u1"], { profile: base, avatarUrl: undefined }],
+        [["rsvps", "u1"], []],
+        [["booking", "u1"], null],
+        [["intros", "u1", base.neighborhood], []],
+      ]);
+      await act(() => new Promise((r) => setTimeout(r, 20)));
+      expect(fake.calls[0]).toEqual(["from", "events"]);
+      expect(screen.queryByText(/no gatherings on the calendar yet/i)).toBeNull();
+    });
+
+    it("formats event day and time in New York time", () => {
+      setTz("Asia/Tokyo");
+      const ev = { id: "e1", title: "Supper Club", description: "", location: "Bar", neighborhood: "Astoria", starts_at: "2026-11-09T00:30:00Z", created_at: "" };
+      renderAccount({}, [], [ev]);
+      const item = screen.getByText("Supper Club").closest("li") as HTMLElement;
+      expect(item.textContent).toMatch(/Nov\s*8/);
+      expect(item.textContent).toMatch(/7:30 PM/);
+    });
+
+    it("lets members pick today in their own timezone", () => {
+      setTz("America/Los_Angeles");
+      vi.useFakeTimers({ now: new Date("2026-11-09T03:00:00Z"), toFake: ["Date"] });
+      renderAccount();
+      expect(screen.getByLabelText(/preferred date/i).getAttribute("min")).toBe("2026-11-08");
+    });
   });
 
   it("rejects an oversized portrait before uploading", async () => {

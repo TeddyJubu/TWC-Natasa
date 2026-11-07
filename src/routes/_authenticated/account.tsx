@@ -13,6 +13,7 @@ import { introsQuery, profileQuery, type Profile } from "@/features/members/quer
 import { useSaveProfile, useUploadAvatar, type ProfilePatch } from "@/features/members/mutations";
 import { bookingQuery, eventsQuery, rsvpsQuery } from "@/features/events/queries";
 import { useBookHeadshot, useToggleRsvp } from "@/features/events/mutations";
+import { eventWhen, localDateISO } from "@/features/events/format";
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
@@ -264,17 +265,20 @@ function AccountPage() {
                 />
               )}
               {toggle.isError && <p role="alert" className="text-sm text-danger">{errorMessage(toggle.error)}</p>}
-              <ol className="flex flex-col border-t border-line">
+              {eventsState.isSuccess && events.length === 0 && (
+                <p className="border-t border-line pt-7 text-sm text-ink-muted">No gatherings on the calendar yet. We’ll post the next one here.</p>
+              )}
+              <ol className="flex flex-col border-t border-line empty:hidden">
                 {events.map((ev) => {
-                  const d = new Date(ev.starts_at);
+                  const when = eventWhen(ev.starts_at);
                   const going = rsvps.has(ev.id);
                   const eventColor = toneFor(ev.neighborhood, hoodList)?.color;
                   return (
                     <li key={ev.id} className="motion-scroll-reveal grid grid-cols-[4.5rem_1fr] gap-6 border-b border-line py-7 sm:grid-cols-[4.5rem_1fr_auto] sm:items-center">
-                      <div className="text-center"><p className={cn("text-xs uppercase", eventColor && "text-(--hood)")} style={hoodStyle(eventColor)}>{d.toLocaleDateString("en-US", { month: "short" })}</p><p className="font-display text-5xl leading-none">{d.getDate()}</p></div>
+                      <div className="text-center"><p className={cn("text-xs uppercase", eventColor && "text-(--hood)")} style={hoodStyle(eventColor)}>{when.month}</p><p className="font-display text-5xl leading-none">{when.day}</p></div>
                       <div className="min-w-0">
                         <h3 className="font-display text-2xl">{ev.title}</h3>
-                        <p className="mt-1 text-sm text-ink-muted">{ev.location} · {ev.neighborhood} · {d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}</p>
+                        <p className="mt-1 text-sm text-ink-muted">{ev.location} · {ev.neighborhood} · {when.time}</p>
                         <p className="mt-2 text-sm text-ink-muted">{ev.description}</p>
                       </div>
                       <Button size="sm" variant={going ? "white" : "outline"} aria-pressed={going} disabled={toggle.isPending || !rsvpsState.isSuccess} onClick={() => toggle.mutate({ eventId: ev.id, going: !going })} className="col-start-2 justify-self-start sm:col-start-3">{going ? "✓ You’re going" : "Save my seat"}</Button>
@@ -295,7 +299,7 @@ function AccountPage() {
                   </FormNotice>
                 ) : (
                   <form onSubmit={bookHeadshot} className="mt-6 flex flex-col gap-6">
-                    <FormField label="Preferred date" htmlFor="date"><Input id="date" name="date" type="date" required min={new Date().toISOString().slice(0, 10)} /></FormField>
+                    <FormField label="Preferred date" htmlFor="date"><Input id="date" name="date" type="date" required min={localDateISO()} /></FormField>
                     <FormField label="Time of day" htmlFor="time"><Select id="time" name="time"><option>Morning</option><option>Afternoon</option><option>Evening</option></Select></FormField>
                     <FormField label="Notes" htmlFor="notes" optional><Input id="notes" name="notes" maxLength={300} placeholder="Bringing products, a team…" /></FormField>
                     {book.isError && <p role="alert" className="text-sm text-danger">{errorMessage(book.error)}</p>}
