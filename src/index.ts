@@ -1,6 +1,7 @@
 export { cn, formatCatalogueNumber } from "./design-system/lib/utils";
 export * from "./design-system/components/brand";
 export { constellationLogoSources } from "./design-system/lib/logo-sources";
+export { displayFontUrl } from "./design-system/lib/fonts";
 export * from "./design-system/components/typography";
 export * from "./design-system/components/button";
 export * from "./design-system/components/layout";

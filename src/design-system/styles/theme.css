@@ -1,9 +1,14 @@
 /* The Women’s Collective theme — import once after `@import "tailwindcss";` */
+/* Fonts: subset WOFF2 (T25); the full TTFs remain the format() fallback. Regenerate with fonttools + brotli:
+   pyftsubset <font>.ttf --flavor=woff2 --layout-features='*' --output-file=<font>.woff2 --unicodes="U+0000-024F,U+0259,
+   U+02B0-02FF,U+0300-036F,U+1E00-1EFF,U+2000-206F,U+20A0-20CF,U+2100-215F,U+2190-21FF,U+2212,U+2713,U+2715,U+2726,U+FEFF,U+FFFD"
+   A glyph missing from the WOFF2 does not fall back to the TTF, so add any new symbol the UI renders to the list. */
 @custom-variant dark (&:where(.dark, .dark *));
 
 @font-face {
   font-family: "Gilda Display";
-  src: url("../assets/fonts/gilda-display-400.ttf") format("truetype");
+  src: url("../assets/fonts/gilda-display-400.woff2") format("woff2"),
+    url("../assets/fonts/gilda-display-400.ttf") format("truetype");
   font-style: normal;
   font-weight: 400;
   font-display: swap;
@@ -11,7 +16,8 @@
 
 @font-face {
   font-family: "Inter";
-  src: url("../assets/fonts/inter-400.ttf") format("truetype");
+  src: url("../assets/fonts/inter-400.woff2") format("woff2"),
+    url("../assets/fonts/inter-400.ttf") format("truetype");
   font-style: normal;
   font-weight: 400;
   font-display: swap;
@@ -19,7 +25,8 @@
 
 @font-face {
   font-family: "Inter";
-  src: url("../assets/fonts/inter-500.ttf") format("truetype");
+  src: url("../assets/fonts/inter-500.woff2") format("woff2"),
+    url("../assets/fonts/inter-500.ttf") format("truetype");
   font-style: normal;
   font-weight: 500;
   font-display: swap;

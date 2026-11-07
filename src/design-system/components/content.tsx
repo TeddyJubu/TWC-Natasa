@@ -25,6 +25,10 @@ ImageFrame.displayName = "ImageFrame";
 /* ---------- Hero ---------- */
 export interface HeroProps extends Omit<React.HTMLAttributes<HTMLElement>, "title"> {
   image: string;
+  /** Optional `srcset`/`sizes` for the full-bleed photo. The hero is at least 60rem tall and `object-cover`,
+   *  so on narrow screens the photo renders wider than the viewport: size it by its real drawn width. */
+  imageSrcSet?: string;
+  imageSizes?: string;
   imageAlt?: string;
   badge?: React.ReactNode;
   title: React.ReactNode;
@@ -36,9 +40,10 @@ export interface HeroProps extends Omit<React.HTMLAttributes<HTMLElement>, "titl
   nav?: React.ReactNode;
 }
 export const Hero = React.forwardRef<HTMLElement, HeroProps>(
-  ({ className, image, imageAlt = "", badge, title, description, info, highlight, nav, ...p }, ref) => (
+  ({ className, image, imageSrcSet, imageSizes, imageAlt = "", badge, title, description, info, highlight, nav, ...p }, ref) => (
     <section ref={ref} className={cn("relative isolate min-h-[60rem] overflow-hidden bg-sky text-white", className)} {...p}>
-      <img src={image} alt={imageAlt} className="absolute inset-0 -z-10 size-full object-cover" />
+      {/* The hero is always the largest above-the-fold image: fetch it first. */}
+      <img src={image} srcSet={imageSrcSet} sizes={imageSizes} alt={imageAlt} fetchPriority="high" className="absolute inset-0 -z-10 size-full object-cover" />
       <div aria-hidden className="absolute inset-0 -z-10 bg-sky-fade" />
       <div aria-hidden className="absolute inset-x-0 bottom-0 -z-10 h-48 bg-gradient-to-t from-canvas to-transparent" />
       {nav}
@@ -221,13 +226,16 @@ export interface FeatureCardProps extends Omit<React.HTMLAttributes<HTMLElement>
   description?: React.ReactNode;
   tag?: React.ReactNode;
   image?: string;
+  /** Optional `srcset`/`sizes` for the `photo` variant's image. */
+  imageSrcSet?: string;
+  imageSizes?: string;
 }
 export const FeatureCard = React.forwardRef<HTMLElement, FeatureCardProps>(
-  ({ className, variant, title, description, tag, image, ...p }, ref) => (
+  ({ className, variant, title, description, tag, image, imageSrcSet, imageSizes, ...p }, ref) => (
     <article ref={ref} className={cn(featureVariants({ variant }), className)} {...p}>
       {variant === "photo" && image && (
         <>
-          <img src={image} alt="" loading="lazy" className="absolute inset-0 -z-0 size-full object-cover transition-transform duration-700 ease-[var(--ease-gentle)] group-hover:scale-[1.03] motion-reduce:transform-none motion-reduce:transition-none" />
+          <img src={image} srcSet={imageSrcSet} sizes={imageSizes} alt="" loading="lazy" className="absolute inset-0 -z-0 size-full object-cover transition-transform duration-700 ease-[var(--ease-gentle)] group-hover:scale-[1.03] motion-reduce:transform-none motion-reduce:transition-none" />
           <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
         </>
       )}

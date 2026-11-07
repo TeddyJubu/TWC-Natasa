@@ -1,7 +1,7 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import {
   Accordion, Badge, ConstellationLogo, Container, FeatureCard,
-  CurvedGallery, Heading, Hero, ImageFrame, Ribbon, Section, SectionHeader, Split, Statement, Text, buttonVariants, cn, type ConstellationLogoProps,
+  CurvedGallery, Heading, Hero, ImageFrame, Ribbon, Section, SectionHeader, Split, Statement, Text, buttonVariants, cn,
 } from "@/index";
 import { useQuery } from "@tanstack/react-query";
 import { publicProfilesQuery } from "@/features/members/queries";
@@ -16,6 +16,9 @@ import neighborhoodElmhurst from "@/assets/photography/neighborhood-elmhurst.jpg
 import neighborhoodForestHills from "@/assets/photography/neighborhood-forest-hills.jpg";
 import neighborhoodRegoPark from "@/assets/photography/neighborhood-rego-park.jpg";
 import natasa from "@/assets/photography/natasa-tuohy.jpg";
+import {
+  eventSizes, eventSrcSet, eventThumb, founderSizes, founderSrcSet, heroSizes, heroSrcSet, neighborhoodSizes, neighborhoodSrcSet,
+} from "@/app/responsive-images";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -41,14 +44,14 @@ const links = [
 ];
 
 // `dark`: black title on the light hues, where white falls under 3:1 (T26).
-const neighborhoods: { name: string; image: string; overlay: string; logo: ConstellationLogoProps["variant"]; dark?: boolean }[] = [
-  { name: "Long Island City", image: neighborhoodLic, overlay: "from-lic via-lic/55", dark: true, logo: "long-island-city" },
-  { name: "Sunnyside", image: neighborhoodSunnyside, overlay: "from-sunnyside via-sunnyside/55", logo: "sunnyside" },
-  { name: "Astoria", image: neighborhoodAstoria, overlay: "from-astoria via-astoria/55", dark: true, logo: "astoria" },
-  { name: "Jackson Heights", image: neighborhoodJacksonHeights, overlay: "from-jackson-heights via-jackson-heights/55", logo: "jackson-heights" },
-  { name: "Elmhurst", image: neighborhoodElmhurst, overlay: "from-elmhurst via-elmhurst/55", dark: true, logo: "elmhurst" },
-  { name: "Forest Hills", image: neighborhoodForestHills, overlay: "from-forest-hills via-forest-hills/55", dark: true, logo: "forest-hills" },
-  { name: "Rego Park", image: neighborhoodRegoPark, overlay: "from-rego-park via-rego-park/55", logo: "rego-park" },
+const neighborhoods: { name: string; slug: Parameters<typeof neighborhoodSrcSet>[0]; image: string; overlay: string; dark?: boolean }[] = [
+  { name: "Long Island City", image: neighborhoodLic, slug: "lic", overlay: "from-lic via-lic/55", dark: true },
+  { name: "Sunnyside", image: neighborhoodSunnyside, slug: "sunnyside", overlay: "from-sunnyside via-sunnyside/55" },
+  { name: "Astoria", image: neighborhoodAstoria, slug: "astoria", overlay: "from-astoria via-astoria/55", dark: true },
+  { name: "Jackson Heights", image: neighborhoodJacksonHeights, slug: "jackson-heights", overlay: "from-jackson-heights via-jackson-heights/55" },
+  { name: "Elmhurst", image: neighborhoodElmhurst, slug: "elmhurst", overlay: "from-elmhurst via-elmhurst/55", dark: true },
+  { name: "Forest Hills", image: neighborhoodForestHills, slug: "forest-hills", overlay: "from-forest-hills via-forest-hills/55", dark: true },
+  { name: "Rego Park", image: neighborhoodRegoPark, slug: "rego-park", overlay: "from-rego-park via-rego-park/55" },
 ];
 
 function HomePage() {
@@ -61,11 +64,13 @@ function HomePage() {
       <main id="main" tabIndex={-1} className="outline-none">
       <Hero
         image={hero}
+        imageSrcSet={heroSrcSet}
+        imageSizes={heroSizes}
         imageAlt="Woman standing in a field beneath an open sky"
         badge="Western Queens, New York"
         title="Find Your People. Help Someone Else Shine."
         description="For women building businesses, careers, creative work, and real relationships close to home."
-        info={{ image: event, text: "A generous, engaged community across Queens." }}
+        info={{ image: eventThumb, text: "A generous, engaged community across Queens." }}
         highlight={{ value: "7", label: "Neighborhood colors" }}
       />
 
@@ -104,7 +109,7 @@ function HomePage() {
           <SectionHeader badge="Inside the collective" title="Connections That Move Work Forward" intro="Not networking for networking’s sake. This is a place to build genuine relationships and support women-owned work." />
           <div className="grid gap-3 md:grid-cols-3">
             <FeatureCard tag="01" title="Share What You Do" description="Introduce your business, work, or project and help neighbors understand what you bring." className="bg-mint" />
-            <FeatureCard variant="photo" image={event} title="Find Collaborators" description="Build partnerships, exchange referrals, and discover opportunities through people nearby." />
+            <FeatureCard variant="photo" image={event} imageSrcSet={eventSrcSet} imageSizes={eventSizes} title="Find Collaborators" description="Build partnerships, exchange referrals, and discover opportunities through people nearby." />
             <FeatureCard tag="03" title="Show Up Locally" description="Promote women-owned businesses and learn about gatherings, events, and meetups across Queens." className="bg-lilac" />
           </div>
         </Container>
@@ -121,16 +126,16 @@ function HomePage() {
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {neighborhoods.map((item) => (
               <article key={item.name} className="group motion-scroll-reveal relative flex min-h-72 overflow-hidden rounded-card text-white">
-                <img src={item.image} alt={`${item.name}, Queens`} loading="lazy" width={768} height={768} className="absolute inset-0 size-full object-cover transition-transform duration-slow ease-gentle group-hover:scale-105" />
+                <img src={item.image} srcSet={neighborhoodSrcSet(item.slug, item.image)} sizes={neighborhoodSizes} alt={`${item.name}, Queens`} loading="lazy" width={816} height={816} className="absolute inset-0 size-full object-cover transition-transform duration-slow ease-gentle group-hover:scale-105" />
                 <div className={`absolute inset-0 bg-gradient-to-t ${item.overlay} to-transparent`} aria-hidden />
                 <div className="relative z-10 flex w-full flex-col justify-between p-6">
-                  <ConstellationLogo variant={item.logo} size="sm" className={item.dark ? "brightness-0" : "brightness-0 invert"} aria-hidden alt="" />
+                  <ConstellationLogo variant={item.dark ? "ink" : "white"} size="sm" aria-hidden alt="" />
                   <h3 className={cn("font-display text-3xl", item.dark && "text-black")}>{item.name}</h3>
                 </div>
               </article>
             ))}
           </div>
-          <Split media={<ImageFrame src={natasa} alt="Nataša Tuohy, founder of The Women’s Collective" shape="panel" ratio="square" />}>
+          <Split media={<ImageFrame src={natasa} srcSet={founderSrcSet} sizes={founderSizes} alt="Nataša Tuohy, founder of The Women’s Collective" shape="panel" ratio="square" />}>
             <Badge variant="solid">Founder</Badge>
             <Heading as="h3" size="section">Meet Nataša Tuohy</Heading>
             <Text size="lg">Nataša is a New York–based architectural and interior designer whose work brings European sensibility together with New York pragmatism. Educated at the University of Florence, she founded her Greenpoint studio around thoughtful spaces, trusted collaboration, and enduring relationships.</Text>

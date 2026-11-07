@@ -16,6 +16,7 @@ import { useRouteFocus } from "@/app/layout/route-focus";
 import hero from "@/assets/photography/hero.jpg";
 
 import appCss from "../styles.css?url";
+import { displayFontUrl } from "@/index";
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: ({ matches }) => {
@@ -33,6 +34,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       ],
       links: [
         { rel: "stylesheet", href: appCss },
+        // Headlines are set in the display face; fetch it with the CSS instead of after layout (T25).
+        { rel: "preload", href: displayFontUrl, as: "font", type: "font/woff2", crossOrigin: "anonymous" },
         { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
         ...seo.links,
       ],
