@@ -3,19 +3,16 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
   Badge,
-  BrandLockup,
   Button,
   Container,
-  Footer,
   Heading,
   MemberCard,
-  Navbar,
   Section,
   Text,
   buttonVariants,
   cn,
 } from "@/index";
-import { Shell } from "@/showcase/Shell";
+import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import { useNeighborhoods } from "@/features/neighborhoods/queries";
 import { pickerNames } from "@/features/neighborhoods/options";
 import { toneFor } from "@/features/neighborhoods/tone";
@@ -59,9 +56,8 @@ function MembersPage() {
   const retry = () => void (viewer.isError ? viewer.refetch() : list.refetch());
 
   return (
-    <Shell bare>
-      <Navbar
-        brand={<Link to="/" aria-label="The Women’s Collective home"><BrandLockup compact /></Link>}
+    <AppPage>
+      <AppNav
         links={[{ label: "Home", href: "/" }, { label: "Members", href: "/members" }, { label: "Join", href: "/join" }, { label: viewer.data?.signedIn ? "Profile" : "Sign in", href: viewer.data?.signedIn ? "/account" : "/auth" }]}
         action={<Link to="/join" className={buttonVariants({ variant: "ink", size: "sm" })}>Join<span className="hidden sm:inline"> the collective</span></Link>}
       />
@@ -156,12 +152,7 @@ function MembersPage() {
         </Container>
       </Section>
 
-      <Footer
-        brand={<BrandLockup logoVariant="white" />}
-        statement="Find your people, share what you do, and help someone else shine."
-        links={[{ label: "Home", href: "/" }, { label: "Join", href: "/join" }]}
-        note="The Women’s Collective · Western Queens"
-      />
-    </Shell>
+      <AppFooter links={[{ label: "Home", href: "/" }, { label: "Join", href: "/join" }]} />
+    </AppPage>
   );
 }

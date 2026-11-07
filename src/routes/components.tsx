@@ -15,6 +15,7 @@ export const Route = createFileRoute("/components")({
   head: () => ({
     meta: [
       { title: "Components — The Women’s Collective Design System" },
+      { name: "robots", content: "noindex" },
       { name: "description", content: "Every Women’s Collective component with its variants and states." },
       { property: "og:title", content: "Components — The Women’s Collective Design System" },
       { property: "og:description", content: "Hero, badges, tabs, ribbons, timelines, forms and more." },

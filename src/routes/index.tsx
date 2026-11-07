@@ -1,11 +1,11 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import {
-  Accordion, Badge, BrandLockup, ConstellationLogo, Container, FeatureCard, Footer,
-  CurvedGallery, Heading, Hero, ImageFrame, Navbar, Ribbon, Section, SectionHeader, Split, Statement, Text, buttonVariants,
+  Accordion, Badge, ConstellationLogo, Container, FeatureCard,
+  CurvedGallery, Heading, Hero, ImageFrame, Ribbon, Section, SectionHeader, Split, Statement, Text, buttonVariants,
 } from "@/index";
 import { useQuery } from "@tanstack/react-query";
 import { publicProfilesQuery } from "@/features/members/queries";
-import { Shell } from "@/showcase/Shell";
+import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import hero from "@/assets/photography/hero.jpg";
 import event from "@/assets/photography/event.jpg";
 import neighborhoodLic from "@/assets/photography/neighborhood-lic.jpg";
@@ -55,8 +55,8 @@ function HomePage() {
   // Cards without a portrait fall back to the hero photo; never present that as a member.
   const publicCards = (useQuery(publicProfilesQuery).data ?? []).filter((m) => m.image !== hero);
   return (
-    <Shell bare>
-      <Navbar variant="hero" brand={<BrandLockup logoVariant="white" compact />} links={links} action={<Link to="/join" className={buttonVariants({ variant: "white" })}>Join the collective</Link>} />
+    <AppPage>
+      <AppNav variant="hero" links={links} action={<Link to="/join" className={buttonVariants({ variant: "white" })}>Join the collective</Link>} />
       <Hero
         image={hero}
         imageAlt="Woman standing in a field beneath an open sky"
@@ -157,12 +157,7 @@ function HomePage() {
         </Container>
       </Section>
 
-      <Footer
-        brand={<BrandLockup logoVariant="white" />}
-        statement="Find your people, share what you do, and help someone else shine."
-        links={[{ label: "Our mission", href: "#mission" }, { label: "Members", href: "/members" }, { label: "Join", href: "/join" }, { label: "Sign in", href: "/account" }]}
-        note="The Women’s Collective · Western Queens"
-      />
-    </Shell>
+      <AppFooter links={[{ label: "Our mission", href: "#mission" }, { label: "Members", href: "/members" }, { label: "Join", href: "/join" }, { label: "Sign in", href: "/account" }]} />
+    </AppPage>
   );
 }

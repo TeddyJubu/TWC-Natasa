@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /colors
+Disallow: /typography
+Disallow: /components
+Disallow: /__mockup
+Disallow: /__component

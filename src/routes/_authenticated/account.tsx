@@ -2,9 +2,10 @@ import * as React from "react";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  Badge, BrandLockup, Button, Container, FileUpload, FormActions, FormField, FormNotice, FormSection, Heading,
-  Input, MemberCard, Navbar, Section, SectionHeader, Select, Switch, Text, Textarea, cn,
+  Badge, Button, Container, FileUpload, FormActions, FormField, FormNotice, FormSection, Heading,
+  Input, MemberCard, Section, SectionHeader, Select, Switch, Text, Textarea, cn,
 } from "@/index";
+import { AppNav, AppPage } from "@/app/layout/AppLayout";
 import { getSupabase } from "@/app/supabase";
 import { useNeighborhoods } from "@/features/neighborhoods/queries";
 import { pickerNames } from "@/features/neighborhoods/options";
@@ -153,9 +154,8 @@ function AccountPage() {
   const since = profile.member_since ? new Date(profile.member_since).toLocaleDateString("en-US", { month: "long", year: "numeric" }) : "—";
 
   return (
-    <div className="min-h-screen bg-canvas text-ink">
-      <Navbar
-        brand={<Link to="/" aria-label="Home"><BrandLockup compact /></Link>}
+    <AppPage>
+      <AppNav
         links={[
           { label: "Home", href: "/" }, { label: "Members", href: "/members" }, { label: "Profile", href: "/account" },
           ...(admin ? [{ label: "Admin", href: "/admin" }] : []),
@@ -336,7 +336,7 @@ function AccountPage() {
           )}
         </Container>
       </Section>
-    </div>
+    </AppPage>
   );
 }
 

@@ -1,5 +1,6 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
-import { BrandLockup, Container, Navbar, Section, SectionHeader, Tabs } from "@/index";
+import { createFileRoute } from "@tanstack/react-router";
+import { Container, Section, SectionHeader, Tabs } from "@/index";
+import { AppNav, AppPage } from "@/app/layout/AppLayout";
 import { ApplicationsPanel, BookingsPanel, MembersPanel, NeighborhoodsPanel } from "@/features/admin/panels";
 
 export const Route = createFileRoute("/_authenticated/_admin/admin")({
@@ -30,9 +31,8 @@ const PHONE_TABS = [
 
 function AdminPage() {
   return (
-    <div className="min-h-screen bg-canvas text-ink">
-      <Navbar
-        brand={<Link to="/" aria-label="Home"><BrandLockup compact /></Link>}
+    <AppPage>
+      <AppNav
         links={[
           { label: "Home", href: "/" }, { label: "Members", href: "/members" },
           { label: "Profile", href: "/account" }, { label: "Admin", href: "/admin" },
@@ -48,6 +48,6 @@ function AdminPage() {
           <Tabs items={TABS} className={PHONE_TABS} />
         </Container>
       </Section>
-    </div>
+    </AppPage>
   );
 }

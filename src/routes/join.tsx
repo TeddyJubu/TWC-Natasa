@@ -1,7 +1,7 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { BrandLockup, Container, Navbar, Section, buttonVariants } from "@/index";
-import { Shell } from "@/showcase/Shell";
+import { Container, Section, buttonVariants } from "@/index";
+import { AppNav, AppPage } from "@/app/layout/AppLayout";
 import { ApplicationForm } from "@/features/applications/ApplicationForm";
 import { useSubmitApplication } from "@/features/applications/mutations";
 import { applicantQuery } from "@/features/applications/queries";
@@ -25,10 +25,9 @@ function JoinPage() {
   // Prefill is a convenience: while it loads, or if it fails, the form simply starts empty.
   const { data: applicant } = useQuery(applicantQuery);
   return (
-    <Shell bare>
-      <Navbar
+    <AppPage>
+      <AppNav
         variant="solid"
-        brand={<Link to="/" className="transition-opacity hover:opacity-70" aria-label="The Women’s Collective home"><BrandLockup compact /></Link>}
         links={[{ label: "Our mission", href: "/#mission" }, { label: "Our constellation", href: "/#constellation" }]}
         action={<Link to="/" className={buttonVariants({ variant: "outline", size: "sm" })}>Back to home</Link>}
       />
@@ -39,6 +38,6 @@ function JoinPage() {
           </div>
         </Container>
       </Section>
-    </Shell>
+    </AppPage>
   );
 }

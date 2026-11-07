@@ -1,7 +1,7 @@
 # Agents
 
 - All design-system source (theme CSS, components, helpers) lives in `src/design-system/` and is re-exported from `src/index.ts` — attach copies only that subtree, so nothing there may import from outside it. App code imports it only via `@/index`; ESLint `no-restricted-imports` enforces both directions.
-- Showcase pages live in `src/routes/` and showcase-only helpers in `src/showcase/` (excluded via `.dsignore`) — they are preview-only and never re-exported.
+- Showcase pages (`/colors`, `/typography`, `/components`) live in `src/routes/` and are the only routes on the `Shell` toolbar from `src/showcase/` (showcase-only helpers, excluded via `.dsignore`); they carry `noindex` and are disallowed in `public/robots.txt` with the preview routes. Live pages use `AppPage`, `AppNav` and `AppFooter` from `src/app/layout/AppLayout.tsx` — keeps the design-system toolbar off the live site and out of search, while the showcase stays preview-only and never re-exported.
 - Tokens are CSS variables mapped through `@theme inline` in `theme.css` — keeps light/dark switching to a single `.dark` class.
 - Form primitives use editorial and boxed variants from one shared family — keeps long applications expressive and compact forms consistent.
 - Motion uses shared CSS timing tokens and reduced-motion fallbacks — keeps interactions consistent and accessible without adding a runtime dependency.

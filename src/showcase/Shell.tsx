@@ -2,10 +2,12 @@ import * as React from "react";
 import { Link } from "@tanstack/react-router";
 import { Button, Container, Wordmark, cn } from "@/index";
 
-export function Shell({ children, bare }: { children: React.ReactNode; bare?: boolean }) {
+export function Shell({ children }: { children: React.ReactNode }) {
   const [dark, setDark] = React.useState(false);
   React.useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
+    // Live pages have no toggle, so the showcase must not leave its dark theme behind.
+    return () => document.documentElement.classList.remove("dark");
   }, [dark]);
   const links = [
     { to: "/", label: "Sample page" },
@@ -26,7 +28,7 @@ export function Shell({ children, bare }: { children: React.ReactNode; bare?: bo
         ))}
         <Button size="sm" variant="ink" className="shrink-0 rounded-full" onClick={() => setDark((d) => !d)} aria-label="Toggle dark theme">{dark ? "Light" : "Dark"}</Button>
       </div>
-      {bare ? children : <Container className="pb-32 pt-16">{children}</Container>}
+      <Container className="pb-32 pt-16">{children}</Container>
     </div>
   );
 }

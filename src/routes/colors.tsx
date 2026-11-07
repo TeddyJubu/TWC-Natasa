@@ -6,6 +6,7 @@ export const Route = createFileRoute("/colors")({
   head: () => ({
     meta: [
       { title: "Colors — The Women’s Collective Design System" },
+      { name: "robots", content: "noindex" },
       { name: "description", content: "The Women’s Collective color tokens, including seven neighborhood colors." },
       { property: "og:title", content: "Colors — The Women’s Collective Design System" },
       { property: "og:description", content: "Editorial foundations and neighborhood constellation colors." },

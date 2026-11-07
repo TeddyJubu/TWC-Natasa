@@ -6,6 +6,7 @@ export const Route = createFileRoute("/typography")({
   head: () => ({
     meta: [
       { title: "Typography — The Women’s Collective Design System" },
+      { name: "robots", content: "noindex" },
       { name: "description", content: "Gilda Display, Inter, and The Women’s Collective type scale." },
       { property: "og:title", content: "Typography — The Women’s Collective Design System" },
       { property: "og:description", content: "Elegant serif display with a clean sans for body." },
