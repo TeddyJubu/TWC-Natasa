@@ -146,21 +146,34 @@ describe("introsQuery", () => {
     expect(introsQuery("u1", "Astoria").queryKey).toEqual(["intros", "u1", "Astoria"]);
   });
 
-  it("queries approved, visible others and ranks the member's neighborhood first, max 4", async () => {
-    fake.results = [{
-      data: [other("a", "Sunnyside"), other("b", "Astoria"), other("c", "Elmhurst"), other("d", "Astoria"), other("e", "Rego Park")],
-      error: null,
-    }];
+  const base = [["from", "profiles"], ["select", "*"], ["neq", "id", "u1"], ["eq", "status", "approved"], ["eq", "directory_visible", true]];
+
+  it("asks the database for same-neighborhood members first, then tops up from elsewhere (max 4)", async () => {
+    fake.results = [
+      { data: [other("b", "Astoria"), other("d", "Astoria")], error: null },
+      { data: [other("a", "Sunnyside"), other("c", "Elmhurst")], error: null },
+    ];
     const out = (await run(introsQuery("u1", "Astoria"))) as { id: string }[];
     expect(fake.calls).toEqual([
-      ["from", "profiles"], ["select", "*"], ["neq", "id", "u1"], ["eq", "status", "approved"],
-      ["eq", "directory_visible", true], ["limit", 12],
+      ...base, ["eq", "neighborhood", "Astoria"], ["order", "catalogue_number"], ["limit", 4],
+      ...base, ["neq", "neighborhood", "Astoria"], ["order", "catalogue_number"], ["limit", 2],
     ]);
     expect(out.map((m) => m.id)).toEqual(["b", "d", "a", "c"]);
   });
 
+  it("skips the second query when the neighborhood fills all four", async () => {
+    fake.results = [{ data: ["a", "b", "c", "d"].map((id) => other(id, "Astoria")), error: null }];
+    expect(((await run(introsQuery("u1", "Astoria"))) as unknown[]).length).toBe(4);
+    expect(fake.calls.filter((c) => c[0] === "from")).toHaveLength(1);
+  });
+
+  it("throws the top-up query error", async () => {
+    fake.results = [{ data: [], error: null }, { data: null, error: dbError }];
+    await expect(run(introsQuery("u1", "Astoria"))).rejects.toBe(dbError);
+  });
+
   it("returns an empty list when there are no other members", async () => {
-    fake.results = [{ data: [], error: null }];
+    fake.results = [{ data: [], error: null }, { data: [], error: null }];
     expect(await run(introsQuery("u1", "Astoria"))).toEqual([]);
   });
 
@@ -203,6 +216,20 @@ describe("uploadAvatar", () => {
     expect(fake.calls[0][2]).toBe("u1/avatar-42.jpg");
   });
 
+  it.each([
+    ["too large", new File([new Uint8Array(5 * 1024 * 1024 + 1)], "big.jpg", { type: "image/jpeg" }), /5 MB/],
+    ["not an image type we accept", new File(["x"], "anim.gif", { type: "image/gif" }), /JPG, PNG or WebP/],
+  ])("rejects a file that is %s before uploading anything", async (_label, bad, message) => {
+    await expect(uploadAvatar("u1", bad)).rejects.toThrow(message);
+    expect(fake.calls).toEqual([]);
+  });
+
+  it("accepts a 5 MB webp", async () => {
+    fake.results = [{ data: {}, error: null }, { data: profileRow, error: null }];
+    await uploadAvatar("u1", new File([new Uint8Array(5 * 1024 * 1024)], "me.webp", { type: "image/webp" }));
+    expect(fake.calls[0][0]).toBe("upload");
+  });
+
   it("throws the storage error and skips the profile update", async () => {
     fake.results = [{ data: null, error: dbError }];
     await expect(uploadAvatar("u1", file)).rejects.toBe(dbError);
@@ -219,7 +246,7 @@ describe("member mutation cache effects", () => {
   const keys = (spy: { mock: { calls: unknown[][] } }) =>
     spy.mock.calls.map((c) => (c[0] as { queryKey: unknown }).queryKey);
 
-  it("saving writes the row into the profile cache and refreshes directory and intros", async () => {
+  it("saving writes the row into the profile cache and refreshes directory, intros and public cards", async () => {
     const qc = new QueryClient();
     qc.setQueryData(["profile", "u1"], { profile: { id: "u1", full_name: "Old" }, avatarUrl: "https://signed/a" });
     const spy = vi.spyOn(qc, "invalidateQueries");
@@ -227,15 +254,15 @@ describe("member mutation cache effects", () => {
     fake.results = [{ data: saved, error: null }];
     await new MutationObserver(qc, saveProfileMutation(qc, "u1")).mutate({ full_name: "New" });
     expect(qc.getQueryData(["profile", "u1"])).toEqual({ profile: saved, avatarUrl: "https://signed/a" });
-    expect(keys(spy)).toEqual([["directory"], ["intros"]]);
+    expect(keys(spy)).toEqual([["directory"], ["intros"], ["public-profiles"]]);
   });
 
-  it("uploading refreshes the profile (new signed url), directory and intros", async () => {
+  it("uploading refreshes the profile (new signed url), directory, intros and public cards", async () => {
     const qc = new QueryClient();
     const spy = vi.spyOn(qc, "invalidateQueries");
     fake.results = [{ data: {}, error: null }, { data: profileRow, error: null }];
-    await new MutationObserver(qc, uploadAvatarMutation(qc, "u1")).mutate(new File(["x"], "me.png"));
-    expect(keys(spy)).toEqual(expect.arrayContaining([["profile", "u1"], ["directory"], ["intros"]]));
-    expect(keys(spy)).toHaveLength(3);
+    await new MutationObserver(qc, uploadAvatarMutation(qc, "u1")).mutate(new File(["x"], "me.png", { type: "image/png" }));
+    expect(keys(spy)).toEqual(expect.arrayContaining([["profile", "u1"], ["directory"], ["intros"], ["public-profiles"]]));
+    expect(keys(spy)).toHaveLength(4);
   });
 });

@@ -77,22 +77,25 @@ export const profileQuery = (userId: string) =>
     },
   });
 
+const INTROS = 4;
+
+/** Up to four approved, listed members: the database returns same-neighborhood ones first (T15). */
 export const introsQuery = (userId: string, neighborhood: string) =>
   queryOptions({
     queryKey: ["intros", userId, neighborhood],
     queryFn: async (): Promise<MemberProfile[]> => {
       const supabase = await getSupabase();
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .neq("id", userId)
-        .eq("status", "approved")
-        .eq("directory_visible", true)
-        .limit(12);
-      if (error) throw error;
-      if (!data?.length) return [];
-      const rank = (n: string) => (n === neighborhood ? 0 : 1);
-      const picked = [...data].sort((a, b) => rank(a.neighborhood) - rank(b.neighborhood)).slice(0, 4);
+      const others = () =>
+        supabase.from("profiles").select("*").neq("id", userId).eq("status", "approved").eq("directory_visible", true);
+      const near = await others().eq("neighborhood", neighborhood).order("catalogue_number").limit(INTROS);
+      if (near.error) throw near.error;
+      let picked = near.data;
+      if (picked.length < INTROS) {
+        const rest = await others().neq("neighborhood", neighborhood).order("catalogue_number").limit(INTROS - picked.length);
+        if (rest.error) throw rest.error;
+        picked = [...picked, ...rest.data];
+      }
+      if (!picked.length) return [];
       const urls = await avatarUrls(picked.map((o) => o.avatar_path));
       return picked.map((o) => toMemberProfile(o, { image: imageFor(o.avatar_path, urls) }));
     },

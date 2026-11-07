@@ -4,6 +4,7 @@
 import * as React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render } from "@testing-library/react";
+import { NEIGHBORHOOD_SEED } from "@/features/neighborhoods/queries";
 
 type LinkProps = React.AnchorHTMLAttributes<HTMLAnchorElement> & {
   to?: string; search?: Record<string, string>; activeProps?: unknown; activeOptions?: unknown;
@@ -32,10 +33,13 @@ export function installDomStubs() {
   svgText.getComputedTextLength ??= () => 0;
 }
 
-/** Renders `ui` with a QueryClient pre-seeded with `[queryKey, data]` pairs; seeded data never refetches. */
+/**
+ * Renders `ui` with a QueryClient pre-seeded with `[queryKey, data]` pairs; seeded data never refetches.
+ * Neighborhoods are always seeded fresh: their mount fetch would otherwise take a queued fake result.
+ */
 export function renderWithQueries(ui: React.ReactElement, seed: [readonly unknown[], unknown][] = []) {
   installDomStubs();
   const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false } } });
-  for (const [key, data] of seed) queryClient.setQueryData(key, data);
+  for (const [key, data] of [[["neighborhoods"], NEIGHBORHOOD_SEED] as const, ...seed]) queryClient.setQueryData(key, data);
   return { queryClient, ...render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>) };
 }

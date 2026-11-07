@@ -9,11 +9,10 @@ import { getSupabase } from "@/app/supabase";
 import { useNeighborhoods } from "@/features/neighborhoods/queries";
 import { toneFor } from "@/features/neighborhoods/tone";
 import { initials, toMemberProfile } from "@/features/members/map";
-import { introsQuery, profileQuery } from "@/features/members/queries";
-import { useSaveProfile, useUploadAvatar } from "@/features/members/mutations";
+import { introsQuery, profileQuery, type Profile } from "@/features/members/queries";
+import { useSaveProfile, useUploadAvatar, type ProfilePatch } from "@/features/members/mutations";
 import { bookingQuery, eventsQuery, rsvpsQuery } from "@/features/events/queries";
 import { useBookHeadshot, useToggleRsvp } from "@/features/events/mutations";
-import { demoMembers } from "@/showcase/demo-members";
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
@@ -32,6 +31,19 @@ export const Route = createFileRoute("/_authenticated/account")({
 /** Inline `--hood` for a neighborhood color, consumed via `bg-(--hood)` / `text-(--hood)`. */
 const hoodStyle = (color?: string) => (color ? ({ "--hood": color } as React.CSSProperties) : undefined);
 
+/** The card fields as currently typed in the form (also the save patch). Unlisted means not public. */
+function readCard(form: HTMLFormElement, profile: Profile): ProfilePatch {
+  const f = new FormData(form);
+  const text = (name: string) => String(f.get(name) ?? "").trim();
+  const directory_visible = f.get("directory_visible") === "on";
+  return {
+    full_name: text("full_name"), role_title: text("role_title"), business: text("business"),
+    neighborhood: String(f.get("neighborhood") ?? profile.neighborhood), specialty: text("specialty"),
+    website: text("website"), bio: text("bio").slice(0, 400), looking_for: text("looking_for").slice(0, 160),
+    directory_visible, public_profile: directory_visible && f.get("public_profile") === "on",
+  };
+}
+
 const errorMessage = (error: unknown) =>
   (error as { message?: string } | null)?.message || "Something went wrong. Please try again.";
 
@@ -44,6 +56,7 @@ function AccountPage() {
   const profile = profileState.data?.profile;
   const avatar = profileState.data?.avatarUrl;
   const approved = profile?.status === "approved";
+  const declined = profile?.status === "declined";
   const n = profile?.neighborhood ?? "";
 
   const eventsState = useQuery({ ...eventsQuery, enabled: approved });
@@ -58,6 +71,8 @@ function AccountPage() {
   const [saved, setSaved] = React.useState(false);
   const [changingBooking, setChangingBooking] = React.useState(false);
   const [signOutError, setSignOutError] = React.useState<string | null>(null);
+  // Unsaved form edits; drives the preview and the public switch until the next save.
+  const [draft, setDraft] = React.useState<ProfilePatch | null>(null);
 
   async function signOut() {
     setSignOutError(null);
@@ -76,16 +91,10 @@ function AccountPage() {
   function saveProfile(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!profile) return;
-    const f = new FormData(e.currentTarget);
-    const patch = {
-      full_name: String(f.get("full_name") ?? "").trim(), role_title: String(f.get("role_title") ?? "").trim(),
-      business: String(f.get("business") ?? "").trim(), neighborhood: String(f.get("neighborhood") ?? profile.neighborhood),
-      specialty: String(f.get("specialty") ?? "").trim(), website: String(f.get("website") ?? "").trim(),
-      bio: String(f.get("bio") ?? "").trim().slice(0, 400), looking_for: String(f.get("looking_for") ?? "").trim().slice(0, 160),
-      directory_visible: f.get("directory_visible") === "on",
-    };
+    const patch = readCard(e.currentTarget, profile);
     setSaved(false);
     save.mutate(patch, {
+      // The draft stays: once the saved row matches it, it no longer counts as unsaved (and later typing survives).
       onSuccess: () => {
         setSaved(true);
         setTimeout(() => setSaved(false), 1800);
@@ -133,12 +142,10 @@ function AccountPage() {
   const events = eventsState.data ?? [];
   const rsvps = new Set(rsvpsState.data ?? []);
   const booking = changingBooking ? null : bookingState.data ?? null;
-  const realIntros = introsState.data ?? [];
-  const sampleIntros = introsState.isSuccess && realIntros.length === 0;
-  const rank = (name: string) => (name === n ? 0 : 1);
-  const intros = sampleIntros
-    ? [...demoMembers].sort((a, b) => rank(a.neighborhood) - rank(b.neighborhood)).slice(0, 4)
-    : realIntros;
+  const intros = introsState.data ?? [];
+  const card = { ...profile, ...draft };
+  const unsaved = !!draft && Object.entries(draft).some(([key, value]) => profile[key as keyof Profile] !== value);
+  const listed = card.directory_visible ?? profile.directory_visible;
   const since = profile.member_since ? new Date(profile.member_since).toLocaleDateString("en-US", { month: "long", year: "numeric" }) : "—";
 
   return (
@@ -162,10 +169,10 @@ function AccountPage() {
             {avatar
               ? <img src={avatar} alt={`Portrait of ${profile.full_name}`} className="size-full rounded-control object-cover" />
               : <div className="grid size-full place-items-center rounded-control bg-canvas font-display text-8xl text-ink">{initials(profile.full_name)}</div>}
-            <span className="absolute -right-3 -top-3 rounded-full bg-sun px-4 py-2 text-xs text-sun-ink">{approved ? `No. ${String(profile.catalogue_number ?? 0).padStart(2, "0")}` : "In review"}</span>
+            <span className="absolute -right-3 -top-3 rounded-full bg-sun px-4 py-2 text-xs text-sun-ink">{approved ? `No. ${String(profile.catalogue_number ?? 0).padStart(2, "0")}` : declined ? "Not approved" : "In review"}</span>
           </div>
           <div className="motion-stagger flex flex-col gap-7">
-            <Badge variant="solid">{approved ? "Approved member" : "Application pending"}</Badge>
+            <Badge variant="solid">{approved ? "Approved member" : declined ? "Application not approved" : "Application pending"}</Badge>
             <Heading as="h1" size="display" className="break-words">{profile.full_name || "Welcome, Neighbor"}</Heading>
             <Text size="lg" tone="muted">{[profile.role_title, profile.business].filter(Boolean).join(" · ") || "Add your role and business below so neighbors know what you do."}</Text>
             <dl className="grid grid-cols-3 gap-6 border-t border-line pt-6">
@@ -178,7 +185,11 @@ function AccountPage() {
       </Section>
 
       {!approved && (
-        <div className="bg-sun py-3 text-center text-sm text-sun-ink">Your application is being reviewed. Polish your card now — it goes live the day you’re welcomed in.</div>
+        <div className="bg-sun py-3 text-center text-sm text-sun-ink">
+          {declined
+            ? "Your application wasn’t approved this time. Your card stays private and isn’t shown to anyone."
+            : "Your application is being reviewed. Polish your card now — it goes live the day you’re welcomed in."}
+        </div>
       )}
 
       {/* 01 Public card */}
@@ -186,7 +197,7 @@ function AccountPage() {
         <Container className="flex flex-col gap-16">
           <SectionHeader badge="01 — Your public card" title="How Neighbors Will Meet You" intro="This is what appears in the member directory when you choose to be visible." />
           <div className="grid gap-14 lg:grid-cols-[1.4fr_0.8fr]">
-            <form onSubmit={saveProfile} className="flex flex-col gap-14">
+            <form onSubmit={saveProfile} onChange={(e) => setDraft(readCard(e.currentTarget, profile))} className="flex flex-col gap-14">
               <FormSection index="A" title="The Basics" description="Your name and the work you’re known for.">
                 <div className="grid gap-8 md:grid-cols-2">
                   <FormField label="Full name" htmlFor="full_name" index="01"><Input id="full_name" name="full_name" defaultValue={profile.full_name} required maxLength={80} /></FormField>
@@ -208,19 +219,31 @@ function AccountPage() {
               <FormSection index="C" title="Portrait & Visibility">
                 <div className="grid gap-8 md:grid-cols-2">
                   <div className="flex flex-col gap-3">
-                    <FileUpload label="Upload a portrait" hint="JPG or PNG, up to 5MB" accept="image/jpeg,image/png,image/webp" onChange={(e) => { const file = e.currentTarget.files?.[0]; e.currentTarget.value = ""; if (file) upload.mutate(file); }} />
+                    <FileUpload label="Upload a portrait" hint="JPG, PNG or WebP, up to 5 MB" accept="image/jpeg,image/png,image/webp" onChange={(e) => { const file = e.currentTarget.files?.[0]; e.currentTarget.value = ""; if (file) upload.mutate(file); }} />
                     {upload.isError && <p role="alert" className="text-sm text-danger">{errorMessage(upload.error)}</p>}
                   </div>
-                  <Switch name="directory_visible" defaultChecked={profile.directory_visible} label="Show me in the member directory" description="Only appears once your membership is approved." />
+                  <div className="flex flex-col">
+                    <Switch name="directory_visible" defaultChecked={profile.directory_visible} label="Show me in the member directory" description="Only appears once your membership is approved." />
+                    {/* Controlled from the draft: switching the directory off also switches this off, so re-listing never republishes silently. */}
+                    <Switch
+                      name="public_profile"
+                      checked={listed && (card.public_profile ?? false)}
+                      onChange={() => undefined}
+                      disabled={!listed}
+                      className="border-t-0"
+                      label="Show my profile on the public website"
+                      description="Anyone on the internet can then see your card — name, portrait, work, neighborhood, bio and links — on our homepage and public member page. Needs “Show me in the member directory” on, and goes live only once you’re approved."
+                    />
+                  </div>
                 </div>
               </FormSection>
               {save.isError && <p role="alert" className="text-sm text-danger">{errorMessage(save.error)}</p>}
               <FormActions><Button type="submit" variant="ink" state={save.isPending ? "loading" : saved ? "success" : "idle"}>Save my card</Button></FormActions>
             </form>
-            <aside className="lg:sticky lg:top-32 lg:self-start">
-              <p className="mb-4 text-xs uppercase text-ink-muted">Live preview</p>
+            <aside aria-label="Card preview" className="lg:sticky lg:top-32 lg:self-start">
+              <p className="mb-4 text-xs uppercase text-ink-muted">{unsaved ? "Preview · unsaved changes" : "Preview of your saved card"}</p>
               <div className="rounded-panel bg-black p-4">
-                <MemberCard member={toMemberProfile(profile, { image: avatar, placeholders: true })} variant="catalogue" tone={toneFor(profile.neighborhood, hoodList)} catalogueNumber={profile.catalogue_number ?? 0} />
+                <MemberCard member={toMemberProfile({ ...profile, ...card }, { image: avatar, placeholders: true })} variant="catalogue" tone={toneFor(card.neighborhood ?? n, hoodList)} catalogueNumber={profile.catalogue_number ?? 0} />
               </div>
             </aside>
           </div>
@@ -292,10 +315,13 @@ function AccountPage() {
           {!approved ? <Locked /> : (
             <>
               {introsState.isError && <InlineError message="We couldn’t load your introductions." onRetry={() => void introsState.refetch()} />}
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                {intros.map((m, i) => <MemberCard key={m.id} member={m} variant="catalogue" tone={toneFor(m.neighborhood, hoodList)} catalogueNumber={i + 1} />)}
-              </div>
-              {sampleIntros && <p className="text-center text-xs text-ink-muted">Sample profiles shown until more members join the directory.</p>}
+              {introsState.isSuccess && intros.length === 0 ? (
+                <p className="text-center text-sm text-ink-muted">No introductions yet. As more neighbors join the directory, they’ll appear here.</p>
+              ) : (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  {intros.map((m) => <MemberCard key={m.id} member={m} variant="catalogue" tone={toneFor(m.neighborhood, hoodList)} catalogueNumber={m.catalogueNumber} />)}
+                </div>
+              )}
             </>
           )}
         </Container>
