@@ -91,7 +91,7 @@ function AuthPage() {
   const titles: Record<Mode, string> = { signin: "Welcome Back, Neighbor", signup: "Open Your Member Account", forgot: "Reset Your Password" };
 
   return (
-    <main className="grid min-h-screen bg-canvas text-ink lg:grid-cols-[1.05fr_1fr]">
+    <main id="main" tabIndex={-1} className="grid min-h-screen outline-none bg-canvas text-ink lg:grid-cols-[1.05fr_1fr]">
       <aside className="relative hidden overflow-hidden lg:block">
         <img src={hero} alt="Soft sky over Western Queens" className="absolute inset-0 size-full object-cover" />
         <div aria-hidden className="bg-sky-fade absolute inset-0" />
@@ -109,9 +109,9 @@ function AuthPage() {
         <div className="mx-auto flex w-full max-w-md flex-col gap-10">
           <Link to="/" className="lg:hidden" aria-label="Home"><BrandLockup compact /></Link>
           {mode !== "forgot" && (
-            <div role="tablist" aria-label="Account" className="grid grid-cols-2 border-b border-line">
+            <div role="group" aria-label="Sign in or create an account" className="grid grid-cols-2 border-b border-line">
               {(["signin", "signup"] as const).map((m) => (
-                <button key={m} role="tab" type="button" aria-selected={mode === m} onClick={() => setMode(m)}
+                <button key={m} type="button" aria-pressed={mode === m} onClick={() => setMode(m)}
                   className={cn("-mb-px border-b-2 pb-3 text-left text-sm transition-colors", mode === m ? "border-ink text-ink" : "border-transparent text-ink-muted hover:text-ink")}>
                   {m === "signin" ? "01 — Sign in" : "02 — Create account"}
                 </button>
@@ -146,7 +146,7 @@ function AuthPage() {
               </FormField>
             )}
             {error && <p role="alert" className="text-sm text-danger">{error}</p>}
-            {notice && <FormNotice role="status" title="Almost there" tone="accent">{notice}</FormNotice>}
+            {notice && <FormNotice role="status" title="Almost there" tone="accent" headingAs="h2">{notice}</FormNotice>}
             <Button type="submit" variant="ink" size="lg" state={busy ? "loading" : "idle"} className="w-full">
               {mode === "signin" ? "Sign in" : mode === "signup" ? "Create account" : "Send reset link"}
             </Button>

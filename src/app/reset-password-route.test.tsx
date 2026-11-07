@@ -42,6 +42,15 @@ const form = () => screen.queryByLabelText(/new password/i);
 const forgotLink = () => screen.getByRole("link", { name: /request a new link/i });
 
 describe("/reset-password", () => {
+  it("renders one main#main landmark (route focus target, T28)", async () => {
+    renderWithQueries(<Page />);
+    await screen.findByText(/link isn’t valid/i);
+    const mains = screen.getAllByRole("main");
+    expect(mains).toHaveLength(1);
+    expect(mains[0].id).toBe("main");
+    expect(mains[0].tabIndex).toBe(-1);
+  });
+
   it("shows no form without a recovery session, and links back to forgot-password", async () => {
     renderWithQueries(<Page />);
     expect(await screen.findByText(/link isn’t valid/i)).toBeTruthy();

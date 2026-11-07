@@ -117,13 +117,13 @@ function AccountPage() {
   }
 
   if (profileState.isPending) {
-    return <div className="grid min-h-screen place-items-center bg-canvas"><span role="status" aria-label="Loading your profile" className="size-6 animate-spin rounded-full border-2 border-ink border-t-transparent" /></div>;
+    return <main id="main" tabIndex={-1} className="grid min-h-screen place-items-center bg-canvas outline-none"><span role="status" aria-label="Loading your profile" className="size-6 animate-spin rounded-full border-2 border-ink border-t-transparent" /></main>;
   }
 
   // Only when there is nothing to show: a failed background refetch keeps the cached profile (and unsaved edits).
   if (!profile) {
     return (
-      <div className="grid min-h-screen place-items-center bg-canvas p-6 text-ink">
+      <main id="main" tabIndex={-1} className="grid min-h-screen place-items-center bg-canvas p-6 text-ink outline-none">
         <div className="flex max-w-md flex-col items-center gap-5 text-center">
           <p className="font-display text-2xl">{profileState.isError ? "We Couldn’t Load Your Profile" : "Profile Not Found"}</p>
           <p role="alert" className="text-sm text-ink-muted">
@@ -137,7 +137,7 @@ function AccountPage() {
           </div>
           {signOutError && <p role="alert" className="text-sm text-danger">{signOutError}</p>}
         </div>
-      </div>
+      </main>
     );
   }
 
@@ -162,6 +162,7 @@ function AccountPage() {
         ]}
         action={<Button variant="outline" size="sm" onClick={signOut}>Sign out</Button>}
       />
+      <main id="main" tabIndex={-1} className="outline-none">
       {signOutError && <p role="alert" className="bg-surface py-3 text-center text-sm text-danger">{signOutError}</p>}
       {profileState.isError && (
         <Container className="py-3">
@@ -336,6 +337,7 @@ function AccountPage() {
           )}
         </Container>
       </Section>
+      </main>
     </AppPage>
   );
 }

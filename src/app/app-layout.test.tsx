@@ -67,6 +67,27 @@ describe("live pages carry no showcase toolbar", () => {
   }
 });
 
+describe("live pages: skip link and one main landmark", () => {
+  for (const [path, route] of Object.entries(live)) {
+    it(`${path} starts with a skip link to exactly one <main id="main">`, () => {
+      const Page = component(route);
+      const { container } = renderWithQueries(<Page />, seed);
+      const mains = screen.getAllByRole("main");
+      expect(mains).toHaveLength(1);
+      expect(mains[0].id).toBe("main");
+      expect(mains[0].tabIndex).toBe(-1);
+      expect(mains[0].className.split(" ")).toContain("outline-none");
+      const skip = container.querySelector("a")!;
+      expect(skip.textContent).toBe("Skip to content");
+      expect(skip.getAttribute("href")).toBe("#main");
+      expect(skip.className.split(" ")).toEqual(expect.arrayContaining(["sr-only", "focus:not-sr-only"]));
+      // Nav first, footer (when present) last: both outside main.
+      expect(mains[0].querySelector("header nav[aria-label='Main']")).toBeNull();
+      expect(mains[0].querySelector("footer")).toBeNull();
+    });
+  }
+});
+
 describe("showcase pages keep the toolbar and stay out of search", () => {
   for (const [path, route] of Object.entries(showcase)) {
     it(`${path} renders the dark-theme toggle`, () => {
@@ -93,7 +114,11 @@ describe("showcase pages keep the toolbar and stay out of search", () => {
 describe("root route", () => {
   it("stays providers-only: no showcase or page chrome (preview routes render inside it)", () => {
     const root = readFileSync(resolve(process.cwd(), "src/routes/__root.tsx"), "utf8");
-    expect(root).not.toMatch(/@\/showcase|@\/app\/layout|\b(Navbar|Footer|Shell)\b/);
+    expect(root).not.toMatch(/@\/showcase|@\/app\/layout\/(AppLayout|StatusPages)|\b(Navbar|Footer|Shell)\b/);
+    // Route-change focus is a hook, not markup: the only layout import allowed here.
+    // Focus after the new page has rendered: resolvedLocation lags location until lazy chunks and loaders finish.
+    expect(root).toMatch(/resolvedLocation/);
+    expect(root).toMatch(/useRouteFocus\(resolvedPathname\)/);
   });
 });
 

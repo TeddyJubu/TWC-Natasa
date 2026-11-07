@@ -62,6 +62,7 @@ function MembersPage() {
         action={<Link to="/join" className={buttonVariants({ variant: "ink", size: "sm" })}>Join<span className="hidden sm:inline"> the collective</span></Link>}
       />
 
+      <main id="main" tabIndex={-1} className="outline-none">
       <header className="overflow-hidden bg-paper pt-20 md:pt-28">
         <Container className="grid gap-14 pb-20 md:grid-cols-[1.35fr_0.65fr] md:items-end md:pb-28">
           <div className="flex flex-col items-start gap-7">
@@ -151,6 +152,8 @@ function MembersPage() {
           <Link to="/join" className={buttonVariants({ variant: "white", size: "lg" })}>Start your application</Link>
         </Container>
       </Section>
+
+      </main>
 
       <AppFooter links={[{ label: "Home", href: "/" }, { label: "Join", href: "/join" }]} />
     </AppPage>

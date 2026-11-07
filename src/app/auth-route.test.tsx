@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, screen } from "@testing-library/react";
+import { cleanup, fireEvent, screen, within } from "@testing-library/react";
 import { renderWithQueries } from "@/test/dom";
 
 const auth = vi.hoisted(() => ({
@@ -86,6 +86,21 @@ describe("/auth", () => {
     expect(alert.textContent).not.toContain("network down");
   });
 
+  it("switches sign-in / create-account with a pressed-button group, not tabs, and labels main", () => {
+    renderWithQueries(<Page />);
+    expect(screen.queryByRole("tablist")).toBeNull();
+    expect(screen.queryByRole("tab")).toBeNull();
+    const group = screen.getByRole("group", { name: /sign in or create an account/i });
+    const [signIn, create] = within(group).getAllByRole("button");
+    expect(signIn.getAttribute("aria-pressed")).toBe("true");
+    expect(create.getAttribute("aria-pressed")).toBe("false");
+    fireEvent.click(create);
+    expect(signIn.getAttribute("aria-pressed")).toBe("false");
+    expect(create.getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByRole("heading", { level: 1, name: "Open Your Member Account" })).toBeTruthy();
+    expect(screen.getByRole("main").id).toBe("main");
+  });
+
   it("opens in the mode named in the URL", () => {
     search.mockReturnValue({ mode: "forgot" });
     renderWithQueries(<Page />);
@@ -94,7 +109,7 @@ describe("/auth", () => {
 
   describe("sign-up", () => {
     const signUp = async () => {
-      fireEvent.click(screen.getByRole("tab", { name: /create account/i }));
+      fireEvent.click(screen.getByRole("button", { name: /02 — create account/i }));
       fill(/full name/i, "Rosa");
       fill(/email/i, "rosa@x.test");
       fill(/password/i, "longenough");

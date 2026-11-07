@@ -58,6 +58,7 @@ function HomePage() {
   return (
     <AppPage>
       <AppNav variant="hero" links={links} action={<Link to="/join" className={buttonVariants({ variant: "white" })}>Join the collective</Link>} />
+      <main id="main" tabIndex={-1} className="outline-none">
       <Hero
         image={hero}
         imageAlt="Woman standing in a field beneath an open sky"
@@ -70,7 +71,7 @@ function HomePage() {
 
       <Section id="mission" className="pt-12">
         <Container className="flex flex-col items-center gap-10 text-center">
-          <Badge>Our mission</Badge>
+          <h2 className="flex"><Badge>Our mission</Badge></h2>
           <Statement lead={4} text="The Women’s Collective brings women across Queens together to meet, share knowledge, support one another’s work, and build real relationships close to home." />
           <Text size="lg" className="max-w-3xl">When women know who is around them, they can recommend each other, collaborate, show up for each other’s events, and create opportunities that would be harder to build alone.</Text>
           <Link to="/join" className={buttonVariants()}>Introduce yourself</Link>
@@ -157,6 +158,8 @@ function HomePage() {
           ]} />
         </Container>
       </Section>
+
+      </main>
 
       <AppFooter links={[{ label: "Our mission", href: "#mission" }, { label: "Members", href: "/members" }, { label: "Join", href: "/join" }, { label: "Sign in", href: "/account" }]} />
     </AppPage>

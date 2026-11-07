@@ -97,18 +97,21 @@ export const CurvedGallery = React.forwardRef<HTMLDivElement, CurvedGalleryProps
           {images.map((image, index) => <img key={image.src + index} src={image.src} alt={image.alt} loading="lazy" className="aspect-[7/9] h-full shrink-0 snap-center rounded-card object-cover" />)}
         </div>
       ) : (
-        <CircularGalleryEngine
-          items={images.map((image) => ({ image: image.src, text: image.alt }))}
-          bend={bend}
-          borderRadius={0.06}
-          font={'400 30px "Gilda Display"'}
-          scrollSpeed={scrollSpeed}
-          scrollEase={scrollEase}
-        />
+        <>
+          <CircularGalleryEngine
+            items={images.map((image) => ({ image: image.src, text: image.alt }))}
+            bend={bend}
+            borderRadius={0.06}
+            font={'400 30px "Gilda Display"'}
+            scrollSpeed={scrollSpeed}
+            scrollEase={scrollEase}
+          />
+          {/* The canvas has no accessible content; the reduced-motion strip above already uses real <img alt>. */}
+          <ul className="sr-only">
+            {images.map((image, index) => <li key={image.src + index}><img src={image.src} alt={image.alt} /></li>)}
+          </ul>
+        </>
       )}
-      <ul className="sr-only">
-        {images.map((image, index) => <li key={image.src + index}><img src={image.src} alt={image.alt} /></li>)}
-      </ul>
     </div>
   );
 });
@@ -118,15 +121,31 @@ CurvedGallery.displayName = "CurvedGallery";
 export interface RibbonProps extends React.HTMLAttributes<HTMLDivElement> {
   text: string;
 }
-export const Ribbon = React.forwardRef<HTMLDivElement, RibbonProps>(({ className, text, ...p }, ref) => (
-  <div ref={ref} className={cn("overflow-hidden bg-sun py-2 text-sun-ink", className)} {...p}>
-    <div className="flex w-max animate-marquee gap-6 whitespace-nowrap">
-      {Array.from({ length: 12 }).map((_, i) => (
-        <span key={i} className="flex items-center gap-6 text-sm"><span>{text}</span><Blossom /></span>
-      ))}
+export const Ribbon = React.forwardRef<HTMLDivElement, RibbonProps>(({ className, text, ...p }, ref) => {
+  const [paused, setPaused] = React.useState(false);
+  return (
+    <div ref={ref} className={cn("group relative overflow-hidden bg-sun py-2 text-sun-ink", className)} {...p}>
+      {/* Announced once; the scrolling copies below are visual only. */}
+      <span className="sr-only">{text}</span>
+      <button
+        type="button"
+        aria-pressed={paused}
+        onClick={() => setPaused((v) => !v)}
+        className="sr-only focus:not-sr-only focus:absolute focus:right-3 focus:top-1/2 focus:z-10 focus:-translate-y-1/2 focus:rounded-full focus:bg-sun-ink focus:px-3 focus:py-1 focus:text-xs focus:text-sun focus:outline-none focus:ring-2 focus:ring-sun-ink focus:ring-offset-2 focus:ring-offset-sun"
+      >
+        Pause ribbon
+      </button>
+      <div
+        aria-hidden="true"
+        className={cn("flex w-max animate-marquee gap-6 whitespace-nowrap group-hover:[animation-play-state:paused]", paused && "[animation-play-state:paused]")}
+      >
+        {Array.from({ length: 12 }).map((_, i) => (
+          <span key={i} className="flex items-center gap-6 text-sm"><span>{text}</span><Blossom /></span>
+        ))}
+      </div>
     </div>
-  </div>
-));
+  );
+});
 Ribbon.displayName = "Ribbon";
 
 /* ---------- Tabs: serif tabs with underline ---------- */
@@ -137,19 +156,37 @@ export interface TabsProps extends React.HTMLAttributes<HTMLDivElement> {
 export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(({ className, items, defaultIndex = 0, ...p }, ref) => {
   const [active, setActive] = React.useState(defaultIndex);
   const id = React.useId();
+  const tabs = React.useRef<(HTMLButtonElement | null)[]>([]);
+  const select = (i: number) => {
+    setActive(i);
+    tabs.current[i]?.focus();
+  };
+  // Automatic activation: arrows (wrapping), Home and End move focus and select.
+  const onKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>, i: number) => {
+    const last = items.length - 1;
+    const next = { ArrowRight: i === last ? 0 : i + 1, ArrowLeft: i === 0 ? last : i - 1, Home: 0, End: last }[e.key];
+    // Modified arrows belong to the browser (Alt+Left = back, Cmd+Arrow = line start/end).
+    if (next === undefined || e.altKey || e.ctrlKey || e.metaKey) return;
+    e.preventDefault();
+    select(next);
+  };
   return (
     <div ref={ref} className={cn("flex flex-col gap-12", className)} {...p}>
       <div role="tablist" className="grid border-b border-line" style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0,1fr))` }}>
         {items.map((it, i) => (
           <button
             key={it.label}
+            ref={(el) => { tabs.current[i] = el; }}
+            type="button"
             role="tab"
             id={`${id}-t${i}`}
             aria-selected={active === i}
             aria-controls={`${id}-p${i}`}
+            tabIndex={active === i ? 0 : -1}
             onClick={() => setActive(i)}
+            onKeyDown={(e) => onKeyDown(e, i)}
             className={cn(
-              "-mb-px border-b-2 pb-10 font-display text-2xl transition-colors md:text-3xl focus-visible:outline-none focus-visible:text-sky",
+              "-mb-px rounded-sm border-b-2 pb-10 font-display text-2xl transition-colors md:text-3xl focus-visible:text-sky focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-canvas",
               active === i ? "border-ink text-ink" : "border-transparent text-ink-faint hover:text-ink-muted",
             )}
           >
@@ -157,7 +194,13 @@ export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(({ className, it
           </button>
         ))}
       </div>
-      <div key={active} role="tabpanel" id={`${id}-p${active}`} aria-labelledby={`${id}-t${active}`} className="motion-panel-in">{items[active]?.content}</div>
+      {/* Every panel exists so each aria-controls resolves; only the active one mounts its content
+          (inactive content would fetch and keep state for nothing). Unhiding replays motion-panel-in. */}
+      {items.map((it, i) => (
+        <div key={it.label} role="tabpanel" id={`${id}-p${i}`} aria-labelledby={`${id}-t${i}`} hidden={active !== i} className="motion-panel-in">
+          {active === i ? it.content : null}
+        </div>
+      ))}
     </div>
   );
 });
@@ -254,7 +297,7 @@ export const Accordion = React.forwardRef<HTMLDivElement, AccordionProps>(({ cla
   <div ref={ref} className={cn("flex flex-col gap-3", className)} {...p}>
     {items.map((it) => (
       <details key={it.question} className="group rounded-card bg-surface px-7 transition-[transform,box-shadow,background-color] duration-300 open:bg-surface-strong open:shadow-soft hover:-translate-y-0.5 motion-reduce:transform-none">
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-6 font-display text-xl text-ink focus-visible:text-sky focus-visible:outline-none [&::-webkit-details-marker]:hidden">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-6 rounded-sm py-6 font-display text-xl text-ink focus-visible:text-sky focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-canvas [&::-webkit-details-marker]:hidden">
           {it.question}
           <span aria-hidden className="grid size-9 shrink-0 place-items-center rounded-full bg-canvas text-xl transition-transform duration-300 group-open:rotate-45">+</span>
         </summary>

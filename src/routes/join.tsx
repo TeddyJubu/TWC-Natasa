@@ -31,6 +31,7 @@ function JoinPage() {
         links={[{ label: "Our mission", href: "/#mission" }, { label: "Our constellation", href: "/#constellation" }]}
         action={<Link to="/" className={buttonVariants({ variant: "outline", size: "sm" })}>Back to home</Link>}
       />
+      <main id="main" tabIndex={-1} className="outline-none">
       <Section className="pt-14 md:pt-20">
         <Container>
           <div className="overflow-hidden rounded-panel border border-line shadow-soft">
@@ -38,6 +39,7 @@ function JoinPage() {
           </div>
         </Container>
       </Section>
+      </main>
     </AppPage>
   );
 }

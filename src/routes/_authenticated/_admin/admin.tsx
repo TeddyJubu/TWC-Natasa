@@ -38,6 +38,7 @@ function AdminPage() {
           { label: "Profile", href: "/account" }, { label: "Admin", href: "/admin" },
         ]}
       />
+      <main id="main" tabIndex={-1} className="outline-none">
       <Section>
         <Container className="flex flex-col gap-16">
           <SectionHeader
@@ -48,6 +49,7 @@ function AdminPage() {
           <Tabs items={TABS} className={PHONE_TABS} />
         </Container>
       </Section>
+      </main>
     </AppPage>
   );
 }

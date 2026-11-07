@@ -3,8 +3,22 @@ import * as React from "react";
 import { Link } from "@tanstack/react-router";
 import { BrandLockup, Footer, Navbar, type FooterProps, type NavbarProps, type RouterLinkComponent } from "@/index";
 
+/**
+ * Live page wrapper. Its first child is a "Skip to content" link to `#main`: every page puts its content
+ * between the nav and the footer in one `<main id="main" tabIndex={-1} className="outline-none">`.
+ */
 export function AppPage({ children }: { children: React.ReactNode }) {
-  return <div className="min-h-screen bg-canvas text-ink">{children}</div>;
+  return (
+    <div className="min-h-screen bg-canvas text-ink">
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-control focus:bg-ink focus:px-5 focus:py-3 focus:text-canvas focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-canvas"
+      >
+        Skip to content
+      </a>
+      {children}
+    </div>
+  );
 }
 
 /** Design-system links in, TanStack `Link` out: "/path#hash" becomes `to="/path"` + `hash="hash"`. */

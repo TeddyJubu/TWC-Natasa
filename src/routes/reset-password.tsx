@@ -74,6 +74,7 @@ function ResetPassword() {
   }
 
   return (
+    <main id="main" tabIndex={-1} className="outline-none">
     <Section className="min-h-screen">
       <Container width="narrow" className="flex flex-col items-start gap-8">
         <Badge>Account</Badge>
@@ -99,5 +100,6 @@ function ResetPassword() {
         )}
       </Container>
     </Section>
+    </main>
   );
 }

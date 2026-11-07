@@ -2,7 +2,7 @@
 import * as React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { ChoiceGroup, FormField, Input, RadioGroup } from "./form";
+import { ChoiceGroup, FormField, FormNotice, FormSection, Input, RadioGroup } from "./form";
 
 afterEach(cleanup);
 
@@ -167,5 +167,31 @@ describe("RadioGroup", () => {
     expect(form().checkValidity()).toBe(false);
     fireEvent.click(box("Why"));
     expect(form().checkValidity()).toBe(true);
+  });
+});
+
+describe("FormSection", () => {
+  it("names its fieldset once, from the visible heading (no duplicate sr-only legend)", () => {
+    const { container } = render(<FormSection index="01" title="Start With You"><Input aria-label="x" /></FormSection>);
+    const group = screen.getByRole("group", { name: "Start With You" });
+    expect(container.querySelector("legend")).toBeNull();
+    const heading = screen.getByRole("heading", { name: "Start With You" });
+    expect(heading.tagName).toBe("H3");
+    expect(group.getAttribute("aria-labelledby")).toBe(heading.id);
+    expect(screen.getAllByText("Start With You")).toHaveLength(1);
+  });
+
+  it("takes the heading level from headingAs", () => {
+    render(<FormSection title="Your work" headingAs="h2" />);
+    expect(screen.getByRole("heading", { name: "Your work", level: 2 })).toBeTruthy();
+    expect(screen.getByRole("group", { name: "Your work" })).toBeTruthy();
+  });
+});
+
+describe("FormNotice", () => {
+  it("defaults to an h4 title and takes another level from headingAs", () => {
+    render(<><FormNotice title="Default">a</FormNotice><FormNotice title="Nested" headingAs="h3">b</FormNotice></>);
+    expect(screen.getByRole("heading", { name: "Default", level: 4 })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Nested", level: 3 })).toBeTruthy();
   });
 });

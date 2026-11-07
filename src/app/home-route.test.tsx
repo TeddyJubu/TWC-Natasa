@@ -5,6 +5,7 @@ import type { MemberProfile } from "@/index";
 import { demoMembers } from "@/showcase/demo-members";
 import hero from "@/assets/photography/hero.jpg";
 import { renderWithQueries } from "@/test/dom";
+import { expectNoSkippedHeadings } from "@/test/headings";
 import { fake } from "@/test/fake-supabase";
 
 vi.mock("@/app/supabase", async () => (await import("@/test/fake-supabase")).fakeSupabaseModule);
@@ -60,5 +61,18 @@ describe("/ (home) member gallery", () => {
     expect(fake.calls).toContainEqual(["rpc", "public_profiles"]);
     expect(fake.calls).not.toContainEqual(["rpc", "public_directory"]);
     expect(screen.queryByTestId("gallery")).toBeNull();
+  });
+});
+
+describe("/ (home) structure", () => {
+  it("never skips a heading level", () => {
+    renderWithQueries(<Page />, [[["public-profiles"], [card("Pia Lund", 21)]]]);
+    expectNoSkippedHeadings();
+  });
+
+  it("the mission section is introduced by an h2 wrapping its badge", () => {
+    renderWithQueries(<Page />, [[["public-profiles"], []]]);
+    const heading = screen.getByRole("heading", { name: "Our mission", level: 2 });
+    expect(heading.closest("#mission")).not.toBeNull();
   });
 });

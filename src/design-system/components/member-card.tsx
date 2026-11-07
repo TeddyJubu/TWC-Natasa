@@ -76,7 +76,8 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
                 {formatCatalogueNumber(number)}
               </span>
             </span>
-            <div className="pointer-events-none absolute -right-8 -top-8 z-30 size-36 text-ink-muted sm:-right-9 sm:-top-9 sm:size-40 xl:-right-8 xl:-top-8 xl:size-36">
+            {/* Decorative: the loop's sr-only text and the logo alt would repeat on every card. */}
+            <div aria-hidden="true" className="pointer-events-none absolute -right-8 -top-8 z-30 size-36 text-ink-muted sm:-right-9 sm:-top-9 sm:size-40 xl:-right-8 xl:-top-8 xl:size-36">
               <CurvedLoop
                 marqueeText="The Women’s Collective ✦ Member catalogue"
                 className="size-full [&_svg]:size-full [&_svg]:text-[0.72rem] sm:[&_svg]:text-[0.76rem]"

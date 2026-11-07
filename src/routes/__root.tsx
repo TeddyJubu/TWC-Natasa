@@ -6,11 +6,13 @@ import {
   Scripts,
   useLocation,
   useRouter,
+  useRouterState,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 import { getSupabase } from "@/app/supabase";
 import { handleAuthEvent } from "@/app/auth-events";
 import { currentPathname, siteSeo } from "@/app/seo";
+import { useRouteFocus } from "@/app/layout/route-focus";
 import hero from "@/assets/photography/hero.jpg";
 
 import appCss from "../styles.css?url";
@@ -61,6 +63,10 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const location = useLocation();
   const router = useRouter();
+  // Focus only, no markup: preview frames render inside this root. resolvedLocation changes only once the new
+  // page (lazy chunk, loaders) has rendered; location changes at navigation start, while the old page is still up.
+  const resolvedPathname = useRouterState({ select: (s) => (s.resolvedLocation ?? s.location).pathname });
+  useRouteFocus(resolvedPathname);
   useEffect(() => {
     let cancelled = false;
     let unsubscribe: (() => void) | undefined;

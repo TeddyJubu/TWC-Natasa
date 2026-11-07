@@ -2,6 +2,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { renderWithQueries } from "@/test/dom";
+import { expectNoSkippedHeadings } from "@/test/headings";
 import { fake } from "@/test/fake-supabase";
 
 vi.mock("@/app/supabase", async () => (await import("@/test/fake-supabase")).fakeSupabaseModule);
@@ -168,5 +169,15 @@ describe("/join", { timeout: 20_000 }, () => {
     expect(within(group).getByRole("alert").textContent).toMatch(/choose at least one option/i);
     expect(inserts()).toEqual([]);
     expect(fake.calls).toEqual([]);
+  });
+});
+
+describe("/join structure", () => {
+  it("never skips a heading level: h1, then h2 sections", () => {
+    renderSignedOut();
+    expectNoSkippedHeadings();
+    expect(screen.getByRole("heading", { level: 1 })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Start With You", level: 2 })).toBeTruthy();
+    expect(screen.getByRole("group", { name: "Start With You" })).toBeTruthy();
   });
 });

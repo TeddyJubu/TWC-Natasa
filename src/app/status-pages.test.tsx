@@ -46,3 +46,23 @@ describe("ErrorPage", () => {
     expect(log).toHaveBeenCalledWith(expect.any(String), boom);
   });
 });
+
+describe("status pages landmarks", () => {
+  const pages: [string, () => React.ReactElement][] = [
+    ["NotFound", () => <NotFound />],
+    ["ErrorPage", () => <ErrorPage error={new Error("x")} reset={() => undefined} />],
+  ];
+  for (const [name, ui] of pages) {
+    it(`${name} starts with a skip link and wraps its content in one <main id="main">`, () => {
+      vi.spyOn(console, "error").mockImplementation(() => undefined);
+      const { container } = renderWithQueries(ui());
+      const mains = screen.getAllByRole("main");
+      expect(mains).toHaveLength(1);
+      expect(mains[0].id).toBe("main");
+      expect(mains[0].tabIndex).toBe(-1);
+      expect(container.querySelector("a")!.getAttribute("href")).toBe("#main");
+      expect(mains[0].querySelector("header")).toBeNull();
+      expect(mains[0].contains(screen.getByRole("link", { name: /back to home/i }))).toBe(true);
+    });
+  }
+});

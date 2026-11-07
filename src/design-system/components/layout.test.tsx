@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import * as React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { Footer, Navbar, type NavbarProps, type RouterLinkComponent } from "./layout";
 
 afterEach(() => {
@@ -178,6 +178,78 @@ describe.each<NonNullable<NavbarProps["variant"]>>(["solid", "hero", "overlay"])
   });
 });
 
+describe("mobile menu: names, inert background, outside close and focus", () => {
+  const page = () => (
+    <div data-testid="page">
+      <a href="#main" data-testid="skip">Skip</a>
+      <Navbar brand="Brand" links={links.slice(0, 3)} />
+      <main data-testid="main">Content</main>
+      <footer data-testid="footer">Footer</footer>
+    </div>
+  );
+  const inert = (id: string) => screen.getByTestId(id).hasAttribute("inert");
+
+  it("the toggle and the panel nav have distinct accessible names", () => {
+    render(<Navbar brand="Brand" links={links.slice(0, 3)} />);
+    expect(menuButton()).toBeTruthy();
+    const panelNav = panel()!.querySelector("nav")!;
+    expect(panelNav.getAttribute("aria-label")).toBe("Main");
+    expect(screen.queryByRole("navigation", { name: "Menu" })).toBeNull();
+  });
+
+  it("makes every sibling up to <body> inert while open, and only undoes its own", () => {
+    const already = document.createElement("div");
+    already.setAttribute("inert", "");
+    const outside = document.createElement("aside");
+    document.body.append(already, outside);
+    try {
+      render(page());
+      expect(inert("main")).toBe(false);
+      fireEvent.click(menuButton());
+      for (const id of ["skip", "main", "footer"]) expect(inert(id)).toBe(true);
+      expect(outside.hasAttribute("inert")).toBe(true);
+      expect(document.querySelector("header")!.hasAttribute("inert")).toBe(false);
+      expect(inert("page")).toBe(false);
+      fireEvent.click(menuButton());
+      for (const id of ["skip", "main", "footer"]) expect(inert(id)).toBe(false);
+      expect(outside.hasAttribute("inert")).toBe(false);
+      expect(already.hasAttribute("inert")).toBe(true);
+    } finally {
+      already.remove();
+      outside.remove();
+    }
+  });
+
+  it("clears the inert background on unmount", () => {
+    const { unmount } = render(page());
+    const main = screen.getByTestId("main");
+    fireEvent.click(menuButton());
+    expect(main.hasAttribute("inert")).toBe(true);
+    unmount();
+    expect(main.hasAttribute("inert")).toBe(false);
+  });
+
+  it("closes on a pointerdown outside the header, not inside it", () => {
+    render(page());
+    fireEvent.click(menuButton());
+    fireEvent.pointerDown(panel()!.querySelector("a")!);
+    expect(menuButton().getAttribute("aria-expanded")).toBe("true");
+    fireEvent.pointerDown(screen.getByTestId("main"));
+    expect(closed()).toBe(true);
+  });
+
+  it("after a panel link click, focus moves to the toggle (never lost to body), without scrolling", () => {
+    render(page());
+    fireEvent.click(menuButton());
+    const focus = vi.spyOn(HTMLElement.prototype, "focus");
+    clickWithoutNavigating(panel()!.querySelector("a")!);
+    expect(closed()).toBe(true);
+    expect(document.activeElement).toBe(menuButton());
+    expect(focus).toHaveBeenCalledWith({ preventScroll: true });
+    focus.mockRestore();
+  });
+});
+
 describe("hide on scroll", () => {
   beforeEach(() => {
     vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => {
@@ -197,6 +269,16 @@ describe("hide on scroll", () => {
 
   it("hides the bar on a scroll down past the top when the menu is closed", () => {
     render(<Navbar brand="Brand" links={links.slice(0, 2)} />);
+    scrollTo(200);
+    expect(header().className.split(" ")).toContain("-translate-y-full");
+  });
+
+  it("after a menu link click (an in-page hash, no navigation), hides again on the next scroll down", () => {
+    render(<Navbar brand="Brand" links={links.slice(0, 2)} />);
+    fireEvent.click(menuButton());
+    const panel = document.getElementById(menuButton().getAttribute("aria-controls")!)!;
+    fireEvent.click(within(panel).getByRole("link", { name: "Mission" }));
+    expect(document.activeElement).toBe(menuButton());
     scrollTo(200);
     expect(header().className.split(" ")).toContain("-translate-y-full");
   });

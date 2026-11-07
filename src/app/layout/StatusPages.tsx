@@ -16,6 +16,7 @@ function StatusPage({ badge, title, intro, actions }: {
   return (
     <AppPage>
       <AppNav variant="solid" links={links} />
+      <main id="main" tabIndex={-1} className="outline-none">
       <Section className="pt-14 md:pt-20">
         <Container>
           <SectionHeader badge={badge} title={title} intro={intro} />
@@ -25,6 +26,7 @@ function StatusPage({ badge, title, intro, actions }: {
           </div>
         </Container>
       </Section>
+      </main>
     </AppPage>
   );
 }

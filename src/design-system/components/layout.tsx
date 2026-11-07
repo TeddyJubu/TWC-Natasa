@@ -128,6 +128,26 @@ function useBodyScrollLock(locked: boolean) {
   }, [locked]);
 }
 
+/**
+ * While `active`, marks every sibling of `el` and of each ancestor up to `<body>` inert, so only `el` stays
+ * reachable. Undoes only what it set: elements that were already inert stay inert.
+ */
+function useInertBackground(el: React.RefObject<HTMLElement | null>, active: boolean) {
+  React.useEffect(() => {
+    const node = el.current;
+    if (!active || !node) return;
+    const marked: Element[] = [];
+    for (let current: Element = node; current !== document.body && current.parentElement; current = current.parentElement) {
+      for (const sibling of current.parentElement.children) {
+        if (sibling === current || sibling.hasAttribute("inert")) continue;
+        sibling.setAttribute("inert", "");
+        marked.push(sibling);
+      }
+    }
+    return () => marked.forEach((sibling) => sibling.removeAttribute("inert"));
+  }, [el, active]);
+}
+
 const navVariants = cva(
   "z-30 w-full transition-[transform,background-color,color,border-color,backdrop-filter] duration-base ease-gentle motion-reduce:transition-none",
   {
@@ -161,8 +181,15 @@ export const Navbar = React.forwardRef<HTMLElement, NavbarProps>(({ className, v
   const panelId = React.useId();
   const buttonRef = React.useRef<HTMLButtonElement>(null);
   const panelRef = React.useRef<HTMLDivElement>(null);
+  const headerRef = React.useRef<HTMLElement | null>(null);
+  const setHeaderRef = React.useCallback((node: HTMLElement | null) => {
+    headerRef.current = node;
+    if (typeof ref === "function") ref(node);
+    else if (ref) ref.current = node;
+  }, [ref]);
   const hidden = hideOnScroll && pinned && chrome.hidden && !focused && !menuOpen;
   useBodyScrollLock(menuOpen);
+  useInertBackground(headerRef, menuOpen);
 
   React.useEffect(() => {
     if (!menuOpen) return;
@@ -174,15 +201,24 @@ export const Navbar = React.forwardRef<HTMLElement, NavbarProps>(({ className, v
     };
     // Back/forward and hash jumps navigate without a click in the bar.
     const close = () => setMenuOpen(false);
+    // A tap on the (inert) page behind the panel dismisses it.
+    const onPointerDown = (e: PointerEvent) => {
+      if (headerRef.current?.contains(e.target as Node)) return;
+      const hadFocus = panelRef.current?.contains(document.activeElement);
+      setMenuOpen(false);
+      if (hadFocus) buttonRef.current?.focus({ preventScroll: true });
+    };
     // The panel is mobile-only: widening past md closes it so the scroll lock never outlives it.
     const wide = typeof window.matchMedia === "function" ? window.matchMedia("(min-width: 48rem)") : null;
     const onWide = (e: MediaQueryListEvent) => e.matches && setMenuOpen(false);
     document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("pointerdown", onPointerDown);
     window.addEventListener("popstate", close);
     window.addEventListener("hashchange", close);
     wide?.addEventListener?.("change", onWide);
     return () => {
       document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("pointerdown", onPointerDown);
       window.removeEventListener("popstate", close);
       window.removeEventListener("hashchange", close);
       wide?.removeEventListener?.("change", onWide);
@@ -191,13 +227,17 @@ export const Navbar = React.forwardRef<HTMLElement, NavbarProps>(({ className, v
 
   return (
     <header
-      ref={ref}
+      ref={setHeaderRef}
       onFocusCapture={() => setFocused(true)}
       onBlurCapture={() => setFocused(false)}
       onClickCapture={(e) => {
         // Any link in the bar (panel, brand, action) navigates: close the menu. A panel link unmounts
         // focus without a blur, so clear the flag too, or hide-on-scroll would stay off.
         if (!menuOpen || !(e.target as Element).closest("a[href]")) return;
+        // The panel is about to hide with focus inside it: park focus on the toggle rather than <body>.
+        // A real navigation then hands focus to the page (useRouteFocus in the app). Focus first: its
+        // onFocusCapture sets the flag, and the setFocused(false) after it must win.
+        if (panelRef.current?.contains(e.target as Node)) buttonRef.current?.focus({ preventScroll: true });
         setFocused(false);
         setMenuOpen(false);
       }}
@@ -251,7 +291,8 @@ export const Navbar = React.forwardRef<HTMLElement, NavbarProps>(({ className, v
         )}
       >
         <Container>
-          <nav aria-label="Menu" className="flex flex-col py-4">
+          {/* Named "Main" like the desktop nav, which is display:none whenever this panel shows. */}
+          <nav aria-label="Main" className="flex flex-col py-4">
             {links.map((l) => (
               <ChromeLink
                 key={l.href + l.label}

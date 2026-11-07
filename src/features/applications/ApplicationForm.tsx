@@ -149,7 +149,7 @@ function ApplicationFields({ initial, busy, failure, onSubmit, onEdit }: FieldsP
       </header>
 
       <div className="space-y-20 px-6 py-12 md:px-12 md:py-16">
-        <FormSection index="01 — Personal information" title="Start With You" description="Private details stay private unless you explicitly authorize publication.">
+        <FormSection headingAs="h2" index="01 — Personal information" title="Start With You" description="Private details stay private unless you explicitly authorize publication.">
           <div className="grid gap-8 md:grid-cols-2">
             <Field id="full-name" label="Full name"><Input ref={nameInput} name="full-name" autoComplete="name" maxLength={LIMITS.fullName} required /></Field>
             <Field id="preferred-name" label="Preferred name" optional><Input name="preferred-name" /></Field>
@@ -162,7 +162,7 @@ function ApplicationFields({ initial, busy, failure, onSubmit, onEdit }: FieldsP
           </div>
         </FormSection>
 
-        <FormSection index="02 — About your work" title="Share What You Do" description="Help members understand your work in your own words.">
+        <FormSection headingAs="h2" index="02 — About your work" title="Share What You Do" description="Help members understand your work in your own words.">
           <div className="grid gap-8 md:grid-cols-2">
             <Field id="business" label="Business or organization name" optional><Input name="business" /></Field>
             <Field id="role" label="Professional title or role"><Input name="role" required /></Field>
@@ -175,7 +175,7 @@ function ApplicationFields({ initial, busy, failure, onSubmit, onEdit }: FieldsP
           </div>
         </FormSection>
 
-        <FormSection index="03 — Community connections" title="Find Your People" description="Tell us what meaningful support looks like for you.">
+        <FormSection headingAs="h2" index="03 — Community connections" title="Find Your People" description="Tell us what meaningful support looks like for you.">
           <div className="grid gap-8">
             <ChoiceGroup name="community-goals" legend="What are you hoping to find through the collective?" options={communityOptions} columns={2} required />
             <div className="grid gap-8 md:grid-cols-2"><Field id="ideal-referral" label="Your ideal referral or connection"><LongAnswer name="ideal-referral" required /></Field><Field id="community-support" label="How can the community support you?" optional><LongAnswer name="community-support" /></Field></div>
@@ -186,30 +186,30 @@ function ApplicationFields({ initial, busy, failure, onSubmit, onEdit }: FieldsP
           </div>
         </FormSection>
 
-        <FormSection index="04 — WhatsApp community" title="Join the Conversation" description="Your number will be visible to other group members.">
+        <FormSection headingAs="h2" index="04 — WhatsApp community" title="Join the Conversation" description="Your number will be visible to other group members.">
           <div className="grid gap-8">
             <RadioGroup name="whatsapp" legend="Would you like to join the WhatsApp community?" defaultValue="no" onValueChange={setWhatsApp} options={choices(["yes", "no"])} />
             {whatsApp === "yes" && <div className="motion-panel-in grid gap-6 rounded-card bg-mint p-6"><Field id="whatsapp-number" label="WhatsApp phone number"><Input name="whatsapp-number" type="tel" required /></Field><Checkbox name="whatsapp-visibility" label="I understand my phone number will be visible to group members." required /><Checkbox name="whatsapp-conduct" label="I will keep the space respectful and free from spam or harassment." required /></div>}
           </div>
         </FormSection>
 
-        <FormSection index="05 — Member spotlight" title="Let Your Work Shine" description="Spotlights are optional and published only with permission.">
+        <FormSection headingAs="h2" index="05 — Member spotlight" title="Let Your Work Shine" description="Spotlights are optional and published only with permission.">
           <div className="grid gap-8">
             <RadioGroup name="spotlight" legend="Would you like to be considered for a member spotlight?" defaultValue="no" onValueChange={setSpotlight} options={choices(["yes", "no", "Please contact me first"])} />
             {spotlight === "yes" && <div className="motion-panel-in grid gap-6"><Field id="spotlight-focus" label="What would you most like us to highlight?"><LongAnswer name="spotlight-focus" required /></Field><Checkbox name="spotlight-consent" label="I authorize The Women’s Collective to edit and publish my submitted biography, business information, links, logo, and approved photographs for a member spotlight." required /></div>}
           </div>
         </FormSection>
 
-        <FormSection index="06 — Public member directory" title="Shape Your Listing" description="Directory participation is optional and subject to review and approval. If you are approved, we will ask for your business logo then.">
+        <FormSection headingAs="h2" index="06 — Public member directory" title="Shape Your Listing" description="Directory participation is optional and subject to review and approval. If you are approved, we will ask for your business logo then.">
           <div className="grid gap-8">
             <RadioGroup name="directory" legend="Would you like to apply for the public member directory?" defaultValue="no" onValueChange={setDirectory} variant="list" options={[{ value: "yes", label: "Yes — apply" }, { value: "no", label: "No — keep my information private" }, { value: "info", label: "Send me more information first" }]} />
             {directory === "yes" && <div className="motion-panel-in grid gap-8"><ChoiceGroup name="public-fields" legend="Which information may be displayed publicly?" options={directoryOptions} columns={3} /><div className="grid gap-8 md:grid-cols-2"><Field id="directory-email" label="Public directory email" optional><Input name="directory-email" type="email" /></Field><Field id="directory-phone" label="Public directory phone" optional><Input name="directory-phone" type="tel" /></Field></div><Field id="directory-bio" label="Directory biography" hint="Write 50–100 words in the third person."><LongAnswer name="directory-bio" required /></Field><Field id="services" label="Services or specialties" hint="List up to five."><Input name="services" required /></Field><Checkbox name="directory-consent" label="I authorize publication of the selected information on The Women’s Collective website." required /></div>}
           </div>
         </FormSection>
 
-        {directory === "yes" && <FormSection index="07 — Official headshot" title="A Consistent Collective Portrait" description="Required only for approved public directory members.">
+        {directory === "yes" && <FormSection headingAs="h2" index="07 — Official headshot" title="A Consistent Collective Portrait" description="Required only for approved public directory members.">
           <div className="grid gap-8">
-            <FormNotice title="A paid official session is required" tone="accent"><p>Approved directory applicants attend a professional headshot session with the collective’s official photographer. Personal or previously taken headshots cannot be used. Price, dates, location, payment instructions, and booking details are shared before scheduling.</p><p className="mt-3">A profile is not published until the application is approved and the session is booked, paid for, and completed.</p></FormNotice>
+            <FormNotice headingAs="h3" title="A paid official session is required" tone="accent"><p>Approved directory applicants attend a professional headshot session with the collective’s official photographer. Personal or previously taken headshots cannot be used. Price, dates, location, payment instructions, and booking details are shared before scheduling.</p><p className="mt-3">A profile is not published until the application is approved and the session is booked, paid for, and completed.</p></FormNotice>
             <RadioGroup name="headshot-contact" legend="How should we contact you to schedule your headshot?" options={choices(["Email", "Phone", "Text", "WhatsApp"])} />
             <Checkbox name="headshot-paid-session" label="I understand that a paid session with the official photographer is mandatory for the public directory." required />
             <Checkbox name="headshot-official-only" label="I understand I cannot provide my own headshot and my profile will wait until the official session is paid for and completed." required />
@@ -219,26 +219,26 @@ function ApplicationFields({ initial, busy, failure, onSubmit, onEdit }: FieldsP
           </div>
         </FormSection>}
 
-        <FormSection index="08 — Events and partnerships" title="Take Part Your Way" description="Attend, contribute, host, or collaborate.">
+        <FormSection headingAs="h2" index="08 — Events and partnerships" title="Take Part Your Way" description="Attend, contribute, host, or collaborate.">
           <div className="grid gap-8"><ChoiceGroup name="events" legend="How would you like to participate in events?" options={eventOptions} /><RadioGroup name="partner" legend="Would you like to become a sponsor or community partner?" defaultValue="no" onValueChange={setPartner} options={choices(["yes", "maybe", "no"])} />{partner !== "no" && <Field id="partner-interest" label="Describe your interest"><LongAnswer name="partner-interest" required /></Field>}</div>
         </FormSection>
 
-        <FormSection index="09 — Communication" title="Stay in the Loop" description="Choose what reaches your inbox.">
+        <FormSection headingAs="h2" index="09 — Communication" title="Stay in the Loop" description="Choose what reaches your inbox.">
           <div className="grid gap-8"><RadioGroup name="newsletter" legend="Receive news, event invitations, opportunities, and updates?" defaultValue="yes" onValueChange={setNewsletter} options={choices(["yes", "no"])} />{newsletter === "yes" && <Checkbox name="newsletter-consent" label="I consent to receive collective email and understand I can unsubscribe at any time." required />}<RadioGroup name="application-contact" legend="May we contact you directly about your application?" options={choices(["Email", "Phone", "Text", "WhatsApp", "Any of these"])} /></div>
         </FormSection>
 
-        <FormSection index="10 — Community guidelines" title="Keep It Generous" description="Confirm each commitment before submitting.">
+        <FormSection headingAs="h2" index="10 — Community guidelines" title="Keep It Generous" description="Confirm each commitment before submitting.">
           <div className="grid gap-8">
             {/* Same look as a ChoiceGroup, but every guideline is its own required commitment. */}
             <fieldset className="rounded-card border border-line bg-canvas p-5 transition-[border-color,box-shadow] duration-300 focus-within:border-sky focus-within:shadow-soft">
               <legend className="px-1 font-sans text-xs font-medium uppercase text-ink">Community guidelines<span className="ml-1 text-danger" aria-hidden>*</span></legend>
               <div className="grid gap-x-8 gap-y-4">{GUIDELINES.map((guideline) => <Checkbox key={guideline} name="guidelines" value={guideline} label={guideline} required />)}</div>
             </fieldset>
-            <FormNotice title="Privacy and membership"><p>We use submitted information to review applications, communicate with applicants, manage community programs and events, schedule official headshot sessions, and—with permission—create directory listings and spotlights.</p><p className="mt-3">Private information is not intentionally published. Information you choose to share in member groups or at events may be visible to other participants. The collective may moderate spaces and decline or remove participation when needed to protect the community.</p></FormNotice>
+            <FormNotice headingAs="h3" title="Privacy and membership"><p>We use submitted information to review applications, communicate with applicants, manage community programs and events, schedule official headshot sessions, and—with permission—create directory listings and spotlights.</p><p className="mt-3">Private information is not intentionally published. Information you choose to share in member groups or at events may be visible to other participants. The collective may moderate spaces and decline or remove participation when needed to protect the community.</p></FormNotice>
           </div>
         </FormSection>
 
-        <FormSection index="11 — Final confirmation" title="Make It Official" description="One final review, then send.">
+        <FormSection headingAs="h2" index="11 — Final confirmation" title="Make It Official" description="One final review, then send.">
           <div className="grid gap-8 md:grid-cols-2">
             <Field id="heard" label="How did you hear about us?" optional><Select name="heard" defaultValue=""><option value="">Choose one</option>{heardOptions.map((item) => <option key={item}>{item}</option>)}</Select></Field>
             <Field id="referrer" label="Name of the member who referred you" optional><Input name="referrer" /></Field>
@@ -247,7 +247,7 @@ function ApplicationFields({ initial, busy, failure, onSubmit, onEdit }: FieldsP
             <div className="md:col-span-2"><Checkbox name="final-confirmation" label="By submitting, I confirm that I have read, understood, and agreed to the permissions, statements, and community guidelines in this application." required /></div>
           </div>
           {failure && (
-            <FormNotice ref={alert} tabIndex={-1} role="alert" title={failure.kind === "send" ? "We Couldn’t Send That Yet" : "One More Thing"} className="mt-12 border-danger outline-none">
+            <FormNotice headingAs="h3" ref={alert} tabIndex={-1} role="alert" title={failure.kind === "send" ? "We Couldn’t Send That Yet" : "One More Thing"} className="mt-12 border-danger outline-none">
               <p>{failure.message}</p>
               {/* A second submit button: Retry re-reads and re-validates the form as it is now. */}
               {failure.kind === "send" && <Button type="submit" variant="ink" size="sm" {...pending} className={`mt-4 ${pending.className}`}>Retry</Button>}

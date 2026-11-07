@@ -1,2 +1,5 @@
 @import "tailwindcss";
 @import "./design-system/styles/theme.css";
+
+/* Route focus (useRouteFocus) lands on the page h1; it is a target, not a control, so no ring. */
+#main [tabindex="-1"]:focus { outline: none; }

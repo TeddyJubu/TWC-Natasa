@@ -177,17 +177,22 @@ export interface FormSectionProps extends Omit<React.FieldsetHTMLAttributes<HTML
   index?: string;
   title: React.ReactNode;
   description?: React.ReactNode;
+  /** Heading element for the title: "h2" when the section sits directly under the page h1. */
+  headingAs?: "h2" | "h3";
 }
-export const FormSection = React.forwardRef<HTMLFieldSetElement, FormSectionProps>(({ className, index, title, description, children, ...p }, ref) => (
-  <fieldset ref={ref} className={cn("min-w-0 border-t border-line pt-5", className)} {...p}>
-    <legend className="sr-only">{title}</legend>
-    <div className="mb-10 flex items-start justify-between gap-6">
-      <div>{index && <span className="mb-2 block font-sans text-xs font-medium uppercase text-ink-muted">{index}</span>}<h3 className="font-display text-3xl font-normal leading-tight text-ink">{title}</h3></div>
-      {description && <p className="max-w-xs font-sans text-xs leading-relaxed text-ink-muted">{description}</p>}
-    </div>
-    {children}
-  </fieldset>
-));
+/** The visible heading names the fieldset (aria-labelledby), so the title is announced once. */
+export const FormSection = React.forwardRef<HTMLFieldSetElement, FormSectionProps>(({ className, index, title, description, headingAs: Title = "h3", children, ...p }, ref) => {
+  const headingId = React.useId();
+  return (
+    <fieldset ref={ref} aria-labelledby={headingId} className={cn("min-w-0 border-t border-line pt-5", className)} {...p}>
+      <div className="mb-10 flex items-start justify-between gap-6">
+        <div>{index && <span className="mb-2 block font-sans text-xs font-medium uppercase text-ink-muted">{index}</span>}<Title id={headingId} className="font-display text-3xl font-normal leading-tight text-ink">{title}</Title></div>
+        {description && <p className="max-w-xs font-sans text-xs leading-relaxed text-ink-muted">{description}</p>}
+      </div>
+      {children}
+    </fieldset>
+  );
+});
 FormSection.displayName = "FormSection";
 
 export interface FormActionsProps extends React.HTMLAttributes<HTMLDivElement> {}
@@ -301,10 +306,12 @@ ChoiceGroup.displayName = "ChoiceGroup";
 export interface FormNoticeProps extends Omit<React.HTMLAttributes<HTMLElement>, "title"> {
   title: React.ReactNode;
   tone?: "soft" | "accent";
+  /** Heading element for the title; one level below the surrounding section heading. */
+  headingAs?: "h2" | "h3" | "h4";
 }
-export const FormNotice = React.forwardRef<HTMLElement, FormNoticeProps>(({ className, title, tone = "soft", children, ...p }, ref) => (
+export const FormNotice = React.forwardRef<HTMLElement, FormNoticeProps>(({ className, title, tone = "soft", headingAs: Title = "h4", children, ...p }, ref) => (
   <aside ref={ref} className={cn("rounded-card border border-line p-5 transition-colors duration-300", tone === "accent" ? "bg-mint" : "bg-surface", className)} {...p}>
-    <h4 className="font-display text-xl font-normal text-ink">{title}</h4>
+    <Title className="font-display text-xl font-normal text-ink">{title}</Title>
     <div className="mt-3 font-sans text-sm leading-relaxed text-ink-muted">{children}</div>
   </aside>
 ));

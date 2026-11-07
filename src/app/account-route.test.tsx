@@ -56,6 +56,15 @@ describe("/account", () => {
     fake.results = [new Promise(() => {}) as never];
     renderWithQueries(<Page />, [viewer()]);
     expect(screen.getByRole("status")).toBeTruthy();
+    // The landmark exists while loading, so route focus has a target (T28).
+    expect(screen.getByRole("main").id).toBe("main");
+  });
+
+  it("the not-found screen sits in main#main too", async () => {
+    fake.results = [{ data: null, error: null }];
+    renderWithQueries(<Page />, [viewer()]);
+    expect(await screen.findByText("Profile Not Found")).toBeTruthy();
+    expect(screen.getByRole("main").id).toBe("main");
   });
 
   it("shows an Admin link to /admin for admins only", () => {
