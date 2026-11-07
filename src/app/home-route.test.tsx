@@ -3,7 +3,6 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, screen } from "@testing-library/react";
 import type { MemberProfile } from "@/index";
 import { demoMembers } from "@/showcase/demo-members";
-import hero from "@/assets/photography/hero.jpg";
 import { renderWithQueries } from "@/test/dom";
 import { expectNoSkippedHeadings } from "@/test/headings";
 import { fake } from "@/test/fake-supabase";
@@ -39,8 +38,9 @@ describe("/ (home) member gallery", () => {
     expect([...imgs].map((i) => i.getAttribute("src"))).toEqual(["https://signed/21", "https://signed/12"]);
   });
 
-  it("skips public members without a portrait instead of showing the stock hero photo as them", () => {
-    renderWithQueries(<Page />, [[["public-profiles"], [{ ...card("No Photo", 30), image: hero }, card("Pia Lund", 21)]]]);
+  it("leaves public members without a portrait out of the image-only gallery", () => {
+    const noPhoto: MemberProfile = { ...card("No Photo", 30), image: undefined, imageAlt: undefined };
+    renderWithQueries(<Page />, [[["public-profiles"], [noPhoto, card("Pia Lund", 21)]]]);
     const alts = [...screen.getByTestId("gallery").querySelectorAll("img")].map((i) => i.alt);
     expect(alts).toEqual(["Pia Lund · Pia Lund Co"]);
   });

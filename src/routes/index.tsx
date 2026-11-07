@@ -2,6 +2,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import {
   Accordion, Badge, ConstellationLogo, Container, FeatureCard,
   CurvedGallery, Heading, Hero, ImageFrame, Ribbon, Section, SectionHeader, Split, Statement, Text, buttonVariants, cn,
+  type MemberProfile,
 } from "@/index";
 import { useQuery } from "@tanstack/react-query";
 import { publicProfilesQuery } from "@/features/members/queries";
@@ -56,8 +57,8 @@ const neighborhoods: { name: string; slug: Parameters<typeof neighborhoodSrcSet>
 
 function HomePage() {
   // Only members who opted in (§2.10). Loading, empty or failed: the section stands without a gallery.
-  // Cards without a portrait fall back to the hero photo; never present that as a member.
-  const publicCards = (useQuery(publicProfilesQuery).data ?? []).filter((m) => m.image !== hero);
+  // An image-only gallery: members without a portrait are left out rather than shown as a placeholder.
+  const publicCards = (useQuery(publicProfilesQuery).data ?? []).filter((m): m is MemberProfile & { image: string } => !!m.image);
   return (
     <AppPage>
       <AppNav variant="hero" links={links} action={<Link to="/join" className={buttonVariants({ variant: "white" })}>Join the collective</Link>} />

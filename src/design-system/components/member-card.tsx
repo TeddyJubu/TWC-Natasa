@@ -4,7 +4,7 @@ import { BorderGlow } from "./border-glow";
 import { ConstellationLogo } from "./brand";
 import { ProximityText } from "./proximity-text";
 import { cva, type VariantProps } from "class-variance-authority";
-import { cn, formatCatalogueNumber } from "../lib/utils";
+import { cn, formatCatalogueNumber, initials } from "../lib/utils";
 import { Badge } from "./typography";
 
 const cardVariants = cva("group border border-line bg-canvas text-ink transition-[transform,box-shadow] duration-base ease-gentle hover:-translate-y-1 hover:shadow-soft motion-reduce:transform-none motion-reduce:transition-none", {
@@ -28,8 +28,10 @@ export interface MemberProfile {
   specialty: string;
   bio: string;
   lookingFor: string;
-  image: string;
-  imageAlt: string;
+  /** Portrait URL. Without one the card shows the member's initials on a neutral mat, never a stand-in photo. */
+  image?: string;
+  /** Alt text for `image`; only meaningful alongside it. */
+  imageAlt?: string;
   catalogueNumber?: number;
   website?: string;
 }
@@ -45,6 +47,21 @@ export interface MemberCardProps extends Omit<React.HTMLAttributes<HTMLElement>,
   member: MemberProfile;
   catalogueNumber?: number;
   tone?: MemberCardTone;
+}
+
+/**
+ * The portrait, or, without one, the member's initials on a neutral mat in the same box. The mat is
+ * aria-hidden: the card heading already names the member, and initials are no portrait to describe.
+ */
+function Portrait({ member, imgClassName, initialsClassName }: { member: MemberProfile; imgClassName: string; initialsClassName: string }) {
+  if (!member.image) {
+    return (
+      <div aria-hidden="true" className={cn("absolute inset-0 grid place-items-center bg-surface-strong font-display leading-none text-ink-muted select-none", initialsClassName)}>
+        {initials(member.name)}
+      </div>
+    );
+  }
+  return <img src={member.image} alt={member.imageAlt ?? ""} loading="lazy" width={768} height={1024} className={imgClassName} />;
 }
 
 /**
@@ -120,14 +137,11 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
           </div>
 
         <div className={cn("p-3 sm:p-4 xl:p-3", tone ? "bg-(--hood)" : "bg-surface")}>
-          <div className="aspect-[4/5] overflow-hidden rounded-card bg-surface">
-            <img
-              src={member.image}
-              alt={member.imageAlt}
-              loading="lazy"
-              width={768}
-              height={1024}
-              className="size-full object-cover grayscale transition-[filter,transform] duration-slow ease-gentle group-hover:scale-[1.025] group-hover:grayscale-0 motion-reduce:transform-none motion-reduce:transition-none"
+          <div className="relative aspect-[4/5] overflow-hidden rounded-card bg-surface">
+            <Portrait
+              member={member}
+              imgClassName="size-full object-cover grayscale transition-[filter,transform] duration-slow ease-gentle group-hover:scale-[1.025] group-hover:grayscale-0 motion-reduce:transform-none motion-reduce:transition-none"
+              initialsClassName="text-7xl sm:text-8xl xl:text-7xl"
             />
           </div>
         </div>
@@ -145,16 +159,18 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
     ) : (
       <>
     <div className={cn("relative overflow-hidden bg-surface", variant === "featured" ? "min-h-96 md:min-h-[34rem]" : "aspect-[4/5]")}>
-      <img
-        src={member.image}
-        alt={member.imageAlt}
-        loading="lazy"
-        width={768}
-        height={1024}
-        className="size-full object-cover transition-transform duration-slow ease-gentle group-hover:scale-[1.025] motion-reduce:transform-none motion-reduce:transition-none"
+      <Portrait
+        member={member}
+        imgClassName="size-full object-cover transition-transform duration-slow ease-gentle group-hover:scale-[1.025] motion-reduce:transform-none motion-reduce:transition-none"
+        initialsClassName={variant === "featured" ? "text-8xl md:text-9xl" : "text-7xl"}
       />
-      <div aria-hidden className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/45 to-transparent" />
-      {member.neighborhood && <Badge variant="glass" className="absolute bottom-5 left-5 text-white">{member.neighborhood}</Badge>}
+      {/* The scrim and white glass badge are for photos; on the light initials mat the badge is a soft ink pill. */}
+      {member.image && <div aria-hidden className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/45 to-transparent" />}
+      {member.neighborhood && (
+        <Badge variant={member.image ? "glass" : "soft"} className={cn("absolute bottom-5 left-5", member.image ? "text-white" : "text-ink")}>
+          {member.neighborhood}
+        </Badge>
+      )}
     </div>
     <div className={cn("flex flex-col", variant === "featured" ? "justify-center gap-7 p-8 md:p-12" : "gap-5 p-6")}>
       <div>

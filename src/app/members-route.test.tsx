@@ -148,6 +148,17 @@ describe("/members", () => {
     expect(screen.getByText("Lena Ortiz")).toBeTruthy();
   });
 
+  it("shows initials, never a stand-in photo, for a member without a portrait", () => {
+    renderWithQueries(<Page />, [
+      viewer(true, true),
+      [["directory"], [{ ...card("Rosa Diaz", 12), image: undefined, imageAlt: undefined }]],
+    ]);
+    const main = screen.getByRole("main");
+    expect(main.querySelector("img[src*='hero']")).toBeNull();
+    expect(screen.queryByAltText(/portrait of/i)).toBeNull();
+    expect(screen.getByText("RD")).toBeTruthy();
+  });
+
   it("counts the profiles shown", () => {
     renderWithQueries(<Page />, [viewer(true, true), [["directory"], [card("Rosa Diaz", 12), card("Lena Ortiz", 15)]]]);
     expect(within(document.body).getByText("02 profiles")).toBeTruthy();

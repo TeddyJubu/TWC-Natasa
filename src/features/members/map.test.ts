@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
-import hero from "@/assets/photography/hero.jpg";
-import { initials, toMemberProfile, type MemberRow } from "./map";
+import { toMemberProfile, type MemberRow } from "./map";
 
 const row: MemberRow = {
   id: "u1",
@@ -35,8 +34,13 @@ describe("toMemberProfile", () => {
     });
   });
 
-  it("falls back to the hero image when there is no portrait", () => {
-    expect(toMemberProfile(row).image).toBe(hero);
+  it("leaves image and alt text undefined when there is no portrait (no stock photo stands in)", () => {
+    const m = toMemberProfile(row);
+    expect(m.image).toBeUndefined();
+    expect(m.imageAlt).toBeUndefined();
+    const preview = toMemberProfile(blank, { placeholders: true });
+    expect(preview.image).toBeUndefined();
+    expect(preview.imageAlt).toBeUndefined();
   });
 
   it("treats website as optional: missing, null or empty becomes undefined", () => {
@@ -64,17 +68,8 @@ describe("toMemberProfile", () => {
   });
 
   it("fills the account-preview placeholders when asked", () => {
-    const m = toMemberProfile(blank, { placeholders: true });
+    const m = toMemberProfile(blank, { image: "https://img/me.jpg", placeholders: true });
     expect([m.name, m.role, m.business, m.specialty]).toEqual(["Your name", "Your role", "Your business", "Your specialty"]);
     expect(m.imageAlt).toBe("Portrait of member");
-  });
-});
-
-describe("initials", () => {
-  it("takes the first letters of the first two words", () => {
-    expect(initials("rosa maria diaz")).toBe("RM");
-  });
-  it("falls back to TWC for an empty name", () => {
-    expect(initials("  ")).toBe("TWC");
   });
 });

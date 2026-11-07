@@ -3,14 +3,14 @@ import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Badge, Button, Container, FileUpload, FormActions, FormField, FormNotice, FormSection, Heading,
-  Input, MemberCard, Section, SectionHeader, Select, Switch, Text, Textarea, cn,
+  Input, MemberCard, Section, SectionHeader, Select, Switch, Text, Textarea, cn, initials,
 } from "@/index";
 import { AppNav, AppPage } from "@/app/layout/AppLayout";
 import { getSupabase } from "@/app/supabase";
 import { useNeighborhoods } from "@/features/neighborhoods/queries";
 import { pickerNames } from "@/features/neighborhoods/options";
 import { toneFor } from "@/features/neighborhoods/tone";
-import { initials, toMemberProfile } from "@/features/members/map";
+import { toMemberProfile } from "@/features/members/map";
 import { introsQuery, profileQuery, viewerQuery, type Profile } from "@/features/members/queries";
 import { useSaveProfile, useUploadAvatar, type ProfilePatch } from "@/features/members/mutations";
 import { bookingQuery, eventsQuery, rsvpsQuery } from "@/features/events/queries";
