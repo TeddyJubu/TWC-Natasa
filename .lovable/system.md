@@ -9,7 +9,10 @@ The Women’s Collective is warm, direct, and editorial: full-bleed sky photogra
 - Import from the barrel only.
 
 ## Hard rules
-- Token utilities only (`bg-canvas`, `bg-surface`, `text-ink`, `text-ink-muted`, `text-ink-faint`, `bg-sky`, `bg-sun`, `border-line`). No raw hex or Tailwind palette colors.
+- Token utilities only (`bg-canvas`, `bg-surface`, `text-ink`, `text-ink-muted`, `text-ink-faint`, `bg-sky`, `bg-sun`, `border-line`). No raw hex or Tailwind palette colors. The exceptions are colors that are fixed rather than themed:
+  - Plain `white` and `black`, with opacity where needed: type, rules and glass over photography and night chrome; black scrims behind type on photos; black type on bright neighborhood and accent fills where white fails contrast; the fixed fills of the `white` button and `solid` badge; the black contact-sheet panel.
+  - Neighborhood colors are data (hex in the `neighborhoods` table, with a hex fallback list in `src/features/neighborhoods`) and reach app UI only through `--hood`. The theme's neighborhood tokens (`bg-lic`, …) are for the constellation and specimens.
+  - `CircularGallery`'s WebGL text colors are plain values, because canvas text can't read CSS tokens.
 - Serif for headings, big numbers and wordmarks; never bold it — weight 400 only. Sans for everything else.
 - Every section opens with a `Badge` above a centered serif `Heading` (use `SectionHeader`).
 - Pages start with `Hero` (photo, glass badge, white headline left, short copy right, thin white rule, glass info card + big stat).
@@ -19,7 +22,7 @@ The Women’s Collective is warm, direct, and editorial: full-bleed sky photogra
 - Forms follow an editorial zine language: numbered sections, fine rules, serif emphasis, and asymmetrical multi-column compositions. Use `FormSection` to group long applications.
 - Use `editorial` fields on feature forms and `boxed` fields in compact utility contexts. Never mix both field variants within one form.
 - Mint, lilac, and signal orange are supporting editorial accents for selected states and specimen panels; keep them subordinate to canvas, ink, and photography. Neighborhood tokens are reserved for constellation and location-led storytelling.
-- No inline styles; vary via `variant`/`size` props. The single exception: data-driven neighborhood color arrives as one inline CSS variable `--hood` (e.g. via `MemberCard`'s `tone` prop) and is consumed only through the static utilities `bg-(--hood)`, `text-(--hood)`, and `border-(--hood)`.
+- No inline styles for design decisions; vary via `variant`/`size` props. Two exceptions: (1) data-driven neighborhood color arrives as one inline CSS variable `--hood` (via `MemberCard`'s `tone` prop, or a `hoodStyle()` helper in app code) and is consumed only through the static utilities `bg-(--hood)`, `text-(--hood)`, and `border-(--hood)`; (2) styling computed at runtime that no utility can express: `BorderGlow`'s gradients, masks, blend and glow, `ProximityText`'s per-letter transforms, the `Tabs` grid sized by its item count, and the mobile menu's body scroll lock.
 - Motion is editorial and purposeful: shared reveal, stagger, panel, hover, and feedback patterns only. Never add decorative motion that competes with content.
 - Use `Reveal` for viewport entry and `Stagger` for short sequenced groups; both preserve content and honor reduced-motion preferences.
 - Long applications use `FormProgress`, `FormSection`, `ChoiceGroup`, `FormNotice`, and `FormActions`; conditional follow-ups reveal directly beneath their controlling choice.

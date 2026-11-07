@@ -39,7 +39,7 @@ Baseline: `tsc` ✅ · `vite build` ✅ (warns on a 585 kB chunk) · `eslint` �
 
   `A`
 - [x] **20. Accessible form components.** `FormField` should inject `aria-describedby`/`aria-invalid` itself instead of callers hard-coding magic ids. Give `ChoiceGroup`/`RadioGroup` controlled `value` and real `required` validation. `A F L`
-- [ ] **21. Migration workflow.** `drizzle/schema.ts` is empty, so `drizzle-kit push` could drop live tables. Choose SQL-only (remove `drizzle-orm`, `postgres` and `schema.ts`) or properly wire up Drizzle, and document the choice. `A B`
+- [x] **21. Migration workflow.** `drizzle/schema.ts` is empty, so `drizzle-kit push` could drop live tables. Choose SQL-only (remove `drizzle-orm`, `postgres` and `schema.ts`) or properly wire up Drizzle, and document the choice. `A B` **Done (Phase 6):** kept SQL-only with Drizzle as the runner (Lovable needs `drizzle-kit migrate` + a driver, so `drizzle-kit`, `drizzle-orm`, `postgres` and `drizzle.config.ts` stay). README "Migration workflow": never `drizzle-kit generate`/`push`; hand-written SQL + journal entry + `rls.sql` checks; `bun run test:db`.
 
 ## P3 — Frontend performance & accessibility
 
@@ -73,19 +73,19 @@ Baseline: `tsc` ✅ · `vite build` ✅ (warns on a 585 kB chunk) · `eslint` �
 
 ## P4 — Tooling & hygiene
 
-- [ ] **33. Lint.** Fix the 7 lint errors (`circular-gallery.tsx:29`, empty interfaces in `form`, `motion` and `typography`, `previewAuthStorage.ts:38`). Add `typecheck` and `check` scripts. Turn `no-unused-vars` on as a warning. `B A`
-- [ ] **34. Dependencies.**
+- [x] **33. Lint.** Fix the 7 lint errors (`circular-gallery.tsx:29`, empty interfaces in `form`, `motion` and `typography`, `previewAuthStorage.ts:38`). Add `typecheck` and `check` scripts. Turn `no-unused-vars` on as a warning. `B A` **Done (Phase 6):** 0 errors / 0 warnings. Generated and plugin-installed files are ignored, not edited; `no-unused-vars` warns (`^_` ignored).
+- [x] **34. Dependencies.**
   - `bun update` the TanStack, Vite and Cloudflare packages: **seroval** has a vulnerability that ships at runtime.
   - Move the TanStack runtime packages to `dependencies` and `tailwindcss` to dev (otherwise `audit --prod` falsely reports clean).
   - Add `wrangler` as a dev dependency plus a `deploy` script.
   - Pin versions consistently.
   - Bind the dev server to `localhost` instead of `::`.
 
-  `B A`
-- [ ] **35. `.env`.** It's tracked by git, and the build copies it into `dist/server/.dev.vars`. Never put the service-role key in it. Add it to `.gitignore` with a `.env.example` (check how Lovable syncs it first). `B`
-- [ ] **36. Path aliases.** Replace `vite-tsconfig-paths` with Vite's native tsconfig paths and drop the duplicate `@` alias. `B`
-- [ ] **37. Docs and naming.** Rewrite `README.md`. Make `system.md` match reality (it bans inline styles and raw colors, which components use). Rename the worker and package from template names and bump `compatibility_date`. Remove the unused original logo. Use `state="loading"` in the showcase. `A B`
-- [ ] **38. Security headers.** Add CSP `frame-ancestors 'none'`, `X-Content-Type-Options` and `Referrer-Policy` through the Worker. `S`
+  `B A` **Done (Phase 6):** TanStack runtime in `dependencies`, `tailwindcss` in dev, every version exact, `wrangler` 4.156.1 + `deploy`, dev server on `localhost`. TanStack/Vite/Cloudflare/Tailwind updated within majors; `seroval` 1.6.8 → 1.7.7. `bun audit` 69 (35 high, 26 moderate, 8 low) → 29 (21 high, 7 moderate, 1 low); what remains is build/dev tooling (Babel/browserslist, esbuild via drizzle-kit and lovable-tagger, eslint, the router generator), not shipped to the browser or Worker runtime.
+- [x] **35. `.env`.** It's tracked by git, and the build copies it into `dist/server/.dev.vars`. Never put the service-role key in it. Add it to `.gitignore` with a `.env.example` (check how Lovable syncs it first). `B` **Done (Phase 6):** `.env` stays tracked on purpose (Lovable needs its `VITE_` values) and holds publishable values only. `src/app/secrets.test.ts` fails if any tracked or new file holds an `sb_secret_` key, a `service_role` JWT or a value for `SUPABASE_SERVICE_ROLE_KEY`/`LOVABLE_CRON_SECRET`. `.env.example` added; README says secrets go in `.dev.vars` or Wrangler secrets.
+- [x] **36. Path aliases.** Replace `vite-tsconfig-paths` with Vite's native tsconfig paths and drop the duplicate `@` alias. `B` **Done (Phase 6):** Vite 8 `resolve.tsconfigPaths` in Vite and Vitest; `vite-tsconfig-paths` and the manual `@` alias are gone; tsconfig has `node` types and no dead `eslint.config.js` include.
+- [x] **37. Docs and naming.** Rewrite `README.md`. Make `system.md` match reality (it bans inline styles and raw colors, which components use). Rename the worker and package from template names and bump `compatibility_date`. Remove the unused original logo. Use `state="loading"` in the showcase. `A B` **Done (Phase 6):** package renamed `twc-natasa`; unused original logo deleted; `/components` uses `state="loading"`; `.lovable/system.md` now states the real `--hood`/runtime inline-style and `white`/`black` exceptions. The Worker name and `compatibility_date` are owner decisions (below).
+- [x] **38. Security headers.** Add CSP `frame-ancestors 'none'`, `X-Content-Type-Options` and `Referrer-Policy` through the Worker. `S` **Done (Phase 6):** via `src/start.ts` request middleware (`src/app/security-headers.ts`): CSP `frame-ancestors 'self'` plus the Lovable editor origins (not `'none'`, which would break the editor), `nosniff`, `strict-origin-when-cross-origin`, a minimal `Permissions-Policy`. Start's CSRF middleware is restated because a start instance replaces the default. Checked on the built Worker: page 200 and unknown path 404 carry the headers; a cross-site server-function POST is 403.
 
 ---
 
@@ -98,6 +98,17 @@ Baseline: `tsc` ✅ · `vite build` ✅ (warns on a 585 kB chunk) · `eslint` �
 5. **Neighborhoods become content.** A `neighborhoods` table holds name, slug, color and an uploaded logo, and admins can add more. Neighborhood colors in app UI come from data via a CSS variable rather than fixed Tailwind classes.
 6. **Profile edits go live instantly.** Task 39 (re-review after edits) is not needed.
 7. **Public profiles are opt-in (2026-11-08, Phase 2).** A member who switches on "Show my profile on the public website" can be seen on public pages: the homepage gallery and the public view of `/members`. That applies only while she is approved *and* listed in the directory. Everyone else stays members-only. The homepage gallery shows only these members.
+
+## Owner decisions
+
+Left for the owner because they change the deployment, the live database or the product:
+
+1. **Worker `name` and `compatibility_date`** in `wrangler.jsonc` (`tanstack-start-app`, `2025-09-24`). Renaming creates a new Worker (new URL; routes, secrets and bindings must move with it); bumping the date changes runtime behaviour. Change both together, with Lovable's deploy in mind.
+2. **Full Content-Security-Policy.** Today it's `frame-ancestors` only. A `script-src`/`style-src` policy needs per-request nonces for SSR hydration (and allowances for Supabase, Lovable auth and the fonts); roll it out as `Content-Security-Policy-Report-Only` first.
+3. **Apply migrations 0001–0003 to the live database**, in order, then regenerate the Supabase types and deploy (README "Go-live order").
+4. **CAPTCHA or rate limiting** for anonymous `/join` applications.
+5. **Email notifications** when an application is approved or declined.
+6. **Sitemap domain.** Set `VITE_SITE_URL` in production so canonical/`og:url` are emitted and a `sitemap.xml` can be generated.
 
 ## Progress
 
@@ -125,7 +136,7 @@ Baseline: `tsc` ✅ · `vite build` ✅ (warns on a 585 kB chunk) · `eslint` �
     - Query-string hrefs in the nav adapter (none exist yet).
     - A manual check that hash links from the mobile menu still scroll once the scroll lock is released.
     - Click-outside to close the menu.
-    - Confirming that SSR answers unknown paths with HTTP 404.
+    - ~~Confirming that SSR answers unknown paths with HTTP 404.~~ Confirmed in Phase 6 on the built Worker (`wrangler dev`).
     - `robots.txt` blocks the showcase pages, so crawlers never see their `noindex`. If they ever show up in search, drop the `Disallow` lines and rely on `noindex`.
 - [x] Phase 5 (Polish, 2026-11-08): T23–T29 and T31.
   - **T26 contrast**: ratios are asserted in `src/app/contrast.test.tsx` against the token values parsed from `theme.css` (`src/test/contrast.ts`). Visual changes for the owner's review are listed below.
@@ -181,6 +192,13 @@ Baseline: `tsc` ✅ · `vite build` ✅ (warns on a 585 kB chunk) · `eslint` �
     - The CurvedLoop rings still move with no pause control (they are decorative and `aria-hidden`).
     - There's no `<picture>` JPEG fallback for browsers without WebP (all current browsers support it).
     - The subset fonts cover Latin, Latin Extended and Vietnamese. Other scripts fall back to system fonts.
+- [x] Phase 6 (Tooling, 2026-11-08): T21 and T33–T38.
+  - Lint 0/0; dependencies sorted and pinned; `seroval` fixed; native tsconfig paths; `test:db`; `.env` secret guard and `.env.example`; README secrets, migration workflow and CI sections.
+  - CI: `.github/workflows/check.yml` runs on pull requests and pushes to non-`main` branches: `bun install --frozen-lockfile`, typecheck, lint, test, build, and a `postgres:17` job for `drizzle/test/run.sh` (opt-in `TEST_DB_EXISTING=1` mode). Actions are pinned by SHA.
+  - Security headers via `src/start.ts` (see T38).
+  - Notes:
+    - Static assets are served by the Workers assets binding before the Worker, so they don't get the headers. A `public/_headers` file could add `nosniff` there if wanted.
+    - `vite preview` can't serve this build (the Cloudflare plugin runs only on `build`); use `bunx wrangler dev -c dist/server/wrangler.json --local` to run the built Worker.
 - [ ] See `ARCHITECTURE.md` Part 3 for the phase order of the remaining work
 - [x] App code: members-only directory, `/admin`, join form submit, neighborhoods from data (Phases 1–3)
-- [ ] P1–P4 remainder
+- [ ] P0–P3 remainder (P4 is done: Phase 6)

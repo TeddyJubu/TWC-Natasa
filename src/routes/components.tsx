@@ -31,8 +31,8 @@ const sections: { name: string; render: () => React.ReactNode }[] = [
     <Specimen label='variant="primary|white|ink|sun|outline|link"'>
       {(["primary", "white", "ink", "sun", "outline", "link"] as const).map((v) => <K.Button key={v} variant={v} className={v === "white" ? "border border-line" : ""}>Join now</K.Button>)}
     </Specimen>
-    <Specimen label='size="sm|md|lg" · disabled · loading'>
-      <K.Button size="sm">Small</K.Button><K.Button>Medium</K.Button><K.Button size="lg">Large</K.Button><K.Button disabled>Disabled</K.Button><K.Button loading>Sending</K.Button>
+    <Specimen label='size="sm|md|lg" · disabled · state="loading"'>
+      <K.Button size="sm">Small</K.Button><K.Button>Medium</K.Button><K.Button size="lg">Large</K.Button><K.Button disabled>Disabled</K.Button><K.Button state="loading">Sending</K.Button>
     </Specimen></>) },
   { name: "Badge", render: () => <Specimen label='variant="soft|glass|solid"'><K.Badge>Our Story</K.Badge><div className="rounded-card bg-sky p-4"><K.Badge variant="glass">Over photos</K.Badge></div><div className="tone-night rounded-card p-4"><K.Badge variant="solid">On night</K.Badge></div></Specimen> },
   { name: "Brand", render: () => <><Specimen label="BrandLockup · compact"><K.BrandLockup /><K.BrandLockup compact /></Specimen><Specimen label="ConstellationLogo · color variants"><div className="grid w-full grid-cols-3 gap-6 sm:grid-cols-5">{(["ink", "long-island-city", "sunnyside", "astoria", "jackson-heights", "elmhurst", "forest-hills", "rego-park"] as const).map((variant) => <K.ConstellationLogo key={variant} variant={variant} size="lg" />)}</div></Specimen></> },
