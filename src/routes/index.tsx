@@ -3,7 +3,8 @@ import {
   Accordion, Badge, BrandLockup, ConstellationLogo, Container, FeatureCard, Footer,
   CurvedGallery, Heading, Hero, ImageFrame, Navbar, Ribbon, Section, SectionHeader, Split, Statement, Text, buttonVariants,
 } from "@/index";
-import { demoMembers } from "@/showcase/demo-members";
+import { useQuery } from "@tanstack/react-query";
+import { publicProfilesQuery } from "@/features/members/queries";
 import { Shell } from "@/showcase/Shell";
 import hero from "@/assets/photography/hero.jpg";
 import event from "@/assets/photography/event.jpg";
@@ -50,6 +51,9 @@ const neighborhoods = [
 ];
 
 function HomePage() {
+  // Only members who opted in (§2.10). Loading, empty or failed: the section stands without a gallery.
+  // Cards without a portrait fall back to the hero photo; never present that as a member.
+  const publicCards = (useQuery(publicProfilesQuery).data ?? []).filter((m) => m.image !== hero);
   return (
     <Shell bare>
       <Navbar variant="hero" brand={<BrandLockup logoVariant="white" compact />} links={links} action={<Link to="/join" className={buttonVariants({ variant: "white" })}>Join the collective</Link>} />
@@ -79,16 +83,17 @@ function HomePage() {
             <Link to="/members" className={buttonVariants({ variant: "outline" })}>Explore all members</Link>
           </div>
         </Container>
-        <CurvedGallery
-          className="mt-8 md:mt-4"
-          images={demoMembers.map((member) => ({
-            src: member.image,
-            alt: `${member.name} · ${member.business}`,
-          }))}
-        />
-        <Container className="flex flex-col items-center gap-5">
+        {publicCards.length > 0 && (
+          <CurvedGallery
+            className="mt-8 md:mt-4"
+            images={publicCards.map((member) => ({
+              src: member.image,
+              alt: [member.name, member.business].filter(Boolean).join(" · "),
+            }))}
+          />
+        )}
+        <Container className={publicCards.length ? "flex flex-col items-center gap-5" : "mt-8 flex flex-col items-center gap-5"}>
           <Link to="/members" className={buttonVariants({ variant: "ink" })}>View the member directory</Link>
-          <p className="text-center text-xs text-ink-muted">Sample profiles shown for design demonstration.</p>
         </Container>
       </Section>
 
