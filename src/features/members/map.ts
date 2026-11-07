@@ -7,7 +7,7 @@ export type MemberRow = {
   full_name: string;
   role_title: string;
   business: string;
-  neighborhood: string;
+  neighborhood: string | null;
   specialty: string;
   bio: string;
   looking_for: string;
@@ -15,7 +15,10 @@ export type MemberRow = {
   website?: string | null;
 };
 
-/** Maps a row to a card profile; `placeholders` fills empty fields for the account preview. */
+/**
+ * Maps a row to a card profile; `placeholders` fills empty fields for the account preview.
+ * No neighborhood (null) becomes "", which the card leaves out.
+ */
 export function toMemberProfile(row: MemberRow, opts: { image?: string; placeholders?: boolean } = {}): MemberProfile {
   const fill = (value: string, placeholder: string) => (opts.placeholders ? value || placeholder : value);
   return {
@@ -23,7 +26,7 @@ export function toMemberProfile(row: MemberRow, opts: { image?: string; placehol
     name: fill(row.full_name, "Your name"),
     role: fill(row.role_title, "Your role"),
     business: fill(row.business, "Your business"),
-    neighborhood: row.neighborhood,
+    neighborhood: row.neighborhood ?? "",
     specialty: fill(row.specialty, "Your specialty"),
     bio: row.bio,
     lookingFor: row.looking_for,

@@ -34,14 +34,18 @@ export const Route = createFileRoute("/_authenticated/account")({
 /** Inline `--hood` for a neighborhood color, consumed via `bg-(--hood)` / `text-(--hood)`. */
 const hoodStyle = (color?: string) => (color ? ({ "--hood": color } as React.CSSProperties) : undefined);
 
-/** The card fields as currently typed in the form (also the save patch). Unlisted means not public. */
+/**
+ * The card fields as currently typed in the form (also the save patch). Unlisted means not public;
+ * the blank neighborhood choice saves as null.
+ */
 function readCard(form: HTMLFormElement, profile: Profile): ProfilePatch {
   const f = new FormData(form);
   const text = (name: string) => String(f.get(name) ?? "").trim();
   const directory_visible = f.get("directory_visible") === "on";
+  const neighborhood = f.get("neighborhood");
   return {
     full_name: text("full_name"), role_title: text("role_title"), business: text("business"),
-    neighborhood: String(f.get("neighborhood") ?? profile.neighborhood), specialty: text("specialty"),
+    neighborhood: neighborhood === null ? profile.neighborhood : String(neighborhood) || null, specialty: text("specialty"),
     website: text("website"), bio: text("bio").slice(0, 400), looking_for: text("looking_for").slice(0, 160),
     directory_visible, public_profile: directory_visible && f.get("public_profile") === "on",
   };
@@ -70,7 +74,8 @@ function AccountPage() {
   const avatar = profileState.data?.avatarUrl;
   const approved = profile?.status === "approved";
   const declined = profile?.status === "declined";
-  const n = profile?.neighborhood ?? "";
+  // Her neighborhood, or null when she hasn't chosen one.
+  const n = profile?.neighborhood || null;
 
   const eventsState = useQuery({ ...eventsQuery, enabled: approved });
   const rsvpsState = useQuery({ ...rsvpsQuery(user.id), enabled: approved });
@@ -151,7 +156,7 @@ function AccountPage() {
 
   const tone = toneFor(n, hoodList);
   // Active neighborhoods, plus hers if an admin has since deactivated it.
-  const neighborhoodOptions = pickerNames(hoodList, n);
+  const neighborhoodOptions = pickerNames(hoodList, n ?? []);
   const events = eventsState.data ?? [];
   const rsvps = new Set(rsvpsState.data ?? []);
   const booking = changingBooking ? null : bookingState.data ?? null;
@@ -194,7 +199,7 @@ function AccountPage() {
             <dl className="grid grid-cols-3 gap-6 border-t border-line pt-6">
               <div><dt className="text-xs uppercase text-ink-muted">Catalogue</dt><dd className="mt-2 font-display text-4xl">{approved ? String(profile.catalogue_number ?? 0).padStart(2, "0") : "—"}</dd></div>
               <div><dt className="text-xs uppercase text-ink-muted">Member since</dt><dd className="mt-2 font-display text-2xl md:text-3xl">{since}</dd></div>
-              <div><dt className="text-xs uppercase text-ink-muted">Neighborhood</dt><dd className={cn("mt-2 font-display text-2xl md:text-3xl", tone && "text-(--hood)")} style={hoodStyle(tone?.color)}>{n}</dd></div>
+              <div><dt className="text-xs uppercase text-ink-muted">Neighborhood</dt><dd className={cn("mt-2 font-display text-2xl md:text-3xl", tone && "text-(--hood)")} style={hoodStyle(tone?.color)}>{n ?? "—"}</dd></div>
             </dl>
           </div>
         </Container>
@@ -221,7 +226,10 @@ function AccountPage() {
                   <FormField label="Business" htmlFor="business" index="03"><Input name="business" defaultValue={profile.business} maxLength={80} /></FormField>
                   <FormField label="Specialty" htmlFor="specialty" index="04"><Input name="specialty" defaultValue={profile.specialty} maxLength={60} placeholder="Food & hospitality" /></FormField>
                   <FormField label="Neighborhood" htmlFor="neighborhood" index="05">
-                    <Select name="neighborhood" defaultValue={profile.neighborhood}>{neighborhoodOptions.map((x) => <option key={x}>{x}</option>)}</Select>
+                    <Select name="neighborhood" defaultValue={n ?? ""}>
+                      <option value="">Choose your neighborhood</option>
+                      {neighborhoodOptions.map((x) => <option key={x}>{x}</option>)}
+                    </Select>
                   </FormField>
                   <FormField label="Website" htmlFor="website" index="06" optional><Input name="website" type="url" defaultValue={profile.website} maxLength={200} placeholder="https://" /></FormField>
                 </div>
@@ -259,7 +267,7 @@ function AccountPage() {
             <aside aria-label="Card preview" className="lg:sticky lg:top-32 lg:self-start">
               <p className="mb-4 text-xs uppercase text-ink-muted">{unsaved ? "Preview · unsaved changes" : "Preview of your saved card"}</p>
               <div className="rounded-panel bg-black p-4">
-                <MemberCard member={toMemberProfile({ ...profile, ...card }, { image: avatar, placeholders: true })} variant="catalogue" tone={toneFor(card.neighborhood ?? n, hoodList)} catalogueNumber={profile.catalogue_number ?? 0} />
+                <MemberCard member={toMemberProfile({ ...profile, ...card }, { image: avatar, placeholders: true })} variant="catalogue" tone={toneFor(card.neighborhood ?? null, hoodList)} catalogueNumber={profile.catalogue_number ?? 0} />
               </div>
             </aside>
           </div>
@@ -330,7 +338,7 @@ function AccountPage() {
       {/* 03 Introductions */}
       <Section tone="night" className="pt-0 md:pt-0">
         <Container className="flex flex-col gap-14">
-          <SectionHeader badgeVariant="solid" badge="03 — Introductions" title="Women You Should Meet" intro={`Neighbors from ${n} first, then across the constellation.`} />
+          <SectionHeader badgeVariant="solid" badge="03 — Introductions" title="Women You Should Meet" intro={n ? `Neighbors from ${n} first, then across the constellation.` : "Neighbors from across the constellation."} />
           {!approved ? <Locked /> : (
             <>
               {introsState.isError && <InlineError message="We couldn’t load your introductions." onRetry={() => void introsState.refetch()} />}

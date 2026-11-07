@@ -368,3 +368,95 @@ reset role;
 set role authenticated;
 select pg_temp.ok(not has_function_privilege('public.backfill_linked_application_status()', 'execute'), 'members cannot run the backfill');
 reset role;
+
+-- ---------- Cleanup (0004) ----------
+-- 20: signs up with no neighborhood. 21, 22: two applications each, reviewed on the profile.
+-- 23: two applications, one reviewed directly. 24: no application. 25: non-admin and no-JWT changes.
+reset role;
+reset request.jwt.claim.sub;
+select pg_temp.ok((select is_nullable = 'YES' and column_default is null from information_schema.columns
+  where table_schema = 'public' and table_name = 'profiles' and column_name = 'neighborhood'),
+  'profiles.neighborhood is nullable with no default');
+
+insert into auth.users (id, email, email_confirmed_at) values ('00000000-0000-4000-8000-000000000020', 'nohood@x.test', now());
+select pg_temp.ok((select neighborhood from profiles where id = '00000000-0000-4000-8000-000000000020') is null,
+  'a new sign-up has no neighborhood');
+
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-4000-8000-000000000020';
+update profiles set neighborhood = 'Astoria' where id = auth.uid();
+select pg_temp.ok((select neighborhood from profiles where id = auth.uid()) = 'Astoria', 'member saves a known neighborhood');
+update profiles set neighborhood = null where id = auth.uid();
+select pg_temp.ok((select neighborhood from profiles where id = auth.uid()) is null, 'member clears her neighborhood');
+do $$ begin
+  update profiles set neighborhood = 'Atlantis' where id = auth.uid();
+  raise exception 'FAIL: saved an unknown neighborhood after 0004';
+exception when foreign_key_violation then raise notice 'ok  an unknown neighborhood still fails the foreign key';
+end $$;
+reset role;
+reset request.jwt.claim.sub;
+
+-- Superuser fixtures: explicit created_at so "newest" is unambiguous.
+insert into auth.users (id, email, email_confirmed_at) values
+  ('00000000-0000-4000-8000-000000000021', 'twoapprove@x.test', now()),
+  ('00000000-0000-4000-8000-000000000022', 'twodecline@x.test', now()),
+  ('00000000-0000-4000-8000-000000000023', 'twodirect@x.test', now()),
+  ('00000000-0000-4000-8000-000000000024', 'noapp@x.test', now()),
+  ('00000000-0000-4000-8000-000000000025', 'nonadmin@x.test', now());
+insert into applications (email, full_name, user_id, created_at) values
+  ('old-21@x.test', 'Old 21', '00000000-0000-4000-8000-000000000021', now() - interval '2 days'),
+  ('new-21@x.test', 'New 21', '00000000-0000-4000-8000-000000000021', now() - interval '1 day'),
+  ('old-22@x.test', 'Old 22', '00000000-0000-4000-8000-000000000022', now() - interval '2 days'),
+  ('new-22@x.test', 'New 22', '00000000-0000-4000-8000-000000000022', now() - interval '1 day'),
+  ('old-23@x.test', 'Old 23', '00000000-0000-4000-8000-000000000023', now() - interval '2 days'),
+  ('new-23@x.test', 'New 23', '00000000-0000-4000-8000-000000000023', now() - interval '1 day'),
+  ('only-25@x.test', 'Only 25', '00000000-0000-4000-8000-000000000025', now() - interval '1 day');
+
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000000a';
+update profiles set status = 'approved' where id = '00000000-0000-4000-8000-000000000021';
+select pg_temp.ok((select status = 'approved' and reviewed_at is not null and reviewed_by = '00000000-0000-4000-8000-00000000000a'
+  from applications where email = 'new-21@x.test'), 'admin approving a profile approves her newest application, recording the admin');
+select pg_temp.ok((select status = 'pending' and reviewed_at is null and reviewed_by is null
+  from applications where email = 'old-21@x.test'), 'admin approving a profile leaves her older application alone');
+select pg_temp.ok((select status = 'approved' and catalogue_number is not null from profiles
+  where id = '00000000-0000-4000-8000-000000000021'), 'the directly approved profile is approved with a catalogue number');
+
+update profiles set status = 'declined' where id = '00000000-0000-4000-8000-000000000022';
+select pg_temp.ok((select status = 'declined' and reviewed_by = '00000000-0000-4000-8000-00000000000a'
+  from applications where email = 'new-22@x.test'), 'admin declining a profile declines her newest application, recording the admin');
+select pg_temp.ok((select status = 'pending' and reviewed_at is null from applications where email = 'old-22@x.test'),
+  'admin declining a profile leaves her older application alone');
+-- Only approve and decline sync: putting a profile back to pending isn't a review.
+update profiles set status = 'pending' where id = '00000000-0000-4000-8000-000000000022';
+select pg_temp.ok((select status from applications where email = 'new-22@x.test') = 'declined',
+  'admin resetting a profile to pending leaves her application''s decision');
+
+update applications set status = 'approved' where email = 'old-23@x.test';
+select pg_temp.ok((select status from profiles where id = '00000000-0000-4000-8000-000000000023') = 'approved',
+  'admin approving an older application approves the profile');
+select pg_temp.ok((select status = 'pending' and reviewed_at is null from applications where email = 'new-23@x.test'),
+  'admin approving one application leaves the user''s other application alone');
+-- Her profile is already approved, so approving her other application must not rewrite the profile.
+select updated_at as updated_23 from profiles where id = '00000000-0000-4000-8000-000000000023' \gset
+update applications set status = 'approved' where email = 'new-23@x.test';
+select pg_temp.ok((select updated_at from profiles where id = '00000000-0000-4000-8000-000000000023') = :'updated_23'::timestamptz,
+  'approving an application leaves an already-approved profile untouched');
+
+update profiles set status = 'approved' where id = '00000000-0000-4000-8000-000000000024';
+select pg_temp.ok((select status = 'approved' and catalogue_number is not null from profiles
+  where id = '00000000-0000-4000-8000-000000000024'), 'admin approves a profile that has no application');
+
+set request.jwt.claim.sub = '00000000-0000-4000-8000-000000000025';
+update profiles set status = 'approved' where id = auth.uid();
+reset role;
+reset request.jwt.claim.sub;
+select pg_temp.ok((select status from profiles where id = '00000000-0000-4000-8000-000000000025') = 'pending'
+  and (select status = 'pending' and reviewed_at is null from applications where email = 'only-25@x.test'),
+  'a member''s own status change touches neither her profile nor her application');
+update profiles set status = 'approved' where id = '00000000-0000-4000-8000-000000000025';
+select pg_temp.ok((select status from profiles where id = '00000000-0000-4000-8000-000000000025') = 'approved',
+  'fixture: a no-JWT write changes the profile status');
+select pg_temp.ok((select status = 'pending' and reviewed_at is null and reviewed_by is null
+  from applications where email = 'only-25@x.test'), 'a no-JWT status change leaves the application alone');
+

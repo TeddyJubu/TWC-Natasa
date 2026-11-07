@@ -189,7 +189,8 @@ export type Database = {
           id: string
           looking_for: string
           member_since: string | null
-          neighborhood: string
+          // BRIDGE (0004): hand-patched until Lovable regenerates this file
+          neighborhood: string | null
           // BRIDGE (0002): hand-patched until Lovable regenerates this file
           public_profile: boolean
           role_title: string
@@ -209,7 +210,8 @@ export type Database = {
           id: string
           looking_for?: string
           member_since?: string | null
-          neighborhood?: string
+          // BRIDGE (0004): hand-patched until Lovable regenerates this file
+          neighborhood?: string | null
           // BRIDGE (0002): hand-patched until Lovable regenerates this file
           public_profile?: boolean
           role_title?: string
@@ -229,7 +231,8 @@ export type Database = {
           id?: string
           looking_for?: string
           member_since?: string | null
-          neighborhood?: string
+          // BRIDGE (0004): hand-patched until Lovable regenerates this file
+          neighborhood?: string | null
           // BRIDGE (0002): hand-patched until Lovable regenerates this file
           public_profile?: boolean
           role_title?: string
@@ -287,7 +290,8 @@ export type Database = {
           full_name: string
           id: string
           looking_for: string
-          neighborhood: string
+          // BRIDGE (0004): hand-patched until Lovable regenerates this file
+          neighborhood: string | null
           role_title: string
           specialty: string
           // BRIDGE (0001): hand-patched until Lovable regenerates this file
@@ -304,7 +308,8 @@ export type Database = {
           catalogue_number: number
           full_name: string
           looking_for: string
-          neighborhood: string
+          // BRIDGE (0004): hand-patched until Lovable regenerates this file
+          neighborhood: string | null
           role_title: string
           specialty: string
           website: string

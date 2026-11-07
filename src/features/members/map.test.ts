@@ -46,6 +46,10 @@ describe("toMemberProfile", () => {
     expect(toMemberProfile({ ...row, website: "" }).website).toBeUndefined();
   });
 
+  it("maps a profile with no neighborhood to an empty one", () => {
+    expect(toMemberProfile({ ...row, neighborhood: null }).neighborhood).toBe("");
+  });
+
   it("leaves a null catalogue number undefined", () => {
     expect(toMemberProfile(blank).catalogueNumber).toBeUndefined();
   });

@@ -28,4 +28,8 @@ describe("toneFor", () => {
   it("returns undefined for an unknown name", () => {
     expect(toneFor("Nowhere", NEIGHBORHOOD_SEED)).toBeUndefined();
   });
+
+  it("returns undefined when no neighborhood is set", () => {
+    expect(toneFor(null, NEIGHBORHOOD_SEED)).toBeUndefined();
+  });
 });

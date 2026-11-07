@@ -48,6 +48,22 @@ describe("MemberCard tone", () => {
   });
 });
 
+describe("MemberCard without a neighborhood", () => {
+  const vertical = "[writing-mode:vertical-rl]";
+
+  it("catalogue: shows the neighborhood label only when there is one", () => {
+    expect(classTokens(render(<MemberCard member={member} variant="catalogue" />))).toContain(vertical);
+    const html = render(<MemberCard member={{ ...member, neighborhood: "" }} variant="catalogue" tone={{ color: "#2f9dff" }} />);
+    expect(classTokens(html)).not.toContain(vertical);
+    expect(html).not.toContain("M20 10c0 5-8 11-8 11");
+  });
+
+  it.each(["grid", "featured"] as const)("%s: shows the neighborhood badge only when there is one", (variant) => {
+    expect(classTokens(render(<MemberCard member={member} variant={variant} />))).toContain("bottom-5");
+    expect(classTokens(render(<MemberCard member={{ ...member, neighborhood: "" }} variant={variant} />))).not.toContain("bottom-5");
+  });
+});
+
 describe("member-card source", () => {
   it("contains no neighborhood names or slugs", () => {
     const src = readFileSync(new URL("./member-card.tsx", import.meta.url), "utf8");

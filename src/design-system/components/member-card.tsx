@@ -23,6 +23,7 @@ export interface MemberProfile {
   name: string;
   role: string;
   business: string;
+  /** Empty when the member hasn't chosen one; the card then shows no neighborhood. */
   neighborhood: string;
   specialty: string;
   bio: string;
@@ -101,18 +102,20 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
                 <p className="min-w-0 leading-snug">{member.role}</p>
               </div>
             </div>
-            <p
-              className={cn(
-                "flex shrink-0 items-start gap-3 [writing-mode:vertical-rl] [transform:rotate(180deg)]",
-                tone && "text-(--hood)",
-              )}
-            >
-              <svg viewBox="0 0 24 24" aria-hidden className="size-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" />
-                <circle cx="12" cy="10" r="2.25" />
-              </svg>
-              <span className="leading-none">{member.neighborhood}</span>
-            </p>
+            {member.neighborhood && (
+              <p
+                className={cn(
+                  "flex shrink-0 items-start gap-3 [writing-mode:vertical-rl] [transform:rotate(180deg)]",
+                  tone && "text-(--hood)",
+                )}
+              >
+                <svg viewBox="0 0 24 24" aria-hidden className="size-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" />
+                  <circle cx="12" cy="10" r="2.25" />
+                </svg>
+                <span className="leading-none">{member.neighborhood}</span>
+              </p>
+            )}
           </div>
           </div>
 
@@ -151,7 +154,7 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
         className="size-full object-cover transition-transform duration-slow ease-gentle group-hover:scale-[1.025] motion-reduce:transform-none motion-reduce:transition-none"
       />
       <div aria-hidden className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/45 to-transparent" />
-      <Badge variant="glass" className="absolute bottom-5 left-5 text-white">{member.neighborhood}</Badge>
+      {member.neighborhood && <Badge variant="glass" className="absolute bottom-5 left-5 text-white">{member.neighborhood}</Badge>}
     </div>
     <div className={cn("flex flex-col", variant === "featured" ? "justify-center gap-7 p-8 md:p-12" : "gap-5 p-6")}>
       <div>

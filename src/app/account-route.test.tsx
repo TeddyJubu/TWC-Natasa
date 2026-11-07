@@ -104,6 +104,38 @@ describe("/account", () => {
     expect((screen.getByRole("combobox", { name: /neighborhood/i }) as HTMLSelectElement).value).toBe("Rego Park");
   });
 
+  describe("no neighborhood", () => {
+    const select = () => screen.getByRole("combobox", { name: /neighborhood/i }) as HTMLSelectElement;
+
+    it("offers a blank first choice, selected when she has none", () => {
+      renderAccount({ neighborhood: null });
+      const first = within(select()).getAllByRole("option")[0] as HTMLOptionElement;
+      expect(first.textContent).toBe("Choose your neighborhood");
+      expect(first.value).toBe("");
+      expect(select().value).toBe("");
+    });
+
+    it("shows a dash in the header and introduces neighbors from across the constellation", () => {
+      renderAccount({ neighborhood: null });
+      const term = screen.getByText("Neighborhood", { selector: "dt" });
+      expect(term.nextElementSibling?.textContent).toBe("—");
+      expect(screen.getByText("Neighbors from across the constellation.")).toBeTruthy();
+    });
+
+    it("still introduces her neighborhood first when she has one", () => {
+      renderAccount({ neighborhood: "Astoria" });
+      expect(screen.getByText("Neighbors from Astoria first, then across the constellation.")).toBeTruthy();
+    });
+
+    it("saves the blank choice as null", async () => {
+      renderAccount({ neighborhood: "Astoria" });
+      fireEvent.change(select(), { target: { value: "" } });
+      fake.results = [{ data: { ...base, neighborhood: null }, error: null }];
+      fireEvent.click(screen.getByRole("button", { name: /save my card/i }));
+      await waitFor(() => expect(fake.calls).toContainEqual(["update", expect.objectContaining({ neighborhood: null })]));
+    });
+  });
+
   describe("public profile switch", () => {
     const publicSwitch = () => screen.getByRole("switch", { name: /show my profile on the public website/i }) as HTMLInputElement;
     const directorySwitch = () => screen.getByRole("switch", { name: /^show me in the member directory/i }) as HTMLInputElement;

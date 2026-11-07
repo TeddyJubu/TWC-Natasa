@@ -83,14 +83,22 @@ export const profileQuery = (userId: string) =>
 
 const INTROS = 4;
 
-/** Up to four approved, listed members: the database returns same-neighborhood ones first (T15). */
-export const introsQuery = (userId: string, neighborhood: string) =>
+/**
+ * Up to four approved, listed members: the database returns same-neighborhood ones first (T15).
+ * Without a neighborhood there is no "same" to ask for, so it takes the first four from anywhere.
+ */
+export const introsQuery = (userId: string, neighborhood: string | null) =>
   queryOptions({
     queryKey: ["intros", userId, neighborhood],
     queryFn: async (): Promise<MemberProfile[]> => {
       const supabase = await getSupabase();
       const others = () =>
         supabase.from("profiles").select("*").neq("id", userId).eq("status", "approved").eq("directory_visible", true);
+      if (neighborhood === null) {
+        const any = await others().order("catalogue_number").limit(INTROS);
+        if (any.error) throw any.error;
+        return withPortraits(any.data);
+      }
       const near = await others().eq("neighborhood", neighborhood).order("catalogue_number").limit(INTROS);
       if (near.error) throw near.error;
       let picked = near.data;
@@ -99,8 +107,12 @@ export const introsQuery = (userId: string, neighborhood: string) =>
         if (rest.error) throw rest.error;
         picked = [...picked, ...rest.data];
       }
-      if (!picked.length) return [];
-      const urls = await avatarUrls(picked.map((o) => o.avatar_path));
-      return picked.map((o) => toMemberProfile(o, { image: imageFor(o.avatar_path, urls) }));
+      return withPortraits(picked);
     },
   });
+
+async function withPortraits(rows: Profile[]): Promise<MemberProfile[]> {
+  if (!rows.length) return [];
+  const urls = await avatarUrls(rows.map((o) => o.avatar_path));
+  return rows.map((o) => toMemberProfile(o, { image: imageFor(o.avatar_path, urls) }));
+}

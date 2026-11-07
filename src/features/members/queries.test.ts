@@ -182,6 +182,17 @@ describe("introsQuery", () => {
     expect(fake.calls.filter((c) => c[0] === "from")).toHaveLength(1);
   });
 
+  it("is keyed by a null neighborhood too", () => {
+    expect(introsQuery("u1", null).queryKey).toEqual(["intros", "u1", null]);
+  });
+
+  it("skips the same-neighborhood query when she has no neighborhood", async () => {
+    fake.results = [{ data: [other("a", "Sunnyside"), other("b", "Astoria")], error: null }];
+    const out = (await run(introsQuery("u1", null))) as { id: string }[];
+    expect(fake.calls).toEqual([...base, ["order", "catalogue_number"], ["limit", 4]]);
+    expect(out.map((m) => m.id)).toEqual(["a", "b"]);
+  });
+
   it("throws the top-up query error", async () => {
     fake.results = [{ data: [], error: null }, { data: null, error: dbError }];
     await expect(run(introsQuery("u1", "Astoria"))).rejects.toBe(dbError);

@@ -137,6 +137,17 @@ describe("/members", () => {
     expect(chips).not.toContain("Rego Park");
   });
 
+  it("offers no chip for members without a neighborhood", () => {
+    renderWithQueries(<Page />, [
+      viewer(true, true),
+      [["directory"], [card("Rosa Diaz", 12), { ...card("Lena Ortiz", 15), neighborhood: "" }]],
+    ]);
+    const chips = within(screen.getByRole("group", { name: /filter members by neighborhood/i })).getAllByRole("button").map((b) => b.textContent);
+    expect(chips).not.toContain("");
+    expect(chips.filter((c) => c === "Astoria")).toHaveLength(1);
+    expect(screen.getByText("Lena Ortiz")).toBeTruthy();
+  });
+
   it("counts the profiles shown", () => {
     renderWithQueries(<Page />, [viewer(true, true), [["directory"], [card("Rosa Diaz", 12), card("Lena Ortiz", 15)]]]);
     expect(within(document.body).getByText("02 profiles")).toBeTruthy();
