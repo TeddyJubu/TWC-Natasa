@@ -44,10 +44,10 @@ Baseline: `tsc` ✅ · `vite build` ✅ (warns on a 585 kB chunk) · `eslint` �
 ## P3 — Frontend performance & accessibility
 
 - [x] **22. Fixed positioning bug.** The `.motion-route-in` animation keeps `translateY(0)` applied, so `position:fixed` children (the toolbar, preview frames, any future modal) are positioned against the page instead of the viewport. End the animation at `transform:none`, or animate opacity only. `F`
-- [ ] **23. ImageTrail weight.** The server renders 24 `<img>` on every page, pulling about 2 MB of 816px PNGs even on touch devices. Render them client-side only after a pointer check, use ~96px WebP, and reconsider mounting it in the "providers-only" root. `F B`
-- [ ] **24. CircularGallery.** It listens on `window` (scrolling anywhere spins it), double-counts `mousewheel`, runs requestAnimationFrame forever, never releases the WebGL context, and rebuilds on every render because `items` is a new array. `F A`
-- [ ] **25. Fonts.** About 700 KB of TTF. Convert to subset `woff2` and preload the display face. `F B`
-- [ ] **26. Contrast.**
+- [x] **23. ImageTrail weight.** The server renders 24 `<img>` on every page, pulling about 2 MB of 816px PNGs even on touch devices. Render them client-side only after a pointer check, use ~96px WebP, and reconsider mounting it in the "providers-only" root. `F B`
+- [x] **24. CircularGallery.** It listens on `window` (scrolling anywhere spins it), double-counts `mousewheel`, runs requestAnimationFrame forever, never releases the WebGL context, and rebuilds on every render because `items` is a new array. `F A`
+- [x] **25. Fonts.** About 700 KB of TTF. Convert to subset `woff2` and preload the display face. `F B`
+- [x] **26. Contrast.**
 
   | Element | Contrast | Needs |
   |---|---|---|
@@ -56,8 +56,8 @@ Baseline: `tsc` ✅ · `vite build` ✅ (warns on a 585 kB chunk) · `eslint` �
   | `ink-faint` mission statement, tabs and placeholders | about 1.9:1 | 3:1 for the statement |
 
   Catalogue card number and label fail too. Force `tone-night` on catalogue cards. `F`
-- [ ] **27. Motion and screen readers.** The ribbon text is read 12 times and never pauses. CurvedLoop rings have no pause control. The reduced-motion gallery announces each image twice. `F`
-- [ ] **28. Semantics.**
+- [x] **27. Motion and screen readers.** The ribbon text is read 12 times and never pauses. CurvedLoop rings have no pause control. The reduced-motion gallery announces each image twice. `F`
+- [x] **28. Semantics.**
   - No `<main>` and no skip link.
   - Heading jumps (h1 → h3 on `/join`).
   - `FormSection` announces its title twice.
@@ -66,9 +66,9 @@ Baseline: `tsc` ✅ · `vite build` ✅ (warns on a 585 kB chunk) · `eslint` �
   - Focus isn't reset on route change.
 
   `F`
-- [ ] **29. Images.** Add `srcset` and resized variants (the founder photo is 2000px for a ~600px slot). Use the white logo directly instead of inverting seven colored ones. Add `fetchpriority` to the hero. `F`
+- [x] **29. Images.** Add `srcset` and resized variants (the founder photo is 2000px for a ~600px slot). Use the white logo directly instead of inverting seven colored ones. Add `fetchpriority` to the hero. `F`
 - [ ] **30. Bundle.** `__root.tsx` imports Supabase, so every marketing page ships the full SDK (main chunk 585 kB). Load it lazily. `B F`
-- [ ] **31. Per-card effects.** ProximityText mixes layout reads and writes and sets `will-change` on every letter. CurvedLoop runs requestAnimationFrame off-screen and measures before fonts load. `F`
+- [x] **31. Per-card effects.** ProximityText mixes layout reads and writes and sets `will-change` on every letter. CurvedLoop runs requestAnimationFrame off-screen and measures before fonts load. `F`
 - [x] **32. SEO.** `og:image` missing, `twitter:site=@Lovable`, no canonical, robots.txt or sitemap, no custom 404/error page. `F A` (Sitemap split out: see Phase 4 "Still open".)
 
 ## P4 — Tooling & hygiene
@@ -127,6 +127,60 @@ Baseline: `tsc` ✅ · `vite build` ✅ (warns on a 585 kB chunk) · `eslint` �
     - Click-outside to close the menu.
     - Confirming that SSR answers unknown paths with HTTP 404.
     - `robots.txt` blocks the showcase pages, so crawlers never see their `noindex`. If they ever show up in search, drop the `Disallow` lines and rely on `noindex`.
+- [x] Phase 5 (Polish, 2026-11-08): T23–T29 and T31.
+  - **T26 contrast**: ratios are asserted in `src/app/contrast.test.tsx` against the token values parsed from `theme.css` (`src/test/contrast.ts`). Visual changes for the owner's review are listed below.
+  - **T27/T28 screen readers, motion and semantics**:
+    - The Ribbon is read once, pauses on hover and has a "Pause ribbon" toggle that appears on focus.
+    - CurvedLoop rings are `aria-hidden`, and the reduced-motion gallery reads each image once.
+    - Tabs: every panel exists (hidden when inactive; only the active one mounts its content, so `/admin` doesn't fetch all four tabs), roving tabindex with Arrow/Home/End, and focus rings on Tabs and Accordion.
+    - The `/auth` switch is an `aria-pressed` toggle group, and `FormSection` is named once through `aria-labelledby`.
+    - Heading order is fixed (`/join` uses h2 sections; the mission section has an h2) and guarded by `expectNoSkippedHeadings()`.
+    - There's a skip link and one `<main id="main">` on every live page (including `/reset-password` and the `/account` loading and error screens).
+    - `useRouteFocus` focuses the page h1 (or main) once the new route has rendered (`resolvedLocation`), waiting for late headings without stealing focus.
+    - Mobile menu: distinct names for the button and panel, an `inert` background, close on outside tap, and focus parks on the toggle after a link.
+  - **T23/T24/T31 performance**:
+    - ImageTrail is client-only, needs a fine pointer and no reduced motion, uses 96px WebP and is portalled to `<body>`. It's mounted by `AppPage`, `/auth` and `/reset-password`, not the root.
+    - CircularGallery: listeners are on its container, the loop pauses off-screen or in hidden tabs, `destroy` deletes textures and loses the context, and the engine rebuilds only when its items change.
+    - ProximityText reads before it writes. CurvedLoop's loop stops off-screen and re-measures after fonts load.
+  - **T25/T29 assets**:
+    - Fonts: subset Latin and Latin Extended WOFF2 via `pyftsubset`, with the TTFs kept as the `format()` fallback, and a preload of the display face (`displayFontUrl`).
+    - Homepage photos have WebP `srcset`/`sizes` (`src/app/responsive-images.ts`). The hero has `fetchpriority="high"` and is sized by its 60rem minimum height, so phones still get the 1920w file.
+    - The neighborhood cards use the white or ink logo files directly.
+  - **Bytes**, as downloaded by a modern browser:
+
+    | Asset | Before | After |
+    |---|---|---|
+    | Fonts | 715,284 B (3 TTF) | 120,336 B (3 WOFF2) |
+    | Trail flowers | 2,095,756 B (PNG) | 6,750 B (WebP, inlined in the trail chunk) |
+    | Founder photo | 319,295 B | 17,882 B (640) / 48,642 B (1280) |
+    | Hero | 177,574 B | 33,782 B / 47,478 B / 86,704 B (960 / 1280 / 1920) |
+    | Event thumbnail | 133,992 B | 9,236 B |
+    | Event photo card | 133,992 B | 29,970 B (800w) |
+    | Neighborhood photos (7) | 1,268,649 B | 337,954 B at 480w |
+    | Card logos | 392,979 B (7 coloured, inverted) | 107,314 B (white + ink) |
+
+    Phones pick the 1920w hero (86,704 B), because the hero is at least 60rem tall. The main chunk is 328.38 kB (was 330.40 kB).
+  - **Visual changes for owner review** (WCAG ratios; large text needs 3:1, small text 4.5:1, UI borders 3:1):
+
+    | Element | Before | After |
+    |---|---|---|
+    | Primary button fill (white text) | sky `#1f8ad6`, 3.71:1; hover brightens | new `--bl-sky-strong` `#1b7abd`, 4.60:1; hover darkens to 95%. `--bl-sky` is unchanged (hero, rings, accents). |
+    | `ink-faint` (mission statement fade, idle tabs; `.tone-light` too) | `#b9b9b4`, 1.92:1 on canvas | `#92928d`, 3.04:1. Night `#5c5c5c` (3.14:1) unchanged. |
+    | Input placeholders | `ink-faint` `#b9b9b4`, 1.92:1 on canvas, 1.79:1 on surface | `ink-muted` at 85%, blended over each background: `#6c6c6b` on canvas (5.12:1), `#6a6a6b` on surface (4.90:1) |
+    | Admin tabs on phones | 20px | 24px, so idle tabs count as large text |
+    | Homepage card titles: LIC `#2f9dff`, Astoria `#ff9a1f`, Elmhurst `#12d9bd`, Forest Hills `#5fd35f` | white, 2.84 / 2.12 / 1.80 / 1.91:1 | black, 7.39 / 9.89 / 11.69 / 10.97:1; the logo on those cards switches from white to the ink file (`#1f1f1c`, at least 5.81:1). Sunnyside (3.71), Jackson Heights (3.08) and Rego Park (3.42) stay white. |
+    | Catalogue card number (on the neighborhood colour) | `#fcfcfa`: LIC 2.77, Sunnyside 3.61, Astoria 2.07, JH 3.00, Elmhurst 1.75, FH 1.86, Rego 3.33:1 | `#000000`: 7.39, 5.66, 9.89, 6.81, 11.69, 10.97, 6.14:1 |
+    | Catalogue neighborhood label (colour on the card) | on `#fcfcfa`: same as the number row | on `#000000`: same as the number row. The card is always `tone-night`: no change on `/members` (already a night panel); the `/account` preview card turns black to match the directory. A neutral card's number goes from `#fcfcfa` on `#f2f4f7` (1.07:1) to white on `#121212` (18.73:1). |
+    | Mobile menu button border | 25% of the text colour: 1.68:1 on the light bar, 1.41:1 white over the hero sky | 55% ink on the light bar (3.75:1); full white over the hero (3.71:1 on sky) |
+    | New, visible only on keyboard focus | none | sky focus rings on Tabs and Accordion; "Skip to content" link; "Pause ribbon" button |
+  - **Deviations and notes:**
+    - Inactive tab panels exist but stay empty until selected.
+    - The trail also renders on `/auth` and `/reset-password` (no `AppPage`) but no longer on the showcase pages.
+    - Showcase-only images (demo members, `flower.png`, `portrait-*.jpg`) were left as they are.
+  - **Still open:**
+    - The CurvedLoop rings still move with no pause control (they are decorative and `aria-hidden`).
+    - There's no `<picture>` JPEG fallback for browsers without WebP (all current browsers support it).
+    - The subset fonts cover Latin, Latin Extended and Vietnamese. Other scripts fall back to system fonts.
 - [ ] See `ARCHITECTURE.md` Part 3 for the phase order of the remaining work
 - [x] App code: members-only directory, `/admin`, join form submit, neighborhoods from data (Phases 1–3)
 - [ ] P1–P4 remainder

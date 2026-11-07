@@ -27,7 +27,8 @@ The Women’s Collective is warm, direct, and editorial: full-bleed sky photogra
 
 ## Accessibility
 - White text on photos needs the built-in gradients (`bg-sky-fade`, card overlays); don't remove them.
-- `text-ink-faint` is decorative (fading statements, idle tabs) — never for essential copy.
+- `text-ink-faint` only on large text (24px+; 3:1 on canvas) — fading statements and idle tabs; never small or essential body copy. Placeholders use `ink-muted` at 85%.
+- Primary button fills use `bg-sky-strong` (white text 4.6:1); `sky` stays for hero sky, rings and accents.
 - Keep focus rings; wrap inputs in `FormField`.
 - Associate hints and errors with their controls using `aria-describedby`; mark invalid controls with `aria-invalid`.
 

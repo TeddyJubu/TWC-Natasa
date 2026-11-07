@@ -11,3 +11,5 @@
 - Decorative pointer motion uses the self-contained flower `ImageTrail`, disabled for touch and reduced motion — keeps the playful flourish accessible and attach-safe.
 - Demo member profiles live in `src/showcase/demo-members.ts` (with their portraits in `src/showcase/assets/`), outside the design system and the public barrel; only `MemberProfile` is type-exported with `MemberCard` — keeps the reusable API typed without pulling sample portraits into consumer bundles.
 - Member accounts use Lovable Cloud auth; membership status, catalogue number, and member-since are admin-only fields guarded by a database trigger — members can never self-approve.
+- Live pages put their content in one `<main id="main" tabIndex={-1}>` after `AppNav` (`AppPage` adds the skip link), and the root's `useRouteFocus` focuses its `h1` after each navigation — keeps landmarks and route announcements consistent for screen readers.
+- Contrast is tested, not eyeballed: `src/app/contrast.test.tsx` checks token pairs parsed from `theme.css`, so a token or text-colour change that drops below WCAG AA fails the suite.
