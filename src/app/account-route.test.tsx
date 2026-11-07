@@ -4,6 +4,7 @@ import { act, cleanup, fireEvent, screen, waitFor, within } from "@testing-libra
 import type { MemberProfile } from "@/index";
 import { demoMembers } from "@/showcase/demo-members";
 import type { Profile } from "@/features/members/queries";
+import { NEIGHBORHOOD_SEED } from "@/features/neighborhoods/queries";
 import { renderWithQueries } from "@/test/dom";
 import { restoreTz, setTz } from "@/test/tz";
 import { fake } from "@/test/fake-supabase";
@@ -32,9 +33,16 @@ const card = (name: string, n: number): MemberProfile => ({
   bio: "", lookingFor: "", image: "x.jpg", imageAlt: `Portrait of ${name}`, catalogueNumber: n,
 });
 
-function renderAccount(over: Partial<Profile> = {}, intros: MemberProfile[] = [], events: unknown[] = []) {
+const viewer = (admin = false) => [["viewer"], { signedIn: true, member: true, admin }] as [unknown[], unknown];
+
+function renderAccount(
+  over: Partial<Profile> = {}, intros: MemberProfile[] = [], events: unknown[] = [], admin = false,
+  extra: [unknown[], unknown][] = [],
+) {
   const profile = { ...base, ...over };
   return renderWithQueries(<Page />, [
+    ...extra,
+    viewer(admin),
     [["profile", "u1"], { profile, avatarUrl: undefined }],
     [["events"], events],
     [["rsvps", "u1"], []],
@@ -46,8 +54,16 @@ function renderAccount(over: Partial<Profile> = {}, intros: MemberProfile[] = []
 describe("/account", () => {
   it("announces loading with role=status", () => {
     fake.results = [new Promise(() => {}) as never];
-    renderWithQueries(<Page />);
+    renderWithQueries(<Page />, [viewer()]);
     expect(screen.getByRole("status")).toBeTruthy();
+  });
+
+  it("shows an Admin link to /admin for admins only", () => {
+    renderAccount({}, [], [], true);
+    expect(screen.getByRole("link", { name: "Admin" }).getAttribute("href")).toBe("/admin");
+    cleanup();
+    renderAccount();
+    expect(screen.queryByRole("link", { name: "Admin" })).toBeNull();
   });
 
   it("shows a declined application as declined, not in review", () => {
@@ -64,6 +80,19 @@ describe("/account", () => {
     renderAccount({ status: "pending", catalogue_number: null });
     expect(screen.getByText("In review")).toBeTruthy();
     expect(screen.getByText(/being reviewed/i)).toBeTruthy();
+  });
+
+  it("hides an inactive neighborhood from the select unless it is her current one", () => {
+    const hoods = NEIGHBORHOOD_SEED.map((n) => (n.slug === "rego-park" ? { ...n, active: false } : n));
+    const options = () =>
+      within(screen.getByRole("combobox", { name: /neighborhood/i })).getAllByRole("option").map((o) => o.textContent);
+    renderAccount({ neighborhood: "Astoria" }, [], [], false, [[["neighborhoods"], hoods]]);
+    expect(options()).toContain("Sunnyside");
+    expect(options()).not.toContain("Rego Park");
+    cleanup();
+    renderAccount({ neighborhood: "Rego Park" }, [], [], false, [[["neighborhoods"], hoods]]);
+    expect(options().filter((o) => o === "Rego Park")).toHaveLength(1);
+    expect((screen.getByRole("combobox", { name: /neighborhood/i }) as HTMLSelectElement).value).toBe("Rego Park");
   });
 
   describe("public profile switch", () => {
@@ -175,6 +204,7 @@ describe("/account", () => {
     ])("hides the empty state while events are %s", async (_label, result) => {
       fake.results = [result as never];
       renderWithQueries(<Page />, [
+        viewer(),
         [["profile", "u1"], { profile: base, avatarUrl: undefined }],
         [["rsvps", "u1"], []],
         [["booking", "u1"], null],

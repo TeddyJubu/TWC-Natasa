@@ -7,9 +7,10 @@ import {
 } from "@/index";
 import { getSupabase } from "@/app/supabase";
 import { useNeighborhoods } from "@/features/neighborhoods/queries";
+import { pickerNames } from "@/features/neighborhoods/options";
 import { toneFor } from "@/features/neighborhoods/tone";
 import { initials, toMemberProfile } from "@/features/members/map";
-import { introsQuery, profileQuery, type Profile } from "@/features/members/queries";
+import { introsQuery, profileQuery, viewerQuery, type Profile } from "@/features/members/queries";
 import { useSaveProfile, useUploadAvatar, type ProfilePatch } from "@/features/members/mutations";
 import { bookingQuery, eventsQuery, rsvpsQuery } from "@/features/events/queries";
 import { useBookHeadshot, useToggleRsvp } from "@/features/events/mutations";
@@ -54,6 +55,8 @@ function AccountPage() {
   const queryClient = useQueryClient();
   const { data: hoodList = [] } = useNeighborhoods();
   const profileState = useQuery(profileQuery(user.id));
+  // Only decides whether to show the Admin link; /admin's own guard and the database enforce access.
+  const admin = useQuery(viewerQuery).data?.admin === true;
   const profile = profileState.data?.profile;
   const avatar = profileState.data?.avatarUrl;
   const approved = profile?.status === "approved";
@@ -138,8 +141,8 @@ function AccountPage() {
   }
 
   const tone = toneFor(n, hoodList);
-  const hoodNames = hoodList.map((hood) => hood.name);
-  const neighborhoodOptions = n && !hoodNames.includes(n) ? [...hoodNames, n] : hoodNames;
+  // Active neighborhoods, plus hers if an admin has since deactivated it.
+  const neighborhoodOptions = pickerNames(hoodList, n);
   const events = eventsState.data ?? [];
   const rsvps = new Set(rsvpsState.data ?? []);
   const booking = changingBooking ? null : bookingState.data ?? null;
@@ -153,7 +156,10 @@ function AccountPage() {
     <div className="min-h-screen bg-canvas text-ink">
       <Navbar
         brand={<Link to="/" aria-label="Home"><BrandLockup compact /></Link>}
-        links={[{ label: "Home", href: "/" }, { label: "Members", href: "/members" }, { label: "Profile", href: "/account" }]}
+        links={[
+          { label: "Home", href: "/" }, { label: "Members", href: "/members" }, { label: "Profile", href: "/account" },
+          ...(admin ? [{ label: "Admin", href: "/admin" }] : []),
+        ]}
         action={<Button variant="outline" size="sm" onClick={signOut}>Sign out</Button>}
       />
       {signOutError && <p role="alert" className="bg-surface py-3 text-center text-sm text-danger">{signOutError}</p>}

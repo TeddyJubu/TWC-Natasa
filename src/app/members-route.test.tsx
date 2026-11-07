@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import type { MemberProfile } from "@/index";
 import { demoMembers } from "@/showcase/demo-members";
+import { NEIGHBORHOOD_SEED } from "@/features/neighborhoods/queries";
 import { renderWithQueries } from "@/test/dom";
 import { fake } from "@/test/fake-supabase";
 
@@ -30,7 +31,7 @@ const card = (name: string, catalogueNumber: number, id = `u-${catalogueNumber}`
   bio: "", lookingFor: "", image: "x.jpg", imageAlt: `Portrait of ${name}`, catalogueNumber,
 });
 
-const viewer = (signedIn: boolean, member: boolean) => [["viewer"], { signedIn, member }] as [unknown[], unknown];
+const viewer = (signedIn: boolean, member: boolean, admin = false) => [["viewer"], { signedIn, member, admin }] as [unknown[], unknown];
 
 describe("/members", () => {
   it("approved members see the full directory with real catalogue numbers", async () => {
@@ -41,6 +42,18 @@ describe("/members", () => {
     expect(screen.getByText("Rosa Diaz")).toBeTruthy();
     expect(screen.getByLabelText("Catalogue number 12")).toBeTruthy();
     expect(screen.getByLabelText("Catalogue number 15")).toBeTruthy();
+    expect(screen.queryByText(/sign in to see the full directory/i)).toBeNull();
+    await neverFetched(queryClient, "public-profiles", "public_profiles");
+  });
+
+  it("admins see the full directory too, even without an approved profile", async () => {
+    const { queryClient } = renderWithQueries(<Page />, [
+      viewer(true, false, true),
+      [["directory"], [card("Rosa Diaz", 12), card("Lena Ortiz", 15)]],
+    ]);
+    expect(screen.getByText("Rosa Diaz")).toBeTruthy();
+    expect(screen.getByText("Lena Ortiz")).toBeTruthy();
+    expect(screen.queryByText(/your directory unlocks/i)).toBeNull();
     expect(screen.queryByText(/sign in to see the full directory/i)).toBeNull();
     await neverFetched(queryClient, "public-profiles", "public_profiles");
   });
@@ -92,7 +105,7 @@ describe("/members", () => {
       [["directory"], [card("Pia Lund", 21), card("Rosa Diaz", 12)]],
     ]);
     expect(screen.queryByText("Rosa Diaz")).toBeNull();
-    act(() => queryClient.setQueryData(["viewer"], { signedIn: true, member: true }));
+    act(() => queryClient.setQueryData(["viewer"], { signedIn: true, member: true, admin: false }));
     expect(await screen.findByText("Rosa Diaz")).toBeTruthy();
     expect(screen.queryByText(/sign in to see the full directory/i)).toBeNull();
   });
@@ -109,6 +122,19 @@ describe("/members", () => {
     cleanup();
     renderWithQueries(<Page />, [viewer(true, true), [["directory"], []]]);
     expect(screen.getByText(/no members are listed yet/i)).toBeTruthy();
+  });
+
+  it("filters by active neighborhoods only, plus inactive ones a listed member still uses", () => {
+    const hoods = NEIGHBORHOOD_SEED.map((n) => (n.slug === "rego-park" || n.slug === "sunnyside" ? { ...n, active: false } : n));
+    renderWithQueries(<Page />, [
+      [["neighborhoods"], hoods],
+      viewer(true, true),
+      [["directory"], [card("Rosa Diaz", 12), { ...card("Lena Ortiz", 15), neighborhood: "Sunnyside" }]],
+    ]);
+    const chips = within(screen.getByRole("group", { name: /filter members by neighborhood/i })).getAllByRole("button").map((b) => b.textContent);
+    expect(chips).toContain("Astoria");
+    expect(chips).toContain("Sunnyside");
+    expect(chips).not.toContain("Rego Park");
   });
 
   it("counts the profiles shown", () => {

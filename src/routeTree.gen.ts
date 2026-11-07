@@ -18,9 +18,11 @@ import { Route as JoinRouteImport } from './routes/join'
 import { Route as MembersRouteImport } from './routes/members'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TypographyRouteImport } from './routes/typography'
+import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/_admin/route'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as Char91__componentChar93PreviewSplatRouteImport } from './routes/[__component].preview.$'
 import { Route as Char91__mockupChar93PreviewSplatRouteImport } from './routes/[__mockup].preview.$'
+import { Route as AuthenticatedAdminAdminRouteImport } from './routes/_authenticated/_admin/admin'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -66,6 +68,10 @@ const TypographyRoute = TypographyRouteImport.update({
   path: '/typography',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
+  id: '/_admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   id: '/account',
   path: '/account',
@@ -83,6 +89,11 @@ const Char91__mockupChar93PreviewSplatRoute =
     path: '/__mockup/preview/$',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AuthenticatedAdminAdminRoute = AuthenticatedAdminAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -96,6 +107,7 @@ export interface FileRoutesByFullPath {
   '/account': typeof AuthenticatedAccountRoute
   '/__component/preview/$': typeof Char91__componentChar93PreviewSplatRoute
   '/__mockup/preview/$': typeof Char91__mockupChar93PreviewSplatRoute
+  '/admin': typeof AuthenticatedAdminAdminRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -109,6 +121,7 @@ export interface FileRoutesByTo {
   '/account': typeof AuthenticatedAccountRoute
   '/__component/preview/$': typeof Char91__componentChar93PreviewSplatRoute
   '/__mockup/preview/$': typeof Char91__mockupChar93PreviewSplatRoute
+  '/admin': typeof AuthenticatedAdminAdminRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -121,9 +134,11 @@ export interface FileRoutesById {
   '/members': typeof MembersRoute
   '/reset-password': typeof ResetPasswordRoute
   '/typography': typeof TypographyRoute
+  '/_authenticated/_admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/__component/preview/$': typeof Char91__componentChar93PreviewSplatRoute
   '/__mockup/preview/$': typeof Char91__mockupChar93PreviewSplatRoute
+  '/_authenticated/_admin/admin': typeof AuthenticatedAdminAdminRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -139,6 +154,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/__component/preview/$'
     | '/__mockup/preview/$'
+    | '/admin'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -152,6 +168,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/__component/preview/$'
     | '/__mockup/preview/$'
+    | '/admin'
   id:
     | '__root__'
     | '/'
@@ -163,9 +180,11 @@ export interface FileRouteTypes {
     | '/members'
     | '/reset-password'
     | '/typography'
+    | '/_authenticated/_admin'
     | '/_authenticated/account'
     | '/__component/preview/$'
     | '/__mockup/preview/$'
+    | '/_authenticated/_admin/admin'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -247,6 +266,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TypographyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/_admin': {
+      id: '/_authenticated/_admin'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedAdminRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/account': {
       id: '/_authenticated/account'
       path: '/account'
@@ -268,14 +294,37 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91__mockupChar93PreviewSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/_admin/admin': {
+      id: '/_authenticated/_admin/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminAdminRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
   }
 }
 
+interface AuthenticatedAdminRouteRouteChildren {
+  AuthenticatedAdminAdminRoute: typeof AuthenticatedAdminAdminRoute
+}
+
+const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
+  {
+    AuthenticatedAdminAdminRoute: AuthenticatedAdminAdminRoute,
+  }
+
+const AuthenticatedAdminRouteRouteWithChildren =
+  AuthenticatedAdminRouteRoute._addFileChildren(
+    AuthenticatedAdminRouteRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRouteWithChildren,
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
 }
 

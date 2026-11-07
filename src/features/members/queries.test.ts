@@ -64,23 +64,38 @@ describe("viewerQuery", () => {
     expect(viewerQuery.queryKey).toEqual(["viewer"]);
   });
 
-  it("is a signed-out visitor without a session, and skips the rpc", async () => {
+  it("is a signed-out visitor without a session, and skips the rpcs", async () => {
     fake.results = [{ data: { session: null }, error: null }];
-    expect(await run(viewerQuery)).toEqual({ signedIn: false, member: false });
+    expect(await run(viewerQuery)).toEqual({ signedIn: false, member: false, admin: false });
     expect(fake.calls).toEqual([["getSession"]]);
   });
 
-  it.each([true, false])("asks is_member() for a signed-in viewer (member=%s)", async (member) => {
-    fake.results = [{ data: { session: { user: { id: "u1" } } }, error: null }, { data: member, error: null }];
-    expect(await run(viewerQuery)).toEqual({ signedIn: true, member });
-    expect(fake.calls).toEqual([["getSession"], ["rpc", "is_member"]]);
+  it.each([
+    [true, false],
+    [false, false],
+    [false, true],
+    [true, true],
+  ])("asks is_member() and is_admin() for a signed-in viewer (member=%s, admin=%s)", async (member, admin) => {
+    fake.results = [{ data: { session: { user: { id: "u1" } } }, error: null }, { data: member, error: null }, { data: admin, error: null }];
+    expect(await run(viewerQuery)).toEqual({ signedIn: true, member, admin });
+    expect(fake.calls).toEqual([["getSession"], ["rpc", "is_member"], ["rpc", "is_admin"]]);
   });
 
-  it("throws session and rpc errors", async () => {
+  it("counts only exactly true as member or admin", async () => {
+    fake.results = [{ data: { session: { user: { id: "u1" } } }, error: null }, { data: "true", error: null }, { data: 1, error: null }];
+    expect(await run(viewerQuery)).toEqual({ signedIn: true, member: false, admin: false });
+  });
+
+  it("throws session and is_member errors", async () => {
     fake.results = [{ data: { session: null }, error: dbError }];
     await expect(run(viewerQuery)).rejects.toBe(dbError);
-    fake.results = [{ data: { session: { user: { id: "u1" } } }, error: null }, { data: null, error: dbError }];
+    fake.results = [{ data: { session: { user: { id: "u1" } } }, error: null }, { data: null, error: dbError }, { data: true, error: null }];
     await expect(run(viewerQuery)).rejects.toBe(dbError);
+  });
+
+  it("treats an is_admin error as not an admin, without failing the viewer", async () => {
+    fake.results = [{ data: { session: { user: { id: "u1" } } }, error: null }, { data: true, error: null }, { data: null, error: dbError }];
+    expect(await run(viewerQuery)).toEqual({ signedIn: true, member: true, admin: false });
   });
 });
 

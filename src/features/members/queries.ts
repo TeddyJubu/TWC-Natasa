@@ -33,19 +33,23 @@ export const directoryQuery = queryOptions({
   },
 });
 
-export type Viewer = { signedIn: boolean; member: boolean };
+export type Viewer = { signedIn: boolean; member: boolean; admin: boolean };
 
-/** Who is looking: signed out, signed in but not approved, or an approved member (is_member()). */
+/**
+ * Who is looking: signed out, signed in but not approved, an approved member (is_member()), and/or an admin
+ * (is_admin()). Both helpers are self-only; `admin` only shapes the UI, the database enforces it.
+ */
 export const viewerQuery = queryOptions({
   queryKey: ["viewer"],
   queryFn: async (): Promise<Viewer> => {
     const supabase = await getSupabase();
     const { data, error } = await supabase.auth.getSession();
     if (error) throw error;
-    if (!data.session) return { signedIn: false, member: false };
-    const member = await supabase.rpc("is_member");
+    if (!data.session) return { signedIn: false, member: false, admin: false };
+    const [member, admin] = await Promise.all([supabase.rpc("is_member"), supabase.rpc("is_admin")]);
     if (member.error) throw member.error;
-    return { signedIn: true, member: member.data === true };
+    // A failed is_admin() only hides admin links: it must not take the directory down with it.
+    return { signedIn: true, member: member.data === true, admin: !admin.error && admin.data === true };
   },
 });
 

@@ -55,7 +55,7 @@ describe("NEIGHBORHOOD_SEED", () => {
     expect(NEIGHBORHOOD_SEED.map((n) => [n.slug, n.name, n.color])).toEqual(
       rows.map((r) => [r.slug, r.name, r.color]),
     );
-    expect(NEIGHBORHOOD_SEED.every((n) => n.logoUrl === null)).toBe(true);
+    expect(NEIGHBORHOOD_SEED.every((n) => n.logoUrl === null && n.active)).toBe(true);
   });
 });
 
@@ -77,11 +77,11 @@ describe("neighborhoodsQuery", () => {
     await expect(run()).rejects.toThrow("import failed");
   });
 
-  it("queries active rows ordered by sort_order and keeps DB order", async () => {
+  it("queries every row, inactive included, ordered by sort_order, and keeps DB order", async () => {
     h.result = {
       data: [
-        { slug: "b", name: "B", color: "#000000", logo_path: null },
-        { slug: "a", name: "A", color: "#ffffff", logo_path: "a.png" },
+        { slug: "b", name: "B", color: "#000000", logo_path: null, active: false },
+        { slug: "a", name: "A", color: "#ffffff", logo_path: "a.png", active: true },
       ],
       error: null,
     };
@@ -89,14 +89,13 @@ describe("neighborhoodsQuery", () => {
     expect(h.calls.map(([m, args]) => (m === "select" ? ["select"] : [m, args]))).toEqual([
       ["from", ["neighborhoods"]],
       ["select"],
-      ["eq", ["active", true]],
       ["order", ["sort_order"]],
     ]);
     const columns = String(h.calls[1][1][0]).split(",").map((c) => c.trim());
-    expect(columns).toEqual(["slug", "name", "color", "logo_path"]);
+    expect(columns).toEqual(["slug", "name", "color", "logo_path", "active"]);
     expect(out).toEqual([
-      { slug: "b", name: "B", color: "#000000", logoUrl: null },
-      { slug: "a", name: "A", color: "#ffffff", logoUrl: "https://cdn.test/neighborhood-logos/a.png" },
+      { slug: "b", name: "B", color: "#000000", logoUrl: null, active: false },
+      { slug: "a", name: "A", color: "#ffffff", logoUrl: "https://cdn.test/neighborhood-logos/a.png", active: true },
     ]);
   });
 });

@@ -41,6 +41,7 @@ export const fakeClient = {
   storage: {
     from: (bucket: string) => ({
       upload: async (...args: unknown[]) => (fake.calls.push(["upload", bucket, ...args]), next()),
+      remove: async (...args: unknown[]) => (fake.calls.push(["remove", bucket, ...args]), next()),
       createSignedUrls: async (...args: unknown[]) => (fake.calls.push(["createSignedUrls", bucket, ...args]), next()),
       getPublicUrl: (path: string) => ({ data: { publicUrl: `https://cdn.test/${bucket}/${path}` } }),
     }),

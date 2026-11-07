@@ -17,6 +17,7 @@ import {
 } from "@/index";
 import { Shell } from "@/showcase/Shell";
 import { useNeighborhoods } from "@/features/neighborhoods/queries";
+import { pickerNames } from "@/features/neighborhoods/options";
 import { toneFor } from "@/features/neighborhoods/tone";
 import { directoryQuery, publicProfilesQuery, viewerQuery } from "@/features/members/queries";
 
@@ -38,7 +39,8 @@ function MembersPage() {
   const [activeNeighborhood, setActiveNeighborhood] = React.useState<string>("All");
   const { data: hoodList = [] } = useNeighborhoods();
   const viewer = useQuery(viewerQuery);
-  const member = viewer.data?.member === true;
+  // Admins read the directory like approved members (public_directory() admits both).
+  const member = viewer.data?.member === true || viewer.data?.admin === true;
   // Two audiences (§2.10): approved members get the full directory; everyone else, opted-in public cards.
   const directory = useQuery({ ...directoryQuery, enabled: member });
   const publicCards = useQuery({ ...publicProfilesQuery, enabled: viewer.isSuccess && !member });
@@ -48,8 +50,7 @@ function MembersPage() {
   // A filter chosen in one audience can match nothing in the other.
   React.useEffect(() => setActiveNeighborhood("All"), [audience]);
   // Active neighborhoods in DB order, plus any a listed member still uses (e.g. one an admin deactivated).
-  const hoodNames = hoodList.map((hood) => hood.name);
-  const neighborhoods = ["All", ...new Set([...hoodNames, ...all.map((m) => m.neighborhood)])];
+  const neighborhoods = ["All", ...pickerNames(hoodList, all.map((m) => m.neighborhood))];
   const members = activeNeighborhood === "All"
     ? all
     : all.filter((m) => m.neighborhood === activeNeighborhood);
