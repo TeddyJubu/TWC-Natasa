@@ -2,7 +2,8 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { AppPage } from "@/app/layout/AppLayout";
 import type { Profile } from "@/features/members/queries";
 import { renderWithQueries } from "@/test/dom";
 import { fake } from "@/test/fake-supabase";
@@ -119,6 +120,33 @@ describe("root route", () => {
     // Focus after the new page has rendered: resolvedLocation lags location until lazy chunks and loaders finish.
     expect(root).toMatch(/resolvedLocation/);
     expect(root).toMatch(/useRouteFocus\(resolvedPathname\)/);
+  });
+
+  it("does not mount the flower ImageTrail (live pages own it via AppPage)", () => {
+    const root = readFileSync(resolve(process.cwd(), "src/routes/__root.tsx"), "utf8");
+    expect(root).not.toMatch(/\bImageTrail\b/);
+  });
+});
+
+describe("AppPage", () => {
+  it("hosts the decorative ImageTrail (shown for a fine, hovering pointer)", async () => {
+    vi.stubGlobal("matchMedia", (query: string) => ({
+      matches: query.includes("pointer: fine"), media: query, onchange: null,
+      addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {}, dispatchEvent: () => false,
+    }));
+    try {
+      render(<AppPage><p>Body</p></AppPage>);
+      await act(async () => {});
+      expect(document.querySelector(".image-trail img")).not.toBeNull();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});
+
+describe("live pages without AppPage keep the trail", () => {
+  it.each(["src/routes/auth.tsx", "src/routes/reset-password.tsx"])("%s mounts ImageTrail", (file) => {
+    expect(readFileSync(resolve(process.cwd(), file), "utf8")).toMatch(/<ImageTrail \/>/);
   });
 });
 

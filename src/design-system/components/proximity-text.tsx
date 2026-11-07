@@ -19,14 +19,18 @@ export function ProximityText({ text, radius = 140, className }: { text: string;
     let px = -9999;
     let py = -9999;
 
+    // Read every rect, then write every transform: interleaving forces a layout per letter.
     const paint = () => {
       frame = 0;
-      for (const el of letters) {
+      const strengths = letters.map((el) => {
         const r = el.getBoundingClientRect();
         const d = Math.hypot(px - (r.left + r.width / 2), py - (r.top + r.height / 2));
-        const f = Math.max(0, 1 - d / radius);
+        return Math.max(0, 1 - d / radius);
+      });
+      letters.forEach((el, i) => {
+        const f = strengths[i];
         el.style.transform = f > 0 ? `translateY(${-f * 0.12}em) scale(${1 + f * 0.28})` : "";
-      }
+      });
     };
     const onMove = (e: PointerEvent) => {
       px = e.clientX;
@@ -54,7 +58,7 @@ export function ProximityText({ text, radius = 140, className }: { text: string;
         {words.map((word, wi) => (
           <span key={wi} className="inline-block whitespace-nowrap">
             {Array.from(word).map((ch, ci) => (
-              <span key={ci} data-letter className="inline-block origin-bottom transition-transform duration-150 ease-out will-change-transform">
+              <span key={ci} data-letter className="inline-block origin-bottom transition-transform duration-150 ease-out">
                 {ch}
               </span>
             ))}

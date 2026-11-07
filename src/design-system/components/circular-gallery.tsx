@@ -5,11 +5,13 @@ import { cn } from '../lib/utils';
 type GL = Renderer['gl'];
 
 function debounce<T extends (...args: unknown[]) => void>(func: T, wait: number) {
-  let timeout: number;
-  return function (this: unknown, ...args: Parameters<T>) {
+  let timeout: number | undefined;
+  const debounced = function (this: unknown, ...args: Parameters<T>) {
     window.clearTimeout(timeout);
     timeout = window.setTimeout(() => func.apply(this, args), wait);
   };
+  debounced.cancel = () => window.clearTimeout(timeout);
+  return debounced;
 }
 
 function lerp(p1: number, p2: number, t: number): number {
@@ -85,6 +87,7 @@ class Title {
   textColor: string;
   font: string;
   mesh!: Mesh;
+  texture!: Texture;
 
   constructor({ gl, plane, renderer, text, textColor = '#545050', font = '30px sans-serif' }: TitleProps) {
     autoBind(this);
@@ -99,6 +102,7 @@ class Title {
 
   createMesh() {
     const { texture, width, height } = createTextTexture(this.gl, this.text, this.font, this.textColor);
+    this.texture = texture;
     const geometry = new Plane(this.gl);
     const program = new Program(this.gl, {
       vertex: `
@@ -183,6 +187,8 @@ class Media {
   borderRadius: number;
   font?: string;
   program!: Program;
+  texture!: Texture;
+  img?: HTMLImageElement;
   plane!: Mesh;
   title!: Title;
   scale!: number;
@@ -234,6 +240,7 @@ class Media {
     const texture = new Texture(this.gl, {
       generateMipmaps: true
     });
+    this.texture = texture;
     this.program = new Program(this.gl, {
       depthTest: false,
       depthWrite: false,
@@ -303,6 +310,14 @@ class Media {
       texture.image = img;
       this.program.uniforms.uImageSizes.value = [img.naturalWidth, img.naturalHeight];
     };
+    this.img = img;
+  }
+
+  /** Frees this media's GPU textures; a pending image load is ignored. */
+  destroy() {
+    if (this.img) this.img.onload = null;
+    this.gl.deleteTexture(this.texture.texture);
+    this.gl.deleteTexture(this.title.texture.texture);
   }
 
   createMesh() {
@@ -405,7 +420,7 @@ class App {
     last: number;
     position?: number;
   };
-  onCheckDebounce: (...args: unknown[]) => void;
+  onCheckDebounce: ((...args: unknown[]) => void) & { cancel: () => void };
   renderer!: Renderer;
   gl!: GL;
   camera!: Camera;
@@ -416,6 +431,10 @@ class App {
   screen!: { width: number; height: number };
   viewport!: { width: number; height: number };
   raf: number = 0;
+  /** Whether the container intersects the viewport; the loop only runs while it does and the tab is visible. */
+  inView: boolean = true;
+  observer?: IntersectionObserver;
+  boundUpdate: () => void;
 
   boundOnResize!: () => void;
   boundOnWheel!: (e: Event) => void;
@@ -423,6 +442,7 @@ class App {
   boundOnTouchMove!: (e: MouseEvent | TouchEvent) => void;
   boundOnTouchUp!: () => void;
   boundOnKeyDown!: (e: KeyboardEvent) => void;
+  boundOnVisibilityChange!: () => void;
 
   isDown: boolean = false;
   start: number = 0;
@@ -444,6 +464,7 @@ class App {
     this.scrollSpeed = scrollSpeed;
     this.scroll = { ease: scrollEase, current: 0, target: 0, last: 0 };
     this.onCheckDebounce = debounce(this.onCheck.bind(this), 200);
+    this.boundUpdate = this.update.bind(this);
     this.createRenderer();
     this.createCamera();
     this.createScene();
@@ -575,6 +596,8 @@ class App {
   }
 
   onTouchUp() {
+    // mouseleave/mouseup with no drag in progress must not snap the carousel.
+    if (!this.isDown) return;
     this.isDown = false;
     this.onCheck();
   }
@@ -636,7 +659,39 @@ class App {
     }
     this.renderer.render({ scene: this.scene, camera: this.camera });
     this.scroll.last = this.scroll.current;
-    this.raf = window.requestAnimationFrame(this.update.bind(this));
+    this.raf = this.shouldRun() ? window.requestAnimationFrame(this.boundUpdate) : 0;
+  }
+
+  /** Animate only while the gallery is on screen and the tab is visible. */
+  shouldRun() {
+    return this.inView && !document.hidden;
+  }
+
+  /** Starts or stops the frame loop to match `shouldRun()`. */
+  syncLoop() {
+    if (this.shouldRun()) {
+      if (!this.raf) this.raf = window.requestAnimationFrame(this.boundUpdate);
+    } else if (this.raf) {
+      window.cancelAnimationFrame(this.raf);
+      this.raf = 0;
+    }
+  }
+
+  /** Input listeners live on the container so the gallery never handles input aimed at the rest of the page. */
+  containerListeners(): [string, EventListener, AddEventListenerOptions?][] {
+    return [
+      ['wheel', this.boundOnWheel, { passive: true }],
+      ['mousedown', this.boundOnTouchDown as EventListener],
+      ['mousemove', this.boundOnTouchMove as EventListener],
+      ['mouseup', this.boundOnTouchUp],
+      // Container-scoped mouseup can't see a release outside, so leaving ends an active drag.
+      ['mouseleave', this.boundOnTouchUp],
+      ['touchstart', this.boundOnTouchDown as EventListener, { passive: true }],
+      ['touchmove', this.boundOnTouchMove as EventListener, { passive: true }],
+      ['touchend', this.boundOnTouchUp],
+      ['touchcancel', this.boundOnTouchUp],
+      ['keydown', this.boundOnKeyDown as EventListener]
+    ];
   }
 
   addEventListeners() {
@@ -646,45 +701,40 @@ class App {
     this.boundOnTouchMove = this.onTouchMove.bind(this);
     this.boundOnTouchUp = this.onTouchUp.bind(this);
     this.boundOnKeyDown = this.onKeyDown.bind(this);
+    this.boundOnVisibilityChange = this.syncLoop.bind(this);
 
     window.addEventListener('resize', this.boundOnResize);
-    window.addEventListener('mousewheel', this.boundOnWheel);
-    window.addEventListener('wheel', this.boundOnWheel);
-    window.addEventListener('mousedown', this.boundOnTouchDown);
-    window.addEventListener('mousemove', this.boundOnTouchMove);
-    window.addEventListener('mouseup', this.boundOnTouchUp);
-    window.addEventListener('touchstart', this.boundOnTouchDown);
-    window.addEventListener('touchmove', this.boundOnTouchMove);
-    window.addEventListener('touchend', this.boundOnTouchUp);
+    for (const [type, listener, options] of this.containerListeners()) {
+      this.container.addEventListener(type, listener, options);
+    }
+    document.addEventListener('visibilitychange', this.boundOnVisibilityChange);
 
-    this.container?.addEventListener(
-      'keydown',
-
-      this.boundOnKeyDown
-    );
+    if (typeof IntersectionObserver !== 'undefined') {
+      this.observer = new IntersectionObserver(entries => {
+        this.inView = entries.some(entry => entry.isIntersecting);
+        this.syncLoop();
+      });
+      this.observer.observe(this.container);
+    }
   }
 
   destroy() {
     window.cancelAnimationFrame(this.raf);
+    this.raf = 0;
+    this.onCheckDebounce.cancel();
     window.removeEventListener('resize', this.boundOnResize);
-    window.removeEventListener('mousewheel', this.boundOnWheel);
-    window.removeEventListener('wheel', this.boundOnWheel);
-    window.removeEventListener('mousedown', this.boundOnTouchDown);
-    window.removeEventListener('mousemove', this.boundOnTouchMove);
-    window.removeEventListener('mouseup', this.boundOnTouchUp);
-    window.removeEventListener('touchstart', this.boundOnTouchDown);
-    window.removeEventListener('touchmove', this.boundOnTouchMove);
-    window.removeEventListener('touchend', this.boundOnTouchUp);
-    if (this.renderer && this.renderer.gl && this.renderer.gl.canvas.parentNode) {
-      this.renderer.gl.canvas.parentNode.removeChild(this.renderer.gl.canvas as HTMLCanvasElement);
+    for (const [type, listener, options] of this.containerListeners()) {
+      this.container.removeEventListener(type, listener, options);
     }
-    if (this.container) {
-      this.container.removeEventListener(
-        'keydown',
+    document.removeEventListener('visibilitychange', this.boundOnVisibilityChange);
+    this.observer?.disconnect();
+    this.observer = undefined;
 
-        this.boundOnKeyDown
-      );
-    }
+    this.medias.forEach(media => media.destroy());
+    this.medias = [];
+    this.gl.getExtension('WEBGL_lose_context')?.loseContext();
+    const canvas = this.gl.canvas as HTMLCanvasElement;
+    canvas.parentNode?.removeChild(canvas);
   }
 }
 
@@ -715,15 +765,21 @@ export const CircularGalleryEngine = React.forwardRef<HTMLDivElement, CircularGa
     if (typeof forwardedRef === 'function') forwardedRef(node);
     else if (forwardedRef) forwardedRef.current = node;
   }, [forwardedRef]);
+  // Callers often pass a fresh but equal array each render; key the engine on the content
+  // (image URLs and texts) so only a real change rebuilds the WebGL context.
+  const itemsKey = items ? JSON.stringify(items.map(({ image, text }) => [image, text])) : '';
   React.useEffect(() => {
     if (!containerRef.current) return;
+    const engineItems = itemsKey
+      ? (JSON.parse(itemsKey) as [string, string][]).map(([image, text]) => ({ image, text }))
+      : undefined;
     const resolvedTextColor = textColor ?? getComputedStyle(containerRef.current).color;
     let app: App | undefined;
     let isMounted = true;
     resolveFont(font).then(resolvedFont => {
       if (!isMounted || !containerRef.current) return;
       app = new App(containerRef.current, {
-        items,
+        items: engineItems,
         bend,
         textColor: resolvedTextColor,
         borderRadius,
@@ -736,7 +792,7 @@ export const CircularGalleryEngine = React.forwardRef<HTMLDivElement, CircularGa
       isMounted = false;
       if (app) app.destroy();
     };
-  }, [items, bend, textColor, borderRadius, font, scrollSpeed, scrollEase]);
+  }, [itemsKey, bend, textColor, borderRadius, font, scrollSpeed, scrollEase]);
   return (
     <div
       className={cn("size-full cursor-grab overflow-hidden active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", className)}

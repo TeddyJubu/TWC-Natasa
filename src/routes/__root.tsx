@@ -16,7 +16,6 @@ import { useRouteFocus } from "@/app/layout/route-focus";
 import hero from "@/assets/photography/hero.jpg";
 
 import appCss from "../styles.css?url";
-import { ImageTrail } from "@/index";
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: ({ matches }) => {
@@ -87,7 +86,6 @@ function RootComponent() {
       <div key={location.pathname} className="motion-route-in">
         <Outlet />
       </div>
-      <ImageTrail />
     </QueryClientProvider>
   );
 }

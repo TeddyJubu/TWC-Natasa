@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Badge, Button, Container, FormField, Heading, Input, Section, Text } from "@/index";
+import { Badge, Button, Container, FormField, Heading, ImageTrail, Input, Section, Text } from "@/index";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/reset-password")({
@@ -100,6 +100,7 @@ function ResetPassword() {
         )}
       </Container>
     </Section>
+      <ImageTrail />
     </main>
   );
 }

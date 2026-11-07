@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Badge, BrandLockup, Button, FormField, FormNotice, Heading, Input, Text, cn } from "@/index";
+import { Badge, BrandLockup, Button, FormField, FormNotice, Heading, ImageTrail, Input, Text, cn } from "@/index";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import hero from "@/assets/photography/hero.jpg";
@@ -159,6 +159,7 @@ function AuthPage() {
           </div>
         </div>
       </section>
+      <ImageTrail />
     </main>
   );
 }

@@ -1,15 +1,36 @@
 import * as React from "react";
-import cosmos from "../assets/illustrations/trail-flower-cosmos.png";
-import buttercup from "../assets/illustrations/trail-flower-buttercup.png";
-import forgetMeNot from "../assets/illustrations/trail-flower-forgetmenot.png";
-import daisy from "../assets/illustrations/trail-flower-daisy.png";
-import lavender from "../assets/illustrations/trail-flower-lavender.png";
+import { createPortal } from "react-dom";
+import cosmos from "../assets/illustrations/trail-flower-cosmos.webp";
+import buttercup from "../assets/illustrations/trail-flower-buttercup.webp";
+import forgetMeNot from "../assets/illustrations/trail-flower-forgetmenot.webp";
+import daisy from "../assets/illustrations/trail-flower-daisy.webp";
+import lavender from "../assets/illustrations/trail-flower-lavender.webp";
 import { cn } from "../lib/utils";
 
 const flowerImages = [cosmos, buttercup, forgetMeNot, daisy, lavender];
 
+/** Rendered pixel size of the bundled flowers (2x the `small` 3rem display size). */
+const TRAIL_IMAGE_SIZE = 96;
+const FINE_POINTER_QUERY = "(hover: hover) and (pointer: fine)";
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+
+function subscribeToPointerTraits(onChange: () => void) {
+  if (typeof window.matchMedia !== "function") return () => {};
+  const queries = [window.matchMedia(FINE_POINTER_QUERY), window.matchMedia(REDUCED_MOTION_QUERY)];
+  queries.forEach((query) => query.addEventListener?.("change", onChange));
+  return () => queries.forEach((query) => query.removeEventListener?.("change", onChange));
+}
+
+/** True only on the client, for a fine pointer that can hover and no reduced-motion preference. */
+function canShowTrail() {
+  if (typeof window.matchMedia !== "function") return false;
+  return window.matchMedia(FINE_POINTER_QUERY).matches && !window.matchMedia(REDUCED_MOTION_QUERY).matches;
+}
+
+const serverSnapshot = () => false;
+
 export interface ImageTrailProps extends React.HTMLAttributes<HTMLDivElement> {
-  /** PNG images cycled through as the pointer moves. */
+  /** Images cycled through as the pointer moves. */
   images?: readonly string[];
   /** Visual scale of each trail image. */
   size?: "tiny" | "small";
@@ -17,11 +38,15 @@ export interface ImageTrailProps extends React.HTMLAttributes<HTMLDivElement> {
   count?: number;
 }
 
-/** A decorative React Bits-inspired cursor trail for fine pointers. Hidden for touch and reduced motion. */
+/**
+ * A decorative React Bits-inspired cursor trail for fine pointers.
+ * Renders nothing on the server, for touch and for reduced motion, so those never download the images.
+ */
 export const ImageTrail = React.forwardRef<HTMLDivElement, ImageTrailProps>(
   ({ images = flowerImages, size = "tiny", count = 24, className, ...props }, forwardedRef) => {
     const localRef = React.useRef<HTMLDivElement | null>(null);
     const itemRefs = React.useRef<Array<HTMLImageElement | null>>([]);
+    const enabled = React.useSyncExternalStore(subscribeToPointerTraits, canShowTrail, serverSnapshot);
 
     const setRefs = React.useCallback((node: HTMLDivElement | null) => {
       localRef.current = node;
@@ -30,8 +55,7 @@ export const ImageTrail = React.forwardRef<HTMLDivElement, ImageTrailProps>(
     }, [forwardedRef]);
 
     React.useEffect(() => {
-      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      if (reduceMotion || images.length === 0) return;
+      if (!enabled || images.length === 0) return;
 
       let itemIndex = 0;
       let previousX = -100;
@@ -81,11 +105,13 @@ export const ImageTrail = React.forwardRef<HTMLDivElement, ImageTrailProps>(
         window.removeEventListener("pointermove", handlePointerMove);
         if (frame) window.cancelAnimationFrame(frame);
       };
-    }, [count, images.length]);
+    }, [enabled, count, images.length]);
 
-    if (images.length === 0 || count < 1) return null;
+    if (!enabled || images.length === 0 || count < 1) return null;
 
-    return (
+    // Portalled to <body>: a transformed ancestor (e.g. a route-in animation) would otherwise become the
+    // containing block of this position:fixed layer. `enabled` is false on the server, so this is client-only.
+    return createPortal(
       <div
         ref={setRefs}
         aria-hidden="true"
@@ -99,13 +125,14 @@ export const ImageTrail = React.forwardRef<HTMLDivElement, ImageTrailProps>(
             ref={(node) => { itemRefs.current[index] = node; }}
             src={images[index % images.length]}
             alt=""
-            width={512}
-            height={512}
+            width={TRAIL_IMAGE_SIZE}
+            height={TRAIL_IMAGE_SIZE}
             draggable={false}
             className="image-trail-item"
           />
         ))}
-      </div>
+      </div>,
+      document.body,
     );
   },
 );

@@ -60,12 +60,22 @@ export function CurvedLoop({
   }, []);
 
   useEffect(() => {
-    if (!measureRef.current) return;
-    const length = measureRef.current.getComputedTextLength();
-    if (length > 0) {
-      setSpacing(length);
-      setReady(true);
-    }
+    let active = true;
+    const measure = () => {
+      if (!active || !measureRef.current) return;
+      const length = measureRef.current.getComputedTextLength();
+      if (length > 0) {
+        setSpacing(length);
+        setReady(true);
+      }
+    };
+    measure();
+    // The first measurement may use a fallback font; measure again once web fonts have loaded.
+    const fonts = typeof document === "undefined" ? undefined : (document as Document & { fonts?: FontFaceSet }).fonts;
+    fonts?.ready?.then(measure).catch(() => {});
+    return () => {
+      active = false;
+    };
   }, [text, className]);
 
   useEffect(() => {
@@ -77,14 +87,9 @@ export function CurvedLoop({
     if (!spacing || reducedRef.current) return;
     const svg = svgRef.current;
     if (!svg) return;
-    let visible = true;
-    const observer = new IntersectionObserver((entries) => {
-      visible = entries.some((entry) => entry.isIntersecting);
-    });
-    observer.observe(svg);
     let frame = 0;
     const step = () => {
-      if (visible && !dragRef.current && textPathRef.current) {
+      if (!dragRef.current && textPathRef.current) {
         const delta = dirRef.current === "right" ? speed : -speed;
         const current = parseFloat(textPathRef.current.getAttribute("startOffset") || "0");
         let next = current + delta;
@@ -94,10 +99,23 @@ export function CurvedLoop({
       }
       frame = requestAnimationFrame(step);
     };
-    frame = requestAnimationFrame(step);
+    const stop = () => {
+      if (frame) cancelAnimationFrame(frame);
+      frame = 0;
+    };
+    // No frames run off screen: the observer (which reports once on observe) starts the loop
+    // when the marquee is visible and cancels it when hidden.
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        if (!frame) frame = requestAnimationFrame(step);
+      } else {
+        stop();
+      }
+    });
+    observer.observe(svg);
     return () => {
       observer.disconnect();
-      cancelAnimationFrame(frame);
+      stop();
     };
   }, [spacing, speed]);
 

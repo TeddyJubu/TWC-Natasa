@@ -1,11 +1,12 @@
 // The live site's page chrome. Showcase pages use `@/showcase/Shell` instead; nothing here may import from it.
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
-import { BrandLockup, Footer, Navbar, type FooterProps, type NavbarProps, type RouterLinkComponent } from "@/index";
+import { BrandLockup, Footer, ImageTrail, Navbar, type FooterProps, type NavbarProps, type RouterLinkComponent } from "@/index";
 
 /**
  * Live page wrapper. Its first child is a "Skip to content" link to `#main`: every page puts its content
  * between the nav and the footer in one `<main id="main" tabIndex={-1} className="outline-none">`.
+ * It also hosts the flower cursor trail (client-only, fine pointers, no reduced motion).
  */
 export function AppPage({ children }: { children: React.ReactNode }) {
   return (
@@ -17,6 +18,7 @@ export function AppPage({ children }: { children: React.ReactNode }) {
         Skip to content
       </a>
       {children}
+      <ImageTrail />
     </div>
   );
 }
