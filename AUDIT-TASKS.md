@@ -18,14 +18,14 @@ Baseline: `tsc` ✅ · `vite build` ✅ (warns on a 585 kB chunk) · `eslint` �
 
 ## P1 — App correctness
 
-- [ ] **8. Account page failure states.** A missing profile row or query error gives an endless spinner with no way to sign out (`account.tsx:63,139`). Handle `declined` status, which currently shows as "In review". Give the spinner `role="status"`. `L A F`
-- [ ] **9. Stop swallowing errors.** Check the result of `toggleRsvp`, `bookHeadshot` and the profile update after an avatar upload; add busy states. Validate file size and type on the client and reset the file input's value. `L A F`
+- [x] **8. Account page failure states.** A missing profile row or query error gives an endless spinner with no way to sign out (`account.tsx:63,139`). Handle `declined` status, which currently shows as "In review". Give the spinner `role="status"`. `L A F`
+- [x] **9. Stop swallowing errors.** Check the result of `toggleRsvp`, `bookHeadshot` and the profile update after an avatar upload; add busy states. Validate file size and type on the client and reset the file input's value. `L A F`
 - [ ] **10. Directory correctness.** Show the stored `catalogue_number`, not `index+1` (add it to `MemberProfile`). Show demo members only when there are no real ones, with the banner and count conditional. Build filter chips from the canonical list, not the demo data. Use initials instead of `hero.jpg` with misleading alt text. `L A F`
 - [ ] **11. One neighborhood source of truth.** The list is duplicated in about 8 places, and Woodside/East Elmhurst are inconsistent. Create one module with `{name, slug, color classes, logo}` and a `Neighborhood` type, and derive every map from it. Remove the `'Long Island City'` database default. `L A`
 - [ ] **12. Dates and times.** The headshot `min` date uses UTC (`account.tsx:257`). Format events in `America/New_York`. Add an empty state when there are no events. Move the seed events out of the schema migration. `L A`
 - [ ] **13. Fields saved but never shown.** Bio, looking-for and website don't appear on catalogue cards, and `website` isn't returned by `public_directory`. The "Live preview" ignores unsaved edits: make it controlled, or rename it. `L`
-- [ ] **14. Auth flows.** Clear the error and notice on every mode change. Use generic error messages so the form doesn't reveal which emails have accounts. Detect sign-up with an existing email. `/reset-password` should require a `PASSWORD_RECOVERY` session and handle expired links. `S L`
-- [ ] **15. Introductions query.** It sorts by neighborhood only after `.limit(12)` on unordered rows. Filter or order in the query itself. `L`
+- [x] **14. Auth flows.** Clear the error and notice on every mode change. Use generic error messages so the form doesn't reveal which emails have accounts. Detect sign-up with an existing email. `/reset-password` should require a `PASSWORD_RECOVERY` session and handle expired links. `S L`
+- [x] **15. Introductions query.** It sorts by neighborhood only after `.limit(12)` on unordered rows. Filter or order in the query itself. `L`
 
 ## P2 — Architecture
 
@@ -103,6 +103,8 @@ Baseline: `tsc` ✅ · `vite build` ✅ (warns on a 585 kB chunk) · `eslint` �
 
 - [x] `drizzle/migrations/0001_members_only_admin.sql`: tasks 2–7 plus the neighborhoods, applications and admin schema. All 27 checks in `drizzle/test/run.sh` pass. **Not yet applied to the live database.**
 - [x] Phase 1 (Foundations, 2026-11-08): `features/` + `app/` folders, lazy Supabase, `useNeighborhoods`, `MemberCard` `tone` prop, ESLint boundaries, Vitest. `/members` and `/account` read and write through TanStack Query (`features/members`, `features/events`) with one shared mapper and visible errors. Neighborhood options and colors come from data. Covers T11, T18 (data layer; splitting `account.tsx` is still open), T19 and T30.
+- [x] Phase 2 (Member flows, 2026-11-08): migration `0002_public_profiles.sql` (opt-in `public_profile`, `public_profiles()`, anon portrait reads; 44 RLS checks). `viewerQuery` and `publicProfilesQuery`; `/members` serves approved members the full directory and everyone else public cards with a sign-in or "welcomed in" prompt; the home gallery shows public profiles only; no demo members outside `/components`. Account: public-profile switch, `declined` status, real intros (neighborhood-first in the query), a preview of unsaved edits, avatar type/size checks, New York event times, local headshot date, empty states. Auth: no account disclosure, mode resets, recovery-only password reset. Route tests via Testing Library + jsdom. Covers T8, T9, T14, T15 and most of T10, T12 and T13. **0001 and 0002 must be applied to the live database together with this code.**
+  - Still open from those tasks: initials instead of `hero.jpg` on portrait-less cards (T10), moving the seed events out of the schema migration (T12), bio/looking-for/website on catalogue cards (T13).
 - [ ] See `ARCHITECTURE.md` Part 3 for the phase order of the remaining work
 - [ ] App code: members-only directory, `/admin`, join form submit, neighborhoods from data
 - [ ] P1–P4 remainder

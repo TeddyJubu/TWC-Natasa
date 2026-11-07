@@ -274,7 +274,7 @@ sequenceDiagram
 |---|---|---|---|
 | **0. Database** ✅ written | Members-only, approval enforced, neighborhoods/applications schema, 27 RLS checks green | T2–T7 | `0001_members_only_admin.sql`. Not yet applied to the live DB |
 | **1. Foundations** | `features/` + `app/` folders, lazy Supabase, `useNeighborhoods`, `MemberCard` `tone` prop, types regenerated | T11, T18, T19, T30 | Makes phases 2–3 small |
-| **2. Member flows** | Migration 0002 public profiles + apply 0001/0002 live; `/members` and home gallery split public vs members, real catalogue numbers, no demo data; public-profile switch; account error states; RSVP/booking/avatar errors handled; timezone fixes | T8–T10, T12–T15, §2.10 | Ship migration and code together |
+| **2. Member flows** ✅ code + 0002 written (2026-11-08) | Migration 0002 public profiles + apply 0001/0002 live; `/members` and home gallery split public vs members, real catalogue numbers, no demo data; public-profile switch; account error states; RSVP/booking/avatar errors handled; timezone fixes | T8–T10, T12–T15, §2.10 | Ship migration and code together. 0001 + 0002 not yet applied live |
 | **3. Applications + admin** | `/join` saves (anonymous or signed-in), form `name`s and validation; `/admin` with four tabs | T1, T20 + new | Includes the "approved before sign-up" trigger fix |
 | **4. Site shell** | App layout (no showcase toolbar), router-aware nav + mobile menu, 404/error pages, noindex showcase | T16, T17, T32 | |
 | **5. Polish** | Contrast, motion/a11y, WebGL/trail/font/image performance | T22–T29, T31 | |
