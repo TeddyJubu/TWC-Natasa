@@ -119,7 +119,7 @@ src/
     admin/                  # queries + mutations for review
   app/
     supabase.ts             # lazy getter: `await getSupabase()` → dynamic import of the client
-    layout/                 # AppNav (router Links + mobile menu), AppFooter, NotFound, ErrorBoundary
+    layout/                 # AppLayout.tsx: AppPage, AppNav (router Links + mobile menu), AppFooter; StatusPages.tsx: NotFound, ErrorPage
   routes/                   # thin: loader → feature query, component → feature + design system
   showcase/                 # specimens, Shell, demo members (moved here) — dev/noindex only
 ```
@@ -277,8 +277,8 @@ sequenceDiagram
 | **1. Foundations** | `features/` + `app/` folders, lazy Supabase, `useNeighborhoods`, `MemberCard` `tone` prop, types regenerated | T11, T18, T19, T30 | Makes phases 2–3 small |
 | **2. Member flows** ✅ code + 0002 written (2026-11-08) | Migration 0002 public profiles + apply 0001/0002 live; `/members` and home gallery split public vs members, real catalogue numbers, no demo data; public-profile switch; account error states; RSVP/booking/avatar errors handled; timezone fixes | T8–T10, T12–T15, §2.10 | Ship migration and code together. 0001 + 0002 not yet applied live |
 | **3. Applications + admin** ✅ code + 0003 written (2026-11-08) | `/join` saves (anonymous or signed-in), form `name`s and validation; `/admin` with four tabs | T1, T20 + new | Migration 0003: "approved before sign-up" fix, `reviewed_by`. Ship with 0001–0003 applied live (README). Still open: CAPTCHA/rate limiting for anonymous applications, review emails |
-| **4. Site shell** | App layout (no showcase toolbar), router-aware nav + mobile menu, 404/error pages, noindex showcase | T16, T17, T32 | |
-| **5. Polish** | Contrast, motion/a11y, WebGL/trail/font/image performance | T22–T29, T31 | |
+| **4. Site shell** ✅ code (2026-11-08) | App layout (no showcase toolbar), router-aware nav + mobile menu, 404/error pages, noindex showcase | T16, T17, T32 + T22 | `src/app/layout/` (`AppLayout.tsx`, `StatusPages.tsx`), `src/app/seo.ts`, `public/robots.txt`. Optional `VITE_SITE_URL` enables canonical and OG URLs. Still open: sitemap, menu click-outside |
+| **5. Polish** | Contrast, motion/a11y, WebGL/trail/font/image performance | T23–T29, T31 | |
 | **6. Tooling** | Lint green, scripts, CI, dependencies, `.env` and secrets, docs | T21, T33–T38 | Can run in parallel with any phase |
 
 **Resolved 2026-11-08:** public pages show only members who opt in (§2.10). Everything else stays members-only.

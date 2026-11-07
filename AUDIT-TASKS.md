@@ -29,8 +29,8 @@ Baseline: `tsc` ✅ · `vite build` ✅ (warns on a 585 kB chunk) · `eslint` �
 
 ## P2 — Architecture
 
-- [ ] **16. Keep showcase code off the live site.** The `Shell` toolbar (Colors, Typography, Dark toggle) shows on `/`, `/members` and `/join`. Add an app layout, and noindex or hide `/colors`, `/typography` and `/components` in production. Update `AGENTS.md`. `A F`
-- [ ] **17. Navbar and Footer.** They render plain `<a href>`, so every internal link reloads the page; accept a router link component. There's no mobile menu (`layout.tsx:136` is `hidden md:flex`), so phone users have no navigation. `L A F`
+- [x] **16. Keep showcase code off the live site.** The `Shell` toolbar (Colors, Typography, Dark toggle) shows on `/`, `/members` and `/join`. Add an app layout, and noindex or hide `/colors`, `/typography` and `/components` in production. Update `AGENTS.md`. `A F`
+- [x] **17. Navbar and Footer.** They render plain `<a href>`, so every internal link reloads the page; accept a router link component. There's no mobile menu (`layout.tsx:136` is `hidden md:flex`), so phone users have no navigation. `L A F`
 - [ ] **18. Data layer.** React Query is installed but never used, and all data loading is hand-written `useEffect` + `useState`. Either adopt `queryOptions`/`useMutation` in a `src/features/members/` module or remove the package. Split the 296-line `account.tsx` into sections. `A`
 - [ ] **19. Design-system boundary.**
   - Fonts load from `src/assets/fonts`, which is outside the design system and breaks attach. Move them into `design-system/assets`.
@@ -43,7 +43,7 @@ Baseline: `tsc` ✅ · `vite build` ✅ (warns on a 585 kB chunk) · `eslint` �
 
 ## P3 — Frontend performance & accessibility
 
-- [ ] **22. Fixed positioning bug.** The `.motion-route-in` animation keeps `translateY(0)` applied, so `position:fixed` children (the toolbar, preview frames, any future modal) are positioned against the page instead of the viewport. End the animation at `transform:none`, or animate opacity only. `F`
+- [x] **22. Fixed positioning bug.** The `.motion-route-in` animation keeps `translateY(0)` applied, so `position:fixed` children (the toolbar, preview frames, any future modal) are positioned against the page instead of the viewport. End the animation at `transform:none`, or animate opacity only. `F`
 - [ ] **23. ImageTrail weight.** The server renders 24 `<img>` on every page, pulling about 2 MB of 816px PNGs even on touch devices. Render them client-side only after a pointer check, use ~96px WebP, and reconsider mounting it in the "providers-only" root. `F B`
 - [ ] **24. CircularGallery.** It listens on `window` (scrolling anywhere spins it), double-counts `mousewheel`, runs requestAnimationFrame forever, never releases the WebGL context, and rebuilds on every render because `items` is a new array. `F A`
 - [ ] **25. Fonts.** About 700 KB of TTF. Convert to subset `woff2` and preload the display face. `F B`
@@ -69,7 +69,7 @@ Baseline: `tsc` ✅ · `vite build` ✅ (warns on a 585 kB chunk) · `eslint` �
 - [ ] **29. Images.** Add `srcset` and resized variants (the founder photo is 2000px for a ~600px slot). Use the white logo directly instead of inverting seven colored ones. Add `fetchpriority` to the hero. `F`
 - [ ] **30. Bundle.** `__root.tsx` imports Supabase, so every marketing page ships the full SDK (main chunk 585 kB). Load it lazily. `B F`
 - [ ] **31. Per-card effects.** ProximityText mixes layout reads and writes and sets `will-change` on every letter. CurvedLoop runs requestAnimationFrame off-screen and measures before fonts load. `F`
-- [ ] **32. SEO.** `og:image` missing, `twitter:site=@Lovable`, no canonical, robots.txt or sitemap, no custom 404/error page. `F A`
+- [x] **32. SEO.** `og:image` missing, `twitter:site=@Lovable`, no canonical, robots.txt or sitemap, no custom 404/error page. `F A` (Sitemap split out: see Phase 4 "Still open".)
 
 ## P4 — Tooling & hygiene
 
@@ -107,6 +107,26 @@ Baseline: `tsc` ✅ · `vite build` ✅ (warns on a 585 kB chunk) · `eslint` �
   - Still open from those tasks: initials instead of `hero.jpg` on portrait-less cards (T10), moving the seed events out of the schema migration (T12), bio/looking-for/website on catalogue cards (T13).
 - [x] Phase 3 (Applications + admin, 2026-11-08): migration `0003_admin_review.sql` (`link_applications()` now gives a still-pending profile the outcome of an already reviewed application, approved or declined, and fires after profile creation so OAuth sign-ups work; one-time backfill; `applications.reviewed_by` set from `auth.uid()` and unforgeable; inserts can't arrive pre-reviewed; `lower(email)` index; 72 RLS checks). `/join` submits for real through `features/applications` (typed answers, `parseApplication` mirroring the DB checks, success only after the insert, Retry on error, prefill for signed-in applicants; logo upload moved to after approval). `FormField` wires id/`aria-describedby`/`aria-invalid` itself; `ChoiceGroup`/`RadioGroup` are controlled and a required group blocks submit with a visible error. `/admin` (guarded by `is_admin()`, own chunk) with Applications, Members, Neighborhoods (logo upload) and Bookings tabs in `features/admin`; admins see the full `/members` directory and an Admin link in the account nav. Covers T1 and T20. **0001–0003 must be applied to the live database together with this code** (see README "Database & go-live").
   - Still open: CAPTCHA/rate limiting for anonymous applications, email notifications on review, logo collection after approval.
+- [x] Phase 4 (Site shell, 2026-11-08):
+  - **T22:** every animation that stays applied (fill-mode `both`), and the revealed `.motion-observed` state, now rests at `transform: none` / `filter: none`, so `position: fixed` descendants pin to the viewport again. Guarded by `theme.test.ts`.
+  - **T16:** live pages use `src/app/layout/AppLayout.tsx` (`AppPage`, `AppNav`, `AppFooter`). The `Shell` toolbar appears only on `/colors`, `/typography` and `/components`, which are `noindex` and disallowed in `public/robots.txt` along with `/__mockup` and `/__component`. Its dark theme no longer leaks onto live pages, and the root stays providers-only.
+  - **T17:** `Navbar` and `Footer` take a `linkComponent`, so internal links navigate client-side through the TanStack adapter in `AppNav`/`AppFooter`, while hash, mailto and external links stay plain. There is a mobile menu below `md`:
+    - a disclosure button whose panel is always mounted (`hidden` when closed);
+    - focus moves into the panel on open, and Escape closes it and returns focus;
+    - it closes on any link click in the bar, on back/forward, on a hash change and when widening past `md`;
+    - body scroll is locked while it's open, and reduced motion is respected;
+    - hide-on-scroll never hides the bar while the menu is open.
+  - **T32:**
+    - Styled `NotFound` and `ErrorPage` (with a link home and Try again) are the router defaults.
+    - The root has a real title and description, and `twitter:site=@Lovable` is gone.
+    - The optional `VITE_SITE_URL` must be a bare http(s) origin. When it's set, every page gets an absolute `og:image`, and the indexable public pages (`/`, `/members`, `/join`, `/auth`) get a canonical and `og:url`. 404 and error pages never get a canonical or `og:url`, though they still get the `og:image`. When it's unset, none of these are emitted.
+  - Still open:
+    - `sitemap.xml`, which needs `VITE_SITE_URL` at build time.
+    - Query-string hrefs in the nav adapter (none exist yet).
+    - A manual check that hash links from the mobile menu still scroll once the scroll lock is released.
+    - Click-outside to close the menu.
+    - Confirming that SSR answers unknown paths with HTTP 404.
+    - `robots.txt` blocks the showcase pages, so crawlers never see their `noindex`. If they ever show up in search, drop the `Disallow` lines and rely on `noindex`.
 - [ ] See `ARCHITECTURE.md` Part 3 for the phase order of the remaining work
 - [x] App code: members-only directory, `/admin`, join form submit, neighborhoods from data (Phases 1–3)
 - [ ] P1–P4 remainder
