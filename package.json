@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "test": "vitest run",
+    "test:db": "bash drizzle/test/run.sh",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "check": "bun run typecheck && bun run lint && bun run test && bun run build",
     "deploy": "vite build && wrangler deploy"
@@ -50,7 +51,6 @@
     "typescript": "5.8.3",
     "typescript-eslint": "8.56.1",
     "vite": "8.3.6",
-    "vite-tsconfig-paths": "6.1.1",
     "vitest": "5.1.0",
     "wrangler": "4.156.1"
   }

@@ -48,6 +48,15 @@ In a sandbox, bun may need writable temp and cache directories, e.g.
 |---|---|---|
 | `VITE_SITE_URL` | No | The site's public origin, e.g. `https://example.com` (no path; a trailing slash is fine). When set, every page gets an absolute `og:image` (the hero photo), and the indexable public pages (`/`, `/members`, `/join`, `/auth`; the list is in `src/app/seo.ts`) get an absolute `<link rel="canonical">` and `og:url`. Unset, or not a bare http(s) origin, means none of them are emitted, never a relative or guessed URL. |
 
+### Secrets
+
+`.env` is tracked on purpose: Lovable syncs `main` and needs its `VITE_` publishable values. So it,
+and every other tracked file, holds **publishable values only** (the shape is in `.env.example`).
+Server secrets (`SUPABASE_SERVICE_ROLE_KEY`, `LOVABLE_CRON_SECRET`, any `sb_secret_…` key) go in
+`.dev.vars` locally (gitignored) and in Wrangler secrets for deploys (`wrangler secret put NAME`).
+`src/app/secrets.test.ts` fails the test suite if a tracked file contains a Supabase secret key, a
+`service_role` JWT, or a value for either secret.
+
 Follow-up: there is no `sitemap.xml` yet; generate one from the live routes once `VITE_SITE_URL` is
 set in production.
 
@@ -58,13 +67,15 @@ set in production.
 | `bun run typecheck` | `tsc --noEmit` |
 | `bun run lint` | ESLint |
 | `bun run test` | Vitest (unit and route tests, jsdom) |
+| `bun run test:db` | Database migrations + row-level-security checks (`drizzle/test/run.sh`, below) |
 | `bun run build` | Production build (Cloudflare Worker output) |
 | `bun run check` | typecheck + lint + test + build |
+| `bun run deploy` | `vite build && wrangler deploy`, a manual deploy outside Lovable (needs Cloudflare login) |
 
 ## Database tests
 
 ```sh
-drizzle/test/run.sh
+bun run test:db    # or drizzle/test/run.sh
 ```
 
 Starts a throwaway local Postgres, loads Supabase stubs, applies every migration in
@@ -73,10 +84,22 @@ local Postgres binaries (`initdb`, `pg_ctl`, `psql`) on `PATH` and ends with `al
 
 ## Database & go-live
 
-- Migrations are hand-written SQL in `drizzle/migrations/`, each with an entry in
-  `drizzle/migrations/meta/_journal.json`. **Never run `drizzle-kit push`**: `drizzle/schema.ts` is
-  empty, so a push could drop live tables.
-- Every policy change adds a check to `drizzle/test/rls.sql`.
+### Migration workflow
+
+Migrations are **hand-written SQL**. Drizzle is kept only as the runner: `drizzle-kit`, `drizzle-orm`,
+`postgres` and `drizzle.config.ts` stay because Lovable's migration runner most likely applies the
+folder with `drizzle-kit migrate` (`drizzle.config.ts` reads `LOVABLE_DB_MIGRATION_URL`).
+
+- **Never run `drizzle-kit generate` or `drizzle-kit push`.** `drizzle/schema.ts` is intentionally
+  empty, so `generate` would emit a migration that drops every table and `push` would drop them live.
+- To add a migration:
+  1. Write `drizzle/migrations/NNNN_short_name.sql` (next number, plain SQL).
+  2. Append an entry to `drizzle/migrations/meta/_journal.json` with the next `idx`, the same
+     `version`, a `when` later than the previous entry, `"tag": "NNNN_short_name"` (the file name
+     without `.sql`) and `"breakpoints": true`.
+  3. Add checks for every new table, policy, function or trigger to `drizzle/test/rls.sql`.
+  4. Run `bun run test:db` until it ends with `all checks passed`.
+- Schema changes reach the live database only when the owner applies them (see the go-live order below).
 
 **Go-live order.** The code on this branch relies on tables, functions and policies from migrations
 0001–0003 (members-only access, applications, neighborhoods, `public_profiles()`, `is_admin()`, the
