@@ -163,3 +163,155 @@ reset role;
 -- Deleting a login removes the member everywhere.
 delete from auth.users where id = '00000000-0000-4000-8000-00000000000b';
 select pg_temp.ok(not exists (select 1 from profiles where id = '00000000-0000-4000-8000-00000000000b'), 'deleted user leaves the directory');
+
+-- ---------- Admin review (0003) ----------
+-- 11: approved before she signs up, confirms later. 12: approved, signs up already confirmed.
+-- 13: still pending when she confirms. 14: approved member, 15: pending member (join checks).
+reset role;
+reset request.jwt.claim.sub;
+set role anon;
+insert into applications (email, full_name) values
+  ('later@x.test', 'Later Applicant'),
+  ('instant@x.test', 'Instant Applicant'),
+  ('waiting@x.test', 'Waiting Applicant');
+reset role;
+
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000000a';
+update applications set status = 'approved' where email in ('later@x.test', 'instant@x.test');
+reset role;
+reset request.jwt.claim.sub;
+
+insert into auth.users (id, email) values ('00000000-0000-4000-8000-000000000011', 'later@x.test');
+select pg_temp.ok((select status from profiles where id = '00000000-0000-4000-8000-000000000011') = 'pending'
+  and (select user_id from applications where email = 'later@x.test') is null,
+  'unconfirmed sign-up stays pending despite an approved application');
+update auth.users set email_confirmed_at = now() where id = '00000000-0000-4000-8000-000000000011';
+select pg_temp.ok((select status from profiles where id = '00000000-0000-4000-8000-000000000011') = 'approved',
+  'confirming links an approved application and approves the profile');
+select pg_temp.ok((select catalogue_number is not null and member_since is not null from profiles
+  where id = '00000000-0000-4000-8000-000000000011'), 'approval on confirmation assigns catalogue number and member_since');
+
+insert into auth.users (id, email, email_confirmed_at) values ('00000000-0000-4000-8000-000000000012', 'Instant@x.test', now());
+select pg_temp.ok((select status from profiles where id = '00000000-0000-4000-8000-000000000012') = 'approved',
+  'already-confirmed sign-up with an approved application is approved');
+select pg_temp.ok((select catalogue_number is not null from profiles where id = '00000000-0000-4000-8000-000000000012'),
+  'already-confirmed sign-up gets a catalogue number');
+
+insert into auth.users (id, email, email_confirmed_at) values ('00000000-0000-4000-8000-000000000013', 'waiting@x.test', now());
+select pg_temp.ok((select user_id from applications where email = 'waiting@x.test') = '00000000-0000-4000-8000-000000000013',
+  'a pending application links on confirmation');
+select pg_temp.ok((select status from profiles where id = '00000000-0000-4000-8000-000000000013') = 'pending',
+  'a linked pending application leaves the profile pending');
+
+select pg_temp.ok((select reviewed_by from applications where email = 'later@x.test') = '00000000-0000-4000-8000-00000000000a',
+  'approval records the reviewing admin');
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000000a';
+update applications set reviewed_by = '00000000-0000-4000-8000-00000000000c' where email = 'later@x.test';
+select pg_temp.ok((select reviewed_by from applications where email = 'later@x.test') = '00000000-0000-4000-8000-00000000000a',
+  'admin cannot rewrite reviewed_by on its own');
+reset role;
+reset request.jwt.claim.sub;
+
+set role anon;
+do $$ begin
+  insert into applications (email, full_name, reviewed_by) values ('forged@x.test', 'Forged', '00000000-0000-4000-8000-00000000000a');
+  raise exception 'FAIL: anon pre-filled reviewed_by';
+exception when insufficient_privilege then raise notice 'ok  anon cannot pre-fill reviewed_by';
+end $$;
+reset role;
+
+-- Admin UI joins profiles to applications client-side; only admins get rows back.
+insert into auth.users (id, email, email_confirmed_at) values
+  ('00000000-0000-4000-8000-000000000014', 'approvedpeer@x.test', now()),
+  ('00000000-0000-4000-8000-000000000015', 'pendingpeer@x.test', now());
+update profiles set status = 'approved', directory_visible = true where id = '00000000-0000-4000-8000-000000000014';
+update profiles set directory_visible = true where id = '00000000-0000-4000-8000-000000000011';
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000000a';
+select pg_temp.ok((select array_agg(a.email) from profiles p join applications a on a.user_id = p.id
+  where p.id = '00000000-0000-4000-8000-000000000011') = array['later@x.test'], 'admin joins a profile to its application email');
+set request.jwt.claim.sub = '00000000-0000-4000-8000-000000000014';
+select pg_temp.ok((select count(*) from profiles where id = '00000000-0000-4000-8000-000000000011') = 1,
+  'fixture: approved member sees the listed applicant''s card');
+select pg_temp.ok(not exists (select a.email from profiles p join applications a on a.user_id = p.id
+  where p.id = '00000000-0000-4000-8000-000000000011'), 'approved member cannot join to an applicant''s email');
+set request.jwt.claim.sub = '00000000-0000-4000-8000-000000000015';
+select pg_temp.ok((select count(*) from applications where user_id = '00000000-0000-4000-8000-000000000011') = 0,
+  'pending member cannot read an applicant''s application');
+select pg_temp.ok(not exists (select a.email from profiles p join applications a on a.user_id = p.id
+  where p.id = '00000000-0000-4000-8000-000000000011'), 'pending member cannot join to an applicant''s email');
+reset role;
+reset request.jwt.claim.sub;
+
+-- Review fixes. 16: a second admin who reviews and then deletes her login. 17: declined before sign-up.
+-- 18, 19: accounts linked under the old trigger order, still pending (backfill).
+insert into auth.users (id, email, email_confirmed_at) values ('00000000-0000-4000-8000-000000000016', 'reviewer@x.test', now());
+insert into user_roles (user_id, role) values ('00000000-0000-4000-8000-000000000016', 'admin');
+set role anon;
+insert into applications (email, full_name) values
+  ('reviewed@x.test', 'Reviewed Applicant'),
+  ('forgedreview@x.test', 'Forged Review'),
+  ('declined@x.test', 'Declined Applicant');
+reset role;
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-4000-8000-000000000016';
+update applications set status = 'approved' where email = 'reviewed@x.test';
+reset role;
+reset request.jwt.claim.sub;
+select pg_temp.ok((select reviewed_by from applications where email = 'reviewed@x.test') = '00000000-0000-4000-8000-000000000016',
+  'fixture: second admin recorded as reviewer');
+delete from auth.users where id = '00000000-0000-4000-8000-000000000016';
+select pg_temp.ok((select reviewed_by from applications where email = 'reviewed@x.test') is null,
+  'deleting a reviewer''s login nulls reviewed_by');
+
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000000a';
+update applications set reviewed_at = '2000-01-01 00:00+00' where email = 'later@x.test';
+select pg_temp.ok((select reviewed_at from applications where email = 'later@x.test') > '2001-01-01 00:00+00',
+  'admin cannot rewrite reviewed_at on its own');
+update applications set status = 'declined', reviewed_by = '00000000-0000-4000-8000-00000000000c' where email = 'forgedreview@x.test';
+select pg_temp.ok((select reviewed_by from applications where email = 'forgedreview@x.test') = '00000000-0000-4000-8000-00000000000a',
+  'a status change records the admin, not a forged reviewed_by');
+update applications set status = 'declined' where email = 'declined@x.test';
+set request.jwt.claim.sub = '00000000-0000-4000-8000-000000000015';
+do $$ begin
+  insert into applications (email, full_name, user_id, reviewed_by)
+    values ('pendingpeer@x.test', 'Pending Peer', auth.uid(), '00000000-0000-4000-8000-00000000000a');
+  raise exception 'FAIL: member pre-filled reviewed_by';
+exception when insufficient_privilege then raise notice 'ok  authenticated insert cannot pre-fill reviewed_by';
+end $$;
+reset role;
+reset request.jwt.claim.sub;
+
+insert into auth.users (id, email, email_confirmed_at) values ('00000000-0000-4000-8000-000000000017', 'declined@x.test', now());
+select pg_temp.ok((select status from profiles where id = '00000000-0000-4000-8000-000000000017') = 'declined',
+  'an application declined before sign-up declines the profile on confirmation');
+
+select pg_temp.ok(exists (select 1 from pg_indexes where schemaname = 'public' and tablename = 'applications'
+  and indexdef like '%lower(email)%'), 'applications are indexed by lower(email)');
+
+-- Superuser fixtures reproduce the old bug: linked applications, profiles left pending.
+insert into auth.users (id, email, email_confirmed_at) values
+  ('00000000-0000-4000-8000-000000000018', 'stuckapproved@x.test', now()),
+  ('00000000-0000-4000-8000-000000000019', 'stuckdeclined@x.test', now());
+insert into applications (email, full_name, user_id, status) values
+  ('stuckapproved@x.test', 'Stuck Approved', '00000000-0000-4000-8000-000000000018', 'declined'),
+  ('stuckapproved@x.test', 'Stuck Approved', '00000000-0000-4000-8000-000000000018', 'approved'),
+  ('stuckdeclined@x.test', 'Stuck Declined', '00000000-0000-4000-8000-000000000019', 'declined');
+select pg_temp.ok((select count(*) from profiles where id in ('00000000-0000-4000-8000-000000000018',
+  '00000000-0000-4000-8000-000000000019') and status = 'pending') = 2, 'fixture: stuck profiles are pending');
+select public.backfill_linked_application_status();
+select pg_temp.ok((select status = 'approved' and catalogue_number is not null from profiles
+  where id = '00000000-0000-4000-8000-000000000018'), 'backfill approves a pending profile with an approved application');
+select pg_temp.ok((select status from profiles where id = '00000000-0000-4000-8000-000000000019') = 'declined',
+  'backfill declines a pending profile with only a declined application');
+select pg_temp.ok((select status from profiles where id = '00000000-0000-4000-8000-000000000013') = 'pending',
+  'backfill leaves a profile whose application is still pending');
+set role anon;
+select pg_temp.ok(not has_function_privilege('public.backfill_linked_application_status()', 'execute'), 'anon cannot run the backfill');
+reset role;
+set role authenticated;
+select pg_temp.ok(not has_function_privilege('public.backfill_linked_application_status()', 'execute'), 'members cannot run the backfill');
+reset role;

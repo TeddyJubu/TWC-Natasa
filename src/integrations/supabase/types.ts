@@ -24,6 +24,8 @@ export type Database = {
           id: string
           neighborhood: string
           reviewed_at: string | null
+          // BRIDGE (0003): hand-patched until Lovable regenerates this file
+          reviewed_by: string | null
           status: Database["public"]["Enums"]["membership_status"]
           user_id: string | null
         }
@@ -35,6 +37,8 @@ export type Database = {
           id?: string
           neighborhood?: string
           reviewed_at?: string | null
+          // BRIDGE (0003): hand-patched until Lovable regenerates this file
+          reviewed_by?: string | null
           status?: Database["public"]["Enums"]["membership_status"]
           user_id?: string | null
         }
@@ -46,6 +50,8 @@ export type Database = {
           id?: string
           neighborhood?: string
           reviewed_at?: string | null
+          // BRIDGE (0003): hand-patched until Lovable regenerates this file
+          reviewed_by?: string | null
           status?: Database["public"]["Enums"]["membership_status"]
           user_id?: string | null
         }
