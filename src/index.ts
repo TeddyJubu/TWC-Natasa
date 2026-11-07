@@ -1,5 +1,6 @@
-export { cn } from "./design-system/lib/utils";
+export { cn, formatCatalogueNumber } from "./design-system/lib/utils";
 export * from "./design-system/components/brand";
+export { constellationLogoSources } from "./design-system/lib/logo-sources";
 export * from "./design-system/components/typography";
 export * from "./design-system/components/button";
 export * from "./design-system/components/layout";
@@ -9,5 +10,4 @@ export * from "./design-system/components/form";
 export * from "./design-system/components/motion";
 export * from "./design-system/components/image-trail";
 export * from "./design-system/components/member-card";
-export type { MemberProfile } from "./design-system/data/members";
 export * from "./design-system/components/proximity-text";

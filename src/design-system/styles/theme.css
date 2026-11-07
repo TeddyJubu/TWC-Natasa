@@ -3,7 +3,7 @@
 
 @font-face {
   font-family: "Gilda Display";
-  src: url("../../assets/fonts/gilda-display-400.ttf") format("truetype");
+  src: url("../assets/fonts/gilda-display-400.ttf") format("truetype");
   font-style: normal;
   font-weight: 400;
   font-display: swap;
@@ -11,7 +11,7 @@
 
 @font-face {
   font-family: "Inter";
-  src: url("../../assets/fonts/inter-400.ttf") format("truetype");
+  src: url("../assets/fonts/inter-400.ttf") format("truetype");
   font-style: normal;
   font-weight: 400;
   font-display: swap;
@@ -19,7 +19,7 @@
 
 @font-face {
   font-family: "Inter";
-  src: url("../../assets/fonts/inter-500.ttf") format("truetype");
+  src: url("../assets/fonts/inter-500.ttf") format("truetype");
   font-style: normal;
   font-weight: 500;
   font-display: swap;

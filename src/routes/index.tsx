@@ -3,7 +3,7 @@ import {
   Accordion, Badge, BrandLockup, ConstellationLogo, Container, FeatureCard, Footer,
   CurvedGallery, Heading, Hero, ImageFrame, Navbar, Ribbon, Section, SectionHeader, Split, Statement, Text, buttonVariants,
 } from "@/index";
-import { demoMembers } from "@/design-system/data/members";
+import { demoMembers } from "@/showcase/demo-members";
 import { Shell } from "@/showcase/Shell";
 import hero from "@/assets/photography/hero.jpg";
 import event from "@/assets/photography/event.jpg";
@@ -14,7 +14,7 @@ import neighborhoodJacksonHeights from "@/assets/photography/neighborhood-jackso
 import neighborhoodElmhurst from "@/assets/photography/neighborhood-elmhurst.jpg";
 import neighborhoodForestHills from "@/assets/photography/neighborhood-forest-hills.jpg";
 import neighborhoodRegoPark from "@/assets/photography/neighborhood-rego-park.jpg";
-import natasa from "@/design-system/assets/photography/natasa-tuohy.jpg";
+import natasa from "@/assets/photography/natasa-tuohy.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({

@@ -4,8 +4,7 @@ import { BorderGlow } from "./border-glow";
 import { ConstellationLogo } from "./brand";
 import { ProximityText } from "./proximity-text";
 import { cva, type VariantProps } from "class-variance-authority";
-import type { MemberProfile } from "../data/members";
-import { cn } from "../lib/utils";
+import { cn, formatCatalogueNumber } from "../lib/utils";
 import { Badge } from "./typography";
 
 const cardVariants = cva("group border border-line bg-canvas text-ink transition-[transform,box-shadow] duration-base ease-gentle hover:-translate-y-1 hover:shadow-soft motion-reduce:transform-none motion-reduce:transition-none", {
@@ -19,52 +18,62 @@ const cardVariants = cva("group border border-line bg-canvas text-ink transition
   defaultVariants: { variant: "grid" },
 });
 
-/**
- * Catalogue cards carry a neighborhood color signature so each member reads at
- * a glance from the shared palette. Unknown neighborhoods fall back to the
- * neutral catalogue look.
- */
-const catalogueTones: Record<string, { rule: string; label: string; index: string; wash: string; glow: string }> = {
-  "Long Island City": { rule: "border-lic", label: "text-lic", index: "text-lic", wash: "bg-lic", glow: "--color-lic" },
-  Astoria: { rule: "border-astoria", label: "text-astoria", index: "text-astoria", wash: "bg-astoria", glow: "--color-astoria" },
-  Sunnyside: { rule: "border-sunnyside", label: "text-sunnyside", index: "text-sunnyside", wash: "bg-sunnyside", glow: "--color-sunnyside" },
-  "Jackson Heights": { rule: "border-jackson-heights", label: "text-jackson-heights", index: "text-jackson-heights", wash: "bg-jackson-heights", glow: "--color-jackson-heights" },
-  "Forest Hills": { rule: "border-forest-hills", label: "text-forest-hills", index: "text-forest-hills", wash: "bg-forest-hills", glow: "--color-forest-hills" },
-  Elmhurst: { rule: "border-elmhurst", label: "text-elmhurst", index: "text-elmhurst", wash: "bg-elmhurst", glow: "--color-elmhurst" },
-  "Rego Park": { rule: "border-rego-park", label: "text-rego-park", index: "text-rego-park", wash: "bg-rego-park", glow: "--color-rego-park" },
-};
+export interface MemberProfile {
+  id: string;
+  name: string;
+  role: string;
+  business: string;
+  neighborhood: string;
+  specialty: string;
+  bio: string;
+  lookingFor: string;
+  image: string;
+  imageAlt: string;
+  catalogueNumber?: number;
+  website?: string;
+}
+
+/** Color signature for a catalogue card, supplied by the caller (e.g. from neighborhood data). */
+export interface MemberCardTone {
+  color: string;
+  // ponytail: logoSrc is accepted for the specified tone shape and not rendered yet.
+  logoSrc?: string;
+}
 
 export interface MemberCardProps extends Omit<React.HTMLAttributes<HTMLElement>, "children">, VariantProps<typeof cardVariants> {
   member: MemberProfile;
   catalogueNumber?: number;
+  tone?: MemberCardTone;
 }
 
 /**
  * Use MemberCard for a public directory or a curated member preview.
  * @example <MemberCard member={member} />
  * @example <MemberCard member={member} variant="featured" />
- * @example <MemberCard member={member} variant="catalogue" catalogueNumber={1} />
- * Catalogue cards pick up the member’s neighborhood color from the palette;
- * members sharing a neighborhood share its color.
+ * @example <MemberCard member={member} variant="catalogue" catalogueNumber={1} tone={{ color: "#2f9dff" }} />
+ * Catalogue cards take their color signature from `tone`, exposed as the `--hood`
+ * custom property; without a tone they keep the neutral catalogue look.
  * Avoid placing MemberCard inside another card or supplying unapproved personal details.
  */
-export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ catalogueNumber, className, member, variant, ...props }, ref) => {
-  const tone = variant === "catalogue" ? catalogueTones[member.neighborhood] : undefined;
+export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ catalogueNumber, className, member, style, tone: toneProp, variant, ...props }, ref) => {
+  const tone = variant === "catalogue" ? toneProp : undefined;
+  const number = catalogueNumber ?? member.catalogueNumber ?? 1;
+  const hoodStyle = tone ? ({ ...style, "--hood": tone.color } as React.CSSProperties) : style;
   return (
-  <article ref={ref} className={cn(cardVariants({ variant }), className)} {...props}>
+  <article ref={ref} className={cn(cardVariants({ variant }), className)} style={hoodStyle} {...props}>
     {variant === "catalogue" ? (
       <>
-        <BorderGlow className="rounded-panel" glowVar={tone?.glow ?? "--color-sky"} glowRadius={28} fillOpacity={0.25}>
-          <div className={cn("relative flex min-h-[20rem] flex-col overflow-hidden border-b border-line p-6 sm:min-h-[23rem] sm:p-8 xl:min-h-[18rem] xl:p-5", tone?.rule)}>
+        <BorderGlow key={tone?.color ?? "neutral"} className="rounded-panel" glowVar={tone ? "--hood" : "--color-sky"} glowRadius={28} fillOpacity={0.25}>
+          <div className={cn("relative flex min-h-[20rem] flex-col overflow-hidden border-b border-line p-6 sm:min-h-[23rem] sm:p-8 xl:min-h-[18rem] xl:p-5", tone && "border-(--hood)")}>
             <span
-              aria-label={`Catalogue number ${catalogueNumber ?? 1}`}
+              aria-label={`Catalogue number ${number}`}
               className={cn(
                 "absolute -left-6 -top-6 z-20 grid size-24 place-items-end justify-items-end rounded-full p-5 sm:-left-7 sm:-top-7 sm:size-28 sm:p-6 xl:-left-6 xl:-top-6 xl:size-24 xl:p-5",
-                tone?.wash ?? "bg-surface",
+                tone ? "bg-(--hood)" : "bg-surface",
               )}
             >
               <span className="font-display text-2xl leading-none tabular-nums text-canvas sm:text-3xl xl:text-2xl">
-                {String(catalogueNumber ?? 1).padStart(2, "0")}
+                {formatCatalogueNumber(number)}
               </span>
             </span>
             <div className="pointer-events-none absolute -right-8 -top-8 z-30 size-36 text-ink-muted sm:-right-9 sm:-top-9 sm:size-40 xl:-right-8 xl:-top-8 xl:size-36">
@@ -94,7 +103,7 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
             <p
               className={cn(
                 "flex shrink-0 items-start gap-3 [writing-mode:vertical-rl] [transform:rotate(180deg)]",
-                tone?.label,
+                tone && "text-(--hood)",
               )}
             >
               <svg viewBox="0 0 24 24" aria-hidden className="size-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -106,7 +115,7 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
           </div>
           </div>
 
-        <div className={cn("p-3 sm:p-4 xl:p-3", tone?.wash ?? "bg-surface")}>
+        <div className={cn("p-3 sm:p-4 xl:p-3", tone ? "bg-(--hood)" : "bg-surface")}>
           <div className="aspect-[4/5] overflow-hidden rounded-card bg-surface">
             <img
               src={member.image}
@@ -121,11 +130,11 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
 
         <div className="grid min-h-32 grid-cols-[minmax(0,1fr)_auto] items-center gap-6 overflow-hidden rounded-b-[31px] border-t border-line p-6 sm:p-8 xl:min-h-28 xl:gap-3 xl:p-5">
           <div className="min-w-0">
-            <span aria-hidden className={cn("mb-4 block h-0.5 w-7 xl:mb-3", tone?.wash ?? "bg-surface-strong")} />
+            <span aria-hidden className={cn("mb-4 block h-0.5 w-7 xl:mb-3", tone ? "bg-(--hood)" : "bg-surface-strong")} />
             <p className="font-display text-2xl font-normal leading-tight text-ink sm:text-3xl xl:text-xl">{member.business}</p>
             <p className="mt-2 text-xs uppercase leading-relaxed text-ink-muted">{member.specialty}</p>
           </div>
-          <span aria-hidden className={cn("grid size-14 shrink-0 place-items-center rounded-full border text-2xl transition-transform duration-base ease-gentle group-hover:translate-x-1 motion-reduce:transform-none xl:size-11 xl:text-xl", tone?.rule, tone?.index)}>→</span>
+          <span aria-hidden className={cn("grid size-14 shrink-0 place-items-center rounded-full border text-2xl transition-transform duration-base ease-gentle group-hover:translate-x-1 motion-reduce:transform-none xl:size-11 xl:text-xl", tone && "border-(--hood) text-(--hood)")}>→</span>
         </div>
         </BorderGlow>
       </>

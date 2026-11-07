@@ -14,6 +14,43 @@ export type Database = {
   }
   public: {
     Tables: {
+      // BRIDGE (0001): hand-patched until Lovable regenerates this file
+      applications: {
+        Row: {
+          answers: Json
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          neighborhood: string
+          reviewed_at: string | null
+          status: Database["public"]["Enums"]["membership_status"]
+          user_id: string | null
+        }
+        Insert: {
+          answers?: Json
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          neighborhood?: string
+          reviewed_at?: string | null
+          status?: Database["public"]["Enums"]["membership_status"]
+          user_id?: string | null
+        }
+        Update: {
+          answers?: Json
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          neighborhood?: string
+          reviewed_at?: string | null
+          status?: Database["public"]["Enums"]["membership_status"]
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       event_rsvps: {
         Row: {
           created_at: string
@@ -100,6 +137,37 @@ export type Database = {
           preferred_time?: string
           status?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      // BRIDGE (0001): hand-patched until Lovable regenerates this file
+      neighborhoods: {
+        Row: {
+          active: boolean
+          color: string
+          created_at: string
+          logo_path: string | null
+          name: string
+          slug: string
+          sort_order: number
+        }
+        Insert: {
+          active?: boolean
+          color: string
+          created_at?: string
+          logo_path?: string | null
+          name: string
+          slug: string
+          sort_order?: number
+        }
+        Update: {
+          active?: boolean
+          color?: string
+          created_at?: string
+          logo_path?: string | null
+          name?: string
+          slug?: string
+          sort_order?: number
         }
         Relationships: []
       }
@@ -190,7 +258,11 @@ export type Database = {
         }
         Returns: boolean
       }
+      // BRIDGE (0001): hand-patched until Lovable regenerates this file
+      is_admin: { Args: never; Returns: boolean }
       is_approved: { Args: { _user_id: string }; Returns: boolean }
+      // BRIDGE (0001): hand-patched until Lovable regenerates this file
+      is_member: { Args: never; Returns: boolean }
       public_directory: {
         Args: never
         Returns: {
@@ -204,6 +276,8 @@ export type Database = {
           neighborhood: string
           role_title: string
           specialty: string
+          // BRIDGE (0001): hand-patched until Lovable regenerates this file
+          website: string
         }[]
       }
     }

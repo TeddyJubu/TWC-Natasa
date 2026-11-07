@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import {
   Badge,
   BrandLockup,
@@ -14,12 +15,11 @@ import {
   buttonVariants,
   cn,
 } from "@/index";
-import { demoMembers } from "@/design-system/data/members";
+import { demoMembers } from "@/showcase/demo-members";
 import { Shell } from "@/showcase/Shell";
-import { supabase } from "@/integrations/supabase/client";
-import { avatarUrls } from "@/lib/account";
-import type { MemberProfile } from "@/index";
-import heroImage from "@/assets/photography/hero.jpg";
+import { useNeighborhoods } from "@/features/neighborhoods/queries";
+import { toneFor } from "@/features/neighborhoods/tone";
+import { directoryQuery } from "@/features/members/queries";
 
 export const Route = createFileRoute("/members")({
   head: () => ({
@@ -35,34 +35,14 @@ export const Route = createFileRoute("/members")({
   component: MembersPage,
 });
 
-const neighborhoods = ["All", ...Array.from(new Set(demoMembers.map((member) => member.neighborhood)))] as const;
-
-/** Each filter chip lights up in its neighborhood's own color when selected. */
-const neighborhoodFill: Record<string, string> = {
-  "Long Island City": "bg-lic hover:bg-lic",
-  Astoria: "bg-astoria hover:bg-astoria",
-  Sunnyside: "bg-sunnyside hover:bg-sunnyside",
-  "Jackson Heights": "bg-jackson-heights hover:bg-jackson-heights",
-  "Forest Hills": "bg-forest-hills hover:bg-forest-hills",
-  Elmhurst: "bg-elmhurst hover:bg-elmhurst",
-  "Rego Park": "bg-rego-park hover:bg-rego-park",
-};
-
 function MembersPage() {
   const [activeNeighborhood, setActiveNeighborhood] = React.useState<string>("All");
-  const [realMembers, setRealMembers] = React.useState<MemberProfile[]>([]);
-  React.useEffect(() => {
-    void (async () => {
-      const { data } = await supabase.rpc("public_directory");
-      if (!data?.length) return;
-      const urls = await avatarUrls(data.map((d) => d.avatar_path));
-      setRealMembers(data.map((d) => ({
-        id: d.id, name: d.full_name, role: d.role_title, business: d.business, neighborhood: d.neighborhood,
-        specialty: d.specialty, bio: d.bio, lookingFor: d.looking_for,
-        image: (d.avatar_path && urls[d.avatar_path]) || heroImage, imageAlt: `Portrait of ${d.full_name}`,
-      })));
-    })();
-  }, []);
+  const { data: hoodList = [] } = useNeighborhoods();
+  const directory = useQuery(directoryQuery);
+  const realMembers = directory.data ?? [];
+  // Active neighborhoods in DB order, plus any a listed member still uses (e.g. one an admin deactivated).
+  const hoodNames = hoodList.map((hood) => hood.name);
+  const neighborhoods = ["All", ...new Set([...hoodNames, ...realMembers.map((m) => m.neighborhood)])];
   const all = [...realMembers, ...demoMembers];
   const members = activeNeighborhood === "All"
     ? all
@@ -100,24 +80,36 @@ function MembersPage() {
           <div className="flex flex-col gap-5">
             <p className="text-xs font-medium uppercase text-ink-muted">Browse by neighborhood</p>
             <div className="flex gap-2 overflow-x-auto pb-2" role="group" aria-label="Filter members by neighborhood">
-              {neighborhoods.map((neighborhood) => (
-                <Button
-                  key={neighborhood}
-                  type="button"
-                  size="sm"
-                  variant={activeNeighborhood === neighborhood ? "white" : "outline"}
-                  className={cn("shrink-0", activeNeighborhood === neighborhood && neighborhoodFill[neighborhood])}
-                  aria-pressed={activeNeighborhood === neighborhood}
-                  onClick={() => setActiveNeighborhood(neighborhood)}
-                >
-                  {neighborhood}
-                </Button>
-              ))}
+              {neighborhoods.map((neighborhood) => {
+                const selected = activeNeighborhood === neighborhood;
+                const color = selected ? toneFor(neighborhood, hoodList)?.color : undefined;
+                return (
+                  <Button
+                    key={neighborhood}
+                    type="button"
+                    size="sm"
+                    variant={selected ? "white" : "outline"}
+                    className={cn("shrink-0", color && "bg-(--hood) hover:bg-(--hood)")}
+                    style={color ? ({ "--hood": color } as React.CSSProperties) : undefined}
+                    aria-pressed={selected}
+                    onClick={() => setActiveNeighborhood(neighborhood)}
+                  >
+                    {neighborhood}
+                  </Button>
+                );
+              })}
             </div>
           </div>
 
+          {directory.isError && (
+            <div role="alert" className="flex flex-wrap items-center gap-4 text-sm text-ink-muted">
+              <p>We couldn’t load the member directory right now.</p>
+              <Button type="button" size="sm" variant="outline" onClick={() => void directory.refetch()}>Retry</Button>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {members.map((member, index) => <MemberCard key={member.id} member={member} variant="catalogue" catalogueNumber={index + 1} />)}
+            {members.map((member, index) => <MemberCard key={member.id} member={member} variant="catalogue" tone={toneFor(member.neighborhood, hoodList)} catalogueNumber={index + 1} />)}
           </div>
         </Container>
       </Section>

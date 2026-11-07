@@ -1,7 +1,7 @@
 import * as React from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import * as K from "@/index";
-import { demoMembers } from "@/design-system/data/members";
+import { demoMembers } from "@/showcase/demo-members";
 import { Shell, Specimen } from "@/showcase/Shell";
 import hero from "@/assets/photography/hero.jpg";
 import p1 from "@/assets/photography/portrait-1.jpg";

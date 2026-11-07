@@ -4,7 +4,7 @@ The Women’s Collective is warm, direct, and editorial: full-bleed sky photogra
 
 ## Setup
 - Import `src/design-system/styles/theme.css` right after `@import "tailwindcss";`.
-- Fonts are self-hosted in `src/assets/fonts` and loaded by the canonical theme file.
+- Fonts are self-hosted in `src/design-system/assets/fonts` and loaded by the canonical theme file.
 - Dark mode: add `dark` to `<html>`. Any block can go dark locally with `Section tone="night"` or the `tone-night` class — all tokens invert inside it.
 - Import from the barrel only.
 
@@ -19,11 +19,11 @@ The Women’s Collective is warm, direct, and editorial: full-bleed sky photogra
 - Forms follow an editorial zine language: numbered sections, fine rules, serif emphasis, and asymmetrical multi-column compositions. Use `FormSection` to group long applications.
 - Use `editorial` fields on feature forms and `boxed` fields in compact utility contexts. Never mix both field variants within one form.
 - Mint, lilac, and signal orange are supporting editorial accents for selected states and specimen panels; keep them subordinate to canvas, ink, and photography. Neighborhood tokens are reserved for constellation and location-led storytelling.
-- No inline styles; vary via `variant`/`size` props.
+- No inline styles; vary via `variant`/`size` props. The single exception: data-driven neighborhood color arrives as one inline CSS variable `--hood` (e.g. via `MemberCard`'s `tone` prop) and is consumed only through the static utilities `bg-(--hood)`, `text-(--hood)`, and `border-(--hood)`.
 - Motion is editorial and purposeful: shared reveal, stagger, panel, hover, and feedback patterns only. Never add decorative motion that competes with content.
 - Use `Reveal` for viewport entry and `Stagger` for short sequenced groups; both preserve content and honor reduced-motion preferences.
 - Long applications use `FormProgress`, `FormSection`, `ChoiceGroup`, `FormNotice`, and `FormActions`; conditional follow-ups reveal directly beneath their controlling choice.
-- Member directories use the `MemberCard` catalogue variant in a dense black contact-sheet panel; each card carries its neighborhood color as a quiet signature (header rule, catalogue number, neighborhood label, and portrait mat), and portraits begin monochrome to reveal color on hover.
+- Member directories use the `MemberCard` catalogue variant in a dense black contact-sheet panel; each card carries its neighborhood color, passed in through the `tone` prop, as a quiet signature (header rule, catalogue number, neighborhood label, and portrait mat), and portraits begin monochrome to reveal color on hover.
 
 ## Accessibility
 - White text on photos needs the built-in gradients (`bg-sky-fade`, card overlays); don't remove them.

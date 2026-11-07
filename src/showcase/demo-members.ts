@@ -1,26 +1,14 @@
-import amaraImage from "../assets/photography/member-amara.jpg";
-import claireImage from "../assets/photography/member-claire.jpg";
-import deniseImage from "../assets/photography/member-denise.jpg";
-import elenaImage from "../assets/photography/member-elena.jpg";
-import laylaImage from "../assets/photography/member-layla.jpg";
-import minaImage from "../assets/photography/member-mina.jpg";
-import naomiImage from "../assets/photography/member-naomi.jpg";
-import priyaImage from "../assets/photography/member-priya.jpg";
-import simoneImage from "../assets/photography/member-simone.jpg";
-import thaoImage from "../assets/photography/member-thao.jpg";
-
-export interface MemberProfile {
-  id: string;
-  name: string;
-  role: string;
-  business: string;
-  neighborhood: string;
-  specialty: string;
-  bio: string;
-  lookingFor: string;
-  image: string;
-  imageAlt: string;
-}
+import type { MemberProfile } from "@/index";
+import amaraImage from "./assets/member-amara.jpg";
+import claireImage from "./assets/member-claire.jpg";
+import deniseImage from "./assets/member-denise.jpg";
+import elenaImage from "./assets/member-elena.jpg";
+import laylaImage from "./assets/member-layla.jpg";
+import minaImage from "./assets/member-mina.jpg";
+import naomiImage from "./assets/member-naomi.jpg";
+import priyaImage from "./assets/member-priya.jpg";
+import simoneImage from "./assets/member-simone.jpg";
+import thaoImage from "./assets/member-thao.jpg";
 
 /**
  * Fictional profiles for directory prototypes and design-system demonstrations.
