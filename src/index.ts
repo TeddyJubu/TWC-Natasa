@@ -11,4 +11,5 @@ export * from "./design-system/components/form";
 export * from "./design-system/components/motion";
 export * from "./design-system/components/image-trail";
 export * from "./design-system/components/member-card";
+export * from "./design-system/components/member-dialog";
 export * from "./design-system/components/proximity-text";

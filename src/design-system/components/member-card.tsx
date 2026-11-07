@@ -47,6 +47,35 @@ export interface MemberCardProps extends Omit<React.HTMLAttributes<HTMLElement>,
   member: MemberProfile;
   catalogueNumber?: number;
   tone?: MemberCardTone;
+  /**
+   * Makes the whole card a trigger: a real button stretched over the card, named "View {name}’s profile".
+   * Pair it with `MemberDialog`. Without it the card is static.
+   */
+  onOpen?: () => void;
+}
+
+/**
+ * The stretched trigger: invisible, above every card layer, with only a focus ring of its own.
+ * The ring is inset because grid and featured cards clip their overflow, and two-tone (canvas inside,
+ * sky outside) so one of the two contrasts with whatever neighborhood colour sits under it.
+ * Safari and Firefox don't focus a clicked button, so the click focuses it first: `MemberDialog`
+ * returns focus to whatever had it when it opened.
+ */
+function OpenTrigger({ name, onOpen, className }: { name: string; onOpen: () => void; className: string }) {
+  return (
+    <button
+      type="button"
+      onClick={(event) => {
+        event.currentTarget.focus();
+        onOpen();
+      }}
+      aria-label={`View ${name}’s profile`}
+      className={cn(
+        "absolute inset-0 z-40 cursor-pointer focus-visible:outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--bl-canvas),inset_0_0_0_4px_var(--bl-sky)]",
+        className,
+      )}
+    />
+  );
 }
 
 /**
@@ -69,16 +98,18 @@ function Portrait({ member, imgClassName, initialsClassName }: { member: MemberP
  * @example <MemberCard member={member} />
  * @example <MemberCard member={member} variant="featured" />
  * @example <MemberCard member={member} variant="catalogue" catalogueNumber={1} tone={{ color: "#2f9dff" }} />
+ * @example <MemberCard member={member} variant="catalogue" onOpen={() => setOpen(member)} /> — opens a `MemberDialog`
  * Catalogue cards take their color signature from `tone`, exposed as the `--hood`
  * custom property; without a tone they keep the neutral catalogue look.
  * Avoid placing MemberCard inside another card or supplying unapproved personal details.
  */
-export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ catalogueNumber, className, member, style, tone: toneProp, variant, ...props }, ref) => {
+export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ catalogueNumber, className, member, onOpen, style, tone: toneProp, variant, ...props }, ref) => {
   const tone = variant === "catalogue" ? toneProp : undefined;
   const number = catalogueNumber ?? member.catalogueNumber ?? 1;
   const hoodStyle = tone ? ({ ...style, "--hood": tone.color } as React.CSSProperties) : style;
   return (
-  <article ref={ref} className={cn(cardVariants({ variant }), className)} style={hoodStyle} {...props}>
+  // `isolate` keeps the z-40 trigger in the card's own stacking context, under the sticky nav.
+  <article ref={ref} className={cn(cardVariants({ variant }), onOpen && variant !== "catalogue" && "relative isolate", className)} style={hoodStyle} {...props}>
     {variant === "catalogue" ? (
       <>
         <BorderGlow key={tone?.color ?? "neutral"} className="rounded-panel" glowVar={tone ? "--hood" : "--color-sky"} glowRadius={28} fillOpacity={0.25}>
@@ -154,6 +185,8 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
           </div>
           <span aria-hidden className={cn("grid size-14 shrink-0 place-items-center rounded-full border text-2xl transition-transform duration-base ease-gentle group-hover:translate-x-1 motion-reduce:transform-none xl:size-11 xl:text-xl", tone && "border-(--hood) text-(--hood)")}>→</span>
         </div>
+        {/* Inside the glow so its pointer tracking still sees the hover; z-40 clears the z-30 ring. */}
+        {onOpen && <OpenTrigger name={member.name} onOpen={onOpen} className="rounded-panel" />}
         </BorderGlow>
       </>
     ) : (
@@ -184,6 +217,7 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
         <p className="mt-2 font-display text-xl leading-snug">{member.lookingFor}</p>
       </div>
     </div>
+    {onOpen && <OpenTrigger name={member.name} onOpen={onOpen} className={variant === "featured" ? "rounded-panel" : "rounded-card"} />}
       </>
     )}
   </article>

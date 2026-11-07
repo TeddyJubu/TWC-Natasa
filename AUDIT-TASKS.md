@@ -205,6 +205,7 @@ Left for the owner because they change the deployment, the live database or the 
   - [ ] Step 2, migration `0004_cleanup.sql`: no `'Long Island City'` default (T11); an admin's direct profile status change syncs to the newest application.
   - [ ] Step 3, initials for portrait-less cards (T10).
   - [ ] Step 4, member detail dialog with bio, looking-for and website (T13).
+    - **New UI for owner review:** catalogue cards on `/members` (both audiences) and in the `/account` introductions now open a member profile dialog: name, role · business, neighborhood, bio, "Looking to meet" and website (a link only for http(s), opening in a new tab). The card looks the same; it is now one button named "View {name}’s profile", with a two-tone focus ring. The dialog is a native modal `<dialog>`: the page behind it is inert and doesn't scroll, Escape, the close button or a backdrop click close it, focus returns to the card, and its entry motion is off under reduced motion.
   - [ ] Step 5, `account.tsx` split into sections (T18).
   - [ ] Step 6, CurvedLoop rings stop on their own (WCAG 2.2.2; Phase 5 leftover).
   - [ ] Step 7, docs.

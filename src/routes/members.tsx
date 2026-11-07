@@ -7,6 +7,8 @@ import {
   Container,
   Heading,
   MemberCard,
+  MemberDialog,
+  type MemberProfile,
   Section,
   Text,
   buttonVariants,
@@ -34,6 +36,7 @@ export const Route = createFileRoute("/members")({
 
 function MembersPage() {
   const [activeNeighborhood, setActiveNeighborhood] = React.useState<string>("All");
+  const [openMember, setOpenMember] = React.useState<MemberProfile | null>(null);
   const { data: hoodList = [] } = useNeighborhoods();
   const viewer = useQuery(viewerQuery);
   // Admins read the directory like approved members (public_directory() admits both).
@@ -137,7 +140,7 @@ function MembersPage() {
               <p className="text-sm text-ink-muted">No one from {activeNeighborhood} here yet.</p>
             ) : (
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {members.map((m) => <MemberCard key={m.id} member={m} variant="catalogue" tone={toneFor(m.neighborhood, hoodList)} catalogueNumber={m.catalogueNumber} />)}
+              {members.map((m) => <MemberCard key={m.id} member={m} variant="catalogue" tone={toneFor(m.neighborhood, hoodList)} catalogueNumber={m.catalogueNumber} onOpen={() => setOpenMember(m)} />)}
             </div>
             )
           )}
@@ -153,6 +156,8 @@ function MembersPage() {
         </Container>
       </Section>
 
+      {/* Public cards carry only the fields a member chose to publish, so either audience may open one. */}
+      <MemberDialog member={openMember} onClose={() => setOpenMember(null)} />
       </main>
 
       <AppFooter links={[{ label: "Home", href: "/" }, { label: "Join", href: "/join" }]} />

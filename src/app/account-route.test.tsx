@@ -5,7 +5,7 @@ import type { MemberProfile } from "@/index";
 import { demoMembers } from "@/showcase/demo-members";
 import type { Profile } from "@/features/members/queries";
 import { NEIGHBORHOOD_SEED } from "@/features/neighborhoods/queries";
-import { renderWithQueries } from "@/test/dom";
+import { renderWithQueries, stubDialog } from "@/test/dom";
 import { restoreTz, setTz } from "@/test/tz";
 import { fake } from "@/test/fake-supabase";
 
@@ -16,9 +16,12 @@ import { Route } from "@/routes/_authenticated/account";
 
 vi.spyOn(Route, "useRouteContext").mockReturnValue({ user: { id: "u1" } } as never);
 const Page = Route.options.component as React.ComponentType;
+let restoreDialog: (() => void) | undefined;
 afterEach(() => {
   cleanup();
   fake.reset();
+  restoreDialog?.();
+  restoreDialog = undefined;
 });
 
 const base: Profile = {
@@ -188,6 +191,17 @@ describe("/account", () => {
       renderAccount({}, [card("Lena Ortiz", 40), card("Mei Chen", 41)]);
       expect(screen.getByLabelText("Catalogue number 40")).toBeTruthy();
       expect(screen.getByLabelText("Catalogue number 41")).toBeTruthy();
+    });
+
+    it("open a card into a dialog with that member's bio", () => {
+      restoreDialog = stubDialog();
+      renderAccount({}, [{ ...card("Lena Ortiz", 40), bio: "Lena paints murals." }, card("Mei Chen", 41)]);
+      expect(screen.queryByRole("dialog")).toBeNull();
+      fireEvent.click(screen.getByRole("button", { name: "View Lena Ortiz’s profile" }));
+      const dialog = screen.getByRole("dialog", { name: "Lena Ortiz, member profile" });
+      expect(within(dialog).getByText("Lena paints murals.")).toBeTruthy();
+      fireEvent.click(within(dialog).getByRole("button", { name: "Close" }));
+      expect(screen.queryByRole("dialog")).toBeNull();
     });
 
     it("show an empty state, never demo members", () => {

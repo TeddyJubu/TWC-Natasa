@@ -3,7 +3,7 @@ import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Badge, Button, Container, FileUpload, FormActions, FormField, FormNotice, FormSection, Heading,
-  Input, MemberCard, Section, SectionHeader, Select, Switch, Text, Textarea, cn, initials,
+  Input, MemberCard, MemberDialog, type MemberProfile, Section, SectionHeader, Select, Switch, Text, Textarea, cn, initials,
 } from "@/index";
 import { AppNav, AppPage } from "@/app/layout/AppLayout";
 import { getSupabase } from "@/app/supabase";
@@ -91,6 +91,8 @@ function AccountPage() {
   const [signOutError, setSignOutError] = React.useState<string | null>(null);
   // Unsaved form edits; drives the preview and the public switch until the next save.
   const [draft, setDraft] = React.useState<ProfilePatch | null>(null);
+  // The introduction opened into a MemberDialog; the dialog returns focus to its card on close.
+  const [openIntro, setOpenIntro] = React.useState<MemberProfile | null>(null);
 
   async function signOut() {
     setSignOutError(null);
@@ -346,13 +348,14 @@ function AccountPage() {
                 <p className="text-center text-sm text-ink-muted">No introductions yet. As more neighbors join the directory, they’ll appear here.</p>
               ) : (
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                  {intros.map((m) => <MemberCard key={m.id} member={m} variant="catalogue" tone={toneFor(m.neighborhood, hoodList)} catalogueNumber={m.catalogueNumber} />)}
+                  {intros.map((m) => <MemberCard key={m.id} member={m} variant="catalogue" tone={toneFor(m.neighborhood, hoodList)} catalogueNumber={m.catalogueNumber} onOpen={() => setOpenIntro(m)} />)}
                 </div>
               )}
             </>
           )}
         </Container>
       </Section>
+      <MemberDialog member={openIntro} onClose={() => setOpenIntro(null)} />
       </main>
     </AppPage>
   );

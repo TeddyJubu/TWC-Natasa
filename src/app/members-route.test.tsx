@@ -4,7 +4,7 @@ import { act, cleanup, fireEvent, screen, waitFor, within } from "@testing-libra
 import type { MemberProfile } from "@/index";
 import { demoMembers } from "@/showcase/demo-members";
 import { NEIGHBORHOOD_SEED } from "@/features/neighborhoods/queries";
-import { renderWithQueries } from "@/test/dom";
+import { renderWithQueries, stubDialog } from "@/test/dom";
 import { fake } from "@/test/fake-supabase";
 
 vi.mock("@/app/supabase", async () => (await import("@/test/fake-supabase")).fakeSupabaseModule);
@@ -13,9 +13,12 @@ vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), 
 import { Route } from "@/routes/members";
 
 const Page = Route.options.component as React.ComponentType;
+let restoreDialog: (() => void) | undefined;
 afterEach(() => {
   cleanup();
   fake.reset();
+  restoreDialog?.();
+  restoreDialog = undefined;
 });
 
 // Query functions await getSupabase() before calling the rpc, so let pending work settle first.
@@ -162,5 +165,19 @@ describe("/members", () => {
   it("counts the profiles shown", () => {
     renderWithQueries(<Page />, [viewer(true, true), [["directory"], [card("Rosa Diaz", 12), card("Lena Ortiz", 15)]]]);
     expect(within(document.body).getByText("02 profiles")).toBeTruthy();
+  });
+
+  it.each([
+    ["approved members", viewer(true, true), "directory"],
+    ["visitors", viewer(false, false), "public-profiles"],
+  ] as const)("%s open a card into a dialog with that member's bio", (_who, v, key) => {
+    restoreDialog = stubDialog();
+    renderWithQueries(<Page />, [v, [[key], [{ ...card("Rosa Diaz", 12), bio: "Rosa bakes for the block." }, card("Lena Ortiz", 15)]]]);
+    expect(screen.queryByRole("dialog")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "View Rosa Diaz’s profile" }));
+    const dialog = screen.getByRole("dialog", { name: "Rosa Diaz, member profile" });
+    expect(within(dialog).getByText("Rosa bakes for the block.")).toBeTruthy();
+    fireEvent.click(within(dialog).getByRole("button", { name: "Close" }));
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
 });

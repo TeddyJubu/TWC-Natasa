@@ -43,3 +43,27 @@ export function renderWithQueries(ui: React.ReactElement, seed: [readonly unknow
   for (const [key, data] of [[["neighborhoods"], NEIGHBORHOOD_SEED] as const, ...seed]) queryClient.setQueryData(key, data);
   return { queryClient, ...render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>) };
 }
+
+/**
+ * jsdom has no modal dialog: stubs `showModal`/`close` on the prototype so they toggle `open`, move focus
+ * into the dialog, and fire `close` like a browser. Returns a restore function for `afterEach`.
+ */
+export function stubDialog() {
+  const proto = HTMLDialogElement.prototype;
+  const saved = (["showModal", "close"] as const).map((k) => [k, Object.getOwnPropertyDescriptor(proto, k)] as const);
+  proto.showModal = function (this: HTMLDialogElement) {
+    this.setAttribute("open", "");
+    this.querySelector<HTMLElement>("[autofocus], button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])")?.focus();
+  };
+  proto.close = function (this: HTMLDialogElement) {
+    if (!this.hasAttribute("open")) return;
+    this.removeAttribute("open");
+    this.dispatchEvent(new Event("close"));
+  };
+  return () => {
+    for (const [k, d] of saved) {
+      if (d) Object.defineProperty(proto, k, d);
+      else delete (proto as Partial<HTMLDialogElement>)[k];
+    }
+  };
+}

@@ -125,6 +125,8 @@
 @layer base {
   html { background: var(--bl-canvas); color: var(--bl-ink); }
   body { overflow-x: hidden; font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+  /* A modal dialog (e.g. MemberDialog) scrolls on its own; the page behind it stays put. */
+  html:has(dialog[open]:modal) { overflow: hidden; }
 }
 
 /* Sky fade used behind hero photography */

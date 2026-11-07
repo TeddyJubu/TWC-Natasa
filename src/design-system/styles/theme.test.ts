@@ -50,3 +50,11 @@ describe("resting motion states don't trap position: fixed", () => {
     expect(value(rule, "filter")).toBe("none");
   });
 });
+
+// A modal member profile scrolls inside itself; the page behind it must not scroll (or chain-scroll) along.
+describe("modal dialogs lock page scroll", () => {
+  it("hides html overflow while a modal dialog is open", () => {
+    const rule = css.match(/html:has\(dialog\[open\]:modal\)\s*\{([^}]*)\}/)?.[1] ?? "";
+    expect(value(rule, "overflow")).toBe("hidden");
+  });
+});
