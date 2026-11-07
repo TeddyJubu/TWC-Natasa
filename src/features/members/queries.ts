@@ -33,6 +33,37 @@ export const directoryQuery = queryOptions({
   },
 });
 
+export type Viewer = { signedIn: boolean; member: boolean };
+
+/** Who is looking: signed out, signed in but not approved, or an approved member (is_member()). */
+export const viewerQuery = queryOptions({
+  queryKey: ["viewer"],
+  queryFn: async (): Promise<Viewer> => {
+    const supabase = await getSupabase();
+    const { data, error } = await supabase.auth.getSession();
+    if (error) throw error;
+    if (!data.session) return { signedIn: false, member: false };
+    const member = await supabase.rpc("is_member");
+    if (member.error) throw member.error;
+    return { signedIn: true, member: member.data === true };
+  },
+});
+
+/** Opted-in public cards (§2.10). public_profiles() returns no id, so cards are keyed by catalogue number. */
+export const publicProfilesQuery = queryOptions({
+  queryKey: ["public-profiles"],
+  queryFn: async (): Promise<MemberProfile[]> => {
+    const supabase = await getSupabase();
+    const { data, error } = await supabase.rpc("public_profiles");
+    if (error) throw error;
+    if (!data?.length) return [];
+    const urls = await avatarUrls(data.map((d) => d.avatar_path));
+    return data.map((d) =>
+      toMemberProfile({ ...d, id: `catalogue-${d.catalogue_number}` }, { image: imageFor(d.avatar_path, urls) }),
+    );
+  },
+});
+
 export const profileQuery = (userId: string) =>
   queryOptions({
     queryKey: ["profile", userId],

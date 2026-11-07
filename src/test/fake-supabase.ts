@@ -35,6 +35,9 @@ function chain(): unknown {
 export const fakeClient = {
   from: (table: string) => (fake.calls.push(["from", table]), chain()),
   rpc: (fn: string, args?: unknown) => (fake.calls.push(["rpc", fn, ...(args ? [args] : [])]), chain()),
+  auth: {
+    getSession: async () => (fake.calls.push(["getSession"]), next()),
+  },
   storage: {
     from: (bucket: string) => ({
       upload: async (...args: unknown[]) => (fake.calls.push(["upload", bucket, ...args]), next()),

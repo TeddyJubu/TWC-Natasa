@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 import { getSupabase } from "@/app/supabase";
+import { handleAuthEvent } from "@/app/auth-events";
 
 import appCss from "../styles.css?url";
 import { ImageTrail } from "@/index";
@@ -58,11 +59,7 @@ function RootComponent() {
     let unsubscribe: (() => void) | undefined;
     void getSupabase().then((supabase) => {
       if (cancelled) return;
-      const { data } = supabase.auth.onAuthStateChange((event) => {
-        if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
-        router.invalidate();
-        if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
-      });
+      const { data } = supabase.auth.onAuthStateChange((event) => handleAuthEvent(event, queryClient, () => void router.invalidate()));
       unsubscribe = () => data.subscription.unsubscribe();
     }).catch((error) => console.error("[auth] listener setup failed", error));
     return () => {

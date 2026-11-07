@@ -15,11 +15,10 @@ import {
   buttonVariants,
   cn,
 } from "@/index";
-import { demoMembers } from "@/showcase/demo-members";
 import { Shell } from "@/showcase/Shell";
 import { useNeighborhoods } from "@/features/neighborhoods/queries";
 import { toneFor } from "@/features/neighborhoods/tone";
-import { directoryQuery } from "@/features/members/queries";
+import { directoryQuery, publicProfilesQuery, viewerQuery } from "@/features/members/queries";
 
 export const Route = createFileRoute("/members")({
   head: () => ({
@@ -38,21 +37,31 @@ export const Route = createFileRoute("/members")({
 function MembersPage() {
   const [activeNeighborhood, setActiveNeighborhood] = React.useState<string>("All");
   const { data: hoodList = [] } = useNeighborhoods();
-  const directory = useQuery(directoryQuery);
-  const realMembers = directory.data ?? [];
+  const viewer = useQuery(viewerQuery);
+  const member = viewer.data?.member === true;
+  // Two audiences (§2.10): approved members get the full directory; everyone else, opted-in public cards.
+  const directory = useQuery({ ...directoryQuery, enabled: member });
+  const publicCards = useQuery({ ...publicProfilesQuery, enabled: viewer.isSuccess && !member });
+  const list = member ? directory : publicCards;
+  const all = list.data ?? [];
+  const audience = member ? "member" : viewer.data?.signedIn ? "pending" : "visitor";
+  // A filter chosen in one audience can match nothing in the other.
+  React.useEffect(() => setActiveNeighborhood("All"), [audience]);
   // Active neighborhoods in DB order, plus any a listed member still uses (e.g. one an admin deactivated).
   const hoodNames = hoodList.map((hood) => hood.name);
-  const neighborhoods = ["All", ...new Set([...hoodNames, ...realMembers.map((m) => m.neighborhood)])];
-  const all = [...realMembers, ...demoMembers];
+  const neighborhoods = ["All", ...new Set([...hoodNames, ...all.map((m) => m.neighborhood)])];
   const members = activeNeighborhood === "All"
     ? all
-    : all.filter((member) => member.neighborhood === activeNeighborhood);
+    : all.filter((m) => m.neighborhood === activeNeighborhood);
+  const loading = viewer.isPending || (!viewer.isError && list.isPending);
+  const failed = viewer.isError || list.isError;
+  const retry = () => void (viewer.isError ? viewer.refetch() : list.refetch());
 
   return (
     <Shell bare>
       <Navbar
         brand={<Link to="/" aria-label="The Women’s Collective home"><BrandLockup compact /></Link>}
-        links={[{ label: "Home", href: "/" }, { label: "Members", href: "/members" }, { label: "Join", href: "/join" }, { label: "Sign in", href: "/account" }]}
+        links={[{ label: "Home", href: "/" }, { label: "Members", href: "/members" }, { label: "Join", href: "/join" }, { label: viewer.data?.signedIn ? "Profile" : "Sign in", href: viewer.data?.signedIn ? "/account" : "/auth" }]}
         action={<Link to="/join" className={buttonVariants({ variant: "ink", size: "sm" })}>Join<span className="hidden sm:inline"> the collective</span></Link>}
       />
 
@@ -64,7 +73,13 @@ function MembersPage() {
           </div>
           <Text size="lg">Founders, makers, strategists, and neighbors sharing what they know—and finding new ways to work together.</Text>
         </Container>
-        <div className="bg-sun py-3 text-center text-sm text-sun-ink">These ten profiles are fictional examples created for the design demonstration.</div>
+        {viewer.isSuccess && audience !== "member" && (
+          <div className="bg-sun py-3 text-center text-sm text-sun-ink">
+            {audience === "visitor"
+              ? <>Showing members who share their profile publicly. <Link to="/auth" className="underline underline-offset-4">Sign in to see the full directory</Link></>
+              : "Showing members who share their profile publicly. Your directory unlocks once you’re welcomed in."}
+          </div>
+        )}
       </header>
 
       <Section tone="night" className="rounded-dome pt-24 md:pt-32">
@@ -74,7 +89,7 @@ function MembersPage() {
               <Badge variant="solid">The directory</Badge>
               <Heading as="h2" className="mt-5 max-w-2xl">A Catalogue of Women Building Nearby</Heading>
             </div>
-            <p aria-live="polite" className="shrink-0 pb-1 text-sm text-ink-muted">{String(members.length).padStart(2, "0")} profiles</p>
+            <p aria-live="polite" className="shrink-0 pb-1 text-sm text-ink-muted">{list.isSuccess && `${String(members.length).padStart(2, "0")} profiles`}</p>
           </div>
 
           <div className="flex flex-col gap-5">
@@ -101,16 +116,33 @@ function MembersPage() {
             </div>
           </div>
 
-          {directory.isError && (
+          {failed && (
             <div role="alert" className="flex flex-wrap items-center gap-4 text-sm text-ink-muted">
               <p>We couldn’t load the member directory right now.</p>
-              <Button type="button" size="sm" variant="outline" onClick={() => void directory.refetch()}>Retry</Button>
+              <Button type="button" size="sm" variant="outline" onClick={retry}>Retry</Button>
             </div>
           )}
 
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {members.map((member, index) => <MemberCard key={member.id} member={member} variant="catalogue" tone={toneFor(member.neighborhood, hoodList)} catalogueNumber={index + 1} />)}
-          </div>
+          {loading ? (
+            <p role="status" className="text-sm text-ink-muted">Loading members…</p>
+          ) : list.isSuccess && all.length === 0 ? (
+            <div className="flex max-w-xl flex-col gap-3 border-t border-line pt-8">
+              <p className="font-display text-2xl">{audience === "member" ? "No members are listed yet." : "No one has shared a public profile yet."}</p>
+              <p className="text-sm text-ink-muted">
+                {audience === "member"
+                  ? "Switch on “Show me in the member directory” on your profile and you’ll be the first neighbor here."
+                  : "Members choose whether their card appears on the public website. Check back soon."}
+              </p>
+            </div>
+          ) : (
+            members.length === 0 ? (
+              <p className="text-sm text-ink-muted">No one from {activeNeighborhood} here yet.</p>
+            ) : (
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {members.map((m) => <MemberCard key={m.id} member={m} variant="catalogue" tone={toneFor(m.neighborhood, hoodList)} catalogueNumber={m.catalogueNumber} />)}
+            </div>
+            )
+          )}
         </Container>
       </Section>
 

@@ -4,7 +4,7 @@ import { fake } from "@/test/fake-supabase";
 
 vi.mock("@/app/supabase", async () => (await import("@/test/fake-supabase")).fakeSupabaseModule);
 
-import { avatarUrls, directoryQuery, introsQuery, profileQuery } from "./queries";
+import { avatarUrls, directoryQuery, introsQuery, profileQuery, publicProfilesQuery, viewerQuery } from "./queries";
 import { saveProfile, saveProfileMutation, uploadAvatar, uploadAvatarMutation } from "./mutations";
 
 const run = (q: { queryFn?: unknown }) => (q.queryFn as (c: unknown) => Promise<unknown>)({});
@@ -56,6 +56,61 @@ describe("directoryQuery", () => {
   it("throws the rpc error", async () => {
     fake.results = [{ data: null, error: dbError }];
     await expect(run(directoryQuery)).rejects.toBe(dbError);
+  });
+});
+
+describe("viewerQuery", () => {
+  it("is keyed as the viewer", () => {
+    expect(viewerQuery.queryKey).toEqual(["viewer"]);
+  });
+
+  it("is a signed-out visitor without a session, and skips the rpc", async () => {
+    fake.results = [{ data: { session: null }, error: null }];
+    expect(await run(viewerQuery)).toEqual({ signedIn: false, member: false });
+    expect(fake.calls).toEqual([["getSession"]]);
+  });
+
+  it.each([true, false])("asks is_member() for a signed-in viewer (member=%s)", async (member) => {
+    fake.results = [{ data: { session: { user: { id: "u1" } } }, error: null }, { data: member, error: null }];
+    expect(await run(viewerQuery)).toEqual({ signedIn: true, member });
+    expect(fake.calls).toEqual([["getSession"], ["rpc", "is_member"]]);
+  });
+
+  it("throws session and rpc errors", async () => {
+    fake.results = [{ data: { session: null }, error: dbError }];
+    await expect(run(viewerQuery)).rejects.toBe(dbError);
+    fake.results = [{ data: { session: { user: { id: "u1" } } }, error: null }, { data: null, error: dbError }];
+    await expect(run(viewerQuery)).rejects.toBe(dbError);
+  });
+});
+
+describe("publicProfilesQuery", () => {
+  const { id: _id, ...publicRow } = dirRow;
+
+  it("uses its own key, separate from the members-only directory", () => {
+    expect(publicProfilesQuery.queryKey).toEqual(["public-profiles"]);
+  });
+
+  it("maps public_profiles rows keyed by catalogue number, with signed portraits", async () => {
+    fake.results = [
+      { data: [publicRow], error: null },
+      { data: [{ path: "u1/a.jpg", signedUrl: "https://signed/a" }], error: null },
+    ];
+    const out = (await run(publicProfilesQuery)) as { id: string; image: string; catalogueNumber: number }[];
+    expect(fake.calls[0]).toEqual(["rpc", "public_profiles"]);
+    expect(out).toHaveLength(1);
+    expect(out[0]).toMatchObject({ id: "catalogue-3", name: "Rosa Diaz", image: "https://signed/a", catalogueNumber: 3 });
+  });
+
+  it("returns an empty list without signing anything", async () => {
+    fake.results = [{ data: [], error: null }];
+    expect(await run(publicProfilesQuery)).toEqual([]);
+    expect(fake.calls).toEqual([["rpc", "public_profiles"]]);
+  });
+
+  it("throws the rpc error", async () => {
+    fake.results = [{ data: null, error: dbError }];
+    await expect(run(publicProfilesQuery)).rejects.toBe(dbError);
   });
 });
 
