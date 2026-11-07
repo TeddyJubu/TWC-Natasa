@@ -1,7 +1,10 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { BrandLockup, Container, Navbar, Section, buttonVariants } from "@/index";
 import { Shell } from "@/showcase/Shell";
-import { MembershipApplication } from "@/showcase/MembershipApplication";
+import { ApplicationForm } from "@/features/applications/ApplicationForm";
+import { useSubmitApplication } from "@/features/applications/mutations";
+import { applicantQuery } from "@/features/applications/queries";
 
 export const Route = createFileRoute("/join")({
   head: () => ({
@@ -18,6 +21,9 @@ export const Route = createFileRoute("/join")({
 });
 
 function JoinPage() {
+  const { mutateAsync: submit } = useSubmitApplication();
+  // Prefill is a convenience: while it loads, or if it fails, the form simply starts empty.
+  const { data: applicant } = useQuery(applicantQuery);
   return (
     <Shell bare>
       <Navbar
@@ -29,7 +35,7 @@ function JoinPage() {
       <Section className="pt-14 md:pt-20">
         <Container>
           <div className="overflow-hidden rounded-panel border border-line shadow-soft">
-            <MembershipApplication />
+            <ApplicationForm submit={submit} initial={applicant ?? undefined} />
           </div>
         </Container>
       </Section>

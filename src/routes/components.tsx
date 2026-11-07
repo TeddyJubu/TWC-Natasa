@@ -9,7 +9,7 @@ import p2 from "@/assets/photography/portrait-2.jpg";
 import p3 from "@/assets/photography/portrait-3.jpg";
 import event from "@/assets/photography/event.jpg";
 import flower from "@/assets/illustrations/flower.png";
-import { MembershipApplication } from "@/showcase/MembershipApplication";
+import { ApplicationForm } from "@/features/applications/ApplicationForm";
 
 export const Route = createFileRoute("/components")({
   head: () => ({
@@ -84,7 +84,7 @@ const sections: { name: string; render: () => React.ReactNode }[] = [
   { name: "FormProgress", render: () => <Specimen label="items · current"><K.FormProgress className="w-full" current={3} items={["About", "Work", "Community", "Features", "Directory", "Media", "Events", "Contact", "Guidelines", "Signature"]} /></Specimen> },
   { name: "Reveal", render: () => <Specimen label="once · blur"><div className="grid w-full gap-4 md:grid-cols-2"><K.Reveal className="rounded-card bg-mint p-8"><K.Heading size="title">Soft entrance</K.Heading></K.Reveal><K.Reveal blur className="rounded-card bg-lilac p-8"><K.Heading size="title">Blur entrance</K.Heading></K.Reveal></div></Specimen> },
   { name: "Stagger", render: () => <Specimen label="children reveal in sequence"><K.Stagger className="grid w-full gap-3 sm:grid-cols-3">{["Meet", "Learn", "Grow"].map((label) => <div key={label} className="rounded-card bg-surface p-6 font-display text-2xl">{label}</div>)}</K.Stagger></Specimen> },
-  { name: "Application form", render: () => <Specimen label="Complete membership application · conditional questions · confirmation state" className="[&>div:first-child]:p-0"><MembershipApplication /></Specimen> },
+  { name: "Application form", render: () => <Specimen label="Complete membership application · conditional questions · confirmation state" className="[&>div:first-child]:p-0"><ApplicationForm submit={async () => {}} resettable /></Specimen> },
   { name: "Footer", render: () => <Specimen label="brand · statement · contacts · links"><K.Footer className="w-full rounded-card" brand={<K.BrandLockup logoVariant="white" />} statement="Help someone else shine." links={[{ label: "Our mission", href: "#" }]} note="The Women’s Collective" /></Specimen> },
 ];
 
