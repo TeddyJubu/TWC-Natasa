@@ -13,11 +13,23 @@ export interface CurvedLoopProps {
   className?: string;
 }
 
+/** Auto-advance ends after this much on-screen running time (WCAG 2.2.2 Pause, Stop, Hide). */
+const AUTO_STOP_MS = 5000;
+/** Longest gap one frame may add, so a throttled or backgrounded tab's pause isn't counted. */
+const MAX_FRAME_MS = 100;
+
 /**
  * CurvedLoop — text flows along a gentle wave like a marquee.
  * Adapted from React Bits "CurvedLoop": the marquee is drawn on an SVG path,
  * can be dragged when `interactive` is true, pauses off screen via an
  * IntersectionObserver, and freezes for reduced-motion preferences.
+ *
+ * Auto-advance stops by itself after 5 seconds of on-screen running time and
+ * rests where it is, never restarting automatically: WCAG 2.2.2 (Pause, Stop,
+ * Hide) lets moving content that starts on its own run past 5 s only if users
+ * can pause it, and this decorative, aria-hidden marquee has no pause control.
+ * Time off screen does not count. Dragging (`interactive`) still works after
+ * the stop, since user-initiated motion is exempt.
  */
 export function CurvedLoop({
   marqueeText = "",
@@ -48,6 +60,10 @@ export function CurvedLoop({
   const dirRef = useRef<"left" | "right">(direction);
   const velRef = useRef(0);
   const reducedRef = useRef(false);
+  // On-screen running time (ms) and whether auto-advance has ended. Refs, so a re-measure
+  // (new `spacing`) or a `speed` change re-runs the effect without resetting the budget.
+  const runRef = useRef(0);
+  const doneRef = useRef(false);
 
   const totalText = spacing
     ? Array(Math.ceil(1800 / spacing) + 2)
@@ -84,11 +100,22 @@ export function CurvedLoop({
   }, [spacing]);
 
   useEffect(() => {
-    if (!spacing || reducedRef.current) return;
+    if (!spacing || reducedRef.current || doneRef.current) return;
     const svg = svgRef.current;
     if (!svg) return;
     let frame = 0;
-    const step = () => {
+    // Timestamp of the previous frame in this visible stretch; reset whenever the loop
+    // stops so off-screen gaps never count toward the auto-stop budget.
+    let last: number | undefined;
+    const step = (ts: number) => {
+      if (last !== undefined) runRef.current += Math.min(ts - last, MAX_FRAME_MS);
+      last = ts;
+      if (runRef.current >= AUTO_STOP_MS) {
+        // Rest where it is; the doneRef guards below keep anything from restarting auto-advance.
+        doneRef.current = true;
+        frame = 0;
+        return;
+      }
       if (!dragRef.current && textPathRef.current) {
         const delta = dirRef.current === "right" ? speed : -speed;
         const current = parseFloat(textPathRef.current.getAttribute("startOffset") || "0");
@@ -102,12 +129,13 @@ export function CurvedLoop({
     const stop = () => {
       if (frame) cancelAnimationFrame(frame);
       frame = 0;
+      last = undefined;
     };
     // No frames run off screen: the observer (which reports once on observe) starts the loop
     // when the marquee is visible and cancels it when hidden.
     const observer = new IntersectionObserver((entries) => {
       if (entries.some((entry) => entry.isIntersecting)) {
-        if (!frame) frame = requestAnimationFrame(step);
+        if (!frame && !doneRef.current) frame = requestAnimationFrame(step);
       } else {
         stop();
       }
