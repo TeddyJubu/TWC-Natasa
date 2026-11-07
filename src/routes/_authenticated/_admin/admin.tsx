@@ -21,11 +21,11 @@ const TABS = [
 ];
 
 // Four serif labels don't fit four equal columns at phone width. Below md the tab list becomes a scrolling row
-// of smaller labels (display:flex sidesteps the component's inline grid columns); from md up the
+// of smaller labels (still 24px: idle ink-faint tabs need large text for 3:1) (display:flex sidesteps the component's inline grid columns); from md up the
 // design-system defaults apply again. The Tabs component itself is untouched.
 const PHONE_TABS = [
   "[&_[role=tablist]]:flex [&_[role=tablist]]:gap-8 [&_[role=tablist]]:overflow-x-auto md:[&_[role=tablist]]:grid md:[&_[role=tablist]]:gap-0",
-  "[&_[role=tab]]:mb-0 [&_[role=tab]]:shrink-0 [&_[role=tab]]:whitespace-nowrap [&_[role=tab]]:pb-5 [&_[role=tab]]:text-xl",
+  "[&_[role=tab]]:mb-0 [&_[role=tab]]:shrink-0 [&_[role=tab]]:whitespace-nowrap [&_[role=tab]]:pb-5 [&_[role=tab]]:text-2xl",
   "md:[&_[role=tab]]:-mb-px md:[&_[role=tab]]:pb-10 md:[&_[role=tab]]:text-3xl",
 ].join(" ");
 

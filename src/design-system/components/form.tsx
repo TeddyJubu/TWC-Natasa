@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../lib/utils";
 
 const fieldVariants = cva(
-  "peer w-full font-sans text-base text-ink placeholder:text-ink-faint transition-[border-color,background-color,box-shadow,transform] duration-300 ease-[var(--ease-snap)] hover:border-ink-muted focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 aria-[invalid=true]:border-danger aria-[invalid=true]:focus-visible:ring-danger/20 motion-reduce:transition-none",
+  "peer w-full font-sans text-base text-ink placeholder:text-ink-muted/85 transition-[border-color,background-color,box-shadow,transform] duration-300 ease-[var(--ease-snap)] hover:border-ink-muted focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 aria-[invalid=true]:border-danger aria-[invalid=true]:focus-visible:ring-danger/20 motion-reduce:transition-none",
   {
     variants: {
       variant: {

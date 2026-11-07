@@ -12,7 +12,7 @@ const cardVariants = cva("group border border-line bg-canvas text-ink transition
     variant: {
       grid: "rounded-card overflow-hidden",
       featured: "grid rounded-panel overflow-hidden md:grid-cols-[1.05fr_1fr]",
-      catalogue: "rounded-panel bg-canvas text-ink hover:-translate-y-1.5",
+      catalogue: "tone-night rounded-panel bg-canvas text-ink hover:-translate-y-1.5",
     },
   },
   defaultVariants: { variant: "grid" },
@@ -72,7 +72,7 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
                 tone ? "bg-(--hood)" : "bg-surface",
               )}
             >
-              <span className="font-display text-2xl leading-none tabular-nums text-canvas sm:text-3xl xl:text-2xl">
+              <span className={cn("font-display text-2xl leading-none tabular-nums sm:text-3xl xl:text-2xl", tone ? "text-canvas" : "text-ink")}>
                 {formatCatalogueNumber(number)}
               </span>
             </span>

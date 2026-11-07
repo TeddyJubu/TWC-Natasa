@@ -7,7 +7,7 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: "bg-sky text-sky-ink hover:brightness-110",
+        primary: "bg-sky-strong text-sky-ink hover:brightness-95",
         white: "bg-white text-black hover:bg-surface-strong",
         ink: "bg-ink text-canvas hover:opacity-85",
         sun: "bg-sun text-sun-ink hover:brightness-105",

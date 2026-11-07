@@ -1,7 +1,7 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import {
   Accordion, Badge, ConstellationLogo, Container, FeatureCard,
-  CurvedGallery, Heading, Hero, ImageFrame, Ribbon, Section, SectionHeader, Split, Statement, Text, buttonVariants,
+  CurvedGallery, Heading, Hero, ImageFrame, Ribbon, Section, SectionHeader, Split, Statement, Text, buttonVariants, cn, type ConstellationLogoProps,
 } from "@/index";
 import { useQuery } from "@tanstack/react-query";
 import { publicProfilesQuery } from "@/features/members/queries";
@@ -40,14 +40,15 @@ const links = [
   { label: "Sign in", href: "/account" },
 ];
 
-const neighborhoods = [
-  { name: "Long Island City", image: neighborhoodLic, overlay: "from-lic via-lic/55", logo: "long-island-city" as const },
-  { name: "Sunnyside", image: neighborhoodSunnyside, overlay: "from-sunnyside via-sunnyside/55", logo: "sunnyside" as const },
-  { name: "Astoria", image: neighborhoodAstoria, overlay: "from-astoria via-astoria/55", logo: "astoria" as const },
-  { name: "Jackson Heights", image: neighborhoodJacksonHeights, overlay: "from-jackson-heights via-jackson-heights/55", logo: "jackson-heights" as const },
-  { name: "Elmhurst", image: neighborhoodElmhurst, overlay: "from-elmhurst via-elmhurst/55", logo: "elmhurst" as const },
-  { name: "Forest Hills", image: neighborhoodForestHills, overlay: "from-forest-hills via-forest-hills/55", logo: "forest-hills" as const },
-  { name: "Rego Park", image: neighborhoodRegoPark, overlay: "from-rego-park via-rego-park/55", logo: "rego-park" as const },
+// `dark`: black title on the light hues, where white falls under 3:1 (T26).
+const neighborhoods: { name: string; image: string; overlay: string; logo: ConstellationLogoProps["variant"]; dark?: boolean }[] = [
+  { name: "Long Island City", image: neighborhoodLic, overlay: "from-lic via-lic/55", dark: true, logo: "long-island-city" },
+  { name: "Sunnyside", image: neighborhoodSunnyside, overlay: "from-sunnyside via-sunnyside/55", logo: "sunnyside" },
+  { name: "Astoria", image: neighborhoodAstoria, overlay: "from-astoria via-astoria/55", dark: true, logo: "astoria" },
+  { name: "Jackson Heights", image: neighborhoodJacksonHeights, overlay: "from-jackson-heights via-jackson-heights/55", logo: "jackson-heights" },
+  { name: "Elmhurst", image: neighborhoodElmhurst, overlay: "from-elmhurst via-elmhurst/55", dark: true, logo: "elmhurst" },
+  { name: "Forest Hills", image: neighborhoodForestHills, overlay: "from-forest-hills via-forest-hills/55", dark: true, logo: "forest-hills" },
+  { name: "Rego Park", image: neighborhoodRegoPark, overlay: "from-rego-park via-rego-park/55", logo: "rego-park" },
 ];
 
 function HomePage() {
@@ -122,8 +123,8 @@ function HomePage() {
                 <img src={item.image} alt={`${item.name}, Queens`} loading="lazy" width={768} height={768} className="absolute inset-0 size-full object-cover transition-transform duration-slow ease-gentle group-hover:scale-105" />
                 <div className={`absolute inset-0 bg-gradient-to-t ${item.overlay} to-transparent`} aria-hidden />
                 <div className="relative z-10 flex w-full flex-col justify-between p-6">
-                  <ConstellationLogo variant={item.logo} size="sm" className="brightness-0 invert" aria-hidden alt="" />
-                  <h3 className="font-display text-3xl">{item.name}</h3>
+                  <ConstellationLogo variant={item.logo} size="sm" className={item.dark ? "brightness-0" : "brightness-0 invert"} aria-hidden alt="" />
+                  <h3 className={cn("font-display text-3xl", item.dark && "text-black")}>{item.name}</h3>
                 </div>
               </article>
             ))}

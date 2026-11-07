@@ -31,9 +31,10 @@
   --bl-surface-strong: #e6e9ee;
   --bl-ink: #1f1f1c;
   --bl-ink-muted: #525252;
-  --bl-ink-faint: #b9b9b4;
+  --bl-ink-faint: #92928d; /* was #b9b9b4 (1.9:1); 3:1 on canvas for large statement text (T26) */
   --bl-line: rgb(31 31 28 / 0.1);
   --bl-sky: #1f8ad6;
+  --bl-sky-strong: #1b7abd; /* button fills: white text at 4.6:1 (sky is 3.7:1) */
   --bl-sky-ink: #ffffff;
   --bl-sun: #edd22e;
   --bl-sun-ink: #1f1f1c;
@@ -76,6 +77,7 @@
   --color-ink-faint: var(--bl-ink-faint);
   --color-line: var(--bl-line);
   --color-sky: var(--bl-sky);
+  --color-sky-strong: var(--bl-sky-strong);
   --color-sky-ink: var(--bl-sky-ink);
   --color-sun: var(--bl-sun);
   --color-sun-ink: var(--bl-sun-ink);
@@ -239,5 +241,5 @@
 /* Force light tokens inside a night block (e.g. light cards on a black section) */
 .tone-light {
   --bl-canvas: #fcfcfa; --bl-surface: #f2f4f7; --bl-surface-strong: #e6e9ee;
-  --bl-ink: #1f1f1c; --bl-ink-muted: #525252; --bl-ink-faint: #b9b9b4; --bl-line: rgb(31 31 28 / 0.1);
+  --bl-ink: #1f1f1c; --bl-ink-muted: #525252; --bl-ink-faint: #92928d; --bl-line: rgb(31 31 28 / 0.1);
 }

@@ -228,7 +228,10 @@ export const Navbar = React.forwardRef<HTMLElement, NavbarProps>(({ className, v
               aria-expanded={menuOpen}
               aria-controls={panelId}
               onClick={() => setMenuOpen((open) => !open)}
-              className="inline-flex size-11 items-center justify-center rounded-full border border-current/25 transition-[background-color,opacity] duration-fast ease-gentle hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current motion-reduce:transition-none md:hidden"
+              className={cn("inline-flex size-11 items-center justify-center rounded-full border transition-[background-color,opacity] duration-fast ease-gentle hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current motion-reduce:transition-none md:hidden",
+                // 3:1 border: ink at 55% on the light bar; full white over hero sky and photos.
+                variant === "solid" ? "border-current/55" : "border-current",
+              )}
             >
               <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                 {menuOpen ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 8h16M4 16h16" />}
