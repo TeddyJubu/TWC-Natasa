@@ -1,25 +1,96 @@
-# Custom design system (TanStack Start)
+# The Women’s Collective
 
-A deliberately bare [TanStack Start](https://tanstack.com/start) + React starter
-for building a design system from scratch. No CSS framework, no component
-library, no theme tokens — just a router, a blank page, and a plain-CSS reset.
-Bring your own styling approach.
+The website and member area for The Women’s Collective: a marketing site, a membership application
+(`/join`), a members directory (`/members`), a member account page (`/account`) and an admin area
+(`/admin`) for reviewing applications, members, neighborhoods and headshot bookings.
 
-## What's (intentionally) not here
-
-- No Tailwind, no PostCSS, no `components.json`
-- No shadcn/ui or Radix primitives
-- No theme tokens or design system — `src/styles.css` is a minimal reset
+See [ARCHITECTURE.md](ARCHITECTURE.md) for how it fits together and [AUDIT-TASKS.md](AUDIT-TASKS.md) for
+open work. Rules for coding agents live in [AGENTS.md](AGENTS.md).
 
 ## Stack
 
-- TanStack Start + TanStack Router (file-based routing under `src/routes/`)
+- TanStack Start + TanStack Router (file-based routes in `src/routes/`) and TanStack Query
 - React 19 + TypeScript
-- TanStack Query, Zod, Recharts, date-fns
+- Tailwind CSS v4 and the in-repo design system in `src/design-system/`, which app code imports only
+  through the `@/index` barrel (ESLint-enforced)
+- Supabase via Lovable Cloud: auth, Postgres with row-level security, storage. The browser talks to
+  Supabase directly, so the database policies are the security boundary.
+- Built for a Cloudflare Worker (`wrangler.jsonc`, `@cloudflare/vite-plugin` on build)
+- Vitest + Testing Library + jsdom
+
+## Source layout
+
+```
+src/design-system/   tokens, components, effects (attachable; imports nothing from outside)
+src/index.ts         the design-system barrel (`@/index`)
+src/features/        domain modules: queries, mutations, mappers (members, events, neighborhoods,
+                     applications, admin)
+src/app/             app wiring: lazy Supabase client, auth events, route tests
+src/routes/          pages (`_authenticated/` needs a session, `_authenticated/_admin/` an admin)
+src/showcase/        preview-only specimens and demo members (/colors, /typography, /components)
+src/integrations/    generated Supabase/Lovable clients and types
+drizzle/migrations/  hand-written SQL migrations; drizzle/test/ holds the RLS checks
+```
 
 ## Develop
 
 ```sh
 bun install
-bun run dev
+bun run dev        # http://localhost:8080
 ```
+
+In a sandbox, bun may need writable temp and cache directories, e.g.
+`BUN_TMPDIR=$TMPDIR BUN_INSTALL_CACHE_DIR=$TMPDIR/bun-cache bun install`.
+
+## Scripts
+
+| Script | What it does |
+|---|---|
+| `bun run typecheck` | `tsc --noEmit` |
+| `bun run lint` | ESLint |
+| `bun run test` | Vitest (unit and route tests, jsdom) |
+| `bun run build` | Production build (Cloudflare Worker output) |
+| `bun run check` | typecheck + lint + test + build |
+
+## Database tests
+
+```sh
+drizzle/test/run.sh
+```
+
+Starts a throwaway local Postgres, loads Supabase stubs, applies every migration in
+`drizzle/migrations/` and runs the row-level-security checks in `drizzle/test/rls.sql`. It needs the
+local Postgres binaries (`initdb`, `pg_ctl`, `psql`) on `PATH` and ends with `all checks passed`.
+
+## Database & go-live
+
+- Migrations are hand-written SQL in `drizzle/migrations/`, each with an entry in
+  `drizzle/migrations/meta/_journal.json`. **Never run `drizzle-kit push`**: `drizzle/schema.ts` is
+  empty, so a push could drop live tables.
+- Every policy change adds a check to `drizzle/test/rls.sql`.
+
+**Go-live order.** The code on this branch relies on tables, functions and policies from migrations
+0001–0003 (members-only access, applications, neighborhoods, `public_profiles()`, `is_admin()`, the
+review triggers). Deploying the code before the database has them breaks the directory, `/join`,
+`/account` and `/admin`. So:
+
+1. Apply `0001_members_only_admin.sql`, then `0002_public_profiles.sql`, then `0003_admin_review.sql`,
+   in that order, to the Lovable Cloud database (SQL editor).
+2. Have Lovable regenerate `src/integrations/supabase/types.ts`, then remove the `BRIDGE` hand-patches
+   that stood in for the new tables and functions.
+3. Deploy the code: merge to `main` (Lovable syncs and publishes it).
+
+Notes: `0000_migration.sql` is the schema already live. 0001 creates the `avatars` and
+`neighborhood-logos` storage buckets, so there's no manual bucket step. 0003 runs a one-time backfill
+when it's applied. Run `drizzle/test/run.sh` before applying, to catch a broken migration locally.
+
+## First admin
+
+Admins can't be created from the app; the first one is added by hand, once:
+
+1. Sign up on the site and confirm the email.
+2. In the Lovable Cloud SQL editor, look up the account's id:
+   `select id from auth.users where email = '…';`
+3. Grant the role:
+   `insert into public.user_roles (user_id, role) values ('<uuid>', 'admin');`
+4. Sign out and back in. An **Admin** link to `/admin` now appears in the account nav.

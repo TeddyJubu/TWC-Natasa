@@ -73,12 +73,12 @@ erDiagram
 | Anonymous | public-profile members only *(Phase 2)* | public-profile members only *(Phase 2)* | ✗ | insert only (unlinked) | read |
 | Pending or declined member | ✗ (empty) | own only | ✗ | insert (own) and read own | read |
 | Approved member | approved + visible members | own, plus approved + visible members | ✓ (status always `requested`) | insert (own) and read own | read |
-| Admin | everyone | everyone | everything, can confirm | read + review | full control + logo upload |
+| Admin | everyone | everyone | everything, can confirm | read + review in `/admin` (`reviewed_by` recorded) | full control + logo upload |
 
 Fields guarded by triggers:
 - `profiles.status`, `catalogue_number` and `member_since` are admin-only.
 - `headshot_bookings.status` resets to `requested` whenever a member writes the booking.
-- Reviewing an application updates the linked profile, which then receives `member_since` and a catalogue number.
+- Reviewing an application updates the linked profile, which then receives `member_since` and a catalogue number. `applications.reviewed_at`/`reviewed_by` are set only by that status change (0003).
 
 ### 1.5 What's wrong with the current shape
 
@@ -233,8 +233,8 @@ sequenceDiagram
   A->>DB: /account now unlocks gatherings, directory, intros
 ```
 
-- **An approved applicant with no account yet.** The application stays approved and unlinked. On her first confirmed sign-up, the link trigger attaches it, but the profile starts as `pending`.
-  - **Gap to close in a follow-up migration:** in `link_applications()`, if the linked application is already `approved`, also approve the profile.
+- **An approved applicant with no account yet.** The application stays approved and unlinked. On her first confirmed sign-up, the link trigger attaches it and her profile takes the approval.
+  - ~~Gap to close in a follow-up migration~~ **Closed by 0003:** `link_applications()` now gives a still-pending profile the outcome of an already reviewed application (approved wins over declined), fires after the profile exists (so OAuth sign-ups work too), and a one-time backfill fixed accounts linked under the old trigger order.
 - **Existing members with no application.** Admins approve the profile directly from the Members tab.
 - **Notifications (later).** Applicants currently learn nothing automatically. Add a database webhook or Edge Function that emails on `applications.status` change. That's the first legitimate need for a server-side secret.
 
@@ -243,10 +243,11 @@ sequenceDiagram
 - **One route, four tabs:**
   - **Applications:** pending first, with answers rendered from the `answers` JSON and approve/decline actions.
   - **Members:** every profile, with status, visibility and catalogue number.
-  - **Neighborhoods:** add or edit name, slug, color and logo; activate or deactivate.
+  - **Neighborhoods:** add or edit name, color, logo and sort order (slug is fixed once created); activate or deactivate.
   - **Bookings:** confirm or decline.
-- **Bootstrapping the first admin** (documented, run once in the Lovable Cloud / Supabase SQL editor): `insert into user_roles (user_id, role) values ('<uuid>', 'admin');`
-- **Audit trail (later).** Add `reviewed_by uuid` to `applications` and set it from `auth.uid()` in the review trigger.
+- **Bootstrapping the first admin:** run once in the Lovable Cloud / Supabase SQL editor; step by step in [README.md](README.md#first-admin).
+- **Audit trail** ✅ (0003). `applications.reviewed_by` is set from `auth.uid()` by the review trigger and can't be written directly; the Applications tab shows it.
+- **Data access.** No admin RPC: admins already read all profiles and applications under RLS, so `features/admin` joins them client-side.
 
 ### 2.8 Build, delivery and quality
 
@@ -275,7 +276,7 @@ sequenceDiagram
 | **0. Database** ✅ written | Members-only, approval enforced, neighborhoods/applications schema, 27 RLS checks green | T2–T7 | `0001_members_only_admin.sql`. Not yet applied to the live DB |
 | **1. Foundations** | `features/` + `app/` folders, lazy Supabase, `useNeighborhoods`, `MemberCard` `tone` prop, types regenerated | T11, T18, T19, T30 | Makes phases 2–3 small |
 | **2. Member flows** ✅ code + 0002 written (2026-11-08) | Migration 0002 public profiles + apply 0001/0002 live; `/members` and home gallery split public vs members, real catalogue numbers, no demo data; public-profile switch; account error states; RSVP/booking/avatar errors handled; timezone fixes | T8–T10, T12–T15, §2.10 | Ship migration and code together. 0001 + 0002 not yet applied live |
-| **3. Applications + admin** | `/join` saves (anonymous or signed-in), form `name`s and validation; `/admin` with four tabs | T1, T20 + new | Includes the "approved before sign-up" trigger fix |
+| **3. Applications + admin** ✅ code + 0003 written (2026-11-08) | `/join` saves (anonymous or signed-in), form `name`s and validation; `/admin` with four tabs | T1, T20 + new | Migration 0003: "approved before sign-up" fix, `reviewed_by`. Ship with 0001–0003 applied live (README). Still open: CAPTCHA/rate limiting for anonymous applications, review emails |
 | **4. Site shell** | App layout (no showcase toolbar), router-aware nav + mobile menu, 404/error pages, noindex showcase | T16, T17, T32 | |
 | **5. Polish** | Contrast, motion/a11y, WebGL/trail/font/image performance | T22–T29, T31 | |
 | **6. Tooling** | Lint green, scripts, CI, dependencies, `.env` and secrets, docs | T21, T33–T38 | Can run in parallel with any phase |
