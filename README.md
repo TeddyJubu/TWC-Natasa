@@ -42,6 +42,15 @@ bun run dev        # http://localhost:8080
 In a sandbox, bun may need writable temp and cache directories, e.g.
 `BUN_TMPDIR=$TMPDIR BUN_INSTALL_CACHE_DIR=$TMPDIR/bun-cache bun install`.
 
+## Environment
+
+| Variable | Required | What it does |
+|---|---|---|
+| `VITE_SITE_URL` | No | The site's public origin, e.g. `https://example.com` (no path; a trailing slash is fine). When set, every page gets an absolute `og:image` (the hero photo), and the indexable public pages (`/`, `/members`, `/join`, `/auth`; the list is in `src/app/seo.ts`) get an absolute `<link rel="canonical">` and `og:url`. Unset, or not a bare http(s) origin, means none of them are emitted, never a relative or guessed URL. |
+
+Follow-up: there is no `sitemap.xml` yet; generate one from the live routes once `VITE_SITE_URL` is
+set in production.
+
 ## Scripts
 
 | Script | What it does |

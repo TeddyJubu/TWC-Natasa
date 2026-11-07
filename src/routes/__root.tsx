@@ -10,26 +10,33 @@ import {
 import { useEffect, type ReactNode } from "react";
 import { getSupabase } from "@/app/supabase";
 import { handleAuthEvent } from "@/app/auth-events";
+import { currentPathname, siteSeo } from "@/app/seo";
+import hero from "@/assets/photography/hero.jpg";
 
 import appCss from "../styles.css?url";
 import { ImageTrail } from "@/index";
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "The Women’s Collective Design System" },
-      { name: "description", content: "The editorial design system for The Women’s Collective in Western Queens." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
-    ],
-    links: [
-      { rel: "stylesheet", href: appCss },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
-    ],
-  }),
+  head: ({ matches }) => {
+    // Read per call so tests can stub it; unset or invalid means no absolute-URL tags at all.
+    const seo = siteSeo(import.meta.env.VITE_SITE_URL as string | undefined, currentPathname(matches), hero);
+    return {
+      meta: [
+        { charSet: "utf-8" },
+        { name: "viewport", content: "width=device-width, initial-scale=1" },
+        { title: "The Women’s Collective — Find Your People in Queens" },
+        { name: "description", content: "A community for women founders, entrepreneurs, creatives, freelancers, professionals, and neighbors across Western Queens." },
+        { property: "og:type", content: "website" },
+        { name: "twitter:card", content: "summary_large_image" },
+        ...seo.meta,
+      ],
+      links: [
+        { rel: "stylesheet", href: appCss },
+        { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+        ...seo.links,
+      ],
+    };
+  },
   shellComponent: RootShell,
   component: RootComponent,
 });
