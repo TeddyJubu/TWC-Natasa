@@ -7,12 +7,12 @@ import { render } from "@testing-library/react";
 import { NEIGHBORHOOD_SEED } from "@/features/neighborhoods/queries";
 
 type LinkProps = React.AnchorHTMLAttributes<HTMLAnchorElement> & {
-  to?: string; search?: Record<string, string>; activeProps?: unknown; activeOptions?: unknown;
+  to?: string; search?: Record<string, string>; hash?: string; activeProps?: unknown; activeOptions?: unknown;
 };
 
 export const routerStubs = {
-  Link: ({ to, search, children, activeProps: _a, activeOptions: _o, ...rest }: LinkProps) => (
-    <a href={search ? `${to}?${new URLSearchParams(search)}` : to} {...rest}>{children}</a>
+  Link: ({ to, search, hash, children, activeProps: _a, activeOptions: _o, ...rest }: LinkProps) => (
+    <a href={`${to ?? ""}${search ? `?${new URLSearchParams(search)}` : ""}${hash ? `#${hash}` : ""}`} {...rest}>{children}</a>
   ),
   useNavigate: () => () => undefined,
 };
