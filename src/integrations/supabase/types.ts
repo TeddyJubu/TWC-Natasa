@@ -184,6 +184,8 @@ export type Database = {
           looking_for: string
           member_since: string | null
           neighborhood: string
+          // BRIDGE (0002): hand-patched until Lovable regenerates this file
+          public_profile: boolean
           role_title: string
           specialty: string
           status: Database["public"]["Enums"]["membership_status"]
@@ -202,6 +204,8 @@ export type Database = {
           looking_for?: string
           member_since?: string | null
           neighborhood?: string
+          // BRIDGE (0002): hand-patched until Lovable regenerates this file
+          public_profile?: boolean
           role_title?: string
           specialty?: string
           status?: Database["public"]["Enums"]["membership_status"]
@@ -220,6 +224,8 @@ export type Database = {
           looking_for?: string
           member_since?: string | null
           neighborhood?: string
+          // BRIDGE (0002): hand-patched until Lovable regenerates this file
+          public_profile?: boolean
           role_title?: string
           specialty?: string
           status?: Database["public"]["Enums"]["membership_status"]
@@ -263,6 +269,8 @@ export type Database = {
       is_approved: { Args: { _user_id: string }; Returns: boolean }
       // BRIDGE (0001): hand-patched until Lovable regenerates this file
       is_member: { Args: never; Returns: boolean }
+      // BRIDGE (0002): hand-patched until Lovable regenerates this file
+      avatar_folder_visible: { Args: { _folder: string }; Returns: boolean }
       public_directory: {
         Args: never
         Returns: {
@@ -277,6 +285,22 @@ export type Database = {
           role_title: string
           specialty: string
           // BRIDGE (0001): hand-patched until Lovable regenerates this file
+          website: string
+        }[]
+      }
+      // BRIDGE (0002): hand-patched until Lovable regenerates this file
+      public_profiles: {
+        Args: never
+        Returns: {
+          avatar_path: string | null
+          bio: string
+          business: string
+          catalogue_number: number
+          full_name: string
+          looking_for: string
+          neighborhood: string
+          role_title: string
+          specialty: string
           website: string
         }[]
       }

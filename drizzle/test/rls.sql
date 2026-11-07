@@ -65,13 +65,81 @@ select pg_temp.ok((select count(*) from applications) = 0, 'member cannot read o
 reset role;
 
 -- A second member hides herself: her earlier portraits disappear for other members.
+-- Fixture writes run with no JWT subject, so the admin-only field trigger lets them through.
+reset request.jwt.claim.sub;
 insert into auth.users (id, email, email_confirmed_at) values ('00000000-0000-4000-8000-00000000000e', 'hidden@x.test', now());
 update profiles set status = 'approved', directory_visible = false where id = '00000000-0000-4000-8000-00000000000e';
+select pg_temp.ok((select status from profiles where id = '00000000-0000-4000-8000-00000000000e') = 'approved', 'fixture: hidden member is approved');
 insert into storage.objects (bucket_id, name) values ('avatars', '00000000-0000-4000-8000-00000000000e/avatar-old.jpg');
 set role authenticated;
 set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000000b';
 select pg_temp.ok((select count(*) from storage.objects where name like '00000000-0000-4000-8000-00000000000e/%') = 0, 'hidden member''s old portraits are hidden');
 reset role;
+
+-- ---------- Public profiles (0002) ----------
+-- f: approved + listed, turns on her public profile herself. g: pending with the switch on.
+reset request.jwt.claim.sub;
+insert into auth.users (id, email, email_confirmed_at) values
+  ('00000000-0000-4000-8000-00000000000f', 'public@x.test', now()),
+  ('00000000-0000-4000-8000-000000000010', 'pendingpublic@x.test', now());
+update profiles set status = 'approved', directory_visible = true, full_name = 'Pia'
+  where id = '00000000-0000-4000-8000-00000000000f';
+select pg_temp.ok((select status from profiles where id = '00000000-0000-4000-8000-00000000000f') = 'approved', 'fixture: public member is approved');
+insert into storage.objects (bucket_id, name) values
+  ('avatars', '00000000-0000-4000-8000-00000000000f/avatar-1.jpg'),
+  ('avatars', '00000000-0000-4000-8000-000000000010/avatar-1.jpg');
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000000f';
+update profiles set public_profile = true where id = auth.uid();
+select pg_temp.ok((select public_profile from profiles where id = auth.uid()), 'member can switch on her public profile');
+set request.jwt.claim.sub = '00000000-0000-4000-8000-000000000010';
+update profiles set directory_visible = true, public_profile = true where id = auth.uid();
+select pg_temp.ok((select public_profile from profiles where id = auth.uid()), 'pending member can set the switch');
+reset role;
+
+select pg_temp.ok(not exists (
+  select 1 from pg_proc p, unnest(p.proargnames) a
+  where p.oid = 'public.public_profiles()'::regprocedure and a = 'id'), 'public_profiles() exposes no id column');
+
+set role anon;
+reset request.jwt.claim.sub;
+select pg_temp.ok(has_function_privilege('public.public_profiles()', 'execute'), 'anon can call public_profiles()');
+select pg_temp.ok(has_function_privilege('public.is_admin()', 'execute'), 'anon can evaluate the avatar policy helpers');
+select pg_temp.ok((select array_agg(full_name) from public_profiles()) = array['Pia'], 'anon sees only public profiles');
+select pg_temp.ok((select array_agg(name) from storage.objects where bucket_id = 'avatars')
+  = array['00000000-0000-4000-8000-00000000000f/avatar-1.jpg'], 'anon sees only public portraits');
+reset role;
+
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-4000-8000-000000000010';
+select pg_temp.ok((select array_agg(full_name) from public_profiles()) = array['Pia'], 'pending member sees public profiles, not herself');
+set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000000f';
+update profiles set directory_visible = false where id = auth.uid();
+reset role;
+set role anon;
+reset request.jwt.claim.sub;
+select pg_temp.ok((select count(*) from public_profiles()) = 0, 'hiding from the directory leaves the public site');
+select pg_temp.ok((select count(*) from storage.objects where bucket_id = 'avatars') = 0, 'hiding from the directory hides the public portrait');
+reset role;
+
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000000f';
+update profiles set directory_visible = true, public_profile = false where id = auth.uid();
+reset role;
+set role anon;
+reset request.jwt.claim.sub;
+select pg_temp.ok((select count(*) from public_profiles()) = 0, 'switching off public_profile leaves the public site');
+select pg_temp.ok((select count(*) from storage.objects where bucket_id = 'avatars') = 0, 'switching off public_profile hides the portrait');
+reset role;
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000000b';
+select pg_temp.ok((select count(*) from storage.objects where name like '00000000-0000-4000-8000-00000000000f/%') = 1, 'member still sees a listed, non-public portrait');
+set request.jwt.claim.sub = '00000000-0000-4000-8000-000000000010';
+select pg_temp.ok((select count(*) from storage.objects where name like '00000000-0000-4000-8000-00000000000f/%') = 0, 'pending member cannot see a listed, non-public portrait');
+set request.jwt.claim.sub = '00000000-0000-4000-8000-00000000000a';
+select pg_temp.ok((select count(*) from storage.objects where name like '00000000-0000-4000-8000-000000000010/%') = 1, 'admin still sees a pending applicant''s portrait');
+reset role;
+reset request.jwt.claim.sub;
 
 -- Applicant signs up with the anonymous application's email: linked only after confirmation.
 insert into auth.users (id, email) values ('00000000-0000-4000-8000-00000000000d', 'NEW@x.test');
