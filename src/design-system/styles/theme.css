@@ -132,7 +132,7 @@
 
 @keyframes bl-reveal {
   from { opacity: 0; transform: translateY(1.25rem); }
-  to { opacity: 1; transform: translateY(0); }
+  to { opacity: 1; transform: none; }
 }
 @utility motion-reveal {
   animation: bl-reveal var(--duration-slow) var(--ease-gentle) both;
@@ -141,17 +141,17 @@
 @keyframes bl-check {
   0% { opacity: 0; transform: scale(0.45) rotate(-10deg); }
   70% { transform: scale(1.12) rotate(0); }
-  100% { opacity: 1; transform: scale(1) rotate(0); }
+  100% { opacity: 1; transform: none; }
 }
 
 @keyframes bl-panel-in {
   from { opacity: 0; transform: translateY(0.75rem); }
-  to { opacity: 1; transform: translateY(0); }
+  to { opacity: 1; transform: none; }
 }
 
 @keyframes bl-heading-in {
   from { opacity: 0; transform: translateY(0.45em); clip-path: inset(0 0 100% 0); }
-  to { opacity: 1; transform: translateY(0); clip-path: inset(0); }
+  to { opacity: 1; transform: none; clip-path: none; }
 }
 
 @keyframes bl-error {
@@ -162,7 +162,7 @@
 
 @keyframes bl-route-in {
   from { opacity: 0; transform: translateY(0.5rem); }
-  to { opacity: 1; transform: translateY(0); }
+  to { opacity: 1; transform: none; }
 }
 
 @utility motion-panel-in { animation: bl-panel-in var(--duration-base) var(--ease-gentle) both; }
@@ -184,7 +184,7 @@
   transition: opacity var(--duration-slow) var(--ease-gentle), transform var(--duration-slow) var(--ease-gentle), filter var(--duration-slow) var(--ease-gentle);
 }
 .motion-observed-blur { filter: blur(0.5rem); }
-.motion-observed[data-visible="true"] { opacity: 1; transform: translateY(0); filter: blur(0); }
+.motion-observed[data-visible="true"] { opacity: 1; transform: none; filter: none; }
 
 .image-trail {
   position: fixed;
