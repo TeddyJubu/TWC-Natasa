@@ -19,6 +19,9 @@ import { Route as Members } from "@/routes/members";
 import { Route as Join } from "@/routes/join";
 import { Route as Account } from "@/routes/_authenticated/account";
 import { Route as Admin } from "@/routes/_authenticated/_admin/admin";
+import { Route as Privacy } from "@/routes/privacy";
+import { Route as Terms } from "@/routes/terms";
+import { Route as Conduct } from "@/routes/code-of-conduct";
 import { Route as Colors } from "@/routes/colors";
 import { Route as Typography } from "@/routes/typography";
 import { Route as Components } from "@/routes/components";
@@ -50,7 +53,9 @@ const seed: [unknown[], unknown][] = [
   [["intros", "u1", "Astoria"], []],
 ];
 
-const live = { "/": Home, "/members": Members, "/join": Join, "/account": Account, "/admin": Admin } as const;
+const live = {
+  "/": Home, "/members": Members, "/join": Join, "/account": Account, "/admin": Admin, "/privacy": Privacy, "/terms": Terms, "/code-of-conduct": Conduct,
+} as const;
 const showcase = { "/colors": Colors, "/typography": Typography, "/components": Components } as const;
 
 describe("live pages carry no showcase toolbar", () => {

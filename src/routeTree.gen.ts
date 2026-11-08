@@ -12,11 +12,14 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as CodeOfConductRouteImport } from './routes/code-of-conduct'
 import { Route as ColorsRouteImport } from './routes/colors'
 import { Route as ComponentsRouteImport } from './routes/components'
 import { Route as JoinRouteImport } from './routes/join'
 import { Route as MembersRouteImport } from './routes/members'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as TypographyRouteImport } from './routes/typography'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/_admin/route'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
@@ -41,6 +44,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CodeOfConductRoute = CodeOfConductRouteImport.update({
+  id: '/code-of-conduct',
+  path: '/code-of-conduct',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ColorsRoute = ColorsRouteImport.update({
   id: '/colors',
   path: '/colors',
@@ -61,9 +69,19 @@ const MembersRoute = MembersRouteImport.update({
   path: '/members',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TypographyRoute = TypographyRouteImport.update({
@@ -114,11 +132,14 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/code-of-conduct': typeof CodeOfConductRoute
   '/colors': typeof ColorsRoute
   '/components': typeof ComponentsRoute
   '/join': typeof JoinRoute
   '/members': typeof MembersRoute
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/terms': typeof TermsRoute
   '/typography': typeof TypographyRoute
   '/account': typeof AuthenticatedAccountRoute
   '/api/applications': typeof ApiApplicationsRoute
@@ -131,11 +152,14 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/code-of-conduct': typeof CodeOfConductRoute
   '/colors': typeof ColorsRoute
   '/components': typeof ComponentsRoute
   '/join': typeof JoinRoute
   '/members': typeof MembersRoute
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/terms': typeof TermsRoute
   '/typography': typeof TypographyRoute
   '/account': typeof AuthenticatedAccountRoute
   '/api/applications': typeof ApiApplicationsRoute
@@ -150,11 +174,14 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/code-of-conduct': typeof CodeOfConductRoute
   '/colors': typeof ColorsRoute
   '/components': typeof ComponentsRoute
   '/join': typeof JoinRoute
   '/members': typeof MembersRoute
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/terms': typeof TermsRoute
   '/typography': typeof TypographyRoute
   '/_authenticated/_admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/account': typeof AuthenticatedAccountRoute
@@ -170,11 +197,14 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/code-of-conduct'
     | '/colors'
     | '/components'
     | '/join'
     | '/members'
+    | '/privacy'
     | '/reset-password'
+    | '/terms'
     | '/typography'
     | '/account'
     | '/api/applications'
@@ -187,11 +217,14 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/code-of-conduct'
     | '/colors'
     | '/components'
     | '/join'
     | '/members'
+    | '/privacy'
     | '/reset-password'
+    | '/terms'
     | '/typography'
     | '/account'
     | '/api/applications'
@@ -205,11 +238,14 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/code-of-conduct'
     | '/colors'
     | '/components'
     | '/join'
     | '/members'
+    | '/privacy'
     | '/reset-password'
+    | '/terms'
     | '/typography'
     | '/_authenticated/_admin'
     | '/_authenticated/account'
@@ -225,11 +261,14 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  CodeOfConductRoute: typeof CodeOfConductRoute
   ColorsRoute: typeof ColorsRoute
   ComponentsRoute: typeof ComponentsRoute
   JoinRoute: typeof JoinRoute
   MembersRoute: typeof MembersRoute
+  PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  TermsRoute: typeof TermsRoute
   TypographyRoute: typeof TypographyRoute
   ApiApplicationsRoute: typeof ApiApplicationsRoute
   ApiImagesRoute: typeof ApiImagesRoute
@@ -261,6 +300,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/code-of-conduct': {
+      id: '/code-of-conduct'
+      path: '/code-of-conduct'
+      fullPath: '/code-of-conduct'
+      preLoaderRoute: typeof CodeOfConductRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/colors': {
       id: '/colors'
       path: '/colors'
@@ -289,11 +335,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MembersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/typography': {
@@ -393,11 +453,14 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  CodeOfConductRoute: CodeOfConductRoute,
   ColorsRoute: ColorsRoute,
   ComponentsRoute: ComponentsRoute,
   JoinRoute: JoinRoute,
   MembersRoute: MembersRoute,
+  PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  TermsRoute: TermsRoute,
   TypographyRoute: TypographyRoute,
   ApiApplicationsRoute: ApiApplicationsRoute,
   ApiImagesRoute: ApiImagesRoute,

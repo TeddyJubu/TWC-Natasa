@@ -2,7 +2,7 @@
 import * as React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
-import { Footer, Navbar, type NavbarProps, type RouterLinkComponent } from "./layout";
+import { Footer, Navbar, SectionHeader, type NavbarProps, type RouterLinkComponent } from "./layout";
 
 afterEach(() => {
   cleanup();
@@ -30,6 +30,14 @@ function recordingLink() {
 }
 
 const routed = (name: string) => screen.getByRole("link", { name }).hasAttribute("data-router");
+
+describe("SectionHeader", () => {
+  it("renders its title as an h2, or as the page h1 when asked", () => {
+    render(<><SectionHeader headingAs="h1" badge="Privacy" title="Page" /><SectionHeader title="Section" /></>);
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Page");
+    expect(screen.getByRole("heading", { level: 2 }).textContent).toBe("Section");
+  });
+});
 
 describe("linkComponent", () => {
   it("Navbar routes internal hrefs through it and leaves hash, mailto and external links plain", () => {

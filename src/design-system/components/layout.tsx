@@ -37,12 +37,14 @@ export interface SectionHeaderProps extends Omit<React.HTMLAttributes<HTMLDivEle
   align?: "center" | "start";
   /** Use "solid" on night sections. */
   badgeVariant?: "soft" | "solid";
+  /** "h1" when the header opens the page (no Hero above it). */
+  headingAs?: "h1" | "h2";
 }
 export const SectionHeader = React.forwardRef<HTMLDivElement, SectionHeaderProps>(
-  ({ className, badge, title, intro, align = "center", badgeVariant = "soft", ...p }, ref) => (
+  ({ className, badge, title, intro, align = "center", badgeVariant = "soft", headingAs = "h2", ...p }, ref) => (
     <div ref={ref} className={cn("motion-stagger flex max-w-3xl flex-col gap-7", align === "center" ? "mx-auto items-center text-center" : "items-start", className)} {...p}>
       {badge && <Badge variant={badgeVariant}>{badge}</Badge>}
-      <Heading>{title}</Heading>
+      <Heading as={headingAs}>{title}</Heading>
       {intro && <Text className="max-w-lg">{intro}</Text>}
     </div>
   ),
