@@ -4,3 +4,5 @@ Disallow: /typography
 Disallow: /components
 Disallow: /__mockup
 Disallow: /__component
+
+Sitemap: https://thewomenscollective.club/sitemap.xml

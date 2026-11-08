@@ -29,7 +29,8 @@ export function currentPathname(matches: readonly HeadMatch[]): string | undefin
 
 // ponytail: allow-list, so a new public page only lacks a canonical until it's added here — never gets a
 // wrong one. noindex (showcase, /admin), members-only (/account), one-off and preview pages stay out.
-const INDEXED = new Set(["/", "/members", "/join", "/auth"]);
+// public/sitemap.xml lists the same paths (src/app/sitemap.test.ts keeps them in step).
+export const INDEXED = new Set(["/", "/members", "/join", "/auth"]);
 
 const absolute = (site: string, path: string) => site + (path.startsWith("/") ? path : `/${path}`);
 

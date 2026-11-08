@@ -66,8 +66,9 @@ Server secrets (`SUPABASE_SERVICE_ROLE_KEY`, `LOVABLE_CRON_SECRET`, any `sb_secr
 `src/app/secrets.test.ts` fails the test suite if a tracked file contains a Supabase secret key, a
 `service_role` JWT, or a value for either secret.
 
-Follow-up: there is no `sitemap.xml` yet; generate one from the live routes once `VITE_SITE_URL` is
-set in production.
+`.env` sets `VITE_SITE_URL=https://thewomenscollective.club`. `public/sitemap.xml` lists the same indexable
+pages on that domain and `public/robots.txt` points to it; `src/app/sitemap.test.ts` fails if the sitemap and
+the canonical list in `src/app/seo.ts` drift apart.
 
 ## Scripts
 
