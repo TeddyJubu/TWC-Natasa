@@ -3,3 +3,118 @@
 
 /* Route focus (useRouteFocus) lands on the page h1; it is a target, not a control, so no ring. */
 #main [tabindex="-1"]:focus { outline: none; }
+
+/* ── Scrapbook homepage (app-only; not part of the design-system attach) ── */
+/* Self-hosted (CSP is font-src 'self'); latin subset, SIL OFL. */
+@font-face { font-family: "Caveat"; src: url("./assets/fonts/home/caveat-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Instrument Serif"; src: url("./assets/fonts/home/instrument-serif-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Instrument Serif"; src: url("./assets/fonts/home/instrument-serif-italic.woff2") format("woff2"); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: "Geist"; src: url("./assets/fonts/home/geist-variable.woff2") format("woff2"); font-weight: 400 600; font-display: swap; }
+@font-face { font-family: "Fragment Mono"; src: url("./assets/fonts/home/fragment-mono-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@theme {
+  --font-script: "Caveat", cursive;
+  --font-editorial: "Instrument Serif", Georgia, serif;
+  --font-geist: "Geist", system-ui, sans-serif;
+  --font-fragment: "Fragment Mono", ui-monospace, monospace;
+  --color-sb-ink: #1f1f1c;
+  --color-sb-paper: #fcfcfa;
+  --color-sb-blue: #1f8ad6;
+  --color-sb-mint: #c6f3df;
+  --color-sb-lilac: #d8cdf8;
+  --color-sb-sun: #edd22e;
+  --color-sb-night: #0b0b0a;
+  --color-sb-muted: #6b6b66;
+  --color-sb-cream: #f3f0e8;
+}
+
+html:has(.sb-home) { scroll-behavior: smooth; }
+html:has(.sb-menu:popover-open) { overflow: hidden; }
+
+/* Scalloped divider: --from bumps hang over a --to strip. One gradient, no DOM. */
+.sb-scallop {
+  height: 28px;
+  background:
+    radial-gradient(circle at 28px 0, var(--from) 27.5px, transparent 28px) -8px 0 / 56px 28px repeat-x,
+    var(--to);
+}
+
+@layer components {
+/* Underline that draws in from the left */
+.sb-link {
+  background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
+  padding-bottom: 2px;
+  transition: background-size var(--duration-base) var(--ease-gentle);
+}
+.sb-link:hover, .sb-link:focus-visible { background-size: 100% 1px; }
+
+/* Pills: lift on hover, press on active, arrow nudges. Uses individual transform
+   properties so they never fight entrance animations that run on `transform`. */
+.sb-pill {
+  transition: translate var(--duration-base) var(--ease-snap), scale var(--duration-fast) var(--ease-snap),
+    box-shadow var(--duration-base) var(--ease-snap), background-color var(--duration-base);
+}
+.sb-pill:hover { translate: 0 -2px; box-shadow: 0 12px 26px -14px rgb(31 31 28 / 0.55); }
+.sb-pill:active { translate: 0 0; scale: 0.97; }
+.sb-pill .sb-arrow { transition: translate var(--duration-base) var(--ease-snap); }
+.sb-pill:hover .sb-arrow { translate: 3px 0; }
+.sb-pill:hover .sb-arrow-up { translate: 2px -2px; }
+}
+
+/* Entrance choreography (hero) */
+@keyframes sb-write { from { clip-path: inset(-25% 100% -25% -5%); } to { clip-path: inset(-25% -5% -25% -5%); } }
+@keyframes sb-rise { from { opacity: 0; transform: translateY(24px); } }
+@keyframes sb-photo { from { opacity: 0; transform: scale(1.06); } }
+@keyframes sb-drop { from { opacity: 0; transform: translateY(-48px) rotate(14deg); } }
+@keyframes sb-float { 50% { transform: translateY(-8px) rotate(-4deg); } }
+@keyframes sb-twinkle { 0%, 100% { scale: 1; box-shadow: 0 0 0 0 rgb(237 210 46 / 0.55); } 50% { scale: 1.12; box-shadow: 0 0 0 10px rgb(237 210 46 / 0); } }
+.sb-write { animation: sb-write 1.5s cubic-bezier(0.6, 0, 0.2, 1) var(--d, 0ms) both; }
+.sb-rise { animation: sb-rise 0.9s var(--ease-gentle) var(--d, 0ms) both; }
+.sb-photo-in { animation: sb-photo 1.4s var(--ease-gentle) both; }
+.sb-drop { animation: sb-drop 1.1s var(--ease-snap) var(--d, 0ms) both; }
+.sb-float { animation: sb-float 6s ease-in-out infinite; }
+.sb-twinkle { animation: sb-twinkle 2.4s ease-in-out infinite; }
+
+.sb-marquee-reverse { animation-direction: reverse; }
+.sb-ribbon:hover .animate-marquee { animation-play-state: paused; }
+
+/* FAQ: native <details name> accordion; height animates where ::details-content exists */
+.sb-faq { interpolate-size: allow-keywords; }
+.sb-faq summary { list-style: none; }
+.sb-faq summary::-webkit-details-marker { display: none; }
+.sb-faq::details-content {
+  block-size: 0;
+  overflow: clip;
+  transition: block-size var(--duration-slow) var(--ease-gentle), content-visibility var(--duration-slow) allow-discrete;
+}
+.sb-faq[open]::details-content { block-size: auto; }
+.sb-toggle { transition: rotate var(--duration-base) var(--ease-snap), background-color var(--duration-base), color var(--duration-base); }
+.sb-faq:not([open]) summary:hover .sb-toggle { rotate: 90deg; }
+
+/* Mobile menu: native popover (light-dismiss + Esc for free) */
+.sb-menu {
+  inset: 0;
+  width: 100%;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  opacity: 0;
+  translate: 0 -1.5rem;
+  transition: opacity var(--duration-base) var(--ease-gentle), translate var(--duration-slow) var(--ease-gentle),
+    overlay var(--duration-slow) allow-discrete, display var(--duration-slow) allow-discrete;
+}
+.sb-menu:popover-open { opacity: 1; translate: 0 0; }
+@starting-style { .sb-menu:popover-open { opacity: 0; translate: 0 -1.5rem; } }
+.sb-menu:popover-open .sb-menu-item { animation: sb-rise 0.6s var(--ease-gentle) var(--d, 0ms) both; }
+
+/* Scroll-linked motion: progressive (no support = static, fully visible) */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: scroll()) {
+    @keyframes sb-nav-solid { to { background-color: rgb(252 252 250 / 0.86); backdrop-filter: blur(14px); box-shadow: 0 1px 0 rgb(31 31 28 / 0.08); } }
+    @keyframes sb-parallax { from { translate: 0 var(--p-from, -5%); } to { translate: 0 var(--p-to, 5%); } }
+    .sb-nav { animation: sb-nav-solid linear both; animation-timeline: scroll(); animation-range: 0 140px; }
+    .sb-parallax { animation: sb-parallax linear both; animation-timeline: view(); }
+  }
+}

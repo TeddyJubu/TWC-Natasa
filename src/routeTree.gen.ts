@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CodeOfConductRouteImport } from './routes/code-of-conduct'
 import { Route as ColorsRouteImport } from './routes/colors'
 import { Route as ComponentsRouteImport } from './routes/components'
+import { Route as HomeV2RouteImport } from './routes/home-v2'
 import { Route as JoinRouteImport } from './routes/join'
 import { Route as MembersRouteImport } from './routes/members'
 import { Route as PrivacyRouteImport } from './routes/privacy'
@@ -57,6 +58,11 @@ const ColorsRoute = ColorsRouteImport.update({
 const ComponentsRoute = ComponentsRouteImport.update({
   id: '/components',
   path: '/components',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HomeV2Route = HomeV2RouteImport.update({
+  id: '/home-v2',
+  path: '/home-v2',
   getParentRoute: () => rootRouteImport,
 } as any)
 const JoinRoute = JoinRouteImport.update({
@@ -135,6 +141,7 @@ export interface FileRoutesByFullPath {
   '/code-of-conduct': typeof CodeOfConductRoute
   '/colors': typeof ColorsRoute
   '/components': typeof ComponentsRoute
+  '/home-v2': typeof HomeV2Route
   '/join': typeof JoinRoute
   '/members': typeof MembersRoute
   '/privacy': typeof PrivacyRoute
@@ -155,6 +162,7 @@ export interface FileRoutesByTo {
   '/code-of-conduct': typeof CodeOfConductRoute
   '/colors': typeof ColorsRoute
   '/components': typeof ComponentsRoute
+  '/home-v2': typeof HomeV2Route
   '/join': typeof JoinRoute
   '/members': typeof MembersRoute
   '/privacy': typeof PrivacyRoute
@@ -177,6 +185,7 @@ export interface FileRoutesById {
   '/code-of-conduct': typeof CodeOfConductRoute
   '/colors': typeof ColorsRoute
   '/components': typeof ComponentsRoute
+  '/home-v2': typeof HomeV2Route
   '/join': typeof JoinRoute
   '/members': typeof MembersRoute
   '/privacy': typeof PrivacyRoute
@@ -200,6 +209,7 @@ export interface FileRouteTypes {
     | '/code-of-conduct'
     | '/colors'
     | '/components'
+    | '/home-v2'
     | '/join'
     | '/members'
     | '/privacy'
@@ -220,6 +230,7 @@ export interface FileRouteTypes {
     | '/code-of-conduct'
     | '/colors'
     | '/components'
+    | '/home-v2'
     | '/join'
     | '/members'
     | '/privacy'
@@ -241,6 +252,7 @@ export interface FileRouteTypes {
     | '/code-of-conduct'
     | '/colors'
     | '/components'
+    | '/home-v2'
     | '/join'
     | '/members'
     | '/privacy'
@@ -264,6 +276,7 @@ export interface RootRouteChildren {
   CodeOfConductRoute: typeof CodeOfConductRoute
   ColorsRoute: typeof ColorsRoute
   ComponentsRoute: typeof ComponentsRoute
+  HomeV2Route: typeof HomeV2Route
   JoinRoute: typeof JoinRoute
   MembersRoute: typeof MembersRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -319,6 +332,13 @@ declare module '@tanstack/react-router' {
       path: '/components'
       fullPath: '/components'
       preLoaderRoute: typeof ComponentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/home-v2': {
+      id: '/home-v2'
+      path: '/home-v2'
+      fullPath: '/home-v2'
+      preLoaderRoute: typeof HomeV2RouteImport
       parentRoute: typeof rootRouteImport
     }
     '/join': {
@@ -456,6 +476,7 @@ const rootRouteChildren: RootRouteChildren = {
   CodeOfConductRoute: CodeOfConductRoute,
   ColorsRoute: ColorsRoute,
   ComponentsRoute: ComponentsRoute,
+  HomeV2Route: HomeV2Route,
   JoinRoute: JoinRoute,
   MembersRoute: MembersRoute,
   PrivacyRoute: PrivacyRoute,
