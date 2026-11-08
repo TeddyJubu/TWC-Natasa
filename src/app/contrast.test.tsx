@@ -129,3 +129,19 @@ describe("mobile menu button", () => {
     }
   });
 });
+
+describe("account app shell (neutral app palette)", () => {
+  // [text, background, alpha of a tinted background over `app`]: every text pair the /account shell uses.
+  const pairs: [string, string, number?][] = [
+    ["ink", "app"], ["ink", "app-sunken"], ["ink-muted", "app-sunken"], ["app-muted", "app"], ["app-muted", "app-sunken"],
+    ["app-accent", "app"], ["app-accent", "app-accent", 0.1], ["canvas", "ink"],
+  ];
+
+  it.each(["light", "night"] as const)("every text pair clears AA in %s", (mode) => {
+    const t = tokens[mode];
+    for (const [fg, bg, alpha] of pairs) {
+      const back = alpha === undefined ? t[bg] : blend(t[bg], t.app, alpha);
+      expect({ fg, bg, ok: contrast(t[fg], back) >= AA }).toEqual({ fg, bg, ok: true });
+    }
+  });
+});

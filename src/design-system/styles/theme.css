@@ -59,6 +59,14 @@
   --bl-elmhurst: #12d9bd;
   --bl-forest-hills: #5fd35f;
   --bl-rego-park: #ff4438;
+  /* Neutral app palette: the /account settings shell only (DESIGN.md exception). */
+  --bl-app: #ffffff;
+  --bl-app-sunken: #fafafa; /* sidebar, card heads */
+  --bl-app-line: #eaeaec; /* outlines, controls, active nav */
+  --bl-app-rule: #f1f1f3; /* row dividers, grid cells */
+  --bl-app-muted: #71717a; /* labels and secondary text: 4.8:1 on app */
+  --bl-app-accent: #1468c4; /* Add links, verified badge and chip; the mock's #1570d1 is 4.4:1 on its chip */
+  --bl-app-tint: #fceff3; /* the header grid's few warm cells */
 }
 
 /* Night: black sections and dark mode. Tokens invert so components need no tone props. */
@@ -72,6 +80,13 @@
   --bl-ink-faint: #5c5c5c;
   --bl-line: rgb(255 255 255 / 0.14);
   --bl-danger: #ff8a73;
+  --bl-app: #09090b;
+  --bl-app-sunken: #111113;
+  --bl-app-line: #27272a;
+  --bl-app-rule: #1c1c1f;
+  --bl-app-muted: #a1a1aa;
+  --bl-app-accent: #60a5fa;
+  --bl-app-tint: #2a1820;
 }
 .tone-night { background: var(--bl-canvas); color: var(--bl-ink); }
 
@@ -102,6 +117,13 @@
   --color-elmhurst: var(--bl-elmhurst);
   --color-forest-hills: var(--bl-forest-hills);
   --color-rego-park: var(--bl-rego-park);
+  --color-app: var(--bl-app);
+  --color-app-sunken: var(--bl-app-sunken);
+  --color-app-line: var(--bl-app-line);
+  --color-app-rule: var(--bl-app-rule);
+  --color-app-muted: var(--bl-app-muted);
+  --color-app-accent: var(--bl-app-accent);
+  --color-app-tint: var(--bl-app-tint);
   --color-ring: var(--bl-sky);
 
   --font-display: "Gilda Display", Georgia, serif;
