@@ -99,15 +99,24 @@ export function saveProfile({ db, actor }: Ctx, patch: unknown): Profile {
 
 export type ImageKind = "avatar" | "logo";
 
-/** Stores a portrait or business logo in her own folder and points her card at it. */
+/**
+ * Stores a portrait or business logo in her own folder and points her card at it, then deletes the file it
+ * replaced, so each member keeps only her current portrait and logo on disk.
+ */
 export function uploadImage({ db, actor }: Ctx, kind: ImageKind, bytes: Uint8Array): Profile {
   const me = requireSession(actor);
   const ext = checkImage(bytes);
   const name = `${me.id}/${kind}-${Date.now()}.${ext}`;
   writeMedia("avatars", name, bytes);
   const column = kind === "avatar" ? "avatar_path" : "business_logo_url";
-  db.prepare(`update profiles set ${column} = ? where id = ?`).run(name, me.id);
-  return toProfile(db.prepare("select * from profiles where id = ?").get(me.id) as ProfileRow);
+  const { old, row } = tx(db, () => {
+    const previous = (db.prepare(`select ${column} as path from profiles where id = ?`).get(me.id) as { path: string | null } | undefined)?.path;
+    db.prepare(`update profiles set ${column} = ? where id = ?`).run(name, me.id);
+    return { old: previous, row: db.prepare("select * from profiles where id = ?").get(me.id) as ProfileRow };
+  });
+  // After the commit: a failed update never loses the file her card still shows.
+  if (old && old !== name) removeMedia("avatars", old);
+  return toProfile(row);
 }
 
 /** Clears her logo (what others see) first, then deletes the file; a leftover file is harmless. */

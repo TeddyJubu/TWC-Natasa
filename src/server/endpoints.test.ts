@@ -1,12 +1,12 @@
 // The body-carrying endpoints (/api/images, /api/neighborhood-logos, /api/applications): size and access are
 // checked before a single byte of the body is read; applications are rate-limited per client IP.
-import { mkdtempSync } from "node:fs";
+import { mkdtempSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { openDb, type DB } from "./db";
 import { clientIp } from "./request";
-import { uploadImageRequest } from "@/features/members/members.server";
+import { uploadImage, uploadImageRequest } from "@/features/members/members.server";
 import { neighborhoodLogoRequest } from "@/features/admin/admin.server";
 import { submitApplicationRequest } from "@/features/applications/applications.server";
 
@@ -145,5 +145,20 @@ describe("POST /api/applications", () => {
     const body = "{not json";
     const res = await submitApplicationRequest(as(null), post(body, { "Content-Length": String(body.length), "cf-connecting-ip": "192.0.2.5" }).request);
     expect(res.status).toBe(400);
+  });
+});
+
+describe("replacing an upload", () => {
+  it("deletes the previous file, so each member keeps one portrait and one logo on disk", async () => {
+    const files = () => readdirSync(join(process.env.DATA_DIR!, "uploads", "avatars", MEMBER)).sort();
+    const now = vi.spyOn(Date, "now");
+    for (const [kind, t] of [["avatar", 1], ["avatar", 2], ["logo", 3], ["avatar", 4], ["logo", 5]] as const) {
+      now.mockReturnValue(t);
+      uploadImage(as(MEMBER), kind, PNG);
+    }
+    now.mockRestore();
+    expect(files()).toEqual(["avatar-4.png", "logo-5.png"]);
+    expect(db.prepare("select avatar_path, business_logo_url from profiles where id = ?").get(MEMBER))
+      .toEqual({ avatar_path: `${MEMBER}/avatar-4.png`, business_logo_url: `${MEMBER}/logo-5.png` });
   });
 });
