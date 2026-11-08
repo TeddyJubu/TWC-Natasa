@@ -38,9 +38,14 @@ export function createAuth(db: DB) {
     baseURL: base,
     secret: env("BETTER_AUTH_SECRET"),
     trustedOrigins: production ? [base] : [base, "http://localhost:8080"],
-    // UUIDs, so ids imported from Supabase and new ones look alike.
-    advanced: { database: { generateId: "uuid" } },
-    // In-memory counters: one server process. Behind Caddy the client IP comes from X-Forwarded-For.
+    advanced: {
+      // UUIDs, so ids imported from Supabase and new ones look alike.
+      database: { generateId: "uuid" },
+      // Behind Cloudflare → Caddy the socket address is Caddy's and x-forwarded-for carries Cloudflare's edge, so
+      // the visitor is cf-connecting-ip; x-forwarded-for (single value) only without Cloudflare.
+      ipAddress: { ipAddressHeaders: ["cf-connecting-ip", "x-forwarded-for"] },
+    },
+    // ponytail: in-memory counters, one server process; use Better Auth's database storage if that changes.
     rateLimit: { enabled: true },
     emailAndPassword: {
       enabled: true,

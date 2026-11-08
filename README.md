@@ -137,8 +137,11 @@ Layout on the VPS:
 ```
 
 The service runs `bun run start` (that is, `node --env-file-if-exists=.env.local server.mjs`) in `/srv/twc/app`
-with `HOST=172.18.0.1`, `PORT=8788` and `DATA_DIR=/srv/twc/data`, restarting on failure. Rate limiting reads the
-client address from Caddy's `X-Forwarded-For`; the server only listens on the bridge address, so only Caddy can reach it.
+with `HOST=172.18.0.1`, `PORT=8788` and `DATA_DIR=/srv/twc/data`, restarting on failure. Traffic arrives through Cloudflare, then
+Caddy, so rate limits (Better Auth's and the per-IP limit on applications) key on `CF-Connecting-IP`, falling back to
+`X-Forwarded-For`. That header is only trustworthy if Caddy accepts connections from Cloudflare alone (firewall or
+Caddy `trusted_proxies`/IP matcher for Cloudflare's ranges); the server listens only on the bridge address, so only
+Caddy can reach it.
 
 ### Backup
 

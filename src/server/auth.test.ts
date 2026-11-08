@@ -103,6 +103,34 @@ describe("email + password", () => {
   });
 });
 
+describe("rate-limit buckets behind Cloudflare → Caddy", () => {
+  // Caddy's x-forwarded-for carries Cloudflare's edge address, shared by many members; cf-connecting-ip is theirs.
+  const attempt = (headers: Record<string, string>) =>
+    auth.handler(new Request(`${APP}/api/auth/sign-in/email`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Origin: APP, ...headers },
+      body: JSON.stringify({ email: "nobody@x.test", password: "wrong password" }),
+    })).then((r) => r.status);
+  const edge = "172.70.1.1";
+
+  it("count per cf-connecting-ip, not per shared x-forwarded-for", async () => {
+    const first: number[] = [];
+    for (let i = 0; i < 6; i++) first.push(await attempt({ "cf-connecting-ip": "198.51.100.21", "x-forwarded-for": edge }));
+    expect(first).toContain(429);
+    expect(await attempt({ "cf-connecting-ip": "198.51.100.22", "x-forwarded-for": edge })).toBe(401);
+    expect(await attempt({ "cf-connecting-ip": "198.51.100.21", "x-forwarded-for": "172.70.9.9" })).toBe(429);
+  });
+
+  it("fall back to x-forwarded-for without cf-connecting-ip", async () => {
+    for (let i = 0; i < 6; i++) await attempt({ "x-forwarded-for": "198.51.100.31" });
+    expect(await attempt({ "x-forwarded-for": "198.51.100.31" })).toBe(429);
+    expect(await attempt({ "x-forwarded-for": "198.51.100.32" })).toBe(401);
+  });
+
+  it("are configured to read cf-connecting-ip, then x-forwarded-for", () =>
+    expect(auth.options.advanced?.ipAddress?.ipAddressHeaders).toEqual(["cf-connecting-ip", "x-forwarded-for"]));
+});
+
 describe("configuration", () => {
   it("trusts APP_URL, plus the dev server only outside production", async () => {
     expect(auth.options.trustedOrigins).toEqual([APP]);
