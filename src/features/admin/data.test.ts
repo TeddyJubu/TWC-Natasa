@@ -95,9 +95,11 @@ describe("admin mutations", () => {
 
   it("reviewing an application updates its status and refreshes applications, members, directory, public cards and intros", async () => {
     const { qc, spy } = setup();
-    fake.results = [ok];
-    await new MutationObserver(qc, reviewApplicationMutation(qc)).mutate({ id: "a1", status: "approved" });
-    expect(fake.calls).toEqual([["from", "applications"], ["update", { status: "approved" }], ["eq", "id", "a1"]]);
+    fake.results = [ok, { data: { session: null }, error: null }];
+    const notice = await new MutationObserver(qc, reviewApplicationMutation(qc)).mutate({ id: "a1", status: "approved" });
+    // Then the welcome email, as the signed-in admin (no session here, so it isn't sent).
+    expect(fake.calls).toEqual([["from", "applications"], ["update", { status: "approved" }], ["eq", "id", "a1"], ["getSession"]]);
+    expect(notice).toEqual({ sent: false, reason: "not signed in" });
     expect(keys(spy)).toEqual([["admin", "applications"], ["admin", "members"], ["directory"], ["public-profiles"], ["intros"]]);
   });
 

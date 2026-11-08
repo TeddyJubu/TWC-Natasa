@@ -10,6 +10,7 @@ import {
 import {
   LogoNotSavedError, useCreateNeighborhood, useReviewApplication, useSetBookingStatus, useSetMemberStatus, useUpdateNeighborhood,
 } from "./mutations";
+import type { ApprovalNotice } from "./approval-email";
 import { checkLogo, formatAnswers, formatDate, formatDay, humanizeKey, reviewerName, type AnswerEntry } from "./format";
 
 const errorMessage = (error: unknown) =>
@@ -54,6 +55,16 @@ function NamesError({ members }: { members: Loadable }) {
 
 function MutationError({ mutation }: { mutation: { isError: boolean; error: unknown } }) {
   return mutation.isError ? <p role="alert" className="text-sm text-danger">{errorMessage(mutation.error)}</p> : null;
+}
+
+/** After an approval: whether the welcome email went out. */
+function EmailNotice({ notice }: { notice: ApprovalNotice | null | undefined }) {
+  if (!notice) return null;
+  return (
+    <p role="status" className="text-sm text-ink-muted">
+      {notice.sent ? "Welcome email sent" : `Approved — email not sent (${notice.reason})`}
+    </p>
+  );
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -134,6 +145,7 @@ function ApplicationRow({ app, members }: { app: AdminApplication; members: Admi
         </details>
       )}
       <MutationError mutation={review} />
+      <EmailNotice notice={review.data} />
       <Decisions
         current={app.status}
         options={REVIEW_OPTIONS}
@@ -208,6 +220,7 @@ function MemberRow({ member }: { member: AdminMember }) {
             onDecide={(status) => setStatus.mutate({ id: member.id, status })}
           />
           <MutationError mutation={setStatus} />
+          <EmailNotice notice={setStatus.data} />
         </div>
       </td>
     </tr>

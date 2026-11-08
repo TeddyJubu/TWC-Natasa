@@ -47,6 +47,15 @@ In a sandbox, bun may need writable temp and cache directories, e.g.
 | Variable | Required | What it does |
 |---|---|---|
 | `VITE_SITE_URL` | No | The site's public origin, e.g. `https://example.com` (no path; a trailing slash is fine). When set, every page gets an absolute `og:image` (the hero photo), and the indexable public pages (`/`, `/members`, `/join`, `/auth`; the list is in `src/app/seo.ts`) get an absolute `<link rel="canonical">` and `og:url`. Unset, or not a bare http(s) origin, means none of them are emitted, never a relative or guessed URL. |
+| `CF_EMAIL_ACCOUNT_ID` | For approval emails | Cloudflare account id for the Email Sending API. Server only. |
+| `CF_EMAIL_API_TOKEN` | For approval emails | Cloudflare API token with email sending permission. **Secret**: server environment only, never a tracked file. |
+| `EMAIL_FROM` | No | Sender address for the approval email; defaults to `info@thewomenscollective.club`. |
+
+When an admin approves an application (or a member, via her newest application), `/admin` calls the
+`sendApprovalEmailFn` server function (`src/features/admin/approval-email.ts`). It acts with the admin's
+own access token, requires `is_admin()` and an `approved` application, and sends one plain-text welcome
+email linking to `${VITE_SITE_URL}/auth`. Declines never send. Without the two `CF_EMAIL_*` values (or
+`VITE_SITE_URL`) nothing is sent and `/admin` shows "Approved — email not sent (email isn’t set up)".
 
 ### Secrets
 

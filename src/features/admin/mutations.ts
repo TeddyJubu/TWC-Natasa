@@ -4,6 +4,7 @@ import { useMutation, useQueryClient, type QueryClient, type QueryKey } from "@t
 import { getSupabase } from "@/app/supabase";
 import type { Database } from "@/integrations/supabase/types";
 import { checkLogo, validateNeighborhood } from "./format";
+import { emailApproval, type ApprovalNotice } from "./approval-email";
 
 type MembershipStatus = Database["public"]["Enums"]["membership_status"];
 export type Review = { id: string; status: Exclude<MembershipStatus, "pending"> };
@@ -12,18 +13,29 @@ export type BookingReview = { id: string; status: "confirmed" | "declined" };
 const invalidate = (qc: QueryClient, keys: QueryKey[]) =>
   Promise.all(keys.map((queryKey) => qc.invalidateQueries({ queryKey })));
 
-/** The review trigger syncs the linked profile and records reviewed_at / reviewed_by. */
-export async function reviewApplication({ id, status }: Review): Promise<void> {
+/**
+ * The review trigger syncs the linked profile and records reviewed_at / reviewed_by.
+ * An approval then sends the welcome email; the result is a notice (null for a decline), never a failure.
+ */
+export async function reviewApplication({ id, status }: Review): Promise<ApprovalNotice | null> {
   const supabase = await getSupabase();
   const { error } = await supabase.from("applications").update({ status }).eq("id", id);
   if (error) throw error;
+  return status === "approved" ? emailApproval(id) : null;
 }
 
-/** For members with no application: admins set the profile status directly (the linked application's list refreshes too). */
-export async function setMemberStatus({ id, status }: Review): Promise<void> {
+/**
+ * Admins set the profile status directly; 0004 gives the newest application the same status, so an
+ * approval emails that application's applicant (or says there's none on file).
+ */
+export async function setMemberStatus({ id, status }: Review): Promise<ApprovalNotice | null> {
   const supabase = await getSupabase();
   const { error } = await supabase.from("profiles").update({ status }).eq("id", id);
   if (error) throw error;
+  if (status !== "approved") return null;
+  const { data: app } = await supabase
+    .from("applications").select("id").eq("user_id", id).order("created_at", { ascending: false }).limit(1).maybeSingle();
+  return app ? emailApproval(app.id) : { sent: false, reason: "no application on file" };
 }
 
 export async function setBookingStatus({ id, status }: BookingReview): Promise<void> {

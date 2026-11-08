@@ -6,6 +6,8 @@ import { renderWithQueries } from "@/test/dom";
 import { fake } from "@/test/fake-supabase";
 
 vi.mock("@/app/supabase", async () => (await import("@/test/fake-supabase")).fakeSupabaseModule);
+const emailApproval = vi.fn(async (_id: string) => ({ sent: true }) as { sent: true } | { sent: false; reason: string });
+vi.mock("@/features/admin/approval-email", () => ({ emailApproval: (id: string) => emailApproval(id) }));
 vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs }));
 
 import { Route as GuardRoute } from "@/routes/_authenticated/_admin/route";
@@ -15,6 +17,7 @@ const Page = Route.options.component as React.ComponentType;
 afterEach(() => {
   cleanup();
   fake.reset();
+  emailApproval.mockClear();
 });
 
 const settle = () => act(() => new Promise((r) => setTimeout(r, 20)));
@@ -95,6 +98,28 @@ describe("/admin", () => {
       expect(fake.calls).toContainEqual(["eq", "id", "a1"]);
       await waitFor(() => expect(screen.getByRole("article").textContent).toMatch(/Approved/));
       expect(screen.getByRole("article").textContent).toMatch(/by Natasa Admin/);
+      expect(emailApproval.mock.calls).toEqual([["a1"]]);
+      expect(within(screen.getByRole("article")).getByRole("status").textContent).toBe("Welcome email sent");
+    });
+
+    it("says when the welcome email wasn't sent, with the reason", async () => {
+      emailApproval.mockResolvedValueOnce({ sent: false, reason: "email isn’t set up" });
+      fake.results = [{ data: [application("a1", "Pia Pending")], error: null }];
+      renderWithQueries(<Page />, [[["admin", "members"], members]]);
+      const row = await screen.findByRole("article");
+      fireEvent.click(within(row).getByRole("button", { name: /approve/i }));
+      expect((await within(row).findByRole("status")).textContent).toBe("Approved — email not sent (email isn’t set up)");
+    });
+
+    it("never emails on a decline", async () => {
+      fake.results = [{ data: [application("a1", "Pia Pending")], error: null }];
+      renderWithQueries(<Page />, [[["admin", "members"], members]]);
+      const row = await screen.findByRole("article");
+      fireEvent.click(within(row).getByRole("button", { name: /decline/i }));
+      await waitFor(() => expect(fake.calls).toContainEqual(["update", { status: "declined" }]));
+      await settle();
+      expect(emailApproval).not.toHaveBeenCalled();
+      expect(within(row).queryByRole("status")).toBeNull();
     });
 
     it("shows a failed review as an alert and re-enables the buttons", async () => {
@@ -183,6 +208,26 @@ describe("/admin", () => {
     fireEvent.click(within(row).getByRole("button", { name: /approve/i }));
     await waitFor(() => expect(fake.calls).toContainEqual(["update", { status: "approved" }]));
     expect(fake.calls.slice(0, 3)).toEqual([["from", "profiles"], ["update", { status: "approved" }], ["eq", "id", "u2"]]);
+    // No application on file: a quiet notice, no email call.
+    expect((await within(row).findByRole("status")).textContent).toBe("Approved — email not sent (no application on file)");
+    expect(emailApproval).not.toHaveBeenCalled();
+  });
+
+  it("members: approve emails the member's newest application", async () => {
+    renderWithQueries(<Page />, [
+      [["admin", "applications"], []],
+      [["admin", "members"], [member("u2", "Lena Ortiz", { status: "pending", catalogue_number: null })]],
+    ]);
+    fireEvent.click(screen.getByRole("tab", { name: "Members" }));
+    const row = screen.getByRole("row", { name: /Lena Ortiz/ });
+    fake.results = [{ data: null, error: null }, { data: { id: "app-9" }, error: null }];
+    fireEvent.click(within(row).getByRole("button", { name: /approve/i }));
+    expect((await within(row).findByRole("status")).textContent).toBe("Welcome email sent");
+    expect(fake.calls.slice(3, 9)).toEqual([
+      ["from", "applications"], ["select", "id"], ["eq", "user_id", "u2"],
+      ["order", "created_at", { ascending: false }], ["limit", 1], ["maybeSingle"],
+    ]);
+    expect(emailApproval.mock.calls).toEqual([["app-9"]]);
   });
 
   describe("neighborhoods", () => {
