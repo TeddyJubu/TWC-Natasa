@@ -2,8 +2,8 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { AppPage } from "@/app/layout/AppLayout";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { AppFooter, AppPage } from "@/app/layout/AppLayout";
 import type { Profile } from "@/features/members/queries";
 import { renderWithQueries } from "@/test/dom";
 
@@ -128,6 +128,26 @@ describe("root route", () => {
     const root = readFileSync(resolve(process.cwd(), "src/routes/__root.tsx"), "utf8");
     expect(root).not.toMatch(/\bImageTrail\b/);
   });
+});
+
+describe("AppFooter", () => {
+  const LEGAL = [["Privacy", "/privacy"], ["Terms", "/terms"], ["Code of conduct", "/code-of-conduct"]];
+  const footerLinks = () =>
+    within(screen.getByRole("navigation", { name: "Footer" })).getAllByRole("link").map((a) => [a.textContent, a.getAttribute("href")]);
+
+  it("always links the privacy policy, terms and code of conduct, after the page's own links", () => {
+    render(<AppFooter links={[{ label: "Join", href: "/join" }]} />);
+    expect(footerLinks()).toEqual([["Join", "/join"], ...LEGAL]);
+  });
+
+  for (const [path, route] of Object.entries(live)) {
+    it(`${path}: a footer, when the page has one, carries the legal links`, () => {
+      const Page = component(route);
+      const { container } = renderWithQueries(<Page />, seed);
+      if (!container.querySelector("footer")) return;
+      expect(footerLinks().slice(-3)).toEqual(LEGAL);
+    });
+  }
 });
 
 describe("AppPage", () => {

@@ -50,14 +50,21 @@ export function AppNav({ brand, variant, ...props }: AppNavProps) {
   );
 }
 
-/** Site footer with the shared brand, statement and note; pages pass their own links. */
-export function AppFooter(props: Omit<FooterProps, "brand" | "statement" | "note">) {
+const LEGAL_LINKS = [
+  { label: "Privacy", href: "/privacy" },
+  { label: "Terms", href: "/terms" },
+  { label: "Code of conduct", href: "/code-of-conduct" },
+];
+
+/** Site footer with the shared brand, statement and note; pages pass their own links, the legal pages follow. */
+export function AppFooter({ links = [], ...props }: Omit<FooterProps, "brand" | "statement" | "note">) {
   return (
     <Footer
       brand={<BrandLockup logoVariant="white" />}
       statement="Find your people, share what you do, and help someone else shine."
       note="The Women’s Collective · Western Queens"
       linkComponent={RouterLink}
+      links={[...links, ...LEGAL_LINKS]}
       {...props}
     />
   );
