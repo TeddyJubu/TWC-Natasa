@@ -5,6 +5,7 @@ import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve, sep } from "node:path";
 import { dataDir, type DB } from "./db";
 import { AccessError, isAdmin, isMember, type Actor } from "./guard";
+import { stripMetadata } from "./image-meta";
 
 export const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
 export type Bucket = "avatars" | "neighborhood-logos";
@@ -42,11 +43,13 @@ export function mediaFile(bucket: Bucket, name: string): string | null {
   return file.startsWith(root + sep) ? file : null;
 }
 
+/** Stores an upload without its Exif/XMP/text metadata (location included); throws (400) if it doesn't parse. */
 export function writeMedia(bucket: Bucket, name: string, bytes: Uint8Array): void {
   const file = mediaFile(bucket, name);
   if (!file) throw new AccessError("Invalid file name.", 400);
+  const clean = stripMetadata(bytes);
   mkdirSync(dirname(file), { recursive: true });
-  writeFileSync(file, bytes);
+  writeFileSync(file, clean);
 }
 
 /** Deletes a stored file; a missing one is fine. */

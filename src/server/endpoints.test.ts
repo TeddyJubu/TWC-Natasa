@@ -9,10 +9,11 @@ import { clientIp } from "./request";
 import { uploadImage, uploadImageRequest } from "@/features/members/members.server";
 import { neighborhoodLogoRequest } from "@/features/admin/admin.server";
 import { submitApplicationRequest } from "@/features/applications/applications.server";
+import { TINY } from "@/test/images";
 
 const MEMBER = "00000000-0000-4000-8000-0000000000b1";
 const ADMIN = "00000000-0000-4000-8000-0000000000a1";
-const PNG = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0]);
+const PNG = TINY.png;
 let db: DB;
 const as = (id: string | null) => ({ db, actor: id ? { id, email: "x@x.test" } : null });
 

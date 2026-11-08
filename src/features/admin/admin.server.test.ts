@@ -5,10 +5,10 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { openDb, type DB } from "@/server/db";
 import { mediaFile } from "@/server/media";
 import { adminNeighborhoods, saveNeighborhoodLogo } from "./admin.server";
+import { TINY } from "@/test/images";
 
 const ADMIN = "00000000-0000-4000-8000-00000000000a";
-const PNG = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0]);
-const WEBP = new Uint8Array([0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0, 0x57, 0x45, 0x42, 0x50]);
+const { png: PNG, webp: WEBP } = TINY;
 let db: DB;
 const admin = () => ({ db, actor: { id: ADMIN, email: "a@x.test" } });
 

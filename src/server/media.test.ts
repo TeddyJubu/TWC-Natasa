@@ -1,13 +1,12 @@
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { openDb, type DB } from "./db";
+import { TINY, WITH_GPS } from "@/test/images";
 import { checkImage, mediaFile, serveMedia, sniffImage, writeMedia } from "./media";
 
-const PNG = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3]);
-const JPG = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3]);
-const WEBP = new Uint8Array([0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0, 0x57, 0x45, 0x42, 0x50, 1]);
+const { png: PNG, jpg: JPG, webp: WEBP } = TINY;
 const OWNER = "00000000-0000-4000-8000-0000000000aa";
 let dir: string;
 let db: DB;
@@ -41,6 +40,13 @@ describe("uploads", () => {
     big.set(PNG);
     expect(() => checkImage(big)).toThrow(/over 5 MB/);
     expect(() => checkImage(new TextEncoder().encode("GIF89a"))).toThrow(/JPG, PNG or WebP/);
+  });
+
+  it("are stored without their location metadata, and refused when they don't parse", () => {
+    writeMedia("avatars", `${OWNER}/gps.jpg`, WITH_GPS.jpg);
+    expect(new Uint8Array(readFileSync(mediaFile("avatars", `${OWNER}/gps.jpg`)!))).toEqual(TINY.jpg);
+    expect(() => writeMedia("avatars", `${OWNER}/cut.jpg`, TINY.jpg.slice(0, 100))).toThrow(/couldn’t be read/);
+    expect(existsSync(mediaFile("avatars", `${OWNER}/cut.jpg`)!)).toBe(false);
   });
 
   it("only ever resolve to a plain file inside their bucket", () => {

@@ -16,10 +16,11 @@ import { listNeighborhoods } from "@/features/neighborhoods/neighborhoods.server
 import {
   adminApplications, adminMembers, createNeighborhood, reviewApplication, setBookingStatus, setMemberStatus,
 } from "@/features/admin/admin.server";
+import { TINY } from "@/test/images";
 
 const id = (n: string) => `00000000-0000-4000-8000-${n.padStart(12, "0")}`;
 const [A, B, C, D, E, F, G] = ["a", "b", "c", "d", "e", "f", "10"].map(id);
-const PNG = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0]);
+const PNG = TINY.png;
 
 let db: DB;
 const as = (who: string | null): Ctx => ({ db, actor: who ? { id: who, email: `${who}@x.test` } : null });
