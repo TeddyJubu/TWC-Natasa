@@ -15,6 +15,7 @@ let db: DB;
 beforeAll(() => {
   dir = mkdtempSync(join(tmpdir(), "twc-media-"));
   vi.stubEnv("DATA_DIR", dir);
+  vi.stubEnv("BETTER_AUTH_SECRET", "media-test-secret-media-test-secret"); // the /media route resolves the session
   db = openDb(":memory:");
   const now = new Date().toISOString();
   db.prepare(`insert into "user" (id, name, email, emailVerified, createdAt, updatedAt) values (?, 'O', 'o@x.test', 1, ?, ?)`).run(OWNER, now, now);

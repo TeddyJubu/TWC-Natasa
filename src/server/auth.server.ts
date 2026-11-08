@@ -5,6 +5,7 @@ import { hashPassword, verifyPassword } from "better-auth/crypto";
 import bcrypt from "bcryptjs";
 import { getDb, type DB } from "./db";
 import { appUrl, sendEmail } from "./email";
+import { authSecret } from "./secret";
 
 const env = (name: string) => process.env[name] || undefined;
 
@@ -36,7 +37,7 @@ export function createAuth(db: DB) {
   return betterAuth({
     database: db,
     baseURL: base,
-    secret: env("BETTER_AUTH_SECRET"),
+    secret: authSecret(),
     trustedOrigins: production ? [base] : [base, "http://localhost:8080"],
     advanced: {
       // UUIDs, so ids imported from Supabase and new ones look alike.

@@ -43,6 +43,7 @@ server.mjs           the production server
 
 ```sh
 bun install
+echo "BETTER_AUTH_SECRET=$(openssl rand -base64 32)" >> .env.local   # once; the server won't start without it
 bun run dev        # http://localhost:8080 — creates ./data/twc.db on first request
 ```
 
@@ -72,7 +73,7 @@ In a sandbox, bun may need writable temp and cache directories, e.g.
 | Variable | Required | What it does |
 |---|---|---|
 | `APP_URL` | Yes | The public origin, e.g. `https://thewomenscollective.club`. Links in emails use it, and Better Auth trusts it as the only origin (plus `http://localhost:8080` outside production). |
-| `BETTER_AUTH_SECRET` | Yes | **Secret.** Signs sessions and tokens: `openssl rand -base64 32`. Changing it signs everyone out. |
+| `BETTER_AUTH_SECRET` | Yes | **Secret**, at least 32 characters: `openssl rand -base64 32`. Signs sessions and tokens; the server refuses to start without it (in every environment, tests included). Changing it signs everyone out. |
 | `DATA_DIR` | No | Where `twc.db` and `uploads/` live; default `./data`. |
 | `NODE_ENV` | On the server | `production`: without Cloudflare email settings, emails are skipped (not printed). |
 | `HOST`, `PORT` | No | Where `bun run start` listens; default `127.0.0.1:8788`. |

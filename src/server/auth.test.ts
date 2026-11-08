@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import bcrypt from "bcryptjs";
+import { readFileSync } from "node:fs";
 import { openDb, type DB } from "./db";
 
 const sent = vi.hoisted(() => [] as { to: string; subject: string; text: string }[]);
@@ -132,6 +133,19 @@ describe("rate-limit buckets behind Cloudflare → Caddy", () => {
 });
 
 describe("configuration", () => {
+  it.each([["production"], ["development"], ["test"]])("refuses a missing or short BETTER_AUTH_SECRET (NODE_ENV=%s)", (mode) => {
+    vi.stubEnv("NODE_ENV", mode);
+    vi.stubEnv("BETTER_AUTH_SECRET", "");
+    expect(() => createAuth(db)).toThrow(/BETTER_AUTH_SECRET/);
+    vi.stubEnv("BETTER_AUTH_SECRET", "x".repeat(31));
+    expect(() => createAuth(db)).toThrow(/at least 32/);
+    vi.stubEnv("BETTER_AUTH_SECRET", "x".repeat(32));
+    expect(() => createAuth(db)).not.toThrow();
+  });
+
+  it("is checked when the server starts, not on the first sign-in", () =>
+    expect(readFileSync("src/server.ts", "utf8")).toMatch(/^authSecret\(\);$/m));
+
   it("trusts APP_URL, plus the dev server only outside production", async () => {
     expect(auth.options.trustedOrigins).toEqual([APP]);
     vi.stubEnv("NODE_ENV", "development");
