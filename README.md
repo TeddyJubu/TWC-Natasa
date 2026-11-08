@@ -23,7 +23,7 @@ open work. Rules for coding agents live in [AGENTS.md](AGENTS.md).
 - Vitest + Testing Library + jsdom
 
 History: the site was first built in Lovable on Lovable Cloud, then ran on a Supabase project; both were
-dropped in November 2026 (Phases 8 and 9 in AUDIT-TASKS.md). `scripts/import-lovable.ts` moves the old data over.
+dropped in November 2026 (Phases 8 and 9 in AUDIT-TASKS.md). The old member records live in Notion; the new database started empty.
 
 ## Source layout
 
@@ -38,7 +38,6 @@ src/routes/          pages (`_authenticated/` needs a session, `_authenticated/_
                      plus /api/auth/* (Better Auth) and /media/* (uploads)
 src/showcase/        preview-only specimens and demo members (/colors, /typography, /components)
 db/migrations/       SQLite migrations, applied in order at startup
-scripts/             import-lovable.ts (one-off import of the old Supabase data)
 server.mjs           the production server
 ```
 
@@ -126,62 +125,47 @@ depend on who acts (see `0001_init.sql`).
 The site runs on our VPS (Ubuntu 24.04, Node 22): Caddy terminates TLS and proxies to the Node server at
 `172.18.0.1:8788` (the Docker bridge address, so Caddy's container can reach it).
 
-**Deploying is merging to `main`**: the server pulls `main` within five minutes, runs
-`bun install --frozen-lockfile && bun run build`, and restarts the app service. Migrations apply themselves when the
-server starts.
+**Deploying is merging to `main`.** Every 5 minutes `twc-natasa-deploy.timer` runs `/usr/local/sbin/twc-natasa-deploy`:
+it fast-forwards `/opt/twc-natasa` to `origin/main`, then `bun install --frozen-lockfile`, typecheck, tests and build.
+Any failure stops there and the running site is untouched (a failed commit is tried once; the next push retries).
+On success it snapshots the database to `/var/backups/twc-natasa/pre-deploy-*.db` (newest 20 kept) and restarts
+`twc-natasa.service`, then checks the site answers. Migrations apply themselves when the server starts. Logs:
+`journalctl -u twc-natasa-deploy` and `journalctl -u twc-natasa`.
 
 Layout on the VPS:
 
 ```
-/srv/twc/app            checkout of main (the service's working directory: migrations are read from db/migrations)
-/srv/twc/app/.env.local server environment (APP_URL, BETTER_AUTH_SECRET, CF_EMAIL_*, GOOGLE_*, DATA_DIR, HOST, PORT,
-                        NODE_ENV=production); mode 600, owned by the service user
-/srv/twc/data/twc.db    the database (+ twc.db-wal, twc.db-shm while running)
-/srv/twc/data/uploads/  avatars/<member id>/…, neighborhood-logos/…
+/opt/twc-natasa                  checkout of main (the service's working directory)
+/etc/twc-natasa/app.env          server env: APP_URL, DATA_DIR, BETTER_AUTH_SECRET, CF_EMAIL_*, EMAIL_FROM, HOST,
+                                 PORT, NODE_ENV (root:www-data, 640)
+/var/lib/twc-natasa/data/twc.db  the database (+ -wal/-shm while running); uploads/ beside it
+/var/backups/twc-natasa/         pre-deploy snapshots, nightly-*.db and uploads-*.tgz (30 days)
 ```
 
-The service runs `bun run start` (that is, `node --env-file-if-exists=.env.local server.mjs`) in `/srv/twc/app`
-with `HOST=172.18.0.1`, `PORT=8788` and `DATA_DIR=/srv/twc/data`, restarting on failure. Traffic arrives through Cloudflare, then
-Caddy, so rate limits (Better Auth's and the per-IP limit on applications) key on `CF-Connecting-IP`, falling back to
-`X-Forwarded-For`. That header is only trustworthy if Caddy accepts connections from Cloudflare alone (firewall or
-Caddy `trusted_proxies`/IP matcher for Cloudflare's ranges); the server listens only on the bridge address, so only
-Caddy can reach it.
+`twc-natasa.service` runs `node server.mjs` as `www-data` on `172.18.0.1:8788` (the Docker bridge, so Caddy's
+container can reach it; nothing else can). Caddy's `new.thewomenscollective.club` block in `/opt/nbwc/Caddyfile`
+proxies to it. Traffic arrives through Cloudflare, then Caddy, so rate limits (Better Auth's and the per-IP limit on
+applications) key on `CF-Connecting-IP`, falling back to `X-Forwarded-For`. Someone who reaches Caddy directly
+(bypassing Cloudflare) can spoof that header, which only lets them dodge the rate limits.
 
 ### Backup
 
-The database is one file; copy it with SQLite's online backup (safe while the server runs), plus the uploads:
+`twc-natasa-backup.timer` copies the database with SQLite's online backup and tars the uploads every night at
+04:15 UTC, keeping 30 days. By hand:
 
 ```sh
-sqlite3 /srv/twc/data/twc.db ".backup '/srv/twc/backups/twc-$(date +%F).db'"
-rsync -a /srv/twc/data/uploads/ /srv/twc/backups/uploads/
+sqlite3 /var/lib/twc-natasa/data/twc.db ".backup '/var/backups/twc-natasa/manual-$(date +%F).db'"
 ```
 
-Restore: stop the service, put the backup in place as `twc.db` (and the uploads back), start it.
-
-## Import from Lovable (once)
-
-`scripts/import-lovable.ts` loads a JSON export of the old Supabase project into an **empty** database (it refuses
-otherwise), in one transaction, and prints counts. The JSON's keys: `users` (rows of `auth.users`), `identities`
-(rows of `auth.identities`), and one key per public table (`profiles`, `user_roles`, `events`, `event_rsvps`,
-`headshot_bookings`, plus `neighborhoods`/`applications` if present), each an array of rows with Postgres column
-names. The shape is in `scripts/fixtures/lovable-export.json`.
-
-```sh
-DATA_DIR=/srv/twc/data node scripts/import-lovable.ts lovable-export.json
-```
-
-Users keep their id, email, created date and email confirmation; their bcrypt password still works (Better Auth
-checks legacy `$2…` hashes with bcryptjs), and Google identities become Google accounts. Exported events replace the
-seeded ones. A neighborhood that isn't in the table, or a portrait path outside the member's own folder, is cleared.
-Files are not in the export: copy the old `avatars` and `neighborhood-logos` buckets into
-`/srv/twc/data/uploads/avatars/` and `/srv/twc/data/uploads/neighborhood-logos/` (same paths as before).
+Restore: `systemctl stop twc-natasa`, copy the backup over `twc.db` (delete `twc.db-wal`/`-shm`), put the uploads
+back, `systemctl start twc-natasa`.
 
 ## First admin
 
 Admins can't be created from the app; the first one is added by hand, once:
 
 1. Sign up on the site and confirm the email.
-2. On the server: `sqlite3 /srv/twc/data/twc.db "insert into user_roles (user_id, role) select id, 'admin' from \"user\" where email = 'you@example.com';"`
+2. On the server: `sqlite3 /var/lib/twc-natasa/data/twc.db "insert into user_roles (user_id, role) select id, 'admin' from \"user\" where email = 'you@example.com';"`
 3. Reload `/account`. An **Admin** link to `/admin` now appears in the account nav.
 
 ## CI

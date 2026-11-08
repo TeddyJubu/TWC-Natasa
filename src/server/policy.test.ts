@@ -9,7 +9,6 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { openDb, type DB } from "./db";
 import type { Ctx } from "./context.server";
 import { mediaFile, serveMedia, writeMedia } from "./media";
-import { backfillLinkedApplicationStatus } from "./backfill";
 import { directory, intros, publicProfiles, removeLogo, saveProfile, uploadImage } from "@/features/members/members.server";
 import { bookHeadshot, listEvents, setRsvp } from "@/features/events/events.server";
 import { submitApplication } from "@/features/applications/applications.server";
@@ -290,7 +289,6 @@ describe("access rules (ported from the RLS checks)", () => {
   it("pending member cannot join to an applicant's email", () => throwsAccess(() => adminMembers(as(id("15")))));
 
   // Review fixes. 16: a second admin who reviews and then deletes her login. 17: declined before sign-up.
-  // 18, 19: accounts linked under the old trigger order, still pending (backfill).
   it("fixture: second admin recorded as reviewer", () => {
     addUser(id("16"), "reviewer@x.test");
     run("insert into user_roles (user_id, role) values (?, 'admin')", id("16"));
@@ -324,23 +322,6 @@ describe("access rules (ported from the RLS checks)", () => {
   });
   it("applications are indexed by lower(email)", () =>
     expect(get<{ sql: string }>("select sql from sqlite_master where type = 'index' and tbl_name = 'applications' and sql is not null").sql).toMatch(/lower\(email\)/));
-
-  it("fixture: stuck profiles are pending", () => {
-    addUser(id("18"), "stuckapproved@x.test");
-    addUser(id("19"), "stuckdeclined@x.test");
-    const ins = "insert into applications (email, full_name, user_id, status) values (?, ?, ?, ?)";
-    run(ins, "stuckapproved@x.test", "Stuck Approved", id("18"), "declined");
-    run(ins, "stuckapproved@x.test", "Stuck Approved", id("18"), "approved");
-    run(ins, "stuckdeclined@x.test", "Stuck Declined", id("19"), "declined");
-    expect([status(id("18")), status(id("19"))]).toEqual(["pending", "pending"]);
-    backfillLinkedApplicationStatus(db);
-  });
-  it("backfill approves a pending profile with an approved application", () =>
-    expect(get<{ ok: number }>("select status = 'approved' and catalogue_number is not null as ok from profiles where id = ?", id("18")).ok).toBe(1));
-  it("backfill declines a pending profile with only a declined application", () => expect(status(id("19"))).toBe("declined"));
-  it("backfill leaves a profile whose application is still pending", () => expect(status(id("13"))).toBe("pending"));
-  it("anon cannot run the backfill", async () => expect((await serverFunctionNames()).filter((n) => /backfill/i.test(n))).toEqual([]));
-  it("members cannot run the backfill", async () => expect((await serverFunctionNames()).join()).not.toMatch(/backfill/i));
 
   // ---------- Cleanup (0004) ----------
   // 20: signs up with no neighborhood. 21, 22: two applications each, reviewed on the profile.

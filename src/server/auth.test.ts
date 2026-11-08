@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import bcrypt from "bcryptjs";
 import { readFileSync } from "node:fs";
 import { openDb, type DB } from "./db";
 
@@ -77,14 +76,6 @@ describe("email + password", () => {
       .toEqual({ status: "approved", n: 11 });
   });
 
-  it("accepts a legacy bcrypt hash imported from Supabase", async () => {
-    const now = new Date().toISOString();
-    db.prepare(`insert into "user" (id, name, email, emailVerified, createdAt, updatedAt) values ('00000000-0000-4000-8000-000000000001', 'Old', 'old@x.test', 1, ?, ?)`).run(now, now);
-    db.prepare(`insert into account (id, accountId, providerId, userId, password, createdAt, updatedAt) values ('a1', '00000000-0000-4000-8000-000000000001', 'credential', '00000000-0000-4000-8000-000000000001', ?, ?, ?)`)
-      .run(bcrypt.hashSync("legacy pass", 4), now, now);
-    expect((await signIn("old@x.test", "legacy pass")).status).toBe(200);
-    expect((await signIn("old@x.test", "not it")).status).toBe(401);
-  });
 
   it("resets a password through an emailed link at APP_URL", async () => {
     await signUp("rosa@x.test");

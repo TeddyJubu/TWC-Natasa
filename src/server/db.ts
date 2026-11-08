@@ -1,5 +1,4 @@
-// The app's one SQLite database (node:sqlite). Server-only: imported by *.server.ts modules, server routes and
-// scripts/import-lovable.ts (plain Node, so relative imports and process.env only).
+// The app's one SQLite database (node:sqlite). Server-only: imported by *.server.ts modules and server routes.
 import { DatabaseSync } from "node:sqlite";
 import { mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";

@@ -1,17 +1,11 @@
 // Server-only: Better Auth on the app's SQLite database. Served at /api/auth/* (src/routes/api/auth/$.ts);
 // server functions read the session through src/server/context.server.ts.
 import { betterAuth } from "better-auth";
-import { hashPassword, verifyPassword } from "better-auth/crypto";
-import bcrypt from "bcryptjs";
 import { getDb, type DB } from "./db";
 import { appUrl, sendEmail } from "./email";
 import { authSecret } from "./secret";
 
 const env = (name: string) => process.env[name] || undefined;
-
-/** Supabase stored bcrypt (`$2a$…`/`$2b$…`); everything new is Better Auth's own scrypt hash. */
-const verify = ({ hash, password }: { hash: string; password: string }) =>
-  hash.startsWith("$2") ? bcrypt.compare(password, hash) : verifyPassword({ hash, password });
 
 const verificationText = (url: string) => `Welcome to The Women’s Collective!
 
@@ -53,7 +47,6 @@ export function createAuth(db: DB) {
       requireEmailVerification: true,
       minPasswordLength: 8,
       revokeSessionsOnPasswordReset: true,
-      password: { hash: hashPassword, verify },
       sendResetPassword: async ({ user, url }) => {
         void sendEmail({ to: user.email, subject: "Reset your password", text: resetText(url) });
       },
