@@ -20,6 +20,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TypographyRouteImport } from './routes/typography'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/_admin/route'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
+import { Route as MediaSplatRouteImport } from './routes/media/$'
 import { Route as AuthenticatedAdminAdminRouteImport } from './routes/_authenticated/_admin/admin'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
@@ -76,6 +77,11 @@ const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   path: '/account',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const MediaSplatRoute = MediaSplatRouteImport.update({
+  id: '/media/$',
+  path: '/media/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAdminAdminRoute = AuthenticatedAdminAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -97,6 +103,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/typography': typeof TypographyRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/media/$': typeof MediaSplatRoute
   '/admin': typeof AuthenticatedAdminAdminRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
@@ -110,6 +117,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/typography': typeof TypographyRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/media/$': typeof MediaSplatRoute
   '/admin': typeof AuthenticatedAdminAdminRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
@@ -126,6 +134,7 @@ export interface FileRoutesById {
   '/typography': typeof TypographyRoute
   '/_authenticated/_admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/account': typeof AuthenticatedAccountRoute
+  '/media/$': typeof MediaSplatRoute
   '/_authenticated/_admin/admin': typeof AuthenticatedAdminAdminRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
@@ -141,6 +150,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/typography'
     | '/account'
+    | '/media/$'
     | '/admin'
     | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
@@ -154,6 +164,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/typography'
     | '/account'
+    | '/media/$'
     | '/admin'
     | '/api/auth/$'
   id:
@@ -169,6 +180,7 @@ export interface FileRouteTypes {
     | '/typography'
     | '/_authenticated/_admin'
     | '/_authenticated/account'
+    | '/media/$'
     | '/_authenticated/_admin/admin'
     | '/api/auth/$'
   fileRoutesById: FileRoutesById
@@ -183,6 +195,7 @@ export interface RootRouteChildren {
   MembersRoute: typeof MembersRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TypographyRoute: typeof TypographyRoute
+  MediaSplatRoute: typeof MediaSplatRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
@@ -265,6 +278,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/media/$': {
+      id: '/media/$'
+      path: '/media/$'
+      fullPath: '/media/$'
+      preLoaderRoute: typeof MediaSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/_admin/admin': {
       id: '/_authenticated/_admin/admin'
       path: '/admin'
@@ -319,6 +339,7 @@ const rootRouteChildren: RootRouteChildren = {
   MembersRoute: MembersRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TypographyRoute: TypographyRoute,
+  MediaSplatRoute: MediaSplatRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport
