@@ -3,4 +3,4 @@ Disallow: /colors
 Disallow: /typography
 Disallow: /components
 
-Sitemap: https://thewomenscollective.club/sitemap.xml
+Sitemap: https://new.thewomenscollective.club/sitemap.xml
