@@ -26,9 +26,24 @@ function deferred() {
 
 const signedOut: Result = { data: { session: null }, error: null };
 const ok: Result = { data: null, error: null };
-const field = (label: RegExp) => screen.getByLabelText(label) as HTMLInputElement;
+/**
+ * The control a `<label>` names, like `getByLabelText` (exact string or regex on the label's text, and
+ * more than one match is an error) but in one pass over the labels. `getByLabelText` costs ~0.4 s per call
+ * on this ~110-label form under jsdom, so filling it took ~10 s idle and over 20 s under load, and a
+ * timed-out test left an act() open that blanked the renders of the tests after it.
+ * Controls named only by aria-label/aria-labelledby fall back to `getByLabelText`.
+ */
+function byLabel(label: RegExp | string): HTMLElement {
+  const matches = [...document.querySelectorAll("label")].filter((l) => {
+    const text = (l.textContent ?? "").replace(/\s+/g, " ").trim();
+    return l.control && (typeof label === "string" ? text === label : label.test(text));
+  });
+  if (matches.length > 1) throw new Error(`More than one control is labelled ${label}`);
+  return matches[0]?.control ?? screen.getByLabelText(label);
+}
+const field = (label: RegExp) => byLabel(label) as HTMLInputElement;
 const type = (label: RegExp, value: string) => fireEvent.change(field(label), { target: { value } });
-const check = (label: string) => fireEvent.click(screen.getByLabelText(label));
+const check = (label: string) => fireEvent.click(byLabel(label));
 const submitButton = () => screen.getByRole("button", { name: /submit application/i }) as HTMLButtonElement;
 const inserts = () => fake.calls.filter(([name]) => name === "insert");
 const thanks = () => screen.queryByRole("heading", { name: /thank you for introducing yourself/i });
@@ -40,7 +55,7 @@ function fillMinimum() {
   type(/^full name$/i, "Rosa Diaz");
   type(/^email address$/i, "rosa@x.test");
   type(/^phone number$/i, "718-555-0100");
-  fireEvent.change(screen.getByLabelText(/where are you based/i), { target: { value: "Astoria" } });
+  fireEvent.change(byLabel(/where are you based/i), { target: { value: "Astoria" } });
   check("I live here");
   type(/professional title or role/i, "Baker");
   type(/tell us about yourself and your work/i, "I bake bread for the block.");
@@ -52,13 +67,12 @@ function fillMinimum() {
   GUIDELINES.forEach(check);
   type(/electronic signature/i, "Rosa Diaz");
   type(/^date$/i, "2026-11-08");
-  fireEvent.click(screen.getByLabelText(/by submitting, i confirm/i));
+  fireEvent.click(byLabel(/by submitting, i confirm/i));
 }
 
 const renderSignedOut = () => renderWithQueries(<Page />, [[["applicant"], null]]);
 
-// Filling ~30 fields through label queries on this long form takes ~4–5 s under jsdom, so allow headroom.
-describe("/join", { timeout: 20_000 }, () => {
+describe("/join", () => {
   it("shows the success state only after the insert resolves, with no reset on the live route", async () => {
     const insert = deferred();
     fake.results = [signedOut, insert.promise];
