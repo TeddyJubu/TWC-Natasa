@@ -143,8 +143,9 @@ Layout on the VPS:
 ```
 
 `twc-natasa.service` runs `node server.mjs` as `www-data` on `172.18.0.1:8788` (the Docker bridge, so Caddy's
-container can reach it; nothing else can). Caddy's `new.thewomenscollective.club` block in `/opt/nbwc/Caddyfile`
-proxies to it. Traffic arrives through Cloudflare, then Caddy, so rate limits (Better Auth's and the per-IP limit on
+container can reach it; nothing else can). Caddy's `thewomenscollective.club` block in `/opt/nbwc/Caddyfile`
+proxies to it; only the CRM's embeddable forms (`/embed.js`, `/f/*`, their assets) and the legal pages (`/privacy`,
+`/terms`, `/code-of-conduct`) are still served from the old static site there. `new.` and `join.…/join` redirect here. Traffic arrives through Cloudflare, then Caddy, so rate limits (Better Auth's and the per-IP limit on
 applications) key on `CF-Connecting-IP`, falling back to `X-Forwarded-For`. Someone who reaches Caddy directly
 (bypassing Cloudflare) can spoof that header, which only lets them dodge the rate limits.
 
