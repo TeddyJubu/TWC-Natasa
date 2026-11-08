@@ -146,6 +146,7 @@ describe("access rules (ported from the RLS checks)", () => {
     addUser(G, "pendingpublic@x.test");
     run("update profiles set status = 'approved', directory_visible = 1, full_name = 'Pia' where id = ?", F);
     file(F, "avatar-1.png");
+    run("update profiles set avatar_path = ? where id = ?", `${F}/avatar-1.png`, F);
     file(G, "avatar-1.png");
     allFiles.push(`${F}/avatar-1.png`, `${G}/avatar-1.png`);
     expect(status(F)).toBe("approved");
@@ -157,6 +158,13 @@ describe("access rules (ported from the RLS checks)", () => {
     const cards = publicProfiles(anon());
     expect(cards.map((c) => c.id)).toEqual([`catalogue-${get<{ n: number }>("select catalogue_number as n from profiles where id = ?", F).n}`]);
   });
+  it("public cards carry no uuid anywhere, only an opaque portrait URL", () => {
+    const json = JSON.stringify(publicProfiles(anon()));
+    expect(json).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+    const n = get<{ n: number }>("select catalogue_number as n from profiles where id = ?", F).n;
+    expect(publicProfiles(anon())[0].image).toBe(`/media/public/${n}/avatar`);
+    expect(serveMedia(db, null, `/media/public/${n}/avatar`).status).toBe(200);
+  });
   it("anon can call public_profiles()", () => expect(() => publicProfiles(anon())).not.toThrow());
   it("anon can evaluate the avatar policy helpers", () => expect(serveMedia(db, null, `/media/avatars/${F}/avatar-1.png`).status).toBe(200));
   it("anon sees only public profiles", () => expect(publicProfiles(anon()).map((c) => c.name)).toEqual(["Pia"]));
@@ -166,7 +174,11 @@ describe("access rules (ported from the RLS checks)", () => {
     saveProfile(as(F), { directory_visible: false });
     expect(publicProfiles(anon())).toEqual([]);
   });
-  it("hiding from the directory hides the public portrait", () => expect(allFiles.filter((f) => sees(null, f))).toEqual([]));
+  it("hiding from the directory hides the public portrait", () => {
+    expect(allFiles.filter((f) => sees(null, f))).toEqual([]);
+    const n = get<{ n: number }>("select catalogue_number as n from profiles where id = ?", F).n;
+    expect(serveMedia(db, null, `/media/public/${n}/avatar`).status).toBe(404);
+  });
   it("switching off public_profile leaves the public site", () => {
     saveProfile(as(F), { directory_visible: true, public_profile: false });
     expect(publicProfiles(anon())).toEqual([]);

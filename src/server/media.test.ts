@@ -64,6 +64,19 @@ describe("serveMedia", () => {
     expect(get("/media/neighborhood-logos/astoria.webp").headers.get("Cache-Control")).toBe("public, max-age=60");
   });
 
+  it("serves a public member's portrait and logo by catalogue number, never anyone else's", () => {
+    db.prepare("update profiles set catalogue_number = 21, avatar_path = ?, business_logo_url = ? where id = ?")
+      .run(`${OWNER}/avatar-1.png`, `${OWNER}/avatar-1.png`, OWNER);
+    expect(get("/media/public/21/avatar").status).toBe(200);
+    expect(get("/media/public/21/logo").headers.get("Cache-Control")).toBe("public, max-age=60");
+    for (const path of ["/media/public/22/avatar", "/media/public/21/secret", "/media/public/x/avatar", "/media/public/21/avatar/extra"]) {
+      expect(get(path).status).toBe(404);
+    }
+    db.prepare("update profiles set public_profile = 0 where id = ?").run(OWNER);
+    expect(get("/media/public/21/avatar").status).toBe(404);
+    db.prepare("update profiles set public_profile = 1 where id = ?").run(OWNER);
+  });
+
   it("never serves a stored file that isn't an image", () => expect(get(`/media/avatars/${OWNER}/notes.png`).status).toBe(404));
 
   it.each([

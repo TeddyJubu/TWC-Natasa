@@ -73,8 +73,22 @@ const isPublicAvatarFolder = (db: DB, ownerId: string) =>
 const notFound = () => new Response("Not found", { status: 404, headers: { "Content-Type": "text/plain", "Cache-Control": "no-store" } });
 
 /**
- * Serves `/media/<bucket>/<name>`. Anything not visible to this actor is a 404 (as if it didn't exist), so
- * the route can't be used to probe for files. `pathname` is the raw URL path, not yet decoded.
+ * A public member's portrait or logo by catalogue number (`public/<n>/avatar|logo`), so public cards never carry
+ * her id. Same rule as the public avatars: approved, listed and public.
+ */
+function publicFile(db: DB, rest: string[]): string | null {
+  const [n, kind] = rest;
+  if (rest.length !== 2 || !/^\d{1,9}$/.test(n) || (kind !== "avatar" && kind !== "logo")) return null;
+  const row = db.prepare("select avatar_path, business_logo_url from profiles where catalogue_number = ? and status = 'approved' and directory_visible = 1 and public_profile = 1")
+    .get(Number(n)) as { avatar_path: string | null; business_logo_url: string | null } | undefined;
+  const name = kind === "avatar" ? row?.avatar_path : row?.business_logo_url;
+  return name ? mediaFile("avatars", name) : null;
+}
+
+/**
+ * Serves `/media/<bucket>/<name>` and `/media/public/<catalogue number>/<avatar|logo>`. Anything not visible to this
+ * actor is a 404 (as if it didn't exist), so the route can't be used to probe for files. `pathname` is the raw URL
+ * path, not yet decoded.
  */
 export function serveMedia(db: DB, actor: Actor, pathname: string): Response {
   let segments: string[];
@@ -84,9 +98,17 @@ export function serveMedia(db: DB, actor: Actor, pathname: string): Response {
     return notFound();
   }
   const [bucket, ...rest] = segments;
-  if (bucket !== "avatars" && bucket !== "neighborhood-logos") return notFound();
-  const file = mediaFile(bucket, rest.join("/"));
-  if (!file || (bucket === "avatars" && !canSeeAvatarFolder(db, actor, rest[0]))) return notFound();
+  let file: string | null;
+  let open: boolean;
+  if (bucket === "public") {
+    file = publicFile(db, rest);
+    open = true;
+  } else if (bucket === "avatars" || bucket === "neighborhood-logos") {
+    file = mediaFile(bucket, rest.join("/"));
+    if (file && bucket === "avatars" && !canSeeAvatarFolder(db, actor, rest[0])) file = null;
+    open = bucket === "neighborhood-logos" || isPublicAvatarFolder(db, rest[0]);
+  } else return notFound();
+  if (!file) return notFound();
   let bytes: Buffer;
   try {
     bytes = readFileSync(file);
@@ -95,7 +117,6 @@ export function serveMedia(db: DB, actor: Actor, pathname: string): Response {
   }
   const ext = sniffImage(bytes);
   if (!ext) return notFound();
-  const open = bucket === "neighborhood-logos" || isPublicAvatarFolder(db, rest[0]);
   return new Response(new Uint8Array(bytes), {
     headers: {
       "Content-Type": TYPES[ext],

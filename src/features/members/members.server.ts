@@ -37,12 +37,14 @@ export function directory({ db, actor }: Ctx): MemberProfile[] {
 
 /**
  * Opted-in public cards (public_profiles(), §2.10): approved + listed + public, for anyone. No id leaves the
- * server: cards are keyed by catalogue number. ponytail: the portrait URL still names her folder (her uuid), as
- * the signed Supabase URL did; she opted in.
+ * server: cards are keyed by catalogue number, and the portrait is /media/public/<catalogue number>/avatar.
  */
-export function publicProfiles(_c: Ctx): MemberProfile[] {
-  const rows = _c.db.prepare(`select * from profiles where ${LISTED} and public_profile = 1 order by catalogue_number`).all() as ProfileRow[];
-  return rows.map((row) => ({ ...card(row), id: `catalogue-${row.catalogue_number}` }));
+export function publicProfiles({ db }: Ctx): MemberProfile[] {
+  const rows = db.prepare(`select * from profiles where ${LISTED} and public_profile = 1 order by catalogue_number`).all() as ProfileRow[];
+  return rows.map((row) => ({
+    ...toMemberProfile(row, { image: row.avatar_path ? `/media/public/${row.catalogue_number}/avatar` : undefined }),
+    id: `catalogue-${row.catalogue_number}`,
+  }));
 }
 
 /** Her own profile with image URLs, or null. */
