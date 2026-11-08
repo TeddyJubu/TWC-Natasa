@@ -16,34 +16,17 @@ const run = (m: unknown, request: Request, handlerType: "router" | "serverFn", r
 const responseOf = (r: { response: Response } | Response) => (r instanceof Response ? r : r.response);
 
 describe("content security policy", () => {
-  const supabase = "https://abcdefgh.supabase.co";
-
-  it("is the full enforced policy, with the Supabase origin for images, fetches and realtime", () => {
-    expect(contentSecurityPolicy(supabase)).toBe(
+  it("is the full enforced policy: same origin only, plus data:/blob: images", () => {
+    expect(contentSecurityPolicy()).toBe(
       "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; " +
-        "img-src 'self' data: blob: https://abcdefgh.supabase.co; " +
-        "connect-src 'self' https://abcdefgh.supabase.co wss://abcdefgh.supabase.co; font-src 'self'; " +
+        "img-src 'self' data: blob:; connect-src 'self'; font-src 'self'; " +
         "frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'",
     );
   });
 
-  it("uses only the origin of the Supabase URL", () => {
-    expect(contentSecurityPolicy("https://abcdefgh.supabase.co/rest/v1/")).toContain("connect-src 'self' https://abcdefgh.supabase.co wss://abcdefgh.supabase.co;");
-    expect(contentSecurityPolicy("http://127.0.0.1:54321")).toContain("connect-src 'self' http://127.0.0.1:54321 ws://127.0.0.1:54321;");
-  });
-
-  it("falls back to same-origin only without a valid Supabase URL, never a wildcard", () => {
-    for (const bad of [undefined, "", "not a url", "javascript:alert(1)"]) {
-      const csp = contentSecurityPolicy(bad);
-      expect(csp).toContain("connect-src 'self';");
-      expect(csp).toContain("img-src 'self' data: blob:;");
-      expect(csp).not.toMatch(/\*|undefined/);
-    }
-  });
-
-  it("is what SECURITY_HEADERS sends, built from VITE_SUPABASE_URL", () => {
-    expect(SECURITY_HEADERS["Content-Security-Policy"]).toBe(contentSecurityPolicy(import.meta.env.VITE_SUPABASE_URL));
-    expect(SECURITY_HEADERS["Content-Security-Policy"]).not.toMatch(/lovable|gptengineer/);
+  it("is what SECURITY_HEADERS sends, with no third-party origin", () => {
+    expect(SECURITY_HEADERS["Content-Security-Policy"]).toBe(contentSecurityPolicy());
+    expect(SECURITY_HEADERS["Content-Security-Policy"]).not.toMatch(/supabase|lovable|gptengineer|https?:|wss?:|\*/);
   });
 });
 

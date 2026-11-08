@@ -1,31 +1,17 @@
 import { createMiddleware } from "@tanstack/react-start";
 
-/** The http(s) origin of a URL, or undefined (missing, malformed or another scheme). */
-function httpOrigin(raw: string | undefined): string | undefined {
-  try {
-    const url = new URL(raw ?? "");
-    return url.protocol === "https:" || url.protocol === "http:" ? url.origin : undefined;
-  } catch {
-    return undefined;
-  }
-}
-
 /**
- * The enforced CSP. The browser talks to Supabase directly (REST, auth, storage; realtime over ws), and
- * portraits are signed Supabase Storage URLs. 'unsafe-inline' scripts and styles: SSR hydration emits
- * inline scripts and components set inline `style` (e.g. `--hood`); per-request nonces would replace it.
- * ponytail: one Supabase origin; add others here only when the app really fetches from them.
+ * The enforced CSP. Everything the app loads or fetches is same-origin: pages, server functions, /api/auth and
+ * /media images. 'unsafe-inline' scripts and styles: SSR hydration emits inline scripts and components set inline
+ * `style` (e.g. `--hood`); per-request nonces would replace it. A new external origin goes here, with a test.
  */
-export function contentSecurityPolicy(supabaseUrl: string | undefined): string {
-  const supabase = httpOrigin(supabaseUrl);
-  const realtime = supabase?.replace(/^http/, "ws");
-  const list = (...sources: (string | undefined)[]) => sources.filter(Boolean).join(" ");
+export function contentSecurityPolicy(): string {
   return [
     "default-src 'self'",
     "script-src 'self' 'unsafe-inline'",
     "style-src 'self' 'unsafe-inline'",
-    `img-src ${list("'self'", "data:", "blob:", supabase)}`,
-    `connect-src ${list("'self'", supabase, realtime)}`,
+    "img-src 'self' data: blob:",
+    "connect-src 'self'",
     "font-src 'self'",
     "frame-ancestors 'self'",
     "base-uri 'self'",
@@ -35,7 +21,7 @@ export function contentSecurityPolicy(supabaseUrl: string | undefined): string {
 }
 
 export const SECURITY_HEADERS = {
-  "Content-Security-Policy": contentSecurityPolicy(import.meta.env.VITE_SUPABASE_URL),
+  "Content-Security-Policy": contentSecurityPolicy(),
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=()",

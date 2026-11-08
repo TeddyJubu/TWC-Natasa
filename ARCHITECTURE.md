@@ -1,8 +1,64 @@
 # Architecture — The Women’s Collective
 
-Status: 2026-11-08. Part 1 describes the system as audited on 2026-11-07 (kept as the baseline; Phases 1–7 have since fixed what §1.5 lists), Part 2 the target architecture, and Part 3 how to get from one to the other.
+Status: 2026-11-08, after Phase 9. **Part 0 is the system as it is now.** Part 1 describes the system as audited on 2026-11-07 (kept as the baseline), Part 2 the target architecture that guided Phases 1–8 (written for Supabase; Part 0 says what replaced each Supabase piece), and Part 3 the phases.
 Task numbers like **T10** refer to [AUDIT-TASKS.md](AUDIT-TASKS.md).
-History: the site began in Lovable on Lovable Cloud; since Phase 8 it runs on our own VPS with the owner's own Supabase project.
+History: the site began in Lovable on Lovable Cloud, moved to its own Supabase project in Phase 8, and since Phase 9 runs entirely on our VPS: one Node server with SQLite, no Supabase.
+
+---
+
+## Part 0 — Current state (Phase 9)
+
+### 0.1 Runtime topology
+
+```mermaid
+flowchart LR
+  subgraph Browser
+    UI[React 19 pages<br/>TanStack Router + Query]
+    AC[Better Auth client<br/>lazy-loaded]
+  end
+  subgraph VPS["VPS · Caddy (TLS) → 172.18.0.1:8788"]
+    SRV[server.mjs · srvx<br/>static dist/client + security headers]
+    SSR[TanStack Start<br/>SSR · server functions]
+    AUTH[/api/auth/* · Better Auth/]
+    MEDIA[/media/* · uploads/]
+    DB[(SQLite · DATA_DIR/twc.db)]
+    FS[(DATA_DIR/uploads/)]
+  end
+  CF[Cloudflare Email Sending]
+  UI -- pages, server functions --> SRV --> SSR
+  AC -- sign-in, sign-up, reset --> AUTH
+  UI -- images --> MEDIA
+  SSR & AUTH --> DB
+  MEDIA --> DB & FS
+  SSR & AUTH -. emails .-> CF
+```
+
+- **One process, one origin.** `server.mjs` serves `dist/client` (with the security headers) and hands everything else to the built TanStack Start handler: pages, server functions (`/_serverFn/*`), Better Auth (`/api/auth/*`) and uploads (`/media/*`). The CSP is same-origin only.
+- **Sessions** are Better Auth's httpOnly cookies (Secure under https), stored in the `session` table; `requireEmailVerification` means no session until the email is confirmed. Rate limiting is on (in memory, one process).
+- **Emails** (verification, password reset, approval welcome) go through `sendEmail()` (`src/server/email.ts`); links use `APP_URL`.
+
+### 0.2 Data
+
+`db/migrations/0001_init.sql` is the end state of the old Postgres migrations 0000–0005 plus Better Auth's tables (`user`, `session`, `account`, `verification`), applied at startup by `src/server/db.ts` (`PRAGMA user_version`). The data model is §1.3's, with `auth.users` replaced by `user` and real foreign keys and CHECKs throughout. Triggers keep only the rules that don't depend on who acts: a new account gets a profile and the member role; a verified email links that address's applications (lower(email)) and gives a pending profile their reviewed outcome; reviewing an application timestamps it and syncs the linked profile; approval assigns `member_since` and the next catalogue number; `updated_at`.
+
+### 0.3 Security model: server functions are the boundary
+
+The browser never reaches the database. Every read and write is a server function (`src/features/*/fns.ts`) whose handler lazy-imports the feature's `*.server.ts` and runs it through `serve()` (`src/server/context.server.ts`), which supplies the request's database and actor (from the session cookie) and reduces errors to public messages. The domain code starts with one guard from `src/server/guard.ts`:
+
+| Guard | Who passes | Used by |
+|---|---|---|
+| `requireSession` | any signed-in account | own profile, profile edits and uploads, directory and intros (which return nothing for non-members), applicant prefill |
+| `requireMember` | approved members and admins | events, RSVPs, the headshot booking |
+| `requireAdmin` | admins (`user_roles`) | everything under `/admin`, the approval email |
+| none | anyone | public profiles, neighborhoods, submitting an application, `/media` (which applies its own rules) |
+
+The rules are the old RLS policies, ported one for one; `src/server/policy.test.ts` holds all 113 former `rls.sql` checks under the same names (§1.4's table still describes who sees what). Notable details:
+
+- Profile edits are self-only and reject admin-only fields (`status`, `catalogue_number`, `member_since`, roles) and image paths instead of silently dropping them; images change only through uploads into the member's own folder.
+- A member's booking write always goes back to `requested`; only admins confirm or decline.
+- Applications are anonymous (unlinked) or linked to the signed-in applicant; status and review fields can't be pre-filled. Admin reviews record `reviewed_by`; an admin approving or declining a profile directly also decides her newest application.
+- `/media/avatars/<owner>/…` is visible to the owner, admins, approved members while the owner is approved and listed, and everyone once she is also public; neighborhood logos are public. Files are typed by their bytes (PNG/JPEG/WebP, ≤ 5 MB), served with `nosniff` and private caching unless public; anything else, including any path that isn't a plain file inside its bucket, is a 404.
+- Route guards (`_authenticated`, `_admin`) only shape navigation; the server functions check again.
 
 ---
 
@@ -96,11 +152,11 @@ Fields guarded by triggers:
 
 ### 2.1 Principles
 
-1. **The database is the authority.** Every rule that protects a person (who sees what, who approves whom) is a policy or trigger with a test in `drizzle/test/rls.sql`. UI checks only shape the experience.
+1. **The server is the authority.** Every rule that protects a person (who sees what, who approves whom) is enforced in a server function's domain code (Phase 9; it was RLS before) with a test in `src/server/policy.test.ts`. UI checks only shape the experience.
 2. **The design system knows nothing about the app.** It takes colors, logos and members as props. It never imports Supabase, routes or domain data.
 3. **Features own their data.** Each domain gets one module containing queries, mutations, types and row→view mappers. Routes compose features; they never call Supabase directly.
-4. **Public pages stay light.** Supabase and auth code load only on routes that need them.
-5. **No server functions until a secret is needed.** The current direct-to-Supabase model is correct for this app. Add TanStack Start server functions only for things that need secrets (emails, CAPTCHA verification, admin bulk operations).
+4. **Public pages stay light.** The auth client loads only on routes that need it.
+5. **Server functions for all data** (Phase 9). There is no database the browser can reach, so every read and write is a server function; see Part 0.
 
 ### 2.2 Target source layout
 
@@ -255,19 +311,18 @@ sequenceDiagram
 
 | Concern | Target |
 |---|---|
-| Scripts | `typecheck` (`tsc --noEmit`), `lint`, `test:db` (`drizzle/test/run.sh`), `check` = all three + `build` |
-| CI | GitHub Action on pull requests and non-`main` pushes: the `check` steps (typecheck, lint, test, build) plus `test:db` against a Postgres `services:` container |
-| Migrations | Hand-written SQL in `drizzle/migrations/` + journal entry; never `drizzle-kit push` (empty schema). Every policy change adds a check to `rls.sql` |
-| Types | `src/integrations/supabase/types.ts` regenerated with `supabase gen types` after each migration is applied. Hand-patching (`BRIDGE`) is allowed only until then |
-| Bundle | Supabase lazy-loaded (`app/supabase.ts`); WebGL gallery and image trail loaded client-only; fonts as subset WOFF2; images with `srcset` |
-| Deploy | Merge to `main`; the VPS pulls within 5 minutes, rebuilds and serves `dist/server/wrangler.json` with `wrangler dev --local` behind Caddy. Server secrets in the server's gitignored `.dev.vars` (never `.env`, guarded by `src/app/secrets.test.ts`). Security headers on pages and server-function responses via `src/start.ts` request middleware, including an enforced CSP (`'self'` + the Supabase origin, `frame-ancestors 'self'`); static assets come from the assets binding without them. Worker `twc-natasa`, `compatibility_date` 2026-10-01 |
+| Scripts | `typecheck` (`tsc --noEmit`), `lint`, `test`, `build`, `start`; `check` = typecheck + lint + test + build |
+| CI | GitHub Action on pull requests and non-`main` pushes: the `check` steps (typecheck, lint, test, build) |
+| Migrations | Hand-written SQLite in `db/migrations/NNNN_name.sql`, applied in order at startup (`PRAGMA user_version`); every access-rule change adds a check to `src/server/policy.test.ts` |
+| Types | Row types live beside the server code that reads them (`*.server.ts`); client code imports them as types only |
+| Bundle | Better Auth client lazy-loaded (`src/app/auth-client.ts`); server code never reaches the client (lazy imports in server-function handlers); WebGL gallery and image trail loaded client-only; fonts as subset WOFF2; images with `srcset` |
+| Deploy | Merge to `main`; the VPS pulls within 5 minutes, rebuilds and restarts the Node server (`bun run start`) behind Caddy. Server env in the service environment or the gitignored `.env.local` (never `.env`, guarded by `src/app/secrets.test.ts`). Security headers on every response, static files included, with a same-origin CSP |
 | Docs | `README.md` (how to run), `ARCHITECTURE.md` (this file), `AGENTS.md` (rules for agents), `DESIGN.md` (design rules); each states only what's true |
 
 ### 2.9 What stays as it is
 
-- **TanStack Start, Supabase and Cloudflare:** they fit a small community site. No backend service or ORM layer is needed.
+- **TanStack Start, one Node server and SQLite:** they fit a small community site. No separate backend service or ORM layer is needed.
 - **The design system's API style:** CVA variants, `forwardRef`, and dark sections done by re-pointing tokens (the `tone-night` trick).
-- **The generated Supabase client and types** in `src/integrations/supabase/`.
 
 ---
 
@@ -284,5 +339,6 @@ sequenceDiagram
 | **6. Tooling** ✅ code (2026-11-08) | Lint green, scripts, CI, dependencies, `.env` and secrets, docs | T21, T33–T38 | ESLint 0/0; exact pins, `seroval` fixed (`bun audit` 69 → 29, all build/dev tooling); native tsconfig paths; `test:db`; `.github/workflows/check.yml` (app job + `postgres:17` RLS job); `.env` kept tracked with a secret-guard test; security headers via `src/start.ts`. Worker name/`compatibility_date`, full CSP and live migrations are owner decisions (AUDIT-TASKS.md) |
 | **7. Cleanup** ✅ code + 0004 written (2026-11-08) | Every audit task done or won't fix; portrait-less cards show initials; catalogue cards open a member profile dialog; `account.tsx` split into `src/features/account/`; CurvedLoop rings stop after 5 s | T10, T11, T13, T18 + T2–T7, T12, T19, T30 ticked | `0004_cleanup.sql`: nullable `profiles.neighborhood` (no LIC default), profile → newest application sync (102 RLS checks). `MemberDialog` (native modal `<dialog>`) and `MemberCard` `onOpen`. Apply 0001–0004 live (README go-live order). New UI listed for owner review in AUDIT-TASKS Progress → Phase 7 |
 | **8. Owner decisions** ✅ code + 0005 written (2026-11-08) | Honeypot on `/join`; approval welcome email (server function + Cloudflare Email Sending); optional business logo; sitemap + `VITE_SITE_URL`; Lovable removed (own Supabase project, VPS hosting, native Google OAuth behind `VITE_GOOGLE_AUTH`); enforced CSP; Worker `twc-natasa` on `compatibility_date` 2026-10-01 | Owner decisions 1–8 | `0005_business_logo.sql` (113 RLS checks). Apply 0000–0005 to the owner's project with `psql` (README go-live order) |
+| **9. Own server** ✅ code (2026-11-08) | Supabase removed: Node server (srvx) on the VPS, SQLite (`node:sqlite`), Better Auth (email + verification, reset, optional Google, legacy bcrypt), every data rule in server functions (113 RLS checks ported to Vitest), uploads under `DATA_DIR` served by `/media`, same-origin CSP, `scripts/import-lovable.ts` | Owner decision (Phase 9) | Import the Lovable export into a fresh `DATA_DIR`, copy the storage buckets into `uploads/`, set the server env (README) |
 
 **Resolved 2026-11-08:** public pages show only members who opt in (§2.10). Everything else stays members-only.
