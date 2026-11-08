@@ -38,7 +38,10 @@ const groups = (admin: boolean): NavGroup[] => [
   ...(admin ? [{ label: "Admin", items: ADMIN, fold: true }] : []),
 ];
 
-/** This page's anchored card nearest the top of the viewport, or the one the URL hash names (scrolled to on arrival). */
+/**
+ * This page's anchored card nearest the top of the viewport, or the one the URL hash names. One instance per page
+ * (in AppShell), so opening the drawer never re-runs the arrival scroll.
+ */
 function useActiveSection(page: ShellPage) {
   // Page groups first, so the top card (Profile, Applications) is "here" before anything scrolls.
   const anchors = [...MY_ACCOUNT, ...ADMIN, ...COLLECTIVE].filter((i) => i.to === page && i.hash).map((i) => i.hash!);
@@ -51,20 +54,37 @@ function useActiveSection(page: ShellPage) {
       if (ids.includes(id)) setActive(id);
     };
     fromHash();
-    // Arriving from the other internal page: the card rendered after the router's own hash scroll, so scroll now.
-    document.getElementById(window.location.hash.slice(1))?.scrollIntoView?.();
+    // Arriving at a card from the other internal page (or a fresh load): it rendered after the router's hash scroll,
+    // and useRouteFocus leaves hash URLs alone, so scroll to it and, unless something already has focus, focus its heading.
+    const hash = window.location.hash.slice(1);
+    const target = ids.includes(hash) ? document.getElementById(hash) : null;
+    if (target) {
+      target.scrollIntoView?.();
+      const heading = target.querySelector<HTMLElement>("h1, h2");
+      if (heading && (document.activeElement === document.body || document.activeElement === null)) {
+        heading.setAttribute("tabindex", "-1");
+        heading.focus({ preventScroll: true });
+      }
+    }
+    const els = ids.map((id) => document.getElementById(id)).filter((e): e is HTMLElement => !!e);
+    // A short last card never reaches the band, so scrolled to the end means the last card (in page order) is "here".
+    const last = els.reduce<HTMLElement | undefined>((a, e) => (!a || a.compareDocumentPosition(e) & Node.DOCUMENT_POSITION_FOLLOWING ? e : a), undefined);
+    const atEnd = () => !!last && window.scrollY > 0 && window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+    const onScroll = () => { if (atEnd()) setActive(last!.id); };
     window.addEventListener("hashchange", fromHash);
+    window.addEventListener("scroll", onScroll, { passive: true });
     // A band across the upper third: whichever anchored card crosses it is "here".
     const observer = new IntersectionObserver(
-      (entries) => { for (const e of entries) if (e.isIntersecting) setActive(e.target.id); },
+      (entries) => {
+        if (atEnd()) return setActive(last!.id);
+        for (const e of entries) if (e.isIntersecting) setActive(e.target.id);
+      },
       { rootMargin: "-25% 0px -65% 0px" },
     );
-    for (const id of ids) {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    }
+    for (const el of els) observer.observe(el);
     return () => {
       window.removeEventListener("hashchange", fromHash);
+      window.removeEventListener("scroll", onScroll);
       observer.disconnect();
     };
   }, [key]);
@@ -104,8 +124,9 @@ function NavLink({ item, page, active, onNavigate }: { item: NavItem; page: Shel
 }
 
 /** Every nav group and Sign out; the same markup fills the sidebar and the drawer. */
-function ShellNav({ page, admin, onSignOut, onNavigate }: { page: ShellPage; admin: boolean; onSignOut: () => void; onNavigate?: () => void }) {
-  const active = useActiveSection(page);
+function ShellNav({ page, admin, active, onSignOut, onNavigate }: {
+  page: ShellPage; admin: boolean; active: string; onSignOut: () => void; onNavigate?: () => void;
+}) {
   const list = (items: NavItem[]) => (
     <ul className="flex flex-col gap-0.5">
       {items.map((i) => <NavLink key={`${i.to}#${i.hash}`} item={i} page={page} active={active} onNavigate={onNavigate} />)}
@@ -136,7 +157,7 @@ function ShellNav({ page, admin, onSignOut, onNavigate }: { page: ShellPage; adm
 }
 
 /** Below lg: the brand and a menu button opening the nav in a modal drawer (focus trapped, Escape closes). */
-function MobileBar(props: { page: ShellPage; admin: boolean; onSignOut: () => void }) {
+function MobileBar(props: { page: ShellPage; admin: boolean; active: string; onSignOut: () => void }) {
   const [open, setOpen] = React.useState(false);
   const dialog = React.useRef<HTMLDialogElement>(null);
   const button = React.useRef<HTMLButtonElement>(null);
@@ -190,12 +211,13 @@ function MobileBar(props: { page: ShellPage; admin: boolean; onSignOut: () => vo
  */
 export function AppShell({ page, admin, children }: { page: ShellPage; admin: boolean; children: React.ReactNode }) {
   const { signOut, error } = useSignOut();
+  const active = useActiveSection(page);
   return (
     <div className="min-h-screen bg-app text-ink lg:flex">
-      <MobileBar page={page} admin={admin} onSignOut={signOut} />
+      <MobileBar page={page} admin={admin} active={active} onSignOut={signOut} />
       <aside className="sticky top-0 hidden h-dvh w-83 shrink-0 flex-col gap-7 overflow-y-auto border-r border-app-line bg-app-sunken px-4 pt-5.5 pb-6 lg:flex">
         <Brand />
-        <ShellNav page={page} admin={admin} onSignOut={signOut} />
+        <ShellNav page={page} admin={admin} active={active} onSignOut={signOut} />
       </aside>
       <div className="min-w-0 flex-1">
         {error && <p role="alert" className="px-4 pt-4 text-sm text-danger sm:px-8">{error}</p>}

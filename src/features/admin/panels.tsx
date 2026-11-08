@@ -198,7 +198,8 @@ export function MembersPanel() {
     <Card id="members" title="All members" subtitle={members.data ? `${list.length} profiles · approve or decline directly` : "Every member profile"}>
       <QueryGate query={members} what="members">
         {list.length === 0 ? <Empty>No member profiles yet.</Empty> : (
-          <div role="region" aria-label="Members" tabIndex={0} className="overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset">
+          // `relative` contains the sr-only (absolute) caption and header, or they escape the scroll clip and widen the page.
+          <div role="region" aria-label="Members" tabIndex={0} className="relative overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset">
             <table className="w-full min-w-[52rem] text-left text-sm">
               <caption className="sr-only">Every member profile</caption>
               <thead>

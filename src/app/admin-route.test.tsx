@@ -106,6 +106,18 @@ describe("/admin", () => {
     });
   });
 
+  it("arriving at /admin#bookings marks Headshot bookings as here and focuses its heading (route focus skips hash URLs)", () => {
+    window.history.replaceState(null, "", "/admin#bookings");
+    try {
+      renderAdmin();
+      const nav = screen.getAllByRole("navigation", { name: "Main" })[0];
+      expect(within(nav).getByRole("link", { name: "Headshot bookings" }).getAttribute("aria-current")).toBe("location");
+      expect(document.activeElement).toBe(within(card("Headshot bookings")).getByRole("heading", { level: 2 }));
+    } finally {
+      window.history.replaceState(null, "", "/");
+    }
+  });
+
   describe("applications", () => {
     it("lists applications in the server's order (pending first) and says whether each is linked to an account", async () => {
       fake.results = [[
