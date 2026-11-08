@@ -2,7 +2,6 @@ import * as React from "react";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Badge, BrandLockup, Button, FormField, FormNotice, Heading, ImageTrail, Input, Text, cn } from "@/index";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import hero from "@/assets/photography/hero.jpg";
 
 type Mode = "signin" | "signup" | "forgot";
@@ -84,8 +83,8 @@ function AuthPage() {
 
   async function google() {
     setError(null);
-    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/auth" });
-    if (result.error) setError(result.error.message ?? "Google sign-in didn’t work. Please try again.");
+    const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.origin + "/auth" } });
+    if (error) setError("Google sign-in didn’t work. Please try again.");
   }
 
   const titles: Record<Mode, string> = { signin: "Welcome Back, Neighbor", signup: "Open Your Member Account", forgot: "Reset Your Password" };
@@ -125,7 +124,8 @@ function AuthPage() {
             </Text>
           </div>
 
-          {mode !== "forgot" && (
+          {/* Off unless the Google provider is enabled in Supabase: a dead button is worse than none. */}
+          {mode !== "forgot" && import.meta.env.VITE_GOOGLE_AUTH === "true" && (
             <>
               <Button type="button" variant="outline" size="lg" onClick={google} className="w-full">
                 <svg aria-hidden viewBox="0 0 24 24" className="mr-2 inline-block size-5 align-[-4px]"><path fill="currentColor" d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.3ZM12 22c2.7 0 5-.9 6.6-2.4l-3.2-2.5c-.9.6-2 1-3.4 1-2.6 0-4.8-1.8-5.6-4.1H3.1v2.6A10 10 0 0 0 12 22Zm-5.6-8c-.2-.6-.3-1.3-.3-2s.1-1.4.3-2V7.4H3.1a10 10 0 0 0 0 9.2L6.4 14ZM12 6c1.5 0 2.8.5 3.8 1.5l2.9-2.9A10 10 0 0 0 3.1 7.4L6.4 10C7.2 7.7 9.4 6 12 6Z" /></svg>

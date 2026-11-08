@@ -61,7 +61,7 @@ describe("siteSeo", () => {
       expect(siteSeo("https://example.com", path, image).links, path).toHaveLength(1);
     }
     // noindex, members-only, one-off and preview pages: no self-referential canonical (og:image stays).
-    for (const path of ["/colors", "/typography", "/components", "/admin", "/account", "/reset-password", "/__mockup/preview/x", "/__component/preview/x"]) {
+    for (const path of ["/colors", "/typography", "/components", "/admin", "/account", "/reset-password"]) {
       const { meta, links } = siteSeo("https://example.com", path, image);
       expect(links, path).toEqual([]);
       expect(meta, path).toEqual([{ property: "og:image", content: "https://example.com/assets/hero-abc123.jpg" }]);

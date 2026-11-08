@@ -20,8 +20,6 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TypographyRouteImport } from './routes/typography'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/_admin/route'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
-import { Route as Char91__componentChar93PreviewSplatRouteImport } from './routes/[__component].preview.$'
-import { Route as Char91__mockupChar93PreviewSplatRouteImport } from './routes/[__mockup].preview.$'
 import { Route as AuthenticatedAdminAdminRouteImport } from './routes/_authenticated/_admin/admin'
 
 const IndexRoute = IndexRouteImport.update({
@@ -77,18 +75,6 @@ const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   path: '/account',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const Char91__componentChar93PreviewSplatRoute =
-  Char91__componentChar93PreviewSplatRouteImport.update({
-    id: '/__component/preview/$',
-    path: '/__component/preview/$',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const Char91__mockupChar93PreviewSplatRoute =
-  Char91__mockupChar93PreviewSplatRouteImport.update({
-    id: '/__mockup/preview/$',
-    path: '/__mockup/preview/$',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const AuthenticatedAdminAdminRoute = AuthenticatedAdminAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -105,8 +91,6 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/typography': typeof TypographyRoute
   '/account': typeof AuthenticatedAccountRoute
-  '/__component/preview/$': typeof Char91__componentChar93PreviewSplatRoute
-  '/__mockup/preview/$': typeof Char91__mockupChar93PreviewSplatRoute
   '/admin': typeof AuthenticatedAdminAdminRoute
 }
 export interface FileRoutesByTo {
@@ -119,8 +103,6 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/typography': typeof TypographyRoute
   '/account': typeof AuthenticatedAccountRoute
-  '/__component/preview/$': typeof Char91__componentChar93PreviewSplatRoute
-  '/__mockup/preview/$': typeof Char91__mockupChar93PreviewSplatRoute
   '/admin': typeof AuthenticatedAdminAdminRoute
 }
 export interface FileRoutesById {
@@ -136,8 +118,6 @@ export interface FileRoutesById {
   '/typography': typeof TypographyRoute
   '/_authenticated/_admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/account': typeof AuthenticatedAccountRoute
-  '/__component/preview/$': typeof Char91__componentChar93PreviewSplatRoute
-  '/__mockup/preview/$': typeof Char91__mockupChar93PreviewSplatRoute
   '/_authenticated/_admin/admin': typeof AuthenticatedAdminAdminRoute
 }
 export interface FileRouteTypes {
@@ -152,8 +132,6 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/typography'
     | '/account'
-    | '/__component/preview/$'
-    | '/__mockup/preview/$'
     | '/admin'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -166,8 +144,6 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/typography'
     | '/account'
-    | '/__component/preview/$'
-    | '/__mockup/preview/$'
     | '/admin'
   id:
     | '__root__'
@@ -182,8 +158,6 @@ export interface FileRouteTypes {
     | '/typography'
     | '/_authenticated/_admin'
     | '/_authenticated/account'
-    | '/__component/preview/$'
-    | '/__mockup/preview/$'
     | '/_authenticated/_admin/admin'
   fileRoutesById: FileRoutesById
 }
@@ -197,8 +171,6 @@ export interface RootRouteChildren {
   MembersRoute: typeof MembersRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TypographyRoute: typeof TypographyRoute
-  Char91__componentChar93PreviewSplatRoute: typeof Char91__componentChar93PreviewSplatRoute
-  Char91__mockupChar93PreviewSplatRoute: typeof Char91__mockupChar93PreviewSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -280,20 +252,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/__component/preview/$': {
-      id: '/__component/preview/$'
-      path: '/__component/preview/$'
-      fullPath: '/__component/preview/$'
-      preLoaderRoute: typeof Char91__componentChar93PreviewSplatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/__mockup/preview/$': {
-      id: '/__mockup/preview/$'
-      path: '/__mockup/preview/$'
-      fullPath: '/__mockup/preview/$'
-      preLoaderRoute: typeof Char91__mockupChar93PreviewSplatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated/_admin/admin': {
       id: '/_authenticated/_admin/admin'
       path: '/admin'
@@ -341,9 +299,6 @@ const rootRouteChildren: RootRouteChildren = {
   MembersRoute: MembersRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TypographyRoute: TypographyRoute,
-  Char91__componentChar93PreviewSplatRoute:
-    Char91__componentChar93PreviewSplatRoute,
-  Char91__mockupChar93PreviewSplatRoute: Char91__mockupChar93PreviewSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -14,7 +14,7 @@ export type Database = {
   }
   public: {
     Tables: {
-      // BRIDGE (0001): hand-patched until Lovable regenerates this file
+      // BRIDGE (0001): hand-patched until the types are regenerated
       applications: {
         Row: {
           answers: Json
@@ -24,7 +24,7 @@ export type Database = {
           id: string
           neighborhood: string
           reviewed_at: string | null
-          // BRIDGE (0003): hand-patched until Lovable regenerates this file
+          // BRIDGE (0003): hand-patched until the types are regenerated
           reviewed_by: string | null
           status: Database["public"]["Enums"]["membership_status"]
           user_id: string | null
@@ -37,7 +37,7 @@ export type Database = {
           id?: string
           neighborhood?: string
           reviewed_at?: string | null
-          // BRIDGE (0003): hand-patched until Lovable regenerates this file
+          // BRIDGE (0003): hand-patched until the types are regenerated
           reviewed_by?: string | null
           status?: Database["public"]["Enums"]["membership_status"]
           user_id?: string | null
@@ -50,7 +50,7 @@ export type Database = {
           id?: string
           neighborhood?: string
           reviewed_at?: string | null
-          // BRIDGE (0003): hand-patched until Lovable regenerates this file
+          // BRIDGE (0003): hand-patched until the types are regenerated
           reviewed_by?: string | null
           status?: Database["public"]["Enums"]["membership_status"]
           user_id?: string | null
@@ -146,7 +146,7 @@ export type Database = {
         }
         Relationships: []
       }
-      // BRIDGE (0001): hand-patched until Lovable regenerates this file
+      // BRIDGE (0001): hand-patched until the types are regenerated
       neighborhoods: {
         Row: {
           active: boolean
@@ -191,9 +191,9 @@ export type Database = {
           id: string
           looking_for: string
           member_since: string | null
-          // BRIDGE (0004): hand-patched until Lovable regenerates this file
+          // BRIDGE (0004): hand-patched until the types are regenerated
           neighborhood: string | null
-          // BRIDGE (0002): hand-patched until Lovable regenerates this file
+          // BRIDGE (0002): hand-patched until the types are regenerated
           public_profile: boolean
           role_title: string
           specialty: string
@@ -214,9 +214,9 @@ export type Database = {
           id: string
           looking_for?: string
           member_since?: string | null
-          // BRIDGE (0004): hand-patched until Lovable regenerates this file
+          // BRIDGE (0004): hand-patched until the types are regenerated
           neighborhood?: string | null
-          // BRIDGE (0002): hand-patched until Lovable regenerates this file
+          // BRIDGE (0002): hand-patched until the types are regenerated
           public_profile?: boolean
           role_title?: string
           specialty?: string
@@ -237,9 +237,9 @@ export type Database = {
           id?: string
           looking_for?: string
           member_since?: string | null
-          // BRIDGE (0004): hand-patched until Lovable regenerates this file
+          // BRIDGE (0004): hand-patched until the types are regenerated
           neighborhood?: string | null
-          // BRIDGE (0002): hand-patched until Lovable regenerates this file
+          // BRIDGE (0002): hand-patched until the types are regenerated
           public_profile?: boolean
           role_title?: string
           specialty?: string
@@ -279,12 +279,12 @@ export type Database = {
         }
         Returns: boolean
       }
-      // BRIDGE (0001): hand-patched until Lovable regenerates this file
+      // BRIDGE (0001): hand-patched until the types are regenerated
       is_admin: { Args: never; Returns: boolean }
       is_approved: { Args: { _user_id: string }; Returns: boolean }
-      // BRIDGE (0001): hand-patched until Lovable regenerates this file
+      // BRIDGE (0001): hand-patched until the types are regenerated
       is_member: { Args: never; Returns: boolean }
-      // BRIDGE (0002): hand-patched until Lovable regenerates this file
+      // BRIDGE (0002): hand-patched until the types are regenerated
       avatar_folder_visible: { Args: { _folder: string }; Returns: boolean }
       public_directory: {
         Args: never
@@ -298,15 +298,15 @@ export type Database = {
           full_name: string
           id: string
           looking_for: string
-          // BRIDGE (0004): hand-patched until Lovable regenerates this file
+          // BRIDGE (0004): hand-patched until the types are regenerated
           neighborhood: string | null
           role_title: string
           specialty: string
-          // BRIDGE (0001): hand-patched until Lovable regenerates this file
+          // BRIDGE (0001): hand-patched until the types are regenerated
           website: string
         }[]
       }
-      // BRIDGE (0002): hand-patched until Lovable regenerates this file
+      // BRIDGE (0002): hand-patched until the types are regenerated
       public_profiles: {
         Args: never
         Returns: {
@@ -316,7 +316,7 @@ export type Database = {
           catalogue_number: number
           full_name: string
           looking_for: string
-          // BRIDGE (0004): hand-patched until Lovable regenerates this file
+          // BRIDGE (0004): hand-patched until the types are regenerated
           neighborhood: string | null
           role_title: string
           specialty: string

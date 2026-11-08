@@ -9,9 +9,9 @@ const auth = vi.hoisted(() => ({
   signInWithPassword: vi.fn(),
   signUp: vi.fn(),
   resetPasswordForEmail: vi.fn(),
+  signInWithOAuth: vi.fn(),
 }));
 vi.mock("@/integrations/supabase/client", () => ({ supabase: { auth } }));
-vi.mock("@/integrations/lovable", () => ({ lovable: { auth: { signInWithOAuth: vi.fn() } } }));
 vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs }));
 
 import { Route } from "@/routes/auth";
@@ -27,10 +27,39 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  vi.unstubAllEnvs();
 });
 
 const fill = (label: RegExp, value: string) => fireEvent.change(screen.getByLabelText(label), { target: { value } });
 const submit = (name: RegExp) => fireEvent.click(screen.getByRole("button", { name }));
+
+describe("/auth Google sign-in", () => {
+  const googleButton = () => screen.queryByRole("button", { name: /continue with google/i });
+
+  it.each([undefined, "", "false", "1", "TRUE"])("is hidden unless VITE_GOOGLE_AUTH is exactly \"true\" (%s)", (value) => {
+    vi.stubEnv("VITE_GOOGLE_AUTH", value as string);
+    renderWithQueries(<Page />);
+    expect(googleButton()).toBeNull();
+    expect(screen.queryByText(/or with email/i)).toBeNull();
+    expect(screen.getByLabelText(/email/i)).toBeTruthy();
+  });
+
+  it("when on, signs in through Supabase's native Google OAuth back to /auth", async () => {
+    vi.stubEnv("VITE_GOOGLE_AUTH", "true");
+    auth.signInWithOAuth.mockResolvedValue({ data: {}, error: null });
+    renderWithQueries(<Page />);
+    fireEvent.click(googleButton()!);
+    expect(auth.signInWithOAuth).toHaveBeenCalledWith({ provider: "google", options: { redirectTo: window.location.origin + "/auth" } });
+  });
+
+  it("when on, shows an OAuth error as an alert", async () => {
+    vi.stubEnv("VITE_GOOGLE_AUTH", "true");
+    auth.signInWithOAuth.mockResolvedValue({ data: {}, error: { message: "provider is not enabled" } });
+    renderWithQueries(<Page />);
+    fireEvent.click(googleButton()!);
+    expect((await screen.findByRole("alert")).textContent).toMatch(/google sign-in didn’t work/i);
+  });
+});
 
 describe("/auth", () => {
   it.each(["Invalid login credentials", "Email not confirmed"])(

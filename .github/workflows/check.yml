@@ -3,7 +3,7 @@ name: check
 on:
   pull_request:
   push:
-    branches-ignore: [main] # Lovable syncs and deploys main; PRs into it are checked above.
+    branches-ignore: [main] # The server pulls and rebuilds main; PRs into it are checked above.
 
 permissions:
   contents: read

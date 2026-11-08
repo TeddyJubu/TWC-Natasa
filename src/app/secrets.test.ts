@@ -1,10 +1,10 @@
-// Secret guard: `.env` stays tracked because Lovable needs its VITE_ publishable values, so nothing
-// tracked may ever hold a server secret. Real secrets go in `.dev.vars` (gitignored) or Wrangler secrets.
+// Secret guard: `.env` stays tracked because the server builds `main` with its VITE_ publishable values,
+// so nothing tracked may ever hold a server secret. Real secrets go in `.dev.vars` (gitignored) or Wrangler secrets.
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-const SECRET_NAMES = "SUPABASE_SERVICE_ROLE_KEY|LOVABLE_CRON_SECRET";
+const SECRET_NAMES = "SUPABASE_SERVICE_ROLE_KEY|CF_EMAIL_API_TOKEN|DATABASE_URL";
 const PATTERNS: [string, RegExp][] = [
   ["Supabase secret key", /sb_secret_[A-Za-z0-9_-]{8,}/],
   // A value assigned to a secret name in any env/YAML/JSON/TOML/shell form (`KEY=v`, `KEY: v`, `"KEY": "v"`).
@@ -33,22 +33,22 @@ export function findSecrets(text: string): string[] {
 
 const b64url = (o: object) => Buffer.from(JSON.stringify(o)).toString("base64url");
 const jwt = (payload: object) => `${b64url({ alg: "HS256", typ: "JWT" })}.${b64url(payload)}.c2lnbmF0dXJl`;
-// Fixtures are built at runtime (names via ROLE/CRON) so this file never contains a literal that trips
+// Fixtures are built at runtime (names via ROLE/EMAIL) so this file never contains a literal that trips
 // the repo scan below; this file is itself scanned.
 const SB_SECRET = ["sb", "secret", "AbCdEf0123456789"].join("_");
-const [ROLE, CRON] = SECRET_NAMES.split("|");
+const [ROLE, EMAIL] = SECRET_NAMES.split("|");
 
 describe("findSecrets", () => {
   it.each([
     ["sb_secret key", `SUPABASE_KEY=${SB_SECRET}`],
     ["service-role env line", `${ROLE}=abc`],
-    ["exported cron secret", `export ${CRON}="hunter2"`],
-    ["cron secret in JSON", `{"vars": {"${CRON}": "s3cr3t-value"}}`],
+    ["exported email token", `export ${EMAIL}="hunter2"`],
+    ["email token in JSON", `{"vars": {"${EMAIL}": "s3cr3t-value"}}`],
     ["service_role JWT", `KEY=${jwt({ iss: "supabase", role: "service_role" })}`],
     ["padded service_role JWT", `KEY=${jwt({ role: "service_role" }).replace(".", "=.")}`],
-    ["unquoted YAML", `env:\n  ${CRON}: abcdef123456`],
-    ["inline assignment", `FOO=1 ${CRON}=abc node server.js`],
-    ["short JSON value", `{"${CRON}":"abc"}`],
+    ["unquoted YAML", `env:\n  ${EMAIL}: abcdef123456`],
+    ["inline assignment", `FOO=1 ${EMAIL}=abc node server.js`],
+    ["short JSON value", `{"${EMAIL}":"abc"}`],
   ])("flags %s", (_, text) => {
     expect(findSecrets(text)).not.toEqual([]);
   });
@@ -57,19 +57,19 @@ describe("findSecrets", () => {
     ["publishable key", "VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_AbCdEf0123456789"],
     ["anon JWT", `VITE_SUPABASE_PUBLISHABLE_KEY=${jwt({ iss: "supabase", role: "anon" })}`],
     ["reading the env in code", `const ${ROLE} = process.env['${ROLE}'];`],
-    ["an empty example entry", `# ${ROLE}=\n${CRON}=`],
-    ["an empty entry before another line", `${CRON}=\nVITE_SITE_URL=https://example.com`],
+    ["an empty example entry", `# ${ROLE}=\n${EMAIL}=`],
+    ["an empty entry before another line", `${EMAIL}=\nVITE_SITE_URL=https://example.com`],
     ["prose naming the prefix", "Never commit an `sb_secret_` key."],
-    ["forwarding a variable", `${ROLE}=\${${ROLE}}\n${CRON}=$CRON`],
-    ["a placeholder", `${CRON}=<your secret>`],
-    ["a type declaration", `interface Env { ${CRON}: string; ${ROLE}?: string }`],
+    ["forwarding a variable", `${ROLE}=\${${ROLE}}\n${EMAIL}=$EMAIL`],
+    ["a placeholder", `${EMAIL}=<your secret>`],
+    ["a type declaration", `interface Env { ${EMAIL}: string; ${ROLE}?: string }`],
   ])("ignores %s", (_, text) => {
     expect(findSecrets(text)).toEqual([]);
   });
 });
 
 describe("tracked files", () => {
-  it("contain no Supabase secret, service-role key or cron secret", () => {
+  it("contain no Supabase secret, service-role key or email API token", () => {
     // Tracked plus new not-yet-ignored files, so a secret fails before it's committed (.dev.vars is ignored).
     const tracked = execFileSync("git", ["ls-files", "-z", "--cached", "--others", "--exclude-standard"], {
       encoding: "utf8",

@@ -2,6 +2,7 @@
 
 Status: 2026-11-08. Part 1 describes the system as audited on 2026-11-07 (kept as the baseline; Phases 1–7 have since fixed what §1.5 lists), Part 2 the target architecture, and Part 3 how to get from one to the other.
 Task numbers like **T10** refer to [AUDIT-TASKS.md](AUDIT-TASKS.md).
+History: the site began in Lovable on Lovable Cloud; since Phase 8 it runs on our own VPS with the owner's own Supabase project.
 
 ---
 
@@ -15,11 +16,11 @@ flowchart LR
     UI[React 19 pages<br/>TanStack Router]
     SB[supabase-js client<br/>session in localStorage]
   end
-  subgraph Cloudflare["Cloudflare Worker"]
-    SSR[TanStack Start SSR<br/>renders HTML only]
+  subgraph VPS["VPS · Caddy → wrangler dev --local (workerd)"]
+    SSR[TanStack Start SSR<br/>+ approval-email server function]
   end
-  subgraph Supabase["Supabase · Lovable Cloud"]
-    AUTH[Auth<br/>email + Google via Lovable OAuth broker]
+  subgraph Supabase["Supabase · owner's project"]
+    AUTH[Auth<br/>email + optional native Google OAuth]
     REST[PostgREST<br/>tables + RPC]
     DB[(Postgres<br/>RLS + triggers)]
     ST[Storage<br/>avatars bucket]
@@ -31,7 +32,7 @@ flowchart LR
   ST -. policies read .-> DB
 ```
 
-**Key fact:** the app has **no server code**. The Worker only renders HTML. Every read and write goes from the browser straight to Supabase with the publishable key, so **Postgres row-level security (RLS) and triggers are the entire security boundary**. Server helpers exist (`client.server.ts`, `auth-middleware.ts`, `cron-auth.ts`) but nothing imports them.
+**Key fact:** the Worker renders HTML and runs one server function (the approval welcome email, Phase 8, which acts with the calling admin's token). Every other read and write goes from the browser straight to Supabase with the publishable key, so **Postgres row-level security (RLS) and triggers are the entire security boundary**. Server helpers exist (`client.server.ts`, `auth-middleware.ts`) but nothing imports them.
 
 ### 1.2 Source layout
 
@@ -41,9 +42,8 @@ flowchart LR
 | Routes | `src/routes/` | Pages: marketing, directory, auth, account | Pages fetch data in `useEffect`, map rows to UI and hold business rules |
 | Showcase | `src/showcase/` | `Shell` toolbar, specimens, **the real join form** | Preview-only by rule, but used by live pages |
 | App helpers | `src/lib/account.ts` | Neighborhood list, avatar URLs, initials | No clear home |
-| Integrations | `src/integrations/` | Generated Supabase/Lovable clients and types | Don't hand-edit (types are regenerated) |
+| Integrations | `src/integrations/` | Supabase client and generated types | Don't hand-edit (types are regenerated) |
 | Database | `drizzle/migrations/*.sql` | Hand-written SQL; Drizzle is only the runner | `schema.ts` is empty, so `drizzle-kit push` is dangerous |
-| Lovable tooling | `mockupPreviewPlugin.ts`, `/__mockup`, `/__component` | Canvas previews in the Lovable editor | Leave alone |
 
 ### 1.3 Data model (after migrations 0001–0004)
 
@@ -209,7 +209,7 @@ flowchart LR
 ```
 
 - **Colors.** Tailwind can't generate classes for colors that only exist in the database. So components set one CSS variable inline (`style={{ "--hood": color }}`) and use static utilities: `bg-(--hood)`, `text-(--hood)`, `border-(--hood)`.
-  - This is the single sanctioned exception to "no inline styles". Add it to `.lovable/system.md`.
+  - This is the single sanctioned exception to "no inline styles". It's recorded in `DESIGN.md`.
   - It replaces `catalogueTones`, `wash`, `ink`, `neighborhoodFill` and the color part of `brand.tsx`'s logo map.
 - **Logos.** Admins upload a PNG or WebP to `neighborhood-logos/<slug>.png`. The original seven fall back to the bundled assets, so nothing has to be uploaded on day one.
 - **Removing a neighborhood.** Set `active = false`. The database blocks deletion while profiles or events still use it, and renames carry through to every row automatically.
@@ -238,7 +238,7 @@ sequenceDiagram
 - **An approved applicant with no account yet.** The application stays approved and unlinked. On her first confirmed sign-up, the link trigger attaches it and her profile takes the approval.
   - ~~Gap to close in a follow-up migration~~ **Closed by 0003:** `link_applications()` now gives a still-pending profile the outcome of an already reviewed application (approved wins over declined), fires after the profile exists (so OAuth sign-ups work too), and a one-time backfill fixed accounts linked under the old trigger order.
 - **Approving from the Members tab.** Admins can approve or decline a profile directly; if she has applications, the newest one takes the same decision and records the admin (0004). Members with no application are simply approved.
-- **Notifications (later).** Applicants currently learn nothing automatically. Add a database webhook or Edge Function that emails on `applications.status` change. That's the first legitimate need for a server-side secret.
+- **Notifications.** ✅ Phase 8: every approval in `/admin` (an application, or a member via her newest application) calls the `sendApprovalEmailFn` server function, which checks `is_admin()` with the admin's own token and an `approved` status, then sends one plain-text welcome email through the Cloudflare Email Sending API. Declines send nothing. The UI says whether it went out.
 
 ### 2.7 Admin
 
@@ -247,7 +247,7 @@ sequenceDiagram
   - **Members:** every profile, with status, visibility and catalogue number.
   - **Neighborhoods:** add or edit name, color, logo and sort order (slug is fixed once created); activate or deactivate.
   - **Bookings:** confirm or decline.
-- **Bootstrapping the first admin:** run once in the Lovable Cloud / Supabase SQL editor; step by step in [README.md](README.md#first-admin).
+- **Bootstrapping the first admin:** run once in the Supabase SQL editor; step by step in [README.md](README.md#first-admin).
 - **Audit trail** ✅ (0003). `applications.reviewed_by` is set from `auth.uid()` by the review trigger and can't be written directly; the Applications tab shows it.
 - **Data access.** No admin RPC: admins already read all profiles and applications under RLS, so `features/admin` joins them client-side.
 
@@ -258,16 +258,16 @@ sequenceDiagram
 | Scripts | `typecheck` (`tsc --noEmit`), `lint`, `test:db` (`drizzle/test/run.sh`), `check` = all three + `build` |
 | CI | GitHub Action on pull requests and non-`main` pushes: the `check` steps (typecheck, lint, test, build) plus `test:db` against a Postgres `services:` container |
 | Migrations | Hand-written SQL in `drizzle/migrations/` + journal entry; never `drizzle-kit push` (empty schema). Every policy change adds a check to `rls.sql` |
-| Types | `src/integrations/supabase/types.ts` regenerated by Lovable after each migration. Hand-patching is allowed only as a bridge until then |
+| Types | `src/integrations/supabase/types.ts` regenerated with `supabase gen types` after each migration is applied. Hand-patching (`BRIDGE`) is allowed only until then |
 | Bundle | Supabase lazy-loaded (`app/supabase.ts`); WebGL gallery and image trail loaded client-only; fonts as subset WOFF2; images with `srcset` |
-| Deploy | Cloudflare Worker with project-specific name (owner decision), secrets via Wrangler (never `.env`, guarded by `src/app/secrets.test.ts`), security headers on pages and server-function responses via `src/start.ts` request middleware (static assets come from the assets binding without them; CSP `frame-ancestors` limited to the site and the Lovable editor, which must frame it) |
-| Docs | `README.md` (how to run), `ARCHITECTURE.md` (this file), `AGENTS.md` (rules for agents), `.lovable/system.md` (design rules); each states only what's true |
+| Deploy | Merge to `main`; the VPS pulls within 5 minutes, rebuilds and serves `dist/server/wrangler.json` with `wrangler dev --local` behind Caddy. Server secrets in the server's gitignored `.dev.vars` (never `.env`, guarded by `src/app/secrets.test.ts`). Security headers on pages and server-function responses via `src/start.ts` request middleware (static assets come from the assets binding without them) |
+| Docs | `README.md` (how to run), `ARCHITECTURE.md` (this file), `AGENTS.md` (rules for agents), `DESIGN.md` (design rules); each states only what's true |
 
 ### 2.9 What stays as it is
 
 - **TanStack Start, Supabase and Cloudflare:** they fit a small community site. No backend service or ORM layer is needed.
 - **The design system's API style:** CVA variants, `forwardRef`, and dark sections done by re-pointing tokens (the `tone-night` trick).
-- **Lovable's generated integration files and preview routes.**
+- **The generated Supabase client and types** in `src/integrations/supabase/`.
 
 ---
 
@@ -281,7 +281,7 @@ sequenceDiagram
 | **3. Applications + admin** ✅ code + 0003 written (2026-11-08) | `/join` saves (anonymous or signed-in), form `name`s and validation; `/admin` with four tabs | T1, T20 + new | Migration 0003: "approved before sign-up" fix, `reviewed_by`. Ship with 0001–0003 applied live (README). Still open: CAPTCHA/rate limiting for anonymous applications, review emails |
 | **4. Site shell** ✅ code (2026-11-08) | App layout (no showcase toolbar), router-aware nav + mobile menu, 404/error pages, noindex showcase | T16, T17, T32 + T22 | `src/app/layout/` (`AppLayout.tsx`, `StatusPages.tsx`), `src/app/seo.ts`, `public/robots.txt`. Optional `VITE_SITE_URL` enables canonical and OG URLs. Still open: sitemap, menu click-outside |
 | **5. Polish** ✅ code (2026-11-08) | Contrast, motion/a11y, WebGL/trail/font/image performance | T23–T29, T31 | Contrast asserted against `theme.css` tokens (`src/app/contrast.test.tsx`); new `--bl-sky-strong`, `ink-faint` `#92928d` (visual-change list in AUDIT-TASKS Progress → Phase 5). Skip link + `<main id="main">`, `useRouteFocus`, inert mobile menu. Client-only WebP trail, paused WebGL loop, subset WOFF2 + preload, WebP `srcset` (`src/app/responsive-images.ts`) |
-| **6. Tooling** ✅ code (2026-11-08) | Lint green, scripts, CI, dependencies, `.env` and secrets, docs | T21, T33–T38 | ESLint 0/0; exact pins, `seroval` fixed (`bun audit` 69 → 29, all build/dev tooling); native tsconfig paths; `test:db`; `.github/workflows/check.yml` (app job + `postgres:17` RLS job); `.env` kept tracked with a secret-guard test; security headers via `src/start.ts` (CSP `frame-ancestors` allows the Lovable editor). Worker name/`compatibility_date`, full CSP and live migrations are owner decisions (AUDIT-TASKS.md) |
+| **6. Tooling** ✅ code (2026-11-08) | Lint green, scripts, CI, dependencies, `.env` and secrets, docs | T21, T33–T38 | ESLint 0/0; exact pins, `seroval` fixed (`bun audit` 69 → 29, all build/dev tooling); native tsconfig paths; `test:db`; `.github/workflows/check.yml` (app job + `postgres:17` RLS job); `.env` kept tracked with a secret-guard test; security headers via `src/start.ts`. Worker name/`compatibility_date`, full CSP and live migrations are owner decisions (AUDIT-TASKS.md) |
 | **7. Cleanup** ✅ code + 0004 written (2026-11-08) | Every audit task done or won't fix; portrait-less cards show initials; catalogue cards open a member profile dialog; `account.tsx` split into `src/features/account/`; CurvedLoop rings stop after 5 s | T10, T11, T13, T18 + T2–T7, T12, T19, T30 ticked | `0004_cleanup.sql`: nullable `profiles.neighborhood` (no LIC default), profile → newest application sync (102 RLS checks). `MemberDialog` (native modal `<dialog>`) and `MemberCard` `onOpen`. Apply 0001–0004 live (README go-live order). New UI listed for owner review in AUDIT-TASKS Progress → Phase 7 |
 
 **Resolved 2026-11-08:** public pages show only members who opt in (§2.10). Everything else stays members-only.

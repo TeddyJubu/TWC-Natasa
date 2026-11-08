@@ -59,13 +59,12 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
-// Keep this root providers-only: canvas preview routes (/__mockup,
-// /__component) render inside it, so any chrome leaks into every frame.
+// Keep this root providers-only: every page brings its own chrome.
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const location = useLocation();
   const router = useRouter();
-  // Focus only, no markup: preview frames render inside this root. resolvedLocation changes only once the new
+  // Focus only, no markup. resolvedLocation changes only once the new
   // page (lazy chunk, loaders) has rendered; location changes at navigation start, while the old page is still up.
   const resolvedPathname = useRouterState({ select: (s) => (s.resolvedLocation ?? s.location).pathname });
   useRouteFocus(resolvedPathname);

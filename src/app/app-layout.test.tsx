@@ -113,7 +113,7 @@ describe("showcase pages keep the toolbar and stay out of search", () => {
 });
 
 describe("root route", () => {
-  it("stays providers-only: no showcase or page chrome (preview routes render inside it)", () => {
+  it("stays providers-only: no showcase or page chrome", () => {
     const root = readFileSync(resolve(process.cwd(), "src/routes/__root.tsx"), "utf8");
     expect(root).not.toMatch(/@\/showcase|@\/app\/layout\/(AppLayout|StatusPages)|\b(Navbar|Footer|Shell)\b/);
     // Route-change focus is a hook, not markup: the only layout import allowed here.
@@ -157,6 +157,6 @@ describe("robots.txt", () => {
     const lines = robots().split("\n").map((l) => l.trim());
     expect(lines).toContain("User-agent: *");
     const disallowed = lines.filter((l) => l.startsWith("Disallow:")).map((l) => l.slice("Disallow:".length).trim());
-    expect(disallowed.sort()).toEqual(["/__component", "/__mockup", "/colors", "/components", "/typography"]);
+    expect(disallowed.sort()).toEqual(["/colors", "/components", "/typography"]);
   });
 });

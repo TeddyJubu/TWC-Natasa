@@ -6,9 +6,8 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    // Generated or plugin-installed files are never hand-edited, so they aren't linted:
-    // Lovable writes src/integrations/** (Supabase/Lovable clients and types), TanStack Router writes
-    // routeTree.gen.ts, and the mockup preview plugin installs the [__*].preview.$ routes.
+    // Generated files are never hand-edited, so they aren't linted: src/integrations/** (the Supabase
+    // client and generated types) and TanStack Router's routeTree.gen.ts.
     ignores: [
       "dist",
       ".output",
@@ -17,7 +16,6 @@ export default tseslint.config(
       ".wrangler",
       "src/routeTree.gen.ts",
       "src/integrations/**",
-      "src/routes/[[]__*[]].preview.$.tsx",
     ],
   },
   {
