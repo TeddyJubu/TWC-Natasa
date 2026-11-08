@@ -296,9 +296,9 @@ function WhoYoullMeet() {
 
 function Brick({ no, title, text, tone, className }: (typeof BRICKS)[number] & { className?: string }) {
   return (
-    <article className={cn("motion-scroll-reveal flex flex-col justify-end gap-2 rounded-lg p-6 py-7 transition-[translate,box-shadow] duration-300 ease-[var(--ease-snap)] hover:-translate-y-1 hover:shadow-[0_20px_40px_-24px_rgb(0_0_0/0.45)] md:p-9 lg:gap-3.5", tone, className)}>
+    <article className={cn("sb-stamp sb-paper motion-scroll-reveal flex flex-col justify-end gap-2 px-6 py-7 transition-[translate] duration-300 ease-[var(--ease-snap)] hover:-translate-y-1 md:p-7 lg:gap-3.5 xl:p-9", tone, className)}>
       <span className="font-fragment text-[13px]">{no}</span>
-      <h3 className="font-editorial text-[32px] font-extrabold leading-[1.09] tracking-[1px] lg:text-[40px]">{title}</h3>
+      <h3 className="font-editorial text-[32px] font-extrabold leading-[1.09] tracking-[1px] xl:text-[40px]">{title}</h3>
       <p className="font-geist text-base leading-6">{text}</p>
     </article>
   );
@@ -307,23 +307,24 @@ function Brick({ no, title, text, tone, className }: (typeof BRICKS)[number] & {
 function Bricklayer() {
   const [share, collab, show] = BRICKS;
   return (
-    <section id="take-part" aria-labelledby="bricks-title" className="flex scroll-mt-20 flex-col gap-2 bg-sb-cream p-2 lg:h-[624px] lg:flex-row">
-      <div className="flex flex-col justify-between gap-12 rounded-lg bg-[#737A4E] px-6 pb-7 pt-8 text-white lg:w-[400px] lg:shrink-0 lg:px-10 lg:py-12">
+    // Rows use min-heights, never fixed ones, so copy can't spill out of a brick at in-between widths.
+    <section id="take-part" aria-labelledby="bricks-title" className="flex scroll-mt-20 flex-col gap-2 bg-sb-cream p-2 lg:min-h-[624px] lg:flex-row">
+      <div className="sb-stamp sb-paper flex flex-col justify-between gap-12 bg-[#737A4E] px-6 pb-7 pt-8 text-white lg:w-[34%] lg:shrink-0 lg:px-9 lg:py-12 xl:w-[400px] xl:px-10">
         <div className="flex flex-col gap-[18px]">
-          <span className="font-fragment text-xs text-white/70">INSIDE THE COLLECTIVE</span>
-          <h2 id="bricks-title" className="font-editorial text-[34px] font-extrabold leading-[1.09] tracking-[1px] lg:text-[40px]">Connections that move work forward.</h2>
+          <span className="font-fragment text-xs text-white/70">BLOCK 03 — BRICKLAYER</span>
+          <h2 id="bricks-title" className="font-editorial text-[34px] font-extrabold leading-[1.09] tracking-[1px] xl:text-[40px]">Connections that move work forward.</h2>
         </div>
         <p className="font-geist text-[17px] leading-[26px] text-white/85">Not networking for networking’s sake. This is a place to build genuine relationships and support women-owned work.</p>
       </div>
       <div className="flex flex-1 flex-col gap-2">
-        <div className="flex flex-col gap-2 md:h-[300px] md:flex-row">
+        <div className="flex flex-col gap-2 md:min-h-[300px] md:flex-1 md:flex-row">
           <Brick {...share} className="md:flex-1" />
-          <div className="group h-[220px] overflow-hidden rounded-lg md:h-full md:w-[38%] lg:w-[300px]">
+          <div className="sb-stamp group h-[220px] overflow-hidden md:h-auto md:w-[38%] xl:w-[300px]">
             <img src={gathering} alt="Women talking together at a collective gathering" loading="lazy" className="size-full object-cover transition-[scale] duration-700 ease-[var(--ease-gentle)] group-hover:scale-105" />
           </div>
         </div>
-        <div className="grid grid-cols-[56px_1fr] gap-2 md:flex md:h-[300px]">
-          <div aria-hidden className="group grid place-items-center rounded-lg bg-[#E6B5C1] md:w-[96px] lg:w-[150px]">
+        <div className="grid grid-cols-[56px_1fr] gap-2 md:flex md:min-h-[300px] md:flex-1">
+          <div aria-hidden className="sb-stamp sb-paper group grid place-items-center bg-[#E6B5C1] md:w-[72px] xl:w-[150px]">
             <Icon name="sparkle" className="size-5 text-sb-ink/40 transition-[rotate,scale] duration-700 ease-[var(--ease-snap)] group-hover:rotate-180 group-hover:scale-125" />
           </div>
           <Brick {...collab} className="md:flex-1" />

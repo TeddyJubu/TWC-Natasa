@@ -39,6 +39,22 @@ html:has(.sb-menu:popover-open) { overflow: hidden; }
 }
 
 @layer components {
+/* Wavy "stamp" edge as a 9-slice mask: corners are drawn once, each edge repeats a
+   whole wave period (round). No support (Firefox) = plain rounded brick. */
+.sb-stamp {
+  border-radius: 8px;
+}
+@supports (-webkit-mask-box-image: none) {
+  .sb-stamp {
+    border-radius: 0;
+    -webkit-mask-box-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cpath d='M6 0C10.5 0 10.5 6 15 6S19.5 0 24 0A6 6 0 0 1 30 6C30 10.5 24 10.5 24 15S30 19.5 30 24A6 6 0 0 1 24 30C19.5 30 19.5 24 15 24S10.5 30 6 30A6 6 0 0 1 0 24C0 19.5 6 19.5 6 15S0 10.5 0 6A6 6 0 0 1 6 0Z'/%3E%3C/svg%3E") 6 / 6px round;
+  }
+}
+/* Paper grain over the brick's own background-color (data: URI is CSP-safe). */
+.sb-paper {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9 0.12' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
 /* Underline that draws in from the left */
 .sb-link {
   background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
