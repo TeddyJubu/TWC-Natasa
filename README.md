@@ -4,6 +4,9 @@ The website and member area for The Women’s Collective: a marketing site, a me
 (`/join`), a members directory (`/members`), a member account page (`/account`) and an admin area
 (`/admin`) for reviewing applications, members, neighborhoods and headshot bookings.
 
+**North star:** women entrepreneurs in Queens belong to a community that helps their businesses grow.
+Metric: people who submit a completed membership application each month.
+
 See [ARCHITECTURE.md](ARCHITECTURE.md) for how it fits together and [AUDIT-TASKS.md](AUDIT-TASKS.md) for
 open work. Rules for coding agents live in [AGENTS.md](AGENTS.md).
 
