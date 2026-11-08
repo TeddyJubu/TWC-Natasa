@@ -58,6 +58,7 @@ export const privacy: LegalDoc = {
         { h3: "When you apply" },
         { ul: [
           "Your name and email address",
+          "Your phone number, and your WhatsApp number if you ask to join the members' WhatsApp group",
           "Your neighbourhood — the area only. We never ask for or store a home address.",
           "Your profession, and your business name, website, or social handle if you give them",
           "A short bio, your reasons for applying, and what you'd contribute",
@@ -67,6 +68,7 @@ export const privacy: LegalDoc = {
         { ul: [
           "Everything above, plus anything you add to your profile",
           "A profile photograph, if you upload one. Location metadata is stripped from every image on upload.",
+          "Your business logo, if you upload one — stripped of metadata the same way",
           "Your visibility settings — whether you're listed in the members' directory and whether your card is public",
           "Sign-in records: for each signed-in session, the IP address and browser (user agent) it started from and when it expires — nothing about what you looked at",
         ] },

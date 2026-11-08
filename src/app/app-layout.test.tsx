@@ -140,6 +140,12 @@ describe("AppFooter", () => {
     expect(footerLinks()).toEqual([["Join", "/join"], ...LEGAL]);
   });
 
+  it("/join has a footer with the legal links: applicants read them before applying", () => {
+    const Page = component(live["/join"]);
+    renderWithQueries(<Page />, seed);
+    expect(footerLinks().slice(-3)).toEqual(LEGAL);
+  });
+
   for (const [path, route] of Object.entries(live)) {
     it(`${path}: a footer, when the page has one, carries the legal links`, () => {
       const Page = component(route);

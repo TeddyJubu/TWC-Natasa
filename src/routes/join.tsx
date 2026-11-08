@@ -1,7 +1,7 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Container, Section, buttonVariants } from "@/index";
-import { AppNav, AppPage } from "@/app/layout/AppLayout";
+import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import { ApplicationForm } from "@/features/applications/ApplicationForm";
 import { useSubmitApplication } from "@/features/applications/mutations";
 import { applicantQuery } from "@/features/applications/queries";
@@ -40,6 +40,7 @@ function JoinPage() {
         </Container>
       </Section>
       </main>
+      <AppFooter links={[{ label: "Home", href: "/" }, { label: "Members", href: "/members" }]} />
     </AppPage>
   );
 }
