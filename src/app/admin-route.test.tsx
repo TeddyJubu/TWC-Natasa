@@ -9,7 +9,9 @@ vi.mock("@/app/supabase", async () => (await import("@/test/fake-supabase")).fak
 const emailApproval = vi.fn(async (_id: string) => ({ sent: true }) as { sent: true } | { sent: false; reason: string });
 vi.mock("@/features/admin/approval-email", () => ({ emailApproval: (id: string) => emailApproval(id) }));
 vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs }));
+vi.mock("@/features/auth/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 
+import { fake as authFake } from "@/test/fake-fns";
 import { Route as GuardRoute } from "@/routes/_authenticated/_admin/route";
 import { Route } from "@/routes/_authenticated/_admin/admin";
 
@@ -17,6 +19,7 @@ const Page = Route.options.component as React.ComponentType;
 afterEach(() => {
   cleanup();
   fake.reset();
+  authFake.reset();
   emailApproval.mockClear();
 });
 
@@ -42,24 +45,24 @@ describe("_admin guard", () => {
     expect((thrown as { options: { to: string } }).options.to).toBe("/account");
   };
 
-  it("resolves when is_admin() is true", async () => {
-    fake.results = [{ data: true, error: null }];
+  it("resolves when the viewer is an admin", async () => {
+    authFake.results = [{ signedIn: true, member: true, admin: true }];
     await expect(beforeLoad()).resolves.toBeUndefined();
-    expect(fake.calls).toEqual([["rpc", "is_admin"]]);
+    expect(authFake.calls).toEqual([["viewerFn"]]);
   });
 
-  it("redirects to /account when is_admin() is false", async () => {
-    fake.results = [{ data: false, error: null }];
+  it("redirects to /account when the viewer is not an admin", async () => {
+    authFake.results = [{ signedIn: true, member: true, admin: false }];
     await redirectsToAccount();
   });
 
-  it("redirects to /account when is_admin() errors", async () => {
-    fake.results = [{ data: true, error: { message: "offline" } }];
+  it("redirects to /account when the check errors", async () => {
+    authFake.results = [new Error("offline")];
     await redirectsToAccount();
   });
 
   it("redirects for anything but exactly true", async () => {
-    fake.results = [{ data: "true", error: null }];
+    authFake.results = [{ signedIn: true, member: true, admin: "true" }];
     await redirectsToAccount();
   });
 });

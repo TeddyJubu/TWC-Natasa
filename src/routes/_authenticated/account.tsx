@@ -3,7 +3,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, Container, Section, SectionHeader } from "@/index";
 import { AppNav, AppPage } from "@/app/layout/AppLayout";
-import { getSupabase } from "@/app/supabase";
+import { getAuthClient } from "@/app/auth-client";
+import { emitAuthEvent } from "@/app/auth-events";
 import { useNeighborhoods } from "@/features/neighborhoods/queries";
 import { toneFor } from "@/features/neighborhoods/tone";
 import { profileQuery, viewerQuery } from "@/features/members/queries";
@@ -49,14 +50,15 @@ function AccountPage() {
   async function signOut() {
     setSignOutError(null);
     try {
-      const { error } = await (await getSupabase()).auth.signOut();
-      if (error) throw error;
+      const { error } = await (await getAuthClient()).signOut();
+      if (error) throw new Error(error.message ?? "We couldn’t sign you out. Please try again.");
     } catch (error) {
       setSignOutError(errorMessage(error));
       return;
     }
     await queryClient.cancelQueries();
     queryClient.clear();
+    emitAuthEvent("SIGNED_OUT");
     navigate({ to: "/auth", replace: true });
   }
 

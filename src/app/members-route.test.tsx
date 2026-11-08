@@ -9,7 +9,9 @@ import { fake } from "@/test/fake-supabase";
 
 vi.mock("@/app/supabase", async () => (await import("@/test/fake-supabase")).fakeSupabaseModule);
 vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs }));
+vi.mock("@/features/auth/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 
+import { fake as fns } from "@/test/fake-fns";
 import { Route } from "@/routes/members";
 
 const Page = Route.options.component as React.ComponentType;
@@ -17,6 +19,7 @@ let restoreDialog: (() => void) | undefined;
 afterEach(() => {
   cleanup();
   fake.reset();
+  fns.reset();
   restoreDialog?.();
   restoreDialog = undefined;
 });
@@ -87,17 +90,18 @@ describe("/members", () => {
   });
 
   it("surfaces a viewer error and retries the viewer", async () => {
-    fake.results = [{ data: { session: null }, error: { message: "offline" } }];
+    fns.results = [new Error("offline")];
     renderWithQueries(<Page />);
     const alert = await screen.findByRole("alert");
     expect(alert.textContent).toMatch(/couldn’t load/i);
-    expect(fake.calls).toEqual([["getSession"]]); // the viewer, not another query, took the error
+    expect(fns.calls).toEqual([["viewerFn"]]); // the viewer, not another query, took the error
     // Raw public_profiles() rows (not MemberProfile cards): the query maps them itself.
     const row = { full_name: "Pia Lund", role_title: "Founder", business: "Pia Co", neighborhood: "Astoria",
       specialty: "Food", bio: "", looking_for: "", website: "", avatar_path: null, catalogue_number: 21 };
-    fake.results = [{ data: { session: null }, error: null }, { data: [row], error: null }];
+    fns.results = [{ signedIn: false, member: false, admin: false }];
+    fake.results = [{ data: [row], error: null }];
     fireEvent.click(within(alert).getByRole("button", { name: "Retry" }));
-    await waitFor(() => expect(fake.calls.filter((c) => c[0] === "getSession")).toHaveLength(2));
+    await waitFor(() => expect(fns.calls).toHaveLength(2));
     await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
   });
 

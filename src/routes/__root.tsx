@@ -9,8 +9,7 @@ import {
   useRouterState,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
-import { getSupabase } from "@/app/supabase";
-import { handleAuthEvent } from "@/app/auth-events";
+import { handleAuthEvent, onAuthEvent } from "@/app/auth-events";
 import { currentPathname, siteSeo } from "@/app/seo";
 import { useRouteFocus } from "@/app/layout/route-focus";
 import hero from "@/assets/photography/hero.jpg";
@@ -68,19 +67,11 @@ function RootComponent() {
   // page (lazy chunk, loaders) has rendered; location changes at navigation start, while the old page is still up.
   const resolvedPathname = useRouterState({ select: (s) => (s.resolvedLocation ?? s.location).pathname });
   useRouteFocus(resolvedPathname);
-  useEffect(() => {
-    let cancelled = false;
-    let unsubscribe: (() => void) | undefined;
-    void getSupabase().then((supabase) => {
-      if (cancelled) return;
-      const { data } = supabase.auth.onAuthStateChange((event) => handleAuthEvent(event, queryClient, () => void router.invalidate()));
-      unsubscribe = () => data.subscription.unsubscribe();
-    }).catch((error) => console.error("[auth] listener setup failed", error));
-    return () => {
-      cancelled = true;
-      unsubscribe?.();
-    };
-  }, [router, queryClient]);
+  // Sign-ins and sign-outs (this tab or another) refresh the router and the caches.
+  useEffect(
+    () => onAuthEvent((event) => handleAuthEvent(event, queryClient, () => void router.invalidate())),
+    [router, queryClient],
+  );
 
   return (
     <QueryClientProvider client={queryClient}>

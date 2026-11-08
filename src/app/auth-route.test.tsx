@@ -5,13 +5,13 @@ import { renderWithQueries } from "@/test/dom";
 
 const auth = vi.hoisted(() => ({
   getSession: vi.fn(),
-  onAuthStateChange: vi.fn(),
-  signInWithPassword: vi.fn(),
-  signUp: vi.fn(),
-  resetPasswordForEmail: vi.fn(),
-  signInWithOAuth: vi.fn(),
+  signIn: { email: vi.fn(), social: vi.fn() },
+  signUp: { email: vi.fn() },
+  requestPasswordReset: vi.fn(),
 }));
-vi.mock("@/integrations/supabase/client", () => ({ supabase: { auth } }));
+const emitted = vi.hoisted(() => [] as string[]);
+vi.mock("@/app/auth-client", () => ({ getAuthClient: async () => auth }));
+vi.mock("@/app/auth-events", async (orig) => ({ ...(await orig<object>()), emitAuthEvent: (e: string) => emitted.push(e) }));
 vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs }));
 
 import { Route } from "@/routes/auth";
@@ -21,8 +21,8 @@ const search = vi.spyOn(Route, "useSearch");
 
 beforeEach(() => {
   search.mockReturnValue({});
-  auth.getSession.mockResolvedValue({ data: { session: null } });
-  auth.onAuthStateChange.mockReturnValue({ data: { subscription: { unsubscribe() {} } } });
+  auth.getSession.mockResolvedValue({ data: null, error: null });
+  emitted.length = 0;
 });
 afterEach(() => {
   cleanup();
@@ -44,17 +44,17 @@ describe("/auth Google sign-in", () => {
     expect(screen.getByLabelText(/email/i)).toBeTruthy();
   });
 
-  it("when on, signs in through Supabase's native Google OAuth back to /auth", async () => {
+  it("when on, signs in with Google through Better Auth, landing on /account (errors back on /auth)", async () => {
     vi.stubEnv("VITE_GOOGLE_AUTH", "true");
-    auth.signInWithOAuth.mockResolvedValue({ data: {}, error: null });
+    auth.signIn.social.mockResolvedValue({ data: {}, error: null });
     renderWithQueries(<Page />);
     fireEvent.click(googleButton()!);
-    expect(auth.signInWithOAuth).toHaveBeenCalledWith({ provider: "google", options: { redirectTo: window.location.origin + "/auth" } });
+    await vi.waitFor(() => expect(auth.signIn.social).toHaveBeenCalledWith({ provider: "google", callbackURL: "/account", errorCallbackURL: "/auth" }));
   });
 
   it("when on, shows an OAuth error as an alert", async () => {
     vi.stubEnv("VITE_GOOGLE_AUTH", "true");
-    auth.signInWithOAuth.mockResolvedValue({ data: {}, error: { message: "provider is not enabled" } });
+    auth.signIn.social.mockResolvedValue({ data: null, error: { message: "provider is not enabled", status: 404 } });
     renderWithQueries(<Page />);
     fireEvent.click(googleButton()!);
     expect((await screen.findByRole("alert")).textContent).toMatch(/google sign-in didn’t work/i);
@@ -62,10 +62,10 @@ describe("/auth Google sign-in", () => {
 });
 
 describe("/auth", () => {
-  it.each(["Invalid login credentials", "Email not confirmed"])(
+  it.each(["Invalid email or password", "Email not verified"])(
     "uses one generic sign-in failure message (%s)",
     async (raw) => {
-      auth.signInWithPassword.mockResolvedValue({ data: {}, error: { message: raw } });
+      auth.signIn.email.mockResolvedValue({ data: null, error: { message: raw, status: 401 } });
       renderWithQueries(<Page />);
       fill(/email/i, "a@x.test");
       fill(/password/i, "wrongpass");
@@ -76,8 +76,18 @@ describe("/auth", () => {
     },
   );
 
+  it("signs in, announces it to the app and opens /account", async () => {
+    auth.signIn.email.mockResolvedValue({ data: { user: { id: "u1" } }, error: null });
+    renderWithQueries(<Page />);
+    fill(/email/i, "a@x.test");
+    fill(/password/i, "rightpass");
+    submit(/^sign in$/i);
+    await vi.waitFor(() => expect(emitted).toEqual(["SIGNED_IN"]));
+    expect(auth.signIn.email).toHaveBeenCalledWith({ email: "a@x.test", password: "rightpass" });
+  });
+
   it("clears the error when switching to forgot-password mode", async () => {
-    auth.signInWithPassword.mockResolvedValue({ data: {}, error: { message: "Invalid login credentials" } });
+    auth.signIn.email.mockResolvedValue({ data: null, error: { message: "Invalid email or password", status: 401 } });
     renderWithQueries(<Page />);
     fill(/email/i, "a@x.test");
     fill(/password/i, "wrongpass");
@@ -88,7 +98,7 @@ describe("/auth", () => {
   });
 
   it("clears the notice when going back to sign in", async () => {
-    auth.resetPasswordForEmail.mockResolvedValue({ error: null });
+    auth.requestPasswordReset.mockResolvedValue({ data: { status: true }, error: null });
     search.mockReturnValue({ mode: "forgot" });
     renderWithQueries(<Page />);
     fill(/email/i, "a@x.test");
@@ -100,16 +110,17 @@ describe("/auth", () => {
 
   it("forgot-password: a rate limit reads like success, other errors read generic", async () => {
     search.mockReturnValue({ mode: "forgot" });
-    auth.resetPasswordForEmail.mockResolvedValue({ error: { message: "For security purposes, you can only request this after 42 seconds.", code: "over_email_send_rate_limit" } });
+    auth.requestPasswordReset.mockResolvedValue({ data: null, error: { message: "Too many requests", status: 429 } });
     renderWithQueries(<Page />);
     fill(/email/i, "a@x.test");
     submit(/send reset link/i);
     expect((await screen.findByRole("status")).textContent).toMatch(/reset link is on its way/i);
     cleanup();
-    auth.resetPasswordForEmail.mockResolvedValue({ error: { message: "network down", code: "unexpected_failure" } });
+    auth.requestPasswordReset.mockResolvedValue({ data: null, error: { message: "network down", status: 500 } });
     renderWithQueries(<Page />);
     fill(/email/i, "a@x.test");
     submit(/send reset link/i);
+    expect(auth.requestPasswordReset).toHaveBeenCalledWith({ email: "a@x.test", redirectTo: "/reset-password" });
     const alert = await screen.findByRole("alert");
     expect(alert.textContent).toMatch(/couldn’t send a link right now/i);
     expect(alert.textContent).not.toContain("network down");
@@ -149,25 +160,25 @@ describe("/auth", () => {
     const neutral = async () => (await screen.findByRole("status")).textContent;
 
     it.each([
-      ["a new email", { data: { user: { identities: [{ id: "i1" }] } }, error: null }],
-      ["an existing email (no identities)", { data: { user: { identities: [] } }, error: null }],
-      ["an 'already registered' error code", { data: { user: null }, error: { message: "x", code: "user_already_exists" } }],
-      ["an 'already registered' message", { data: { user: null }, error: { message: "User already registered" } }],
+      ["a new email", { data: { token: null, user: { id: "u1" } }, error: null }],
+      ["an 'already exists' error code", { data: null, error: { message: "x", code: "USER_ALREADY_EXISTS", status: 422 } }],
+      ["the 'use another email' variant", { data: null, error: { message: "x", code: "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL", status: 422 } }],
     ])("answers %s with the same neutral notice and no error", async (_label, result) => {
-      auth.signUp.mockResolvedValue(result);
+      auth.signUp.email.mockResolvedValue(result);
       renderWithQueries(<Page />);
       await signUp();
+      expect(auth.signUp.email).toHaveBeenCalledWith({ email: "rosa@x.test", password: "longenough", name: "Rosa", callbackURL: "/account" });
       expect(await neutral()).toMatch(/check your inbox.*already have an account/i);
       expect(screen.queryByRole("alert")).toBeNull();
     });
 
     it("shows the password rule for a weak password, and generic copy for anything else", async () => {
-      auth.signUp.mockResolvedValue({ data: { user: null }, error: { message: "Password should contain a number", code: "weak_password" } });
+      auth.signUp.email.mockResolvedValue({ data: null, error: { message: "Password too short", code: "PASSWORD_TOO_SHORT", status: 400 } });
       renderWithQueries(<Page />);
       await signUp();
-      expect((await screen.findByRole("alert")).textContent).toBe("Password should contain a number");
+      expect((await screen.findByRole("alert")).textContent).toBe("Password too short");
       cleanup();
-      auth.signUp.mockResolvedValue({ data: { user: null }, error: { message: "Database error saving new user", code: "unexpected_failure" } });
+      auth.signUp.email.mockResolvedValue({ data: null, error: { message: "Failed to create user", code: "FAILED_TO_CREATE_USER", status: 500 } });
       renderWithQueries(<Page />);
       await signUp();
       expect((await screen.findByRole("alert")).textContent).toMatch(/couldn’t create your account/i);

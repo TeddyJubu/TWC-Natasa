@@ -3,6 +3,8 @@ import { MutationObserver, QueryClient } from "@tanstack/react-query";
 import { fake } from "@/test/fake-supabase";
 
 vi.mock("@/app/supabase", async () => (await import("@/test/fake-supabase")).fakeSupabaseModule);
+vi.mock("@/features/auth/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
+import { fake as fns } from "@/test/fake-fns";
 
 import { avatarUrls, directoryQuery, introsQuery, profileQuery, publicProfilesQuery, viewerQuery } from "./queries";
 import { saveProfile, saveProfileMutation, uploadAvatar, uploadAvatarMutation } from "./mutations";
@@ -16,7 +18,10 @@ const dirRow = {
 };
 const profileRow = { ...dirRow, status: "approved", directory_visible: true, member_since: null };
 
-beforeEach(() => fake.reset());
+beforeEach(() => {
+  fake.reset();
+  fns.reset();
+});
 
 describe("avatarUrls", () => {
   it("skips the request when there are no paths", async () => {
@@ -74,38 +79,15 @@ describe("viewerQuery", () => {
     expect(viewerQuery.queryKey).toEqual(["viewer"]);
   });
 
-  it("is a signed-out visitor without a session, and skips the rpcs", async () => {
-    fake.results = [{ data: { session: null }, error: null }];
-    expect(await run(viewerQuery)).toEqual({ signedIn: false, member: false, admin: false });
-    expect(fake.calls).toEqual([["getSession"]]);
-  });
-
-  it.each([
-    [true, false],
-    [false, false],
-    [false, true],
-    [true, true],
-  ])("asks is_member() and is_admin() for a signed-in viewer (member=%s, admin=%s)", async (member, admin) => {
-    fake.results = [{ data: { session: { user: { id: "u1" } } }, error: null }, { data: member, error: null }, { data: admin, error: null }];
-    expect(await run(viewerQuery)).toEqual({ signedIn: true, member, admin });
-    expect(fake.calls).toEqual([["getSession"], ["rpc", "is_member"], ["rpc", "is_admin"]]);
-  });
-
-  it("counts only exactly true as member or admin", async () => {
-    fake.results = [{ data: { session: { user: { id: "u1" } } }, error: null }, { data: "true", error: null }, { data: 1, error: null }];
-    expect(await run(viewerQuery)).toEqual({ signedIn: true, member: false, admin: false });
-  });
-
-  it("throws session and is_member errors", async () => {
-    fake.results = [{ data: { session: null }, error: dbError }];
-    await expect(run(viewerQuery)).rejects.toBe(dbError);
-    fake.results = [{ data: { session: { user: { id: "u1" } } }, error: null }, { data: null, error: dbError }, { data: true, error: null }];
-    await expect(run(viewerQuery)).rejects.toBe(dbError);
-  });
-
-  it("treats an is_admin error as not an admin, without failing the viewer", async () => {
-    fake.results = [{ data: { session: { user: { id: "u1" } } }, error: null }, { data: true, error: null }, { data: null, error: dbError }];
+  it("asks the server about this session (signed in, approved member, admin)", async () => {
+    fns.results = [{ signedIn: true, member: true, admin: false }];
     expect(await run(viewerQuery)).toEqual({ signedIn: true, member: true, admin: false });
+    expect(fns.calls).toEqual([["viewerFn"]]);
+  });
+
+  it("throws a failed check instead of guessing", async () => {
+    fns.results = [new Error("offline")];
+    await expect(run(viewerQuery)).rejects.toThrow("offline");
   });
 });
 

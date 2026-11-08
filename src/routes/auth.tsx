@@ -1,7 +1,8 @@
 import * as React from "react";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Badge, BrandLockup, Button, FormField, FormNotice, Heading, ImageTrail, Input, Text, cn } from "@/index";
-import { supabase } from "@/integrations/supabase/client";
+import { getAuthClient } from "@/app/auth-client";
+import { emitAuthEvent } from "@/app/auth-events";
 import hero from "@/assets/photography/hero.jpg";
 
 type Mode = "signin" | "signup" | "forgot";
@@ -29,7 +30,8 @@ const SIGN_IN_FAILED = "That email or password didn’t match. Try again, or res
 // New and existing emails get the same sign-up notice, so the form can't be used to probe for accounts.
 const SIGNUP_SENT = "Check your inbox: if this email is new to us, a confirmation link is on its way. Once confirmed, sign in to finish your profile. Already have an account? Sign in, or reset your password.";
 const RESET_SENT = "If that email belongs to a member, a reset link is on its way.";
-const isRateLimit = (code?: string) => code === "over_email_send_rate_limit" || code === "over_request_rate_limit";
+const ALREADY_EXISTS = ["USER_ALREADY_EXISTS", "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL"];
+const PASSWORD_RULES = ["PASSWORD_TOO_SHORT", "PASSWORD_TOO_LONG"];
 
 function AuthPage() {
   const navigate = useNavigate();
@@ -43,12 +45,13 @@ function AuthPage() {
     setNotice(null);
   };
 
+  // Already signed in (e.g. back from Google, or a second visit): straight to the account.
   React.useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => { if (data.session) navigate({ to: "/account" }); });
-    const { data } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" && session) navigate({ to: "/account" });
-    });
-    return () => data.subscription.unsubscribe();
+    let active = true;
+    void getAuthClient()
+      .then((auth) => auth.getSession())
+      .then(({ data }) => { if (active && data) navigate({ to: "/account" }); }, () => {});
+    return () => { active = false; };
   }, [navigate]);
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
@@ -57,25 +60,24 @@ function AuthPage() {
     const email = String(f.get("email") ?? "");
     const password = String(f.get("password") ?? "");
     setBusy(true); setError(null); setNotice(null);
+    const auth = await getAuthClient();
     if (mode === "signin") {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await auth.signIn.email({ email, password });
       if (error) setError(SIGN_IN_FAILED);
+      else {
+        emitAuthEvent("SIGNED_IN");
+        navigate({ to: "/account" });
+      }
     } else if (mode === "signup") {
-      const { data, error } = await supabase.auth.signUp({
-        email, password,
-        options: { emailRedirectTo: window.location.origin + "/account", data: { full_name: String(f.get("name") ?? "") } },
-      });
-      // Supabase answers an existing, confirmed email with a user that has no identities (or, with
-      // confirmations off, an "already registered" error). Either way: neutral, no account disclosure.
-      const existing = error?.code === "user_already_exists" || /already registered/i.test(error?.message ?? "")
-        || (!error && data.user?.identities?.length === 0);
-      if (existing || !error) setNotice(SIGNUP_SENT);
-      else if (error.code === "weak_password") setError(error.message); // the password rule, nothing about the email
+      const { error } = await auth.signUp.email({ email, password, name: String(f.get("name") ?? ""), callbackURL: "/account" });
+      // An existing email gets the same notice as a new one: no account disclosure.
+      if (!error || ALREADY_EXISTS.includes(error.code ?? "")) setNotice(SIGNUP_SENT);
+      else if (PASSWORD_RULES.includes(error.code ?? "")) setError(error.message ?? "Please choose a password of 8 to 128 characters."); // the password rule, nothing about the email
       else setError("We couldn’t create your account right now. Please try again in a minute.");
     } else {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + "/reset-password" });
+      const { error } = await auth.requestPasswordReset({ email, redirectTo: "/reset-password" });
       // Rate limits are per address, so reporting one would confirm the account exists.
-      if (!error || isRateLimit(error.code)) setNotice(RESET_SENT);
+      if (!error || error.status === 429) setNotice(RESET_SENT);
       else setError("We couldn’t send a link right now. Please try again in a minute.");
     }
     setBusy(false);
@@ -83,7 +85,7 @@ function AuthPage() {
 
   async function google() {
     setError(null);
-    const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.origin + "/auth" } });
+    const { error } = await (await getAuthClient()).signIn.social({ provider: "google", callbackURL: "/account", errorCallbackURL: "/auth" });
     if (error) setError("Google sign-in didn’t work. Please try again.");
   }
 
@@ -124,7 +126,7 @@ function AuthPage() {
             </Text>
           </div>
 
-          {/* Off unless the Google provider is enabled in Supabase: a dead button is worse than none. */}
+          {/* Off unless the server has GOOGLE_CLIENT_ID/SECRET: a dead button is worse than none. */}
           {mode !== "forgot" && import.meta.env.VITE_GOOGLE_AUTH === "true" && (
             <>
               <Button type="button" variant="outline" size="lg" onClick={google} className="w-full">

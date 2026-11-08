@@ -3,6 +3,7 @@ import { getSupabase } from "@/app/supabase";
 import type { Database } from "@/integrations/supabase/types";
 import type { MemberProfile } from "@/index";
 import { toMemberProfile } from "./map";
+import { viewerFn } from "@/features/auth/fns";
 
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 export type ProfileData = { profile: Profile; avatarUrl: string | undefined; logoUrl?: string };
@@ -33,24 +34,15 @@ export const directoryQuery = queryOptions({
   },
 });
 
-export type Viewer = { signedIn: boolean; member: boolean; admin: boolean };
+export type { Viewer } from "@/features/auth/viewer.server";
 
 /**
- * Who is looking: signed out, signed in but not approved, an approved member (is_member()), and/or an admin
- * (is_admin()). Both helpers are self-only; `admin` only shapes the UI, the database enforces it.
+ * Who is looking: signed out, signed in but not approved, an approved member, and/or an admin. The server answers
+ * for this session only; `admin` only shapes the UI, every admin server function checks again.
  */
 export const viewerQuery = queryOptions({
   queryKey: ["viewer"],
-  queryFn: async (): Promise<Viewer> => {
-    const supabase = await getSupabase();
-    const { data, error } = await supabase.auth.getSession();
-    if (error) throw error;
-    if (!data.session) return { signedIn: false, member: false, admin: false };
-    const [member, admin] = await Promise.all([supabase.rpc("is_member"), supabase.rpc("is_admin")]);
-    if (member.error) throw member.error;
-    // A failed is_admin() only hides admin links: it must not take the directory down with it.
-    return { signedIn: true, member: member.data === true, admin: !admin.error && admin.data === true };
-  },
+  queryFn: () => viewerFn(),
 });
 
 /** Opted-in public cards (§2.10). public_profiles() returns no id, so cards are keyed by catalogue number. */

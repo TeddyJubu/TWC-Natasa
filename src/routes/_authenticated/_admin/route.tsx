@@ -1,17 +1,16 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { getSupabase } from "@/app/supabase";
+import { viewerFn } from "@/features/auth/fns";
 
-/** Asks the self-only is_admin(); anything but exactly `true` (including an error) counts as no. */
+/** Asks the server about this session only; anything but exactly `true` (including an error) counts as no. */
 async function isAdmin(): Promise<boolean> {
   try {
-    const { data, error } = await (await getSupabase()).rpc("is_admin");
-    return !error && data === true;
+    return (await viewerFn()).admin === true;
   } catch {
     return false;
   }
 }
 
-// UX only: every admin read and write is enforced by is_admin() policies in the database.
+// UX only: every admin read and write is checked again by requireAdmin in its server function.
 export const Route = createFileRoute("/_authenticated/_admin")({
   beforeLoad: async () => {
     if (!(await isAdmin())) throw redirect({ to: "/account" });

@@ -33,3 +33,25 @@ describe("handleAuthEvent", () => {
     expect(qc.getQueryData(["viewer"])).toEqual({ signedIn: true, member: true });
   });
 });
+
+describe("emitAuthEvent / onAuthEvent", () => {
+  it("delivers sign-in and sign-out to listeners in this tab until they unsubscribe", async () => {
+    const { emitAuthEvent, onAuthEvent } = await import("./auth-events");
+    const seen: string[] = [];
+    const off = onAuthEvent((e) => seen.push(e));
+    emitAuthEvent("SIGNED_IN");
+    emitAuthEvent("SIGNED_OUT");
+    off();
+    emitAuthEvent("SIGNED_IN");
+    expect(seen).toEqual(["SIGNED_IN", "SIGNED_OUT"]);
+  });
+
+  it("tells other tabs too, over a BroadcastChannel", async () => {
+    const { emitAuthEvent } = await import("./auth-events");
+    const other = new BroadcastChannel("twc-auth");
+    const got = new Promise((resolve) => (other.onmessage = (m) => resolve(m.data)));
+    emitAuthEvent("SIGNED_OUT");
+    expect(await got).toBe("SIGNED_OUT");
+    other.close();
+  });
+});

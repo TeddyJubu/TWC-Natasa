@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Badge, Button, Container, FormField, Heading, ImageTrail, Input, Section, Text } from "@/index";
-import { supabase } from "@/integrations/supabase/client";
+import { getAuthClient } from "@/app/auth-client";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
@@ -19,58 +19,31 @@ export const Route = createFileRoute("/reset-password")({
 
 type Status = "checking" | "ready" | "invalid" | "expired";
 
-/** True when the access token came from a password-recovery link (GoTrue stamps `amr: [{ method: "recovery" }]`). */
-function isRecoverySession(session: { access_token?: string } | null | undefined) {
-  try {
-    const payload = session?.access_token?.split(".")[1];
-    if (!payload) return false;
-    const claims = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
-    return Array.isArray(claims.amr) && claims.amr.some((a: { method?: string } | string) => (typeof a === "string" ? a : a.method) === "recovery");
-  } catch {
-    return false;
-  }
-}
-
-/** Supabase reports a failed or expired link as `#error=…` (implicit flow) or `?error=…` (PKCE). */
-const linkError = () => /(?:^|[#?&])error(?:_code)?=/.test(window.location.hash + window.location.search);
-
 function ResetPassword() {
   const navigate = useNavigate();
   const [status, setStatus] = React.useState<Status>("checking");
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
+  // Better Auth's emailed link checks the token, then lands here with ?token=… or ?error=INVALID_TOKEN.
+  const [token, setToken] = React.useState<string | null>(null);
   React.useEffect(() => {
-    if (linkError()) {
-      setStatus("expired");
-      return;
-    }
-    let active = true;
-    // The PASSWORD_RECOVERY event can fire before this subscribes (auth-js emits it right after init),
-    // so an existing recovery session counts too. Anything else is not a reset.
-    const { data } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY" && active) setStatus("ready");
-    });
-    supabase.auth.getSession()
-      .then(({ data: { session } }) => isRecoverySession(session), () => false)
-      .then((recovery) => {
-        if (active) setStatus((current) => (current === "ready" || recovery ? "ready" : "invalid"));
-      });
-    return () => {
-      active = false;
-      data.subscription.unsubscribe();
-    };
+    const params = new URLSearchParams(window.location.search);
+    const found = params.get("token");
+    setToken(found);
+    setStatus(params.has("error") ? "expired" : found ? "ready" : "invalid");
   }, []);
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setBusy(true); setError(null);
     const password = String(new FormData(e.currentTarget).get("password") ?? "");
-    const { error } = await supabase.auth.updateUser({ password });
+    const { error } = await (await getAuthClient()).resetPassword({ newPassword: password, token: token ?? "" });
     setBusy(false);
-    if (!error) navigate({ to: "/account" });
-    else if (error.name === "AuthSessionMissingError") setStatus("expired");
-    else setError(error.message);
+    // Sessions are revoked on reset, so she signs in with the new password.
+    if (!error) navigate({ to: "/auth" });
+    else if (error.code === "INVALID_TOKEN") setStatus("expired");
+    else setError(error.message ?? "We couldn’t save your password. Please try again.");
   }
 
   return (
