@@ -20,10 +20,10 @@ Baseline: `tsc` ✅ · `vite build` ✅ (warns on a 585 kB chunk) · `eslint` �
 
 - [x] **8. Account page failure states.** A missing profile row or query error gives an endless spinner with no way to sign out (`account.tsx:63,139`). Handle `declined` status, which currently shows as "In review". Give the spinner `role="status"`. `L A F`
 - [x] **9. Stop swallowing errors.** Check the result of `toggleRsvp`, `bookHeadshot` and the profile update after an avatar upload; add busy states. Validate file size and type on the client and reset the file input's value. `L A F`
-- [ ] **10. Directory correctness.** Show the stored `catalogue_number`, not `index+1` (add it to `MemberProfile`). Show demo members only when there are no real ones, with the banner and count conditional. Build filter chips from the canonical list, not the demo data. Use initials instead of `hero.jpg` with misleading alt text. `L A F` **Partial (Phases 1–2):** stored `catalogue_number`; demo members only in `/components` (decision 3 replaces "only when there are no real ones"); chips from `neighborhoods` data. Remains: initials for portrait-less cards (Phase 7, step 3).
-- [ ] **11. One neighborhood source of truth.** The list is duplicated in about 8 places, and Woodside/East Elmhurst are inconsistent. Create one module with `{name, slug, color classes, logo}` and a `Neighborhood` type, and derive every map from it. Remove the `'Long Island City'` database default. `L A` **Partial (Phase 1):** `src/features/neighborhoods` (`NEIGHBORHOOD_SEED`, `useNeighborhoods`, `toneFor`, `pickerNames`) is the only list behind app UI (pickers, filters, cards); colours and logos come from data. What's left hard-coded is copy, not data: the homepage's seven constellation cards (bundled photos), its Ribbon (adds Woodside) and FAQ answer (adds Woodside and East Elmhurst, "and surrounding Queens neighborhoods"), and `/join`'s free-text "Where are you based?" options (applicants may live outside the list). Adding Woodside as a neighborhood is content: an admin can do it in `/admin` without code. Remains: the database default (Phase 7 step 2).
+- [x] **10. Directory correctness.** Show the stored `catalogue_number`, not `index+1` (add it to `MemberProfile`). Show demo members only when there are no real ones, with the banner and count conditional. Build filter chips from the canonical list, not the demo data. Use initials instead of `hero.jpg` with misleading alt text. `L A F` **Done (Phases 1, 2, 7):** stored `catalogue_number`; demo members only in `/components` (decision 3 replaces "only when there are no real ones"); chips from `neighborhoods` data; portrait-less members show their initials on a neutral mat on every card surface, never `hero.jpg` (Phase 7).
+- [x] **11. One neighborhood source of truth.** The list is duplicated in about 8 places, and Woodside/East Elmhurst are inconsistent. Create one module with `{name, slug, color classes, logo}` and a `Neighborhood` type, and derive every map from it. Remove the `'Long Island City'` database default. `L A` **Done (Phases 1, 7):** `src/features/neighborhoods` (`NEIGHBORHOOD_SEED`, `useNeighborhoods`, `toneFor`, `pickerNames`) is the only list behind app UI (pickers, filters, cards); colours and logos come from data. What's left hard-coded is copy, not data: the homepage's seven constellation cards (bundled photos), its Ribbon (adds Woodside) and FAQ answer (adds Woodside and East Elmhurst, "and surrounding Queens neighborhoods"), and `/join`'s free-text "Where are you based?" options (applicants may live outside the list). Adding Woodside as a neighborhood is content: an admin can do it in `/admin` without code. Migration 0004 drops the `'Long Island City'` default: `profiles.neighborhood` is nullable (FK kept), and the UI offers "Choose your neighborhood".
 - [x] **12. Dates and times.** The headshot `min` date uses UTC (`account.tsx:257`). Format events in `America/New_York`. Add an empty state when there are no events. Move the seed events out of the schema migration. `L A` **Done (Phase 2), one part won't fix:** local headshot `min` (`localDateISO`), New York event times (`eventWhen`), empty state. Moving the seed events out of `0000_migration.sql` is **won't fix**: 0000 is already applied live, and editing an applied migration would make the history disagree with the database.
-- [ ] **13. Fields saved but never shown.** Bio, looking-for and website don't appear on catalogue cards, and `website` isn't returned by `public_directory`. The "Live preview" ignores unsaved edits: make it controlled, or rename it. `L` **Partial (0001, Phase 2):** `public_directory()` returns `website`; the account preview follows unsaved edits. Remains: bio, looking-for and website on catalogue cards (Phase 7 step 4).
+- [x] **13. Fields saved but never shown.** Bio, looking-for and website don't appear on catalogue cards, and `website` isn't returned by `public_directory`. The "Live preview" ignores unsaved edits: make it controlled, or rename it. `L` **Done (0001, Phases 2, 7):** `public_directory()` returns `website`; the account preview follows unsaved edits; catalogue cards open a member profile dialog with bio, looking-for and website (Phase 7, new UI for owner review below).
 - [x] **14. Auth flows.** Clear the error and notice on every mode change. Use generic error messages so the form doesn't reveal which emails have accounts. Detect sign-up with an existing email. `/reset-password` should require a `PASSWORD_RECOVERY` session and handle expired links. `S L`
 - [x] **15. Introductions query.** It sorts by neighborhood only after `.limit(12)` on unordered rows. Filter or order in the query itself. `L`
 
@@ -31,7 +31,7 @@ Baseline: `tsc` ✅ · `vite build` ✅ (warns on a 585 kB chunk) · `eslint` �
 
 - [x] **16. Keep showcase code off the live site.** The `Shell` toolbar (Colors, Typography, Dark toggle) shows on `/`, `/members` and `/join`. Add an app layout, and noindex or hide `/colors`, `/typography` and `/components` in production. Update `AGENTS.md`. `A F`
 - [x] **17. Navbar and Footer.** They render plain `<a href>`, so every internal link reloads the page; accept a router link component. There's no mobile menu (`layout.tsx:136` is `hidden md:flex`), so phone users have no navigation. `L A F`
-- [ ] **18. Data layer.** React Query is installed but never used, and all data loading is hand-written `useEffect` + `useState`. Either adopt `queryOptions`/`useMutation` in a `src/features/members/` module or remove the package. Split the 296-line `account.tsx` into sections. `A` **Partial (Phase 1):** all reads and writes go through `queryOptions`/`useMutation` in `src/features/*`. Remains: splitting `account.tsx` (Phase 7 step 5).
+- [x] **18. Data layer.** React Query is installed but never used, and all data loading is hand-written `useEffect` + `useState`. Either adopt `queryOptions`/`useMutation` in a `src/features/members/` module or remove the package. Split the 296-line `account.tsx` into sections. `A` **Done (Phases 1, 7):** all reads and writes go through `queryOptions`/`useMutation` in `src/features/*`; `account.tsx` is split into section components in `src/features/account/`, each owning its queries and mutations.
 - [x] **19. Design-system boundary.**
   - Fonts load from `src/assets/fonts`, which is outside the design system and breaks attach. Move them into `design-system/assets`.
   - Move the demo data and founder photo out of `design-system/`, and move the `MemberProfile` type into `member-card.tsx`.
@@ -56,7 +56,7 @@ Baseline: `tsc` ✅ · `vite build` ✅ (warns on a 585 kB chunk) · `eslint` �
   | `ink-faint` mission statement, tabs and placeholders | about 1.9:1 | 3:1 for the statement |
 
   Catalogue card number and label fail too. Force `tone-night` on catalogue cards. `F`
-- [x] **27. Motion and screen readers.** The ribbon text is read 12 times and never pauses. CurvedLoop rings have no pause control. The reduced-motion gallery announces each image twice. `F`
+- [x] **27. Motion and screen readers.** The ribbon text is read 12 times and never pauses. CurvedLoop rings have no pause control. The reduced-motion gallery announces each image twice. `F` (CurvedLoop finished in Phase 7: the rings stop on their own after 5 s.)
 - [x] **28. Semantics.**
   - No `<main>` and no skip link.
   - Heading jumps (h1 → h3 on `/join`).
@@ -105,10 +105,15 @@ Left for the owner because they change the deployment, the live database or the 
 
 1. **Worker `name` and `compatibility_date`** in `wrangler.jsonc` (`tanstack-start-app`, `2025-09-24`). Renaming creates a new Worker (new URL; routes, secrets and bindings must move with it); bumping the date changes runtime behaviour. Change both together, with Lovable's deploy in mind.
 2. **Full Content-Security-Policy.** Today it's `frame-ancestors` only. A `script-src`/`style-src` policy needs per-request nonces for SSR hydration (and allowances for Supabase, Lovable auth and the fonts); roll it out as `Content-Security-Policy-Report-Only` first.
-3. **Apply migrations 0001–0003 to the live database**, in order, then regenerate the Supabase types and deploy (README "Go-live order").
+3. **Apply migrations 0001–0004 to the live database**, in order, then regenerate the Supabase types and deploy (README "Go-live order").
 4. **CAPTCHA or rate limiting** for anonymous `/join` applications.
 5. **Email notifications** when an application is approved or declined.
 6. **Sitemap domain.** Set `VITE_SITE_URL` in production so canonical/`og:url` are emitted and a `sitemap.xml` can be generated.
+7. **Business logos after approval.** `/join` tells applicants "If you are approved, we will ask for your business logo then", but nothing collects or shows one yet. Decide where logos appear (catalogue card, profile dialog, spotlight) and who uploads them (the member on `/account`, or an admin); then it's a column, a bucket path and a field.
+8. **Headers on static assets** (optional). Files served straight from the Workers assets binding skip the Worker, so they lack `nosniff` and the other headers. A `public/_headers` file would add them; check it against Lovable's deploy first.
+9. **Approve or reject the Phase 7 UI additions** (Progress → Phase 7): the member profile dialog, the initials mat on portrait-less cards, the headshot status copy, and the CurvedLoop rings resting after 5 s.
+
+Also before go-live, by hand in a browser: tap a hash link (`#constellation`) in the mobile menu and check the page still scrolls to it once the menu's scroll lock is released.
 
 ## Progress
 
@@ -117,7 +122,7 @@ Left for the owner because they change the deployment, the live database or the 
 - [x] Phase 2 (Member flows, 2026-11-08): migration `0002_public_profiles.sql` (opt-in `public_profile`, `public_profiles()`, anon portrait reads; 44 RLS checks). `viewerQuery` and `publicProfilesQuery`; `/members` serves approved members the full directory and everyone else public cards with a sign-in or "welcomed in" prompt; the home gallery shows public profiles only; no demo members outside `/components`. Account: public-profile switch, `declined` status, real intros (neighborhood-first in the query), a preview of unsaved edits, avatar type/size checks, New York event times, local headshot date, empty states. Auth: no account disclosure, mode resets, recovery-only password reset. Route tests via Testing Library + jsdom. Covers T8, T9, T14, T15 and most of T10, T12 and T13. **0001 and 0002 must be applied to the live database together with this code.**
   - Left from those tasks: initials instead of `hero.jpg` on portrait-less cards (T10) and bio/looking-for/website on catalogue cards (T13), both moved to Phase 7; moving the seed events (T12) is won't fix.
 - [x] Phase 3 (Applications + admin, 2026-11-08): migration `0003_admin_review.sql` (`link_applications()` now gives a still-pending profile the outcome of an already reviewed application, approved or declined, and fires after profile creation so OAuth sign-ups work; one-time backfill; `applications.reviewed_by` set from `auth.uid()` and unforgeable; inserts can't arrive pre-reviewed; `lower(email)` index; 72 RLS checks). `/join` submits for real through `features/applications` (typed answers, `parseApplication` mirroring the DB checks, success only after the insert, Retry on error, prefill for signed-in applicants; logo upload moved to after approval). `FormField` wires id/`aria-describedby`/`aria-invalid` itself; `ChoiceGroup`/`RadioGroup` are controlled and a required group blocks submit with a visible error. `/admin` (guarded by `is_admin()`, own chunk) with Applications, Members, Neighborhoods (logo upload) and Bookings tabs in `features/admin`; admins see the full `/members` directory and an Admin link in the account nav. Covers T1 and T20. **0001–0003 must be applied to the live database together with this code** (see README "Database & go-live").
-  - Still open: CAPTCHA/rate limiting for anonymous applications, email notifications on review, logo collection after approval.
+  - Left to the owner: CAPTCHA/rate limiting for anonymous applications, email notifications on review, logo collection after approval (Owner decisions 4, 5, 7).
 - [x] Phase 4 (Site shell, 2026-11-08):
   - **T22:** every animation that stays applied (fill-mode `both`), and the revealed `.motion-observed` state, now rests at `transform: none` / `filter: none`, so `position: fixed` descendants pin to the viewport again. Guarded by `theme.test.ts`.
   - **T16:** live pages use `src/app/layout/AppLayout.tsx` (`AppPage`, `AppNav`, `AppFooter`). The `Shell` toolbar appears only on `/colors`, `/typography` and `/components`, which are `noindex` and disallowed in `public/robots.txt` along with `/__mockup` and `/__component`. Its dark theme no longer leaks onto live pages, and the root stays providers-only.
@@ -131,11 +136,11 @@ Left for the owner because they change the deployment, the live database or the 
     - Styled `NotFound` and `ErrorPage` (with a link home and Try again) are the router defaults.
     - The root has a real title and description, and `twitter:site=@Lovable` is gone.
     - The optional `VITE_SITE_URL` must be a bare http(s) origin. When it's set, every page gets an absolute `og:image`, and the indexable public pages (`/`, `/members`, `/join`, `/auth`) get a canonical and `og:url`. 404 and error pages never get a canonical or `og:url`, though they still get the `og:image`. When it's unset, none of these are emitted.
-  - Still open:
-    - `sitemap.xml`, which needs `VITE_SITE_URL` at build time.
-    - Query-string hrefs in the nav adapter (none exist yet).
-    - A manual check that hash links from the mobile menu still scroll once the scroll lock is released.
-    - Click-outside to close the menu.
+  - Follow-ups:
+    - `sitemap.xml`, which needs `VITE_SITE_URL` at build time: left to the owner (Owner decision 6).
+    - Query-string hrefs in the nav adapter: not needed while no link uses one.
+    - A manual check that hash links from the mobile menu still scroll once the scroll lock is released: in the go-live check under Owner decisions.
+    - ~~Click-outside to close the menu.~~ Done in Phase 5 (close on outside tap).
     - ~~Confirming that SSR answers unknown paths with HTTP 404.~~ Confirmed in Phase 6 on the built Worker (`wrangler dev`).
     - `robots.txt` blocks the showcase pages, so crawlers never see their `noindex`. If they ever show up in search, drop the `Disallow` lines and rely on `noindex`.
 - [x] Phase 5 (Polish, 2026-11-08): T23–T29 and T31.
@@ -189,8 +194,8 @@ Left for the owner because they change the deployment, the live database or the 
     - The trail also renders on `/auth` and `/reset-password` (no `AppPage`) but no longer on the showcase pages.
     - Showcase-only images (demo members, `flower.png`, `portrait-*.jpg`) were left as they are.
   - **Still open:**
-    - The CurvedLoop rings still move with no pause control (they are decorative and `aria-hidden`).
-    - There's no `<picture>` JPEG fallback for browsers without WebP (all current browsers support it).
+    - ~~The CurvedLoop rings still move with no pause control.~~ Phase 7: they stop on their own after 5 s.
+    - No `<picture>` JPEG fallback for browsers without WebP: won't fix, every current browser supports WebP.
     - The subset fonts cover Latin, Latin Extended and Vietnamese. Other scripts fall back to system fonts.
 - [x] Phase 6 (Tooling, 2026-11-08): T21 and T33–T38.
   - Lint 0/0; dependencies sorted and pinned; `seroval` fixed; native tsconfig paths; `test:db`; `.env` secret guard and `.env.example`; README secrets, migration workflow and CI sections.
@@ -200,12 +205,14 @@ Left for the owner because they change the deployment, the live database or the 
     - Static assets are served by the Workers assets binding before the Worker, so they don't get the headers. A `public/_headers` file could add `nosniff` there if wanted.
     - `vite preview` can't serve this build (the Cloudflare plugin runs only on `build`); use `bunx wrangler dev -c dist/server/wrangler.json --local` to run the built Worker.
 - [x] App code: members-only directory, `/admin`, join form submit, neighborhoods from data (Phases 1–3)
-- [ ] Phase 7 (Cleanup and leftovers, 2026-11-08):
-  - [x] Step 1, task-list truth: T2–T7, T12, T19 and T30 ticked after checking code and `rls.sql` (10 new checks for T2–T7, run against deliberately broken copies of 0001 to show they fail); `/account` shows the headshot booking status (T6).
-  - [ ] Step 2, migration `0004_cleanup.sql`: no `'Long Island City'` default (T11); an admin's direct profile status change syncs to the newest application.
-  - [ ] Step 3, initials for portrait-less cards (T10).
-  - [ ] Step 4, member detail dialog with bio, looking-for and website (T13).
+- [x] Phase 7 (Cleanup and leftovers, 2026-11-08): T10, T11, T13 and T18 finished; T2–T7, T12, T19 and T30 ticked after checking. Every task is now done or won't fix; what's left is under Owner decisions.
+  - [x] Step 1 (`b8117e5`), task-list truth: T2–T7, T12, T19 and T30 ticked after checking code and `rls.sql` (10 new checks for T2–T7, run against deliberately broken copies of 0001 to show they fail); `/account` shows the headshot booking status (T6).
+  - [x] Step 2 (`23b6519`), migration `0004_cleanup.sql`: no `'Long Island City'` default (T11); an admin approving or declining a profile directly gives the user's newest application the same status, `reviewed_at` and `reviewed_by` (`pg_trigger_depth() = 1` + `is_admin()`, so application → profile changes never echo back; resetting to pending doesn't sync). 102 RLS checks. **0004 must be applied live with this code** (Owner decision 3).
+  - [x] Step 3 (`b8d5295`), initials for portrait-less cards (T10): `MemberProfile.image` is optional; `MemberCard` draws an aria-hidden initials mat; `initials()` lives in the design system; the home gallery keeps only real portraits. On the mat, grid/featured cards drop the photo scrim and use a soft ink neighborhood badge (white glass fails contrast there).
+  - [x] Step 4 (`177c521`), member detail dialog with bio, looking-for and website (T13): `MemberDialog` in the design system and `MemberCard`'s `onOpen`.
+    - Main chunk 253.42 kB (was 253.36 kB; the card trigger) + 59.54 kB `matchContext`.
     - **New UI for owner review:** catalogue cards on `/members` (both audiences) and in the `/account` introductions now open a member profile dialog: name, role · business, neighborhood, bio, "Looking to meet" and website (a link only for http(s), opening in a new tab). The card looks the same; it is now one button named "View {name}’s profile", with a two-tone focus ring. The dialog is a native modal `<dialog>`: the page behind it is inert and doesn't scroll, Escape, the close button or a backdrop click close it, focus returns to the card, and its entry motion is off under reduced motion.
-  - [ ] Step 5, `account.tsx` split into sections (T18).
-  - [ ] Step 6, CurvedLoop rings stop on their own (WCAG 2.2.2; Phase 5 leftover).
-  - [ ] Step 7, docs.
+  - [x] Step 5 (`5b4b37b`), `account.tsx` split into sections (T18): 382 → 139 lines; `AccountHeader`, `PublicCardSection`, `GatheringsList`, `HeadshotBooking`, `IntroductionsSection` in `src/features/account/`. Route tests unchanged, and the page DOM in four states is byte-identical before and after.
+  - [x] Step 6 (`ca14bb9`), CurvedLoop rings stop on their own (WCAG 2.2.2; Phase 5 leftover). Chosen over a pause control because the rings are decorative and `aria-hidden`, and the Ribbon's toggle is local to the Ribbon (no global switch to reuse). They animate for at most 5 s of on-screen time (off-screen time doesn't count; one frame adds at most 100 ms, so a throttled tab doesn't either), then rest and never restart by themselves. Reduced motion stays static; dragging still works. The budget is per ring: a newly scrolled-in card still moves for its own 5 s.
+  - [x] Step 7, docs: this list, `ARCHITECTURE.md` (§1.3, §1.4, §2.2, §2.6, Part 3), README go-live order, `AGENTS.md` and `.lovable/system.md`.
+  - Also (`787be6d`): `src/app/join-route.test.tsx` was flaky under load. `getByLabelText` costs ~0.4 s per call on the ~110-label form, so the first test passed its 20 s timeout, and its still-open `act()` blanked the next tests' renders. A one-pass label lookup brings each `/join` test under 0.4 s; the 20 s timeout is gone, and the full suite runs in about 15 s.

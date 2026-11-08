@@ -111,12 +111,12 @@ folder with `drizzle-kit migrate` (`drizzle.config.ts` reads `LOVABLE_DB_MIGRATI
 - Schema changes reach the live database only when the owner applies them (see the go-live order below).
 
 **Go-live order.** The code on this branch relies on tables, functions and policies from migrations
-0001–0003 (members-only access, applications, neighborhoods, `public_profiles()`, `is_admin()`, the
-review triggers). Deploying the code before the database has them breaks the directory, `/join`,
+0001–0004 (members-only access, applications, neighborhoods, `public_profiles()`, `is_admin()`, the
+review triggers, the optional neighborhood). Deploying the code before the database has them breaks the directory, `/join`,
 `/account` and `/admin`. So:
 
 1. Apply `0001_members_only_admin.sql`, then `0002_public_profiles.sql`, then `0003_admin_review.sql`,
-   in that order, to the Lovable Cloud database (SQL editor).
+   then `0004_cleanup.sql`, in that order, to the Lovable Cloud database (SQL editor).
 2. Have Lovable regenerate `src/integrations/supabase/types.ts`, then remove the `BRIDGE` hand-patches
    that stood in for the new tables and functions.
 3. Deploy the code: merge to `main` (Lovable syncs and publishes it).

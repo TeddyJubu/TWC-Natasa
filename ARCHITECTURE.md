@@ -1,6 +1,6 @@
 # Architecture — The Women’s Collective
 
-Status: 2026-11-07. Part 1 describes the system as it stands, Part 2 the target architecture, and Part 3 how to get from one to the other.
+Status: 2026-11-08. Part 1 describes the system as audited on 2026-11-07 (kept as the baseline; Phases 1–7 have since fixed what §1.5 lists), Part 2 the target architecture, and Part 3 how to get from one to the other.
 Task numbers like **T10** refer to [AUDIT-TASKS.md](AUDIT-TASKS.md).
 
 ---
@@ -45,7 +45,7 @@ flowchart LR
 | Database | `drizzle/migrations/*.sql` | Hand-written SQL; Drizzle is only the runner | `schema.ts` is empty, so `drizzle-kit push` is dangerous |
 | Lovable tooling | `mockupPreviewPlugin.ts`, `/__mockup`, `/__component` | Canvas previews in the Lovable editor | Leave alone |
 
-### 1.3 Data model (after migration 0001)
+### 1.3 Data model (after migrations 0001–0004)
 
 ```mermaid
 erDiagram
@@ -58,7 +58,7 @@ erDiagram
   NEIGHBORHOODS ||--o{ EVENTS : "name (on update cascade)"
   EVENTS ||--o{ EVENT_RSVPS : cascade
 
-  PROFILES { uuid id PK; text full_name; text neighborhood FK; membership_status status "admin-only"; int catalogue_number "admin-only"; timestamptz member_since "admin-only"; bool directory_visible; text avatar_path "own folder only" }
+  PROFILES { uuid id PK; text full_name; text neighborhood "FK, nullable (0004)"; membership_status status "admin-only"; int catalogue_number "admin-only"; timestamptz member_since "admin-only"; bool directory_visible; text avatar_path "own folder only" }
   NEIGHBORHOODS { text slug PK; text name UK; text color "#rrggbb"; text logo_path; int sort_order; bool active }
   APPLICATIONS { uuid id PK; uuid user_id FK; text email; text full_name; text neighborhood "free text"; jsonb answers; membership_status status; timestamptz reviewed_at }
   USER_ROLES { uuid user_id; app_role role "admin | member" }
@@ -79,8 +79,9 @@ Fields guarded by triggers:
 - `profiles.status`, `catalogue_number` and `member_since` are admin-only.
 - `headshot_bookings.status` resets to `requested` whenever a member writes the booking.
 - Reviewing an application updates the linked profile, which then receives `member_since` and a catalogue number. `applications.reviewed_at`/`reviewed_by` are set only by that status change (0003).
+- An admin approving or declining a profile directly gives the user's newest application the same status, `reviewed_at` and `reviewed_by` (0004). Only a top-level admin update syncs (`pg_trigger_depth() = 1`), so an application review never echoes back.
 
-### 1.5 What's wrong with the current shape
+### 1.5 What was wrong with the audited shape (all fixed in Phases 1–7)
 
 1. **Business rules live in page components.** Mapping database rows to cards, ranking introductions and formatting catalogue numbers are repeated across `members.tsx`, `account.tsx` and `member-card.tsx` (T10, T18).
 2. **The data layer is hand-written.** React Query is installed but every read is `useEffect` + `useState`, and errors are swallowed (T8, T9, T18).
@@ -117,6 +118,7 @@ src/
     applications/           # mutations.ts (submit), schema.ts (answers shape), queries.ts (admin list)
     events/                 # queries.ts, mutations.ts (rsvp), bookings.ts
     admin/                  # queries + mutations for review
+    account/                # /account sections (header, card form, gatherings, headshot, intros), each owning its queries
   app/
     supabase.ts             # lazy getter: `await getSupabase()` → dynamic import of the client
     layout/                 # AppLayout.tsx: AppPage, AppNav (router Links + mobile menu), AppFooter; StatusPages.tsx: NotFound, ErrorPage
@@ -235,7 +237,7 @@ sequenceDiagram
 
 - **An approved applicant with no account yet.** The application stays approved and unlinked. On her first confirmed sign-up, the link trigger attaches it and her profile takes the approval.
   - ~~Gap to close in a follow-up migration~~ **Closed by 0003:** `link_applications()` now gives a still-pending profile the outcome of an already reviewed application (approved wins over declined), fires after the profile exists (so OAuth sign-ups work too), and a one-time backfill fixed accounts linked under the old trigger order.
-- **Existing members with no application.** Admins approve the profile directly from the Members tab.
+- **Approving from the Members tab.** Admins can approve or decline a profile directly; if she has applications, the newest one takes the same decision and records the admin (0004). Members with no application are simply approved.
 - **Notifications (later).** Applicants currently learn nothing automatically. Add a database webhook or Edge Function that emails on `applications.status` change. That's the first legitimate need for a server-side secret.
 
 ### 2.7 Admin
@@ -280,5 +282,6 @@ sequenceDiagram
 | **4. Site shell** ✅ code (2026-11-08) | App layout (no showcase toolbar), router-aware nav + mobile menu, 404/error pages, noindex showcase | T16, T17, T32 + T22 | `src/app/layout/` (`AppLayout.tsx`, `StatusPages.tsx`), `src/app/seo.ts`, `public/robots.txt`. Optional `VITE_SITE_URL` enables canonical and OG URLs. Still open: sitemap, menu click-outside |
 | **5. Polish** ✅ code (2026-11-08) | Contrast, motion/a11y, WebGL/trail/font/image performance | T23–T29, T31 | Contrast asserted against `theme.css` tokens (`src/app/contrast.test.tsx`); new `--bl-sky-strong`, `ink-faint` `#92928d` (visual-change list in AUDIT-TASKS Progress → Phase 5). Skip link + `<main id="main">`, `useRouteFocus`, inert mobile menu. Client-only WebP trail, paused WebGL loop, subset WOFF2 + preload, WebP `srcset` (`src/app/responsive-images.ts`) |
 | **6. Tooling** ✅ code (2026-11-08) | Lint green, scripts, CI, dependencies, `.env` and secrets, docs | T21, T33–T38 | ESLint 0/0; exact pins, `seroval` fixed (`bun audit` 69 → 29, all build/dev tooling); native tsconfig paths; `test:db`; `.github/workflows/check.yml` (app job + `postgres:17` RLS job); `.env` kept tracked with a secret-guard test; security headers via `src/start.ts` (CSP `frame-ancestors` allows the Lovable editor). Worker name/`compatibility_date`, full CSP and live migrations are owner decisions (AUDIT-TASKS.md) |
+| **7. Cleanup** ✅ code + 0004 written (2026-11-08) | Every audit task done or won't fix; portrait-less cards show initials; catalogue cards open a member profile dialog; `account.tsx` split into `src/features/account/`; CurvedLoop rings stop after 5 s | T10, T11, T13, T18 + T2–T7, T12, T19, T30 ticked | `0004_cleanup.sql`: nullable `profiles.neighborhood` (no LIC default), profile → newest application sync (102 RLS checks). `MemberDialog` (native modal `<dialog>`) and `MemberCard` `onOpen`. Apply 0001–0004 live (README go-live order). New UI listed for owner review in AUDIT-TASKS Progress → Phase 7 |
 
 **Resolved 2026-11-08:** public pages show only members who opt in (§2.10). Everything else stays members-only.
