@@ -4,6 +4,7 @@ import { tx } from "@/server/db";
 import { requireAdmin } from "@/server/guard";
 import { checkImage, removeMedia, writeMedia } from "@/server/media";
 import { bad, isObject, oneOf, str, type Json } from "@/server/validate";
+import { checkSize, fileBytes, readForm, respond } from "@/server/request";
 import { toProfile, type MembershipStatus, type Profile } from "@/features/members/members.server";
 import type { Booking } from "@/features/events/events.server";
 import { neighborhoodRows, type NeighborhoodRow } from "@/features/neighborhoods/neighborhoods.server";
@@ -133,4 +134,14 @@ export function saveNeighborhoodLogo({ db, actor }: Ctx, slug: string, bytes: Ui
   db.prepare("update neighborhoods set logo_path = ? where slug = ?").run(name, slug);
   if (row.logo_path && row.logo_path !== name) removeMedia("neighborhood-logos", row.logo_path);
   return name;
+}
+
+/** POST /api/neighborhood-logos (FormData `slug`, `file`): size and admin are checked before the body is read. */
+export function neighborhoodLogoRequest(c: Ctx, request: Request): Promise<Response> {
+  return respond(async () => {
+    checkSize(request, 6 * 1024 * 1024);
+    requireAdmin(c.db, c.actor);
+    const form = await readForm(request);
+    return saveNeighborhoodLogo(c, str(form.get("slug"), "neighborhood", 100), await fileBytes(form));
+  });
 }

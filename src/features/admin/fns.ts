@@ -58,18 +58,3 @@ export const updateNeighborhoodFn = createServerFn({ method: "POST" })
     const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./admin.server")]);
     return serve((c) => m.updateNeighborhood(c, data));
   });
-
-/** FormData: `slug` and `file`. Returns the stored `<slug>.<ext>`. */
-export const saveNeighborhoodLogoFn = createServerFn({ method: "POST" })
-  .validator((input: unknown) => {
-    if (!(input instanceof FormData)) throw new Error("Invalid upload");
-    const slug = input.get("slug");
-    const file = input.get("file");
-    if (typeof slug !== "string" || !(file instanceof Blob)) throw new Error("Invalid upload");
-    return { slug, file };
-  })
-  .handler(async ({ data }) => {
-    const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./admin.server")]);
-    const bytes = new Uint8Array(await data.file.arrayBuffer());
-    return serve((c) => m.saveNeighborhoodLogo(c, data.slug, bytes));
-  });

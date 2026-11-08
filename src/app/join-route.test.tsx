@@ -6,6 +6,7 @@ import { expectNoSkippedHeadings } from "@/test/headings";
 import { fake } from "@/test/fake-fns";
 
 vi.mock("@/features/applications/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
+vi.mock("@/app/api", async () => (await import("@/test/fake-fns")).fakeApi);
 vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs }));
 
 import { Route } from "@/routes/join";
@@ -43,7 +44,7 @@ const field = (label: RegExp) => byLabel(label) as HTMLInputElement;
 const type = (label: RegExp, value: string) => fireEvent.change(field(label), { target: { value } });
 const check = (label: string) => fireEvent.click(byLabel(label));
 const submitButton = () => screen.getByRole("button", { name: /submit application/i }) as HTMLButtonElement;
-const inserts = () => fake.calls.filter(([name]) => name === "submitApplicationFn");
+const inserts = () => fake.calls.filter(([name]) => name === "/api/applications");
 const thanks = () => screen.queryByRole("heading", { name: /thank you for introducing yourself/i });
 // Mutations call their server function asynchronously; let that settle.
 const settle = () => act(() => new Promise((r) => setTimeout(r, 20)));
@@ -79,7 +80,7 @@ describe("/join", () => {
     fireEvent.click(submitButton());
     await settle();
 
-    expect(inserts()).toEqual([["submitApplicationFn", expect.objectContaining({ fullName: "Rosa Diaz", email: "rosa@x.test", neighborhood: "Astoria" })]]);
+    expect(inserts()).toEqual([["/api/applications", expect.objectContaining({ fullName: "Rosa Diaz", email: "rosa@x.test", neighborhood: "Astoria" })]]);
     expect(thanks()).toBeNull();
     // aria-disabled, not disabled, so focus stays on the button while sending.
     expect(submitButton().getAttribute("aria-disabled")).toBe("true");

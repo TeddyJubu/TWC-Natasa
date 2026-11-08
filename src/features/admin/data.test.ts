@@ -3,6 +3,7 @@ import { MutationObserver, QueryClient } from "@tanstack/react-query";
 import { fake } from "@/test/fake-fns";
 
 vi.mock("@/features/admin/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
+vi.mock("@/app/api", async () => (await import("@/test/fake-fns")).fakeApi);
 const emailApproval = vi.hoisted(() => vi.fn(async (_id: string) => ({ sent: true }) as { sent: true } | { sent: false; reason: string }));
 vi.mock("./approval-email", () => ({ emailApproval: (id: string) => emailApproval(id) }));
 
@@ -114,7 +115,7 @@ describe("admin mutations", () => {
       name: " Woodside ", slug: "woodside", color: "#123456", sort_order: 8, logo,
     });
     expect(fake.calls[0]).toEqual(["createNeighborhoodFn", { name: "Woodside", slug: "woodside", color: "#123456", sort_order: 8 }]);
-    expect(fake.calls[1][0]).toBe("saveNeighborhoodLogoFn");
+    expect(fake.calls[1][0]).toBe("/api/neighborhood-logos");
     expect([form(1).get("slug"), (form(1).get("file") as File).name]).toEqual(["woodside", "Logo.PNG"]);
     expect(keys(spy)).toEqual(hoodKeys);
   });
@@ -161,7 +162,7 @@ describe("admin mutations", () => {
     fake.results = [null, "astoria.png"];
     const out = await new MutationObserver(qc, updateNeighborhoodMutation(qc)).mutate({ ...edit, previousLogoPath: "astoria.png", logo });
     expect(fake.calls[0]).toEqual(["updateNeighborhoodFn", edit]);
-    expect([fake.calls[1][0], form(1).get("slug")]).toEqual(["saveNeighborhoodLogoFn", "astoria"]);
+    expect([fake.calls[1][0], form(1).get("slug")]).toEqual(["/api/neighborhood-logos", "astoria"]);
     expect(out).toEqual({});
     expect(keys(spy)).toEqual(hoodKeys);
   });

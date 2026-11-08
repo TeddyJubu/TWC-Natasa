@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fake } from "@/test/fake-fns";
 
 vi.mock("@/features/applications/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
+vi.mock("@/app/api", async () => (await import("@/test/fake-fns")).fakeApi);
 
 import { submitApplication } from "./mutations";
 import { applicantQuery } from "./queries";
@@ -18,9 +19,9 @@ beforeEach(() => fake.reset());
 
 describe("submitApplication", () => {
   it("sends the application (the server links it to a signed-in applicant) and reads nothing back", async () => {
-    fake.results = [null];
-    expect(await submitApplication(input)).toBeNull();
-    expect(fake.calls).toEqual([["submitApplicationFn", input]]);
+    fake.results = [undefined];
+    expect(await submitApplication(input)).toBeUndefined();
+    expect(fake.calls).toEqual([["/api/applications", input]]);
   });
 
   it("rejects with the server's error", async () => {

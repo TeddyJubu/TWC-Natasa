@@ -4,8 +4,9 @@ import { useMutation, useQueryClient, type QueryClient, type QueryKey } from "@t
 import type { MembershipStatus } from "@/features/members/members.server";
 import { checkLogo, validateNeighborhood } from "./format";
 import { emailApproval, type ApprovalNotice } from "./approval-email";
+import { postApi } from "@/app/api";
 import {
-  createNeighborhoodFn, reviewApplicationFn, saveNeighborhoodLogoFn, setBookingStatusFn, setMemberStatusFn, updateNeighborhoodFn,
+  createNeighborhoodFn, reviewApplicationFn, setBookingStatusFn, setMemberStatusFn, updateNeighborhoodFn,
 } from "./fns";
 
 export type Review = { id: string; status: Exclude<MembershipStatus, "pending"> };
@@ -61,7 +62,7 @@ async function saveLogo(slug: string, logo: File): Promise<string> {
   const form = new FormData();
   form.set("slug", slug);
   form.set("file", logo);
-  return saveNeighborhoodLogoFn({ data: form });
+  return postApi<string>("/api/neighborhood-logos", form);
 }
 
 /** Thrown when the row was saved but its logo wasn't: the admin retries the logo from Edit. */

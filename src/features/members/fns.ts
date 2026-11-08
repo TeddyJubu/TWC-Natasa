@@ -1,7 +1,6 @@
 // Member server functions. Each handler lazy-imports its server code (kept out of the client bundle) and runs
 // it through serve(), which supplies this request's database and signed-in actor.
 import { createServerFn } from "@tanstack/react-start";
-import type { ImageKind } from "./members.server";
 
 const pass = <T,>(input: unknown) => input as T;
 
@@ -32,21 +31,6 @@ export const saveProfileFn = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./members.server")]);
     return serve((c) => m.saveProfile(c, data));
-  });
-
-/** FormData: `kind` ("avatar" | "logo") and `file`. The server checks the bytes, never the name or type. */
-export const uploadImageFn = createServerFn({ method: "POST" })
-  .validator((input: unknown) => {
-    if (!(input instanceof FormData)) throw new Error("Invalid upload");
-    const kind = input.get("kind");
-    const file = input.get("file");
-    if ((kind !== "avatar" && kind !== "logo") || !(file instanceof Blob)) throw new Error("Invalid upload");
-    return { kind: kind as ImageKind, file };
-  })
-  .handler(async ({ data }) => {
-    const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./members.server")]);
-    const bytes = new Uint8Array(await data.file.arrayBuffer());
-    return serve((c) => m.uploadImage(c, data.kind, bytes));
   });
 
 export const removeLogoFn = createServerFn({ method: "POST" }).handler(async () => {

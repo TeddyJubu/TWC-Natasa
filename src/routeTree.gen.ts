@@ -20,6 +20,9 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TypographyRouteImport } from './routes/typography'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/_admin/route'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
+import { Route as ApiApplicationsRouteImport } from './routes/api/applications'
+import { Route as ApiImagesRouteImport } from './routes/api/images'
+import { Route as ApiNeighborhoodLogosRouteImport } from './routes/api/neighborhood-logos'
 import { Route as MediaSplatRouteImport } from './routes/media/$'
 import { Route as AuthenticatedAdminAdminRouteImport } from './routes/_authenticated/_admin/admin'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -77,6 +80,21 @@ const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   path: '/account',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiApplicationsRoute = ApiApplicationsRouteImport.update({
+  id: '/api/applications',
+  path: '/api/applications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiImagesRoute = ApiImagesRouteImport.update({
+  id: '/api/images',
+  path: '/api/images',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiNeighborhoodLogosRoute = ApiNeighborhoodLogosRouteImport.update({
+  id: '/api/neighborhood-logos',
+  path: '/api/neighborhood-logos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MediaSplatRoute = MediaSplatRouteImport.update({
   id: '/media/$',
   path: '/media/$',
@@ -103,6 +121,9 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/typography': typeof TypographyRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/api/applications': typeof ApiApplicationsRoute
+  '/api/images': typeof ApiImagesRoute
+  '/api/neighborhood-logos': typeof ApiNeighborhoodLogosRoute
   '/media/$': typeof MediaSplatRoute
   '/admin': typeof AuthenticatedAdminAdminRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -117,6 +138,9 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/typography': typeof TypographyRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/api/applications': typeof ApiApplicationsRoute
+  '/api/images': typeof ApiImagesRoute
+  '/api/neighborhood-logos': typeof ApiNeighborhoodLogosRoute
   '/media/$': typeof MediaSplatRoute
   '/admin': typeof AuthenticatedAdminAdminRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -134,6 +158,9 @@ export interface FileRoutesById {
   '/typography': typeof TypographyRoute
   '/_authenticated/_admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/account': typeof AuthenticatedAccountRoute
+  '/api/applications': typeof ApiApplicationsRoute
+  '/api/images': typeof ApiImagesRoute
+  '/api/neighborhood-logos': typeof ApiNeighborhoodLogosRoute
   '/media/$': typeof MediaSplatRoute
   '/_authenticated/_admin/admin': typeof AuthenticatedAdminAdminRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -150,6 +177,9 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/typography'
     | '/account'
+    | '/api/applications'
+    | '/api/images'
+    | '/api/neighborhood-logos'
     | '/media/$'
     | '/admin'
     | '/api/auth/$'
@@ -164,6 +194,9 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/typography'
     | '/account'
+    | '/api/applications'
+    | '/api/images'
+    | '/api/neighborhood-logos'
     | '/media/$'
     | '/admin'
     | '/api/auth/$'
@@ -180,6 +213,9 @@ export interface FileRouteTypes {
     | '/typography'
     | '/_authenticated/_admin'
     | '/_authenticated/account'
+    | '/api/applications'
+    | '/api/images'
+    | '/api/neighborhood-logos'
     | '/media/$'
     | '/_authenticated/_admin/admin'
     | '/api/auth/$'
@@ -195,6 +231,9 @@ export interface RootRouteChildren {
   MembersRoute: typeof MembersRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TypographyRoute: typeof TypographyRoute
+  ApiApplicationsRoute: typeof ApiApplicationsRoute
+  ApiImagesRoute: typeof ApiImagesRoute
+  ApiNeighborhoodLogosRoute: typeof ApiNeighborhoodLogosRoute
   MediaSplatRoute: typeof MediaSplatRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
@@ -278,6 +317,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/applications': {
+      id: '/api/applications'
+      path: '/api/applications'
+      fullPath: '/api/applications'
+      preLoaderRoute: typeof ApiApplicationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/images': {
+      id: '/api/images'
+      path: '/api/images'
+      fullPath: '/api/images'
+      preLoaderRoute: typeof ApiImagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/neighborhood-logos': {
+      id: '/api/neighborhood-logos'
+      path: '/api/neighborhood-logos'
+      fullPath: '/api/neighborhood-logos'
+      preLoaderRoute: typeof ApiNeighborhoodLogosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/media/$': {
       id: '/media/$'
       path: '/media/$'
@@ -339,6 +399,9 @@ const rootRouteChildren: RootRouteChildren = {
   MembersRoute: MembersRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TypographyRoute: TypographyRoute,
+  ApiApplicationsRoute: ApiApplicationsRoute,
+  ApiImagesRoute: ApiImagesRoute,
+  ApiNeighborhoodLogosRoute: ApiNeighborhoodLogosRoute,
   MediaSplatRoute: MediaSplatRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }

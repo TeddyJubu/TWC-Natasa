@@ -4,6 +4,7 @@ import { fake } from "@/test/fake-fns";
 
 vi.mock("@/features/members/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 vi.mock("@/features/auth/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
+vi.mock("@/app/api", async () => (await import("@/test/fake-fns")).fakeApi);
 
 import { directoryQuery, introsQuery, profileQuery, publicProfilesQuery, viewerQuery } from "./queries";
 import { removeLogo, saveProfile, saveProfileMutation, uploadAvatar, uploadAvatarMutation, uploadLogo } from "./mutations";
@@ -101,7 +102,7 @@ describe("image uploads", () => {
   it("send the file and its kind as FormData", async () => {
     fake.results = [profileRow];
     expect(await uploadAvatar("u1", file)).toBe(profileRow);
-    expect(fake.calls[0][0]).toBe("uploadImageFn");
+    expect(fake.calls[0][0]).toBe("/api/images");
     expect([sent().get("kind"), (sent().get("file") as File).name]).toEqual(["avatar", "me.png"]);
     fake.reset();
     fake.results = [profileRow];
@@ -120,7 +121,7 @@ describe("image uploads", () => {
   it("accept a 5 MB webp", async () => {
     fake.results = [profileRow];
     await uploadAvatar("u1", new File([new Uint8Array(5 * 1024 * 1024)], "me.webp", { type: "image/webp" }));
-    expect(fake.calls[0][0]).toBe("uploadImageFn");
+    expect(fake.calls[0][0]).toBe("/api/images");
   });
 
   it("throw the server's error", async () => {

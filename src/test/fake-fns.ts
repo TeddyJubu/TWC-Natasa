@@ -25,3 +25,13 @@ export async function fakeFns(importOriginal: () => Promise<unknown>) {
     ]),
   );
 }
+
+/** `vi.mock("@/app/api", async () => (await import("@/test/fake-fns")).fakeApi)`: records [path, body] in the same queue. */
+export const fakeApi = {
+  postApi: async (path: string, body: unknown) => {
+    fake.calls.push([path, body]);
+    const result = await fake.results.shift();
+    if (result instanceof Error) throw result;
+    return result ?? undefined;
+  },
+};

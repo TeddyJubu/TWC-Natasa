@@ -6,6 +6,7 @@ import { renderWithQueries } from "@/test/dom";
 import { fake } from "@/test/fake-fns";
 
 vi.mock("@/features/admin/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
+vi.mock("@/app/api", async () => (await import("@/test/fake-fns")).fakeApi);
 const emailApproval = vi.fn(async (_id: string) => ({ sent: true }) as { sent: true } | { sent: false; reason: string });
 vi.mock("@/features/admin/approval-email", () => ({ emailApproval: (id: string) => emailApproval(id) }));
 vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs }));
@@ -246,7 +247,7 @@ describe("/admin", () => {
       await waitFor(() =>
         expect(fake.calls).toContainEqual(["createNeighborhoodFn", { name: "Woodside", slug: "woodside", color: "#2f9dff", sort_order: 2 }]),
       );
-      expect(fake.calls.some((c) => c[0] === "saveNeighborhoodLogoFn")).toBe(false);
+      expect(fake.calls.some((c) => c[0] === "/api/neighborhood-logos")).toBe(false);
       expect(await screen.findByRole("form", { name: "Edit Woodside" })).toBeTruthy();
     });
 

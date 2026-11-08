@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import type { Profile, ProfileData } from "./queries";
-import { removeLogoFn, saveProfileFn, uploadImageFn } from "./fns";
+import { postApi } from "@/app/api";
+import { removeLogoFn, saveProfileFn } from "./fns";
 import type { ProfilePatch } from "./members.server";
 
 export type { ProfilePatch };
@@ -19,7 +20,7 @@ async function uploadImage(file: File, kind: "avatar" | "logo"): Promise<Profile
   const form = new FormData();
   form.set("kind", kind);
   form.set("file", file);
-  return uploadImageFn({ data: form });
+  return postApi<Profile>("/api/images", form);
 }
 
 export const uploadAvatar = (_id: string, file: File): Promise<Profile> => uploadImage(file, "avatar");

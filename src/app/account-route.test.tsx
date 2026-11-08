@@ -12,6 +12,7 @@ import { fake } from "@/test/fake-fns";
 vi.mock("@/features/members/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 vi.mock("@/features/events/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 vi.mock("@/features/auth/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
+vi.mock("@/app/api", async () => (await import("@/test/fake-fns")).fakeApi);
 vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs }));
 
 import { Route } from "@/routes/_authenticated/account";
@@ -65,8 +66,8 @@ describe("/account", () => {
       expect(screen.queryByRole("button", { name: /remove logo/i })).toBeNull();
       fake.results = [{ ...base, business_logo_url: "u1/logo-1.png" }];
       fireEvent.change(screen.getByLabelText(/upload a business logo/i), { target: { files: [png()] } });
-      await waitFor(() => expect(fake.calls.map(([c]) => c)).toContain("uploadImageFn"));
-      const form = fake.calls.find(([c]) => c === "uploadImageFn")![1] as FormData;
+      await waitFor(() => expect(fake.calls.map(([c]) => c)).toContain("/api/images"));
+      const form = fake.calls.find(([c]) => c === "/api/images")![1] as FormData;
       expect([form.get("kind"), (form.get("file") as File).name]).toEqual(["logo", "logo.PNG"]);
     });
 
@@ -79,7 +80,7 @@ describe("/account", () => {
       Object.defineProperty(big, "size", { value: 5 * 1024 * 1024 + 1 });
       fireEvent.change(input, { target: { files: [big] } });
       await waitFor(() => expect(screen.getByRole("alert").textContent).toMatch(/over 5 MB/));
-      expect(fake.calls.filter(([c]) => c === "uploadImageFn")).toEqual([]);
+      expect(fake.calls.filter(([c]) => c === "/api/images")).toEqual([]);
     });
 
     it("shows her logo with a Remove button that clears it and deletes the file", async () => {
@@ -351,6 +352,6 @@ describe("/account", () => {
       fireEvent.change(input, { target: { files: [big] } });
     });
     expect((await screen.findByRole("alert")).textContent).toMatch(/5 MB/);
-    expect(fake.calls.some((c) => c[0] === "uploadImageFn")).toBe(false);
+    expect(fake.calls.some((c) => c[0] === "/api/images")).toBe(false);
   });
 });

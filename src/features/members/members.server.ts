@@ -6,6 +6,7 @@ import { tx } from "@/server/db";
 import { AccessError, isAdmin, isMember, requireSession } from "@/server/guard";
 import { checkImage, mediaUrl, removeMedia, writeMedia } from "@/server/media";
 import { bad, isObject, str } from "@/server/validate";
+import { checkSize, fileBytes, readForm, respond } from "@/server/request";
 import { toMemberProfile } from "./map";
 
 export type MembershipStatus = "pending" | "approved" | "declined";
@@ -120,4 +121,18 @@ export function removeLogo({ db, actor }: Ctx): Profile {
   });
   if (profile.old) removeMedia("avatars", profile.old);
   return toProfile(profile.row);
+}
+
+export const MAX_UPLOAD_REQUEST = 6 * 1024 * 1024;
+
+/** POST /api/images (FormData `kind`, `file`): size and session are checked before the body is read. */
+export function uploadImageRequest(c: Ctx, request: Request): Promise<Response> {
+  return respond(async () => {
+    checkSize(request, MAX_UPLOAD_REQUEST);
+    requireSession(c.actor);
+    const form = await readForm(request);
+    const kind = form.get("kind");
+    if (kind !== "avatar" && kind !== "logo") throw bad("upload");
+    return uploadImage(c, kind, await fileBytes(form));
+  });
 }

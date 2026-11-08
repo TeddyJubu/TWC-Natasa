@@ -58,6 +58,8 @@ The rules are the old RLS policies, ported one for one; `src/server/policy.test.
 - A member's booking write always goes back to `requested`; only admins confirm or decline.
 - Applications are anonymous (unlinked) or linked to the signed-in applicant; status and review fields can't be pre-filled. Admin reviews record `reviewed_by`; an admin approving or declining a profile directly also decides her newest application.
 - `/media/avatars/<owner>/…` is visible to the owner, admins, approved members while the owner is approved and listed, and everyone once she is also public; neighborhood logos are public. Files are typed by their bytes (PNG/JPEG/WebP, ≤ 5 MB), served with `nosniff` and private caching unless public; anything else, including any path that isn't a plain file inside its bucket, is a 404.
+- Uploads and applications are server routes (`/api/images`, `/api/neighborhood-logos`, `/api/applications`, via `postApi`) rather than server functions, because Start parses a server function's body before any of our code runs: the routes refuse a missing or oversized Content-Length (6 MB uploads, 64 KB applications) and check the caller before reading a byte, and applications are limited to 5 per client IP per 10 minutes (in memory). The client IP is `cf-connecting-ip`, then the first `x-forwarded-for` entry (the server sits behind Cloudflare → Caddy). The CSRF middleware covers these routes.
+- Public cards never carry a member's id: their portraits are `/media/public/<catalogue number>/avatar`.
 - Route guards (`_authenticated`, `_admin`) only shape navigation; the server functions check again.
 
 ---
