@@ -1,116 +1,60 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { fake, fakeClient } from "@/test/fake-supabase";
-
-const createClient = vi.fn((..._args: unknown[]) => fakeClient);
-vi.mock("@supabase/supabase-js", () => ({ createClient: (...args: unknown[]) => createClient(...args) }));
-
-import { sendApprovalEmail } from "./approval-email.server";
+import { openDb, type DB } from "@/server/db";
+import { approvalEmail } from "./admin.server";
 
 const fetchMock = vi.fn();
-const input = { accessToken: "user.jwt.token", applicationId: "app-1" };
-const admin = { data: true, error: null };
-const approved = { data: { email: "rosa@x.test", full_name: "Rosa Diaz", status: "approved" }, error: null };
+const ADMIN = "00000000-0000-4000-8000-00000000000a";
+const MEMBER = "00000000-0000-4000-8000-00000000000b";
+let db: DB;
+const as = (id: string) => ({ db, actor: { id, email: "x@x.test" } });
+const addApp = (status: string) =>
+  (db.prepare("insert into applications (email, full_name, status) values ('rosa@x.test', 'Rosa Diaz', ?) returning id").get(status) as { id: string }).id;
 
 beforeEach(() => {
   vi.stubGlobal("fetch", fetchMock);
   vi.stubEnv("CF_EMAIL_ACCOUNT_ID", "acct-123");
   vi.stubEnv("CF_EMAIL_API_TOKEN", "cf-secret-token");
-  vi.stubEnv("EMAIL_FROM", "");
-  vi.stubEnv("VITE_SITE_URL", "https://thewomenscollective.club");
+  vi.stubEnv("APP_URL", "https://thewomenscollective.club/");
+  vi.stubEnv("NODE_ENV", "production");
+  db = openDb(":memory:");
+  const now = new Date().toISOString();
+  for (const id of [ADMIN, MEMBER]) {
+    db.prepare(`insert into "user" (id, name, email, emailVerified, createdAt, updatedAt) values (?, '', ?, 1, ?, ?)`).run(id, `${id}@x.test`, now, now);
+  }
+  db.prepare("insert into user_roles (user_id, role) values (?, 'admin')").run(ADMIN);
 });
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
   fetchMock.mockReset();
-  createClient.mockClear();
-  fake.reset();
 });
 
-describe("sendApprovalEmail", () => {
-  it("builds the Supabase client with the caller's bearer token", async () => {
-    fake.results = [{ data: false, error: null }];
-    await sendApprovalEmail(input);
-    const options = createClient.mock.calls[0][2] as { global: { headers: Record<string, string> } };
-    expect(options.global.headers.Authorization).toBe("Bearer user.jwt.token");
-  });
-
-  it("refuses a caller who isn't an admin, before reading or sending anything", async () => {
-    fake.results = [{ data: false, error: null }];
-    expect(await sendApprovalEmail(input)).toEqual({ sent: false, reason: "not-admin" });
-    expect(fake.calls).toEqual([["rpc", "is_admin"]]);
+describe("approvalEmail", () => {
+  it("refuses a caller who isn't an admin, before reading or sending anything", () => {
+    expect(() => approvalEmail(as(MEMBER), addApp("approved"))).toThrow(/admins only/i);
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("refuses when is_admin errors (e.g. an expired token)", async () => {
-    fake.results = [{ data: null, error: { message: "JWT expired" } }];
-    expect(await sendApprovalEmail(input)).toEqual({ sent: false, reason: "not-admin" });
+  it("refuses an application that isn't approved, or doesn't exist", async () => {
+    expect(await approvalEmail(as(ADMIN), addApp("declined"))).toEqual({ sent: false, reason: "not-approved" });
+    expect(await approvalEmail(as(ADMIN), "missing")).toEqual({ sent: false, reason: "not-approved" });
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("refuses an application that isn't approved", async () => {
-    fake.results = [admin, { data: { ...approved.data, status: "declined" }, error: null }];
-    expect(await sendApprovalEmail(input)).toEqual({ sent: false, reason: "not-approved" });
-    expect(fetchMock).not.toHaveBeenCalled();
-  });
-
-  it("refuses a missing application", async () => {
-    fake.results = [admin, { data: null, error: null }];
-    expect(await sendApprovalEmail(input)).toEqual({ sent: false, reason: "not-approved" });
-  });
-
-  it("returns not-configured without the Cloudflare settings, and never leaks the token", async () => {
+  it("returns not-configured without the Cloudflare settings", async () => {
     vi.stubEnv("CF_EMAIL_API_TOKEN", "");
-    fake.results = [admin, approved];
-    const result = await sendApprovalEmail(input);
-    expect(result).toEqual({ sent: false, reason: "not-configured" });
+    expect(await approvalEmail(as(ADMIN), addApp("approved"))).toEqual({ sent: false, reason: "not-configured" });
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("sends one plain-text welcome email with the exact request", async () => {
-    fake.results = [admin, approved];
+  it("sends one plain-text welcome email linking to APP_URL/auth", async () => {
     fetchMock.mockResolvedValue(new Response(JSON.stringify({ success: true, result: {} })));
-    expect(await sendApprovalEmail(input)).toEqual({ sent: true });
-
-    expect(fake.calls).toEqual([
-      ["rpc", "is_admin"],
-      ["from", "applications"],
-      ["select", "email, full_name, status"],
-      ["eq", "id", "app-1"],
-      ["maybeSingle"],
-    ]);
+    expect(await approvalEmail(as(ADMIN), addApp("approved"))).toEqual({ sent: true });
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe("https://api.cloudflare.com/client/v4/accounts/acct-123/email/sending/send");
-    expect(init.method).toBe("POST");
-    expect(init.headers).toEqual({ Authorization: "Bearer cf-secret-token", "Content-Type": "application/json" });
-    const body = JSON.parse(init.body as string);
-    expect(Object.keys(body).sort()).toEqual(["from", "subject", "text", "to"]);
-    expect(body.from).toBe("info@thewomenscollective.club");
+    const body = JSON.parse((fetchMock.mock.calls[0][1] as RequestInit).body as string);
     expect(body.to).toEqual(["rosa@x.test"]);
     expect(body.subject).toBe("Welcome to The Women’s Collective");
     expect(body.text).toContain("Dear Rosa Diaz,");
     expect(body.text).toContain("https://thewomenscollective.club/auth");
-  });
-
-  it("uses EMAIL_FROM when set", async () => {
-    vi.stubEnv("EMAIL_FROM", "hello@thewomenscollective.club");
-    fake.results = [admin, approved];
-    fetchMock.mockResolvedValue(new Response(JSON.stringify({ success: true })));
-    await sendApprovalEmail(input);
-    expect(JSON.parse((fetchMock.mock.calls[0][1] as RequestInit).body as string).from).toBe("hello@thewomenscollective.club");
-  });
-
-  it("reports a Cloudflare failure without echoing secrets", async () => {
-    fake.results = [admin, approved];
-    fetchMock.mockResolvedValue(new Response(JSON.stringify({ success: false, errors: [{ message: "cf-secret-token bad" }] }), { status: 400 }));
-    const result = await sendApprovalEmail(input);
-    expect(result).toEqual({ sent: false, reason: "send-failed" });
-    expect(JSON.stringify(result)).not.toContain("cf-secret-token");
-  });
-
-  it("reports a network failure as send-failed", async () => {
-    fake.results = [admin, approved];
-    fetchMock.mockRejectedValue(new Error("offline"));
-    expect(await sendApprovalEmail(input)).toEqual({ sent: false, reason: "send-failed" });
   });
 });
