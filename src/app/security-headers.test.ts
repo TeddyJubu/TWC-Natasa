@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { csrfMiddleware, startInstance } from "../start";
-import { SECURITY_HEADERS, securityHeadersMiddleware, withSecurityHeaders } from "./security-headers";
+import { SECURITY_HEADERS, contentSecurityPolicy, securityHeadersMiddleware, withSecurityHeaders } from "./security-headers";
 
 // The middleware objects keep their server function on `options.server`; call it the way Start does.
 type ServerFn = (opts: Record<string, unknown>) => Promise<unknown> | unknown;
@@ -15,18 +15,46 @@ const run = (m: unknown, request: Request, handlerType: "router" | "serverFn", r
   }) as Promise<{ response: Response } | Response>;
 const responseOf = (r: { response: Response } | Response) => (r instanceof Response ? r : r.response);
 
+describe("content security policy", () => {
+  const supabase = "https://abcdefgh.supabase.co";
+
+  it("is the full enforced policy, with the Supabase origin for images, fetches and realtime", () => {
+    expect(contentSecurityPolicy(supabase)).toBe(
+      "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; " +
+        "img-src 'self' data: blob: https://abcdefgh.supabase.co; " +
+        "connect-src 'self' https://abcdefgh.supabase.co wss://abcdefgh.supabase.co; font-src 'self'; " +
+        "frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'",
+    );
+  });
+
+  it("uses only the origin of the Supabase URL", () => {
+    expect(contentSecurityPolicy("https://abcdefgh.supabase.co/rest/v1/")).toContain("connect-src 'self' https://abcdefgh.supabase.co wss://abcdefgh.supabase.co;");
+    expect(contentSecurityPolicy("http://127.0.0.1:54321")).toContain("connect-src 'self' http://127.0.0.1:54321 ws://127.0.0.1:54321;");
+  });
+
+  it("falls back to same-origin only without a valid Supabase URL, never a wildcard", () => {
+    for (const bad of [undefined, "", "not a url", "javascript:alert(1)"]) {
+      const csp = contentSecurityPolicy(bad);
+      expect(csp).toContain("connect-src 'self';");
+      expect(csp).toContain("img-src 'self' data: blob:;");
+      expect(csp).not.toMatch(/\*|undefined/);
+    }
+  });
+
+  it("is what SECURITY_HEADERS sends, built from VITE_SUPABASE_URL", () => {
+    expect(SECURITY_HEADERS["Content-Security-Policy"]).toBe(contentSecurityPolicy(import.meta.env.VITE_SUPABASE_URL));
+    expect(SECURITY_HEADERS["Content-Security-Policy"]).not.toMatch(/lovable|gptengineer/);
+  });
+});
+
 describe("security headers", () => {
-  it("are only ones that can't break the site", () => {
-    expect(SECURITY_HEADERS).toEqual({
-      "Content-Security-Policy":
-        "frame-ancestors 'self' https://lovable.dev https://*.lovable.dev https://*.lovableproject.com https://*.gptengineer.app",
-      "X-Content-Type-Options": "nosniff",
-      "Referrer-Policy": "strict-origin-when-cross-origin",
-      "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=()",
-    });
-    // Lovable's editor frames the site: never deny framing outright.
-    expect(Object.keys(SECURITY_HEADERS)).not.toContain("X-Frame-Options");
-    expect(SECURITY_HEADERS["Content-Security-Policy"]).not.toMatch(/script-src|style-src|default-src/);
+  it("are the CSP plus the headers that can't break the site", () => {
+    expect(Object.keys(SECURITY_HEADERS)).toEqual([
+      "Content-Security-Policy", "X-Content-Type-Options", "Referrer-Policy", "Permissions-Policy",
+    ]);
+    expect(SECURITY_HEADERS["X-Content-Type-Options"]).toBe("nosniff");
+    expect(SECURITY_HEADERS["Referrer-Policy"]).toBe("strict-origin-when-cross-origin");
+    expect(SECURITY_HEADERS["Permissions-Policy"]).toBe("camera=(), microphone=(), geolocation=(), payment=()");
   });
 
   it("are added to page responses by the middleware", async () => {

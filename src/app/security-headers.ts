@@ -1,13 +1,41 @@
 import { createMiddleware } from "@tanstack/react-start";
 
+/** The http(s) origin of a URL, or undefined (missing, malformed or another scheme). */
+function httpOrigin(raw: string | undefined): string | undefined {
+  try {
+    const url = new URL(raw ?? "");
+    return url.protocol === "https:" || url.protocol === "http:" ? url.origin : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 /**
- * Response headers that can't break the site. The CSP sets only `frame-ancestors`, so the Lovable editor
- * can still frame the site. A full script/style CSP needs per-request nonces for SSR hydration and is an
- * owner follow-up (AUDIT-TASKS.md, Owner decisions).
+ * The enforced CSP. The browser talks to Supabase directly (REST, auth, storage; realtime over ws), and
+ * portraits are signed Supabase Storage URLs. 'unsafe-inline' scripts and styles: SSR hydration emits
+ * inline scripts and components set inline `style` (e.g. `--hood`); per-request nonces would replace it.
+ * ponytail: one Supabase origin; add others here only when the app really fetches from them.
  */
+export function contentSecurityPolicy(supabaseUrl: string | undefined): string {
+  const supabase = httpOrigin(supabaseUrl);
+  const realtime = supabase?.replace(/^http/, "ws");
+  const list = (...sources: (string | undefined)[]) => sources.filter(Boolean).join(" ");
+  return [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline'",
+    "style-src 'self' 'unsafe-inline'",
+    `img-src ${list("'self'", "data:", "blob:", supabase)}`,
+    `connect-src ${list("'self'", supabase, realtime)}`,
+    "font-src 'self'",
+    "frame-ancestors 'self'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "object-src 'none'",
+  ].join("; ");
+}
+
 export const SECURITY_HEADERS = {
-  "Content-Security-Policy":
-    "frame-ancestors 'self' https://lovable.dev https://*.lovable.dev https://*.lovableproject.com https://*.gptengineer.app",
+  "Content-Security-Policy": contentSecurityPolicy(import.meta.env.VITE_SUPABASE_URL),
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=()",
