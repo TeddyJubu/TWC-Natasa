@@ -14,9 +14,8 @@ The Women’s Collective is warm, direct, and editorial: full-bleed sky photogra
   - Neighborhood colors are data (hex in the `neighborhoods` table, with a hex fallback list in `src/features/neighborhoods`) and reach app UI only through `--hood`. The theme's neighborhood tokens (`bg-lic`, …) are for the constellation and specimens.
   - `CircularGallery`'s WebGL text colors are plain values, because canvas text can't read CSS tokens.
 - Serif for headings, big numbers and wordmarks; never bold it — weight 400 only. Sans for everything else.
-- Every section opens with a `Badge` above a centered serif `Heading` (use `SectionHeader`).
-- Exception: `/account` is a settings app — sans headings (the member's name is a medium-weight sans `h1`), no Badge/Hero rhythm, and the neutral `app-*` tokens (`bg-app`, `bg-app-sunken`, `border-app-line`, `border-app-rule`, `text-app-muted`, `text-app-accent`, `bg-app-tint`), used nowhere else.
-- Pages start with `Hero` (photo, glass badge, white headline left, short copy right, thin white rule, glass info card + big stat).
+- Every public section opens with a `Badge` above a centered serif `Heading` (use `SectionHeader`).
+- Public pages start with `Hero` (photo, glass badge, white headline left, short copy right, thin white rule, glass info card + big stat).
 - Rhythm: light sections → `tone="dome"` black panel → `tone="night"` continuation → light again. Don't scatter random greys.
 - Buttons have 12px corners (`rounded-control`), not pills; badges are pills. Cards use `rounded-card`.
 - Yellow (`sun`) only for ribbons/small highlights, never large fills or body text.
@@ -28,6 +27,15 @@ The Women’s Collective is warm, direct, and editorial: full-bleed sky photogra
 - Use `Reveal` for viewport entry and `Stagger` for short sequenced groups; both preserve content and honor reduced-motion preferences.
 - Long applications use `FormProgress`, `FormSection`, `ChoiceGroup`, `FormNotice`, and `FormActions`; conditional follow-ups reveal directly beneath their controlling choice.
 - Member directories use the `MemberCard` catalogue variant in a dense black contact-sheet panel; each card carries its neighborhood color, passed in through the `tone` prop, as a quiet signature (header rule, catalogue number, neighborhood label, and portrait mat), and portraits begin monochrome to reveal color on hover. Members without a portrait show their initials on a neutral mat, never a stand-in photo. Give cards `onOpen` and render one `MemberDialog` per page to open a member's full profile.
+
+## Internal pages
+Signed-in pages (`/account`, `/admin`, and any new page behind sign-in) are a quiet settings app, not the editorial site. They use the app shell from `src/app/layout/` and nothing from the public rhythm above (no `Hero`, `Badge`/`SectionHeader`, dome or night sections, serif headings, or `Tabs`). Public pages never use the app shell.
+- Chrome: `AppShell` (sidebar with the Collective, My Account and — admins only — Admin groups, Sign out at the bottom; the same nav in a modal drawer below lg) and a sticky `TopBar` reading "Section / icon Title" with the page's actions on the right.
+- Type: sans only. Card titles `text-base font-medium`, rows 15px, secondary text 13–13.5px. The page `h1` is a medium-weight sans: the member's name on `/account`, the top-bar title on `/admin`.
+- Colour: the neutral `app-*` tokens — `bg-app` (page, cards), `bg-app-sunken` (sidebar, card heads), `border-app-line` (outlines, controls, active nav), `divide-app-rule` (row dividers), `text-app-muted` (labels, secondary text), `text-app-accent` (links, pending/verified chips), `bg-app-tint` (the account header's warm cells) — plus `ink`, `ink-muted`, `canvas` and `danger`. No new hex; every text pair is in the contrast test.
+- Vocabulary: content sits in `Card`s (an `id` makes one a sidebar anchor), as label/value `Row`s, item rows (a `font-medium` name, muted details, a `Chip` on the right) or a table in a focusable, labelled, `relative` scroll region. Controls use `primaryButton`/`secondaryButton`/`fieldClass`/`linkClass` and `Toggle`; 9–14px radii, not `rounded-control`/`rounded-card`.
+- Layout: page column `max-w-277`, gutters `px-4` (16px) on phones, `sm:px-8`, `lg:px-12`; cards stack with `gap-6`. Nothing scrolls sideways at 375px except a table inside its own region.
+- Motion: colour transitions and the switch knob only, all off under reduced motion.
 
 ## Accessibility
 - White text on photos needs the built-in gradients (`bg-sky-fade`, card overlays); don't remove them.

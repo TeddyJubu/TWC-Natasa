@@ -59,7 +59,7 @@
   --bl-elmhurst: #12d9bd;
   --bl-forest-hills: #5fd35f;
   --bl-rego-park: #ff4438;
-  /* Neutral app palette: the /account settings shell only (DESIGN.md exception). */
+  /* Neutral app palette: the internal-page app shell only (/account, /admin; DESIGN.md "Internal pages"). */
   --bl-app: #ffffff;
   --bl-app-sunken: #fafafa; /* sidebar, card heads */
   --bl-app-line: #eaeaec; /* outlines, controls, active nav */
