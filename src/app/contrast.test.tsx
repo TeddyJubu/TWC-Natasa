@@ -7,7 +7,6 @@ import { Input, MemberCard, Navbar, Statement, Tabs, buttonVariants, type Member
 import { renderWithQueries } from "@/test/dom";
 import { blend, contrast, tokens } from "@/test/contrast";
 
-vi.mock("@/app/supabase", async () => (await import("@/test/fake-supabase")).fakeSupabaseModule);
 vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs }));
 
 import { Route } from "@/routes/index";

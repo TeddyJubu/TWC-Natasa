@@ -1,5 +1,5 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
-import { getSupabase } from "@/app/supabase";
+import { neighborhoodsFn } from "./fns";
 
 /** Inactive rows stay in the list so cards that still use one keep its color and logo; pickers hide them (pickerNames). */
 export type Neighborhood = { slug: string; name: string; color: string; logoUrl: string | null; active: boolean };
@@ -21,30 +21,7 @@ export const neighborhoodsQuery = queryOptions({
   // Real (stale) data, not a placeholder: a failed fetch keeps the seed, and updatedAt 0 still fetches on mount.
   initialData: NEIGHBORHOOD_SEED,
   initialDataUpdatedAt: 0,
-  queryFn: async (): Promise<Neighborhood[]> => {
-    const supabase = await getSupabase();
-    const { data, error } = await supabase
-      .from("neighborhoods")
-      .select("slug, name, color, logo_path, active")
-      .order("sort_order");
-    if (error) {
-      // Intentional while migration 0001 is unapplied: only a missing table serves the bundled seed.
-      if (error.code === "PGRST205" || error.code === "42P01") {
-        console.warn("neighborhoods: table missing, falling back to bundled seed", error);
-        return NEIGHBORHOOD_SEED;
-      }
-      throw error;
-    }
-    return data.map((row) => ({
-      slug: row.slug,
-      name: row.name,
-      color: row.color,
-      logoUrl: row.logo_path
-        ? supabase.storage.from("neighborhood-logos").getPublicUrl(row.logo_path).data.publicUrl
-        : null,
-      active: row.active,
-    }));
-  },
+  queryFn: (): Promise<Neighborhood[]> => neighborhoodsFn(),
 });
 
 export const useNeighborhoods = () => useQuery(neighborhoodsQuery);

@@ -1,8 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MutationObserver, QueryClient } from "@tanstack/react-query";
-import { fake } from "@/test/fake-supabase";
+import { fake } from "@/test/fake-fns";
 
-vi.mock("@/app/supabase", async () => (await import("@/test/fake-supabase")).fakeSupabaseModule);
+vi.mock("@/features/admin/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
+const emailApproval = vi.hoisted(() => vi.fn(async (_id: string) => ({ sent: true }) as { sent: true } | { sent: false; reason: string }));
+vi.mock("./approval-email", () => ({ emailApproval: (id: string) => emailApproval(id) }));
 
 import {
   adminApplicationsQuery, adminBookingsQuery, adminMembersQuery, adminNeighborhoodsQuery,
@@ -13,12 +15,13 @@ import {
 } from "./mutations";
 
 const run = (q: { queryFn?: unknown }) => (q.queryFn as (c: unknown) => Promise<unknown>)({});
-const dbError = { code: "42501", message: "permission denied" };
-const ok = { data: null, error: null };
+const denied = new Error("Admins only.");
 const keys = (spy: { mock: { calls: unknown[][] } }) => spy.mock.calls.map((c) => (c[0] as { queryKey: unknown }).queryKey);
+const form = (i: number) => fake.calls[i][1] as FormData;
 
 beforeEach(() => {
   fake.reset();
+  emailApproval.mockClear();
   vi.restoreAllMocks();
 });
 
@@ -30,60 +33,16 @@ describe("admin queries", () => {
     expect(adminBookingsQuery.queryKey).toEqual(["admin", "bookings"]);
   });
 
-  it("applications: every row, pending first then newest", async () => {
-    fake.results = [{
-      data: [
-        { id: "a", status: "approved", created_at: "2026-03-01T00:00:00Z" },
-        { id: "b", status: "pending", created_at: "2026-01-01T00:00:00Z" },
-      ],
-      error: null,
-    }];
-    const out = (await run(adminApplicationsQuery)) as { id: string }[];
-    expect(out.map((a) => a.id)).toEqual(["b", "a"]);
-    expect(fake.calls).toEqual([["from", "applications"], ["select", "*"]]);
-  });
-
-  it("members: every profile, joined client-side with applicant emails", async () => {
-    fake.results = [
-      { data: [{ id: "u1", full_name: "Rosa" }, { id: "u2", full_name: "Lena" }], error: null },
-      { data: [{ user_id: "u2", email: "lena@x.test" }], error: null },
-    ];
-    expect(await run(adminMembersQuery)).toEqual([
-      { id: "u2", full_name: "Lena", email: "lena@x.test" },
-      { id: "u1", full_name: "Rosa", email: null },
-    ]);
-    expect(fake.calls).toEqual([["from", "profiles"], ["select", "*"], ["from", "applications"], ["select", "user_id, email"]]);
-  });
-
-  it("neighborhoods: all rows including inactive, by sort order, with versioned public logo urls", async () => {
-    vi.spyOn(Date, "now").mockReturnValue(42);
-    fake.results = [{
-      data: [
-        { slug: "astoria", name: "Astoria", color: "#ff9a1f", logo_path: null, active: true, sort_order: 1 },
-        { slug: "woodside", name: "Woodside", color: "#123456", logo_path: "woodside.png", active: false, sort_order: 8 },
-      ],
-      error: null,
-    }];
-    const out = (await run(adminNeighborhoodsQuery)) as { logoUrl: string | null }[];
-    expect(fake.calls).toEqual([["from", "neighborhoods"], ["select", "*"], ["order", "sort_order"]]);
-    // A replaced same-name logo gets a new URL on every refetch, so the browser doesn't reuse the old image.
-    expect(out.map((n) => n.logoUrl)).toEqual([null, "https://cdn.test/neighborhood-logos/woodside.png?v=42"]);
-  });
-
-  it("bookings: every booking", async () => {
-    fake.results = [{ data: [{ id: "b1" }], error: null }];
-    expect(await run(adminBookingsQuery)).toEqual([{ id: "b1" }]);
-    expect(fake.calls.slice(0, 2)).toEqual([["from", "headshot_bookings"], ["select", "*"]]);
-  });
-
   it.each([
-    ["applications", adminApplicationsQuery, 1],
-    ["members", adminMembersQuery, 2],
-    ["neighborhoods", adminNeighborhoodsQuery, 1],
-    ["bookings", adminBookingsQuery, 1],
-  ] as const)("%s: throws the query error", async (_name, query, reads) => {
-    fake.results = Array.from({ length: reads }, (_, i) => (i === reads - 1 ? { data: null, error: dbError } : { data: [], error: null }));
-    await expect(run(query)).rejects.toBe(dbError);
+    ["applications", adminApplicationsQuery, "adminApplicationsFn"],
+    ["members", adminMembersQuery, "adminMembersFn"],
+    ["neighborhoods", adminNeighborhoodsQuery, "adminNeighborhoodsFn"],
+    ["bookings", adminBookingsQuery, "adminBookingsFn"],
+  ] as const)("%s: returns the server's rows, and throws its error", async (_name, query, fn) => {
+    fake.results = [[{ id: "x" }], denied];
+    expect(await run(query)).toEqual([{ id: "x" }]);
+    await expect(run(query)).rejects.toBe(denied);
+    expect(fake.calls).toEqual([[fn], [fn]]);
   });
 });
 
@@ -93,36 +52,52 @@ describe("admin mutations", () => {
     return { qc, spy: vi.spyOn(qc, "invalidateQueries") };
   };
 
-  it("reviewing an application updates its status and refreshes applications, members, directory, public cards and intros", async () => {
+  it("reviewing an application saves it, emails an approval and refreshes applications, members, directory, public cards and intros", async () => {
     const { qc, spy } = setup();
-    fake.results = [ok];
+    fake.results = [null];
     const notice = await new MutationObserver(qc, reviewApplicationMutation(qc)).mutate({ id: "a1", status: "approved" });
-    // Then the welcome email (its server function can't run here, so it reports a failure, never throws).
-    expect(fake.calls).toEqual([["from", "applications"], ["update", { status: "approved" }], ["eq", "id", "a1"]]);
-    expect(notice).toEqual({ sent: false, reason: "sending failed" });
+    expect(fake.calls).toEqual([["reviewApplicationFn", { id: "a1", status: "approved" }]]);
+    expect(emailApproval).toHaveBeenCalledWith("a1");
+    expect(notice).toEqual({ sent: true });
     expect(keys(spy)).toEqual([["admin", "applications"], ["admin", "members"], ["directory"], ["public-profiles"], ["intros"]]);
   });
 
-  it("a member status change updates the profile and refreshes members, applications, directory, public cards and intros", async () => {
+  it("a decline sends no email", async () => {
+    const { qc } = setup();
+    fake.results = [null];
+    expect(await new MutationObserver(qc, reviewApplicationMutation(qc)).mutate({ id: "a1", status: "declined" })).toBeNull();
+    expect(emailApproval).not.toHaveBeenCalled();
+  });
+
+  it("a member status change saves it and refreshes members, applications, directory, public cards and intros", async () => {
     const { qc, spy } = setup();
-    fake.results = [ok];
+    fake.results = [null];
     await new MutationObserver(qc, setMemberStatusMutation(qc)).mutate({ id: "u1", status: "declined" });
-    expect(fake.calls).toEqual([["from", "profiles"], ["update", { status: "declined" }], ["eq", "id", "u1"]]);
+    expect(fake.calls).toEqual([["setMemberStatusFn", { id: "u1", status: "declined" }]]);
     expect(keys(spy)).toEqual([["admin", "members"], ["admin", "applications"], ["directory"], ["public-profiles"], ["intros"]]);
   });
 
-  it("a booking status change updates the booking and refreshes admin bookings", async () => {
+  it("approving a member emails her newest application, or says there's none on file", async () => {
+    const { qc } = setup();
+    fake.results = ["app-9", null];
+    expect(await new MutationObserver(qc, setMemberStatusMutation(qc)).mutate({ id: "u1", status: "approved" })).toEqual({ sent: true });
+    expect(emailApproval).toHaveBeenCalledWith("app-9");
+    expect(await new MutationObserver(qc, setMemberStatusMutation(qc)).mutate({ id: "u2", status: "approved" }))
+      .toEqual({ sent: false, reason: "no application on file" });
+  });
+
+  it("a booking status change saves it and refreshes admin bookings", async () => {
     const { qc, spy } = setup();
-    fake.results = [ok];
+    fake.results = [null];
     await new MutationObserver(qc, setBookingStatusMutation(qc)).mutate({ id: "b1", status: "confirmed" });
-    expect(fake.calls).toEqual([["from", "headshot_bookings"], ["update", { status: "confirmed" }], ["eq", "id", "b1"]]);
+    expect(fake.calls).toEqual([["setBookingStatusFn", { id: "b1", status: "confirmed" }]]);
     expect(keys(spy)).toEqual([["admin", "bookings"]]);
   });
 
-  it("rejects with the update error and invalidates nothing", async () => {
+  it("rejects with the server's error and invalidates nothing", async () => {
     const { qc, spy } = setup();
-    fake.results = [{ data: null, error: dbError }];
-    await expect(new MutationObserver(qc, reviewApplicationMutation(qc)).mutate({ id: "a1", status: "approved" })).rejects.toBe(dbError);
+    fake.results = [denied];
+    await expect(new MutationObserver(qc, reviewApplicationMutation(qc)).mutate({ id: "a1", status: "approved" })).rejects.toBe(denied);
     expect(spy).not.toHaveBeenCalled();
   });
 
@@ -130,50 +105,41 @@ describe("admin mutations", () => {
   const hoodKeys = [
     ["neighborhoods"], ["admin", "neighborhoods"], ["admin", "members"], ["directory"], ["public-profiles"], ["intros"], ["profile"], ["events"],
   ];
-  const logoOptions = (type: string) => ({ upsert: true, contentType: type, cacheControl: "60" });
 
-  it("creating a neighborhood inserts the row first, then uploads the logo to <slug>.<ext>, then saves logo_path", async () => {
+  it("creating a neighborhood saves the row first, then uploads the logo for that slug", async () => {
     const { qc, spy } = setup();
     const logo = new File(["x"], "Logo.PNG", { type: "image/png" });
-    fake.results = [ok, ok, ok];
+    fake.results = [null, "woodside.png"];
     await new MutationObserver(qc, createNeighborhoodMutation(qc)).mutate({
       name: " Woodside ", slug: "woodside", color: "#123456", sort_order: 8, logo,
     });
-    expect(fake.calls).toEqual([
-      ["from", "neighborhoods"],
-      ["insert", { name: "Woodside", slug: "woodside", color: "#123456", sort_order: 8 }],
-      ["upload", "neighborhood-logos", "woodside.png", logo, logoOptions("image/png")],
-      ["from", "neighborhoods"], ["update", { logo_path: "woodside.png" }], ["eq", "slug", "woodside"],
-    ]);
+    expect(fake.calls[0]).toEqual(["createNeighborhoodFn", { name: "Woodside", slug: "woodside", color: "#123456", sort_order: 8 }]);
+    expect(fake.calls[1][0]).toBe("saveNeighborhoodLogoFn");
+    expect([form(1).get("slug"), (form(1).get("file") as File).name]).toEqual(["woodside", "Logo.PNG"]);
     expect(keys(spy)).toEqual(hoodKeys);
   });
 
-  it("creating without a logo only inserts the row", async () => {
-    fake.results = [ok];
+  it("creating without a logo only saves the row", async () => {
+    fake.results = [null];
     await createNeighborhood({ name: "Woodside", slug: "woodside", color: "#123456", sort_order: 0 });
-    expect(fake.calls).toEqual([
-      ["from", "neighborhoods"], ["insert", { name: "Woodside", slug: "woodside", color: "#123456", sort_order: 0 }],
-    ]);
+    expect(fake.calls).toEqual([["createNeighborhoodFn", { name: "Woodside", slug: "woodside", color: "#123456", sort_order: 0 }]]);
   });
 
-  it("a failed insert (e.g. a duplicate slug) never touches storage", async () => {
-    const duplicate = { code: "23505", message: "duplicate key value violates unique constraint" };
-    fake.results = [{ data: null, error: duplicate }];
+  it("a failed save (e.g. a duplicate slug) never uploads the logo", async () => {
+    const duplicate = new Error("That already exists.");
+    fake.results = [duplicate];
     const logo = new File(["x"], "l.webp", { type: "image/webp" });
     await expect(createNeighborhood({ name: "Woodside", slug: "woodside", color: "#123456", sort_order: 0, logo })).rejects.toBe(duplicate);
-    expect(fake.calls.map((c) => c[0])).toEqual(["from", "insert"]);
+    expect(fake.calls.map((c) => c[0])).toEqual(["createNeighborhoodFn"]);
   });
 
-  it.each([
-    ["the upload", [ok, { data: null, error: { message: "storage offline" } }]],
-    ["the logo_path update", [ok, ok, { data: null, error: { message: "storage offline" } }]],
-  ])("keeps the new row and says so when %s fails, still refreshing the lists", async (_step, results) => {
+  it("keeps the new row and says so when the logo upload fails, still refreshing the lists", async () => {
     const { qc, spy } = setup();
-    fake.results = results;
+    fake.results = [null, new Error("disk full")];
     const logo = new File(["x"], "l.webp", { type: "image/webp" });
     await expect(
       new MutationObserver(qc, createNeighborhoodMutation(qc)).mutate({ name: "Woodside", slug: "woodside", color: "#123456", sort_order: 0, logo }),
-    ).rejects.toThrow("Neighborhood added, but the logo didn't upload: storage offline");
+    ).rejects.toThrow("Neighborhood added, but the logo didn't upload: disk full");
     expect(keys(spy)).toEqual(hoodKeys);
   });
 
@@ -189,61 +155,38 @@ describe("admin mutations", () => {
 
   const edit = { slug: "astoria", name: "Astoria North", color: "#ff9a1f", active: false, sort_order: 2 };
 
-  it("updating saves the row fields first (never the slug), then the logo and its path, and refreshes everything that shows it", async () => {
+  it("updating saves the row fields first (the slug only as the key), then the logo, and refreshes everything that shows it", async () => {
     const { qc, spy } = setup();
     const logo = new File(["x"], "l.png", { type: "image/png" });
-    fake.results = [ok, ok, ok];
+    fake.results = [null, "astoria.png"];
     const out = await new MutationObserver(qc, updateNeighborhoodMutation(qc)).mutate({ ...edit, previousLogoPath: "astoria.png", logo });
-    expect(fake.calls).toEqual([
-      ["from", "neighborhoods"], ["update", { name: "Astoria North", color: "#ff9a1f", active: false, sort_order: 2 }], ["eq", "slug", "astoria"],
-      ["upload", "neighborhood-logos", "astoria.png", logo, logoOptions("image/png")],
-      ["from", "neighborhoods"], ["update", { logo_path: "astoria.png" }], ["eq", "slug", "astoria"],
-    ]);
+    expect(fake.calls[0]).toEqual(["updateNeighborhoodFn", edit]);
+    expect([fake.calls[1][0], form(1).get("slug")]).toEqual(["saveNeighborhoodLogoFn", "astoria"]);
     expect(out).toEqual({});
     expect(keys(spy)).toEqual(hoodKeys);
   });
 
-  it("a png → webp change removes the old object after the new path is saved", async () => {
+  it("a failed row update never uploads the logo", async () => {
+    fake.results = [denied];
     const logo = new File(["x"], "l.webp", { type: "image/webp" });
-    fake.results = [ok, ok, ok, ok];
-    expect(await updateNeighborhood({ ...edit, previousLogoPath: "astoria.png", logo })).toEqual({});
-    expect(fake.calls.slice(3)).toEqual([
-      ["upload", "neighborhood-logos", "astoria.webp", logo, logoOptions("image/webp")],
-      ["from", "neighborhoods"], ["update", { logo_path: "astoria.webp" }], ["eq", "slug", "astoria"],
-      ["remove", "neighborhood-logos", ["astoria.png"]],
-    ]);
-  });
-
-  it("a failed removal of the old logo is a warning, not a failed save", async () => {
-    const logo = new File(["x"], "l.webp", { type: "image/webp" });
-    fake.results = [ok, ok, ok, { data: null, error: { message: "not allowed" } }];
-    const out = await updateNeighborhood({ ...edit, previousLogoPath: "astoria.png", logo });
-    expect(out.warning).toMatch(/old logo .*astoria\.png.* not allowed/);
-  });
-
-  it("a failed row update never touches storage", async () => {
-    const logo = new File(["x"], "l.webp", { type: "image/webp" });
-    fake.results = [{ data: null, error: dbError }];
-    await expect(updateNeighborhood({ ...edit, previousLogoPath: null, logo })).rejects.toBe(dbError);
-    expect(fake.calls.map((c) => c[0])).toEqual(["from", "update", "eq"]);
+    await expect(updateNeighborhood({ ...edit, previousLogoPath: null, logo })).rejects.toBe(denied);
+    expect(fake.calls.map((c) => c[0])).toEqual(["updateNeighborhoodFn"]);
   });
 
   it("a failed logo upload after the fields saved says the changes were kept", async () => {
     const { qc, spy } = setup();
     const logo = new File(["x"], "l.webp", { type: "image/webp" });
-    fake.results = [ok, { data: null, error: { message: "storage offline" } }];
+    fake.results = [null, new Error("disk full")];
     await expect(
       new MutationObserver(qc, updateNeighborhoodMutation(qc)).mutate({ ...edit, previousLogoPath: null, logo }),
-    ).rejects.toThrow("Changes saved, but the logo didn't upload: storage offline");
+    ).rejects.toThrow("Changes saved, but the logo didn't upload: disk full");
     expect(keys(spy)).toEqual(hoodKeys);
   });
 
   it("updating without a logo only saves the row fields", async () => {
-    fake.results = [ok];
+    fake.results = [null];
     expect(await updateNeighborhood({ ...edit, previousLogoPath: "astoria.png" })).toEqual({});
-    expect(fake.calls).toEqual([
-      ["from", "neighborhoods"], ["update", { name: "Astoria North", color: "#ff9a1f", active: false, sort_order: 2 }], ["eq", "slug", "astoria"],
-    ]);
+    expect(fake.calls).toEqual([["updateNeighborhoodFn", edit]]);
   });
 
   it("rejects an invalid update before any network call", async () => {

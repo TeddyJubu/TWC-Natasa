@@ -6,7 +6,6 @@ import { cleanup, screen } from "@testing-library/react";
 import { constellationLogoSources, displayFontUrl } from "@/index";
 import { renderWithQueries } from "@/test/dom";
 
-vi.mock("@/app/supabase", async () => (await import("@/test/fake-supabase")).fakeSupabaseModule);
 vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs }));
 
 import { Route as Root } from "@/routes/__root";

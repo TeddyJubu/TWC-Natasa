@@ -7,9 +7,11 @@ import type { Profile } from "@/features/members/queries";
 import { NEIGHBORHOOD_SEED } from "@/features/neighborhoods/queries";
 import { renderWithQueries, stubDialog } from "@/test/dom";
 import { restoreTz, setTz } from "@/test/tz";
-import { fake } from "@/test/fake-supabase";
+import { fake } from "@/test/fake-fns";
 
-vi.mock("@/app/supabase", async () => (await import("@/test/fake-supabase")).fakeSupabaseModule);
+vi.mock("@/features/members/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
+vi.mock("@/features/events/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
+vi.mock("@/features/auth/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs }));
 
 import { Route } from "@/routes/_authenticated/account";
@@ -61,12 +63,11 @@ describe("/account", () => {
     it("is optional: an upload stores it in her own avatars folder and points her profile at it", async () => {
       renderAccount();
       expect(screen.queryByRole("button", { name: /remove logo/i })).toBeNull();
-      fake.results = [{ data: null, error: null }, { data: { ...base, business_logo_url: "u1/logo-1.png" }, error: null }];
+      fake.results = [{ ...base, business_logo_url: "u1/logo-1.png" }];
       fireEvent.change(screen.getByLabelText(/upload a business logo/i), { target: { files: [png()] } });
-      await waitFor(() => expect(fake.calls).toContainEqual(["update", { business_logo_url: expect.stringMatching(/^u1\/logo-\d+\.png$/) }]));
-      const [, bucket, path] = fake.calls.find(([c]) => c === "upload")!;
-      expect(bucket).toBe("avatars");
-      expect(path).toMatch(/^u1\/logo-\d+\.png$/);
+      await waitFor(() => expect(fake.calls.map(([c]) => c)).toContain("uploadImageFn"));
+      const form = fake.calls.find(([c]) => c === "uploadImageFn")![1] as FormData;
+      expect([form.get("kind"), (form.get("file") as File).name]).toEqual(["logo", "logo.PNG"]);
     });
 
     it("rejects a GIF or a file over 5 MB before any upload", async () => {
@@ -78,16 +79,15 @@ describe("/account", () => {
       Object.defineProperty(big, "size", { value: 5 * 1024 * 1024 + 1 });
       fireEvent.change(input, { target: { files: [big] } });
       await waitFor(() => expect(screen.getByRole("alert").textContent).toMatch(/over 5 MB/));
-      expect(fake.calls.filter(([c]) => c === "upload")).toEqual([]);
+      expect(fake.calls.filter(([c]) => c === "uploadImageFn")).toEqual([]);
     });
 
     it("shows her logo with a Remove button that clears it and deletes the file", async () => {
-      renderAccount({ business_logo_url: "u1/logo-1.png" }, [], [], false, [], "https://signed/logo");
-      expect((screen.getByRole("img", { name: "Diaz Bakery logo" }) as HTMLImageElement).src).toBe("https://signed/logo");
-      fake.results = [{ data: { ...base, business_logo_url: null }, error: null }, { data: null, error: null }];
+      renderAccount({ business_logo_url: "u1/logo-1.png" }, [], [], false, [], "https://club.test/media/avatars/u1/logo-1.png");
+      expect((screen.getByRole("img", { name: "Diaz Bakery logo" }) as HTMLImageElement).src).toBe("https://club.test/media/avatars/u1/logo-1.png");
+      fake.results = [{ ...base, business_logo_url: null }];
       fireEvent.click(screen.getByRole("button", { name: /remove logo/i }));
-      await waitFor(() => expect(fake.calls).toContainEqual(["remove", "avatars", ["u1/logo-1.png"]]));
-      expect(fake.calls).toContainEqual(["update", { business_logo_url: null }]);
+      await waitFor(() => expect(fake.calls).toContainEqual(["removeLogoFn"]));
     });
   });
 
@@ -100,7 +100,7 @@ describe("/account", () => {
   });
 
   it("the not-found screen sits in main#main too", async () => {
-    fake.results = [{ data: null, error: null }];
+    fake.results = [null];
     renderWithQueries(<Page />, [viewer()]);
     expect(await screen.findByText("Profile Not Found")).toBeTruthy();
     expect(screen.getByRole("main").id).toBe("main");
@@ -169,9 +169,9 @@ describe("/account", () => {
     it("saves the blank choice as null", async () => {
       renderAccount({ neighborhood: "Astoria" });
       fireEvent.change(select(), { target: { value: "" } });
-      fake.results = [{ data: { ...base, neighborhood: null }, error: null }];
+      fake.results = [{ ...base, neighborhood: null }];
       fireEvent.click(screen.getByRole("button", { name: /save my card/i }));
-      await waitFor(() => expect(fake.calls).toContainEqual(["update", expect.objectContaining({ neighborhood: null })]));
+      await waitFor(() => expect(fake.calls).toContainEqual(["saveProfileFn", expect.objectContaining({ neighborhood: null })]));
     });
   });
 
@@ -194,10 +194,10 @@ describe("/account", () => {
     it("is saved with the profile", async () => {
       renderAccount({ directory_visible: true });
       fireEvent.click(publicSwitch());
-      fake.results = [{ data: { ...base, directory_visible: true, public_profile: true }, error: null }];
+      fake.results = [{ ...base, directory_visible: true, public_profile: true }];
       fireEvent.click(screen.getByRole("button", { name: /save my card/i }));
       await waitFor(() =>
-        expect(fake.calls).toContainEqual(["update", expect.objectContaining({ directory_visible: true, public_profile: true })]),
+        expect(fake.calls).toContainEqual(["saveProfileFn", expect.objectContaining({ directory_visible: true, public_profile: true })]),
       );
     });
 
@@ -209,10 +209,10 @@ describe("/account", () => {
       fireEvent.click(directorySwitch());
       expect(publicSwitch().checked).toBe(false);
       fireEvent.click(directorySwitch());
-      fake.results = [{ data: { ...base }, error: null }];
+      fake.results = [{ ...base }];
       fireEvent.click(screen.getByRole("button", { name: /save my card/i }));
       await waitFor(() =>
-        expect(fake.calls).toContainEqual(["update", expect.objectContaining({ directory_visible: false, public_profile: false })]),
+        expect(fake.calls).toContainEqual(["saveProfileFn", expect.objectContaining({ directory_visible: false, public_profile: false })]),
       );
     });
 
@@ -272,7 +272,7 @@ describe("/account", () => {
     expect(within(preview).queryByText(/unsaved/i)).toBeNull();
     fireEvent.input(name, { target: { value: "Rosa M. Diaz" } });
     fake.reset();
-    fake.results = [{ data: { ...base, full_name: "Rosa M. Diaz" }, error: null }];
+    fake.results = [{ ...base, full_name: "Rosa M. Diaz" }];
     fireEvent.click(screen.getByRole("button", { name: /save my card/i }));
     await waitFor(() => expect(within(preview).queryByText(/unsaved/i)).toBeNull());
     expect(within(preview).getAllByText("Rosa M. Diaz").length).toBeGreaterThan(0);
@@ -291,7 +291,7 @@ describe("/account", () => {
 
     it.each([
       ["loading", new Promise(() => {})],
-      ["failed", { data: null, error: { message: "offline" } }],
+      ["failed", new Error("offline")],
     ])("hides the empty state while events are %s", async (_label, result) => {
       fake.results = [result as never];
       renderWithQueries(<Page />, [
@@ -302,7 +302,7 @@ describe("/account", () => {
         [["intros", "u1", base.neighborhood], []],
       ]);
       await act(() => new Promise((r) => setTimeout(r, 20)));
-      expect(fake.calls[0]).toEqual(["from", "events"]);
+      expect(fake.calls[0]).toEqual(["eventsFn", { from: expect.any(String) }]);
       expect(screen.queryByText(/no gatherings on the calendar yet/i)).toBeNull();
     });
 
@@ -351,6 +351,6 @@ describe("/account", () => {
       fireEvent.change(input, { target: { files: [big] } });
     });
     expect((await screen.findByRole("alert")).textContent).toMatch(/5 MB/);
-    expect(fake.calls.some((c) => c[0] === "upload")).toBe(false);
+    expect(fake.calls.some((c) => c[0] === "uploadImageFn")).toBe(false);
   });
 });

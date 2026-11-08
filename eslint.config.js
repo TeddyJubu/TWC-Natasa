@@ -6,17 +6,8 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    // Generated files are never hand-edited, so they aren't linted: src/integrations/** (the Supabase
-    // client and generated types) and TanStack Router's routeTree.gen.ts.
-    ignores: [
-      "dist",
-      ".output",
-      ".nitro",
-      ".tanstack",
-      ".wrangler",
-      "src/routeTree.gen.ts",
-      "src/integrations/**",
-    ],
+    // Generated files are never hand-edited, so they aren't linted: TanStack Router's routeTree.gen.ts.
+    ignores: ["dist", ".output", ".nitro", ".tanstack", "data", "src/routeTree.gen.ts"],
   },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
@@ -60,9 +51,9 @@ export default tseslint.config(
                 "src/design-system must not import outside itself: attach copies only that subtree.",
             },
             {
-              group: ["@supabase/*", "@tanstack/*"],
+              group: ["better-auth", "better-auth/*", "@tanstack/*"],
               message:
-                "The design system must not know about the backend or router (Supabase/TanStack): attach copies only that subtree. Pass data and callbacks via props.",
+                "The design system must not know about the backend or router (Better Auth/TanStack): attach copies only that subtree. Pass data and callbacks via props.",
             },
           ],
         },

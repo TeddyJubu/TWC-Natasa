@@ -5,13 +5,12 @@ import type { MemberProfile } from "@/index";
 import { demoMembers } from "@/showcase/demo-members";
 import { NEIGHBORHOOD_SEED } from "@/features/neighborhoods/queries";
 import { renderWithQueries, stubDialog } from "@/test/dom";
-import { fake } from "@/test/fake-supabase";
 
-vi.mock("@/app/supabase", async () => (await import("@/test/fake-supabase")).fakeSupabaseModule);
+vi.mock("@/features/members/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs }));
 vi.mock("@/features/auth/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 
-import { fake as fns } from "@/test/fake-fns";
+import { fake } from "@/test/fake-fns";
 import { Route } from "@/routes/members";
 
 const Page = Route.options.component as React.ComponentType;
@@ -19,17 +18,16 @@ let restoreDialog: (() => void) | undefined;
 afterEach(() => {
   cleanup();
   fake.reset();
-  fns.reset();
   restoreDialog?.();
   restoreDialog = undefined;
 });
 
-// Query functions await getSupabase() before calling the rpc, so let pending work settle first.
+// Query functions call their server function asynchronously, so let pending work settle first.
 const settle = () => act(() => new Promise((r) => setTimeout(r, 20)));
-const neverFetched = async (qc: { getQueryData: (k: unknown[]) => unknown }, key: string, rpc: string) => {
+const neverFetched = async (qc: { getQueryData: (k: unknown[]) => unknown }, key: string, fn: string) => {
   await settle();
   expect(qc.getQueryData([key])).toBeUndefined();
-  expect(fake.calls).not.toContainEqual(["rpc", rpc]);
+  expect(fake.calls).not.toContainEqual([fn]);
 };
 
 const card = (name: string, catalogueNumber: number, id = `u-${catalogueNumber}`): MemberProfile => ({
@@ -49,7 +47,7 @@ describe("/members", () => {
     expect(screen.getByLabelText("Catalogue number 12")).toBeTruthy();
     expect(screen.getByLabelText("Catalogue number 15")).toBeTruthy();
     expect(screen.queryByText(/sign in to see the full directory/i)).toBeNull();
-    await neverFetched(queryClient, "public-profiles", "public_profiles");
+    await neverFetched(queryClient, "public-profiles", "publicProfilesFn");
   });
 
   it("admins see the full directory too, even without an approved profile", async () => {
@@ -61,7 +59,7 @@ describe("/members", () => {
     expect(screen.getByText("Lena Ortiz")).toBeTruthy();
     expect(screen.queryByText(/your directory unlocks/i)).toBeNull();
     expect(screen.queryByText(/sign in to see the full directory/i)).toBeNull();
-    await neverFetched(queryClient, "public-profiles", "public_profiles");
+    await neverFetched(queryClient, "public-profiles", "publicProfilesFn");
   });
 
   it("visitors see public profiles and a sign-in prompt, never the members-only directory", async () => {
@@ -70,7 +68,7 @@ describe("/members", () => {
     expect(screen.getByLabelText("Catalogue number 21")).toBeTruthy();
     const prompt = screen.getByRole("link", { name: /sign in to see the full directory/i });
     expect(prompt.getAttribute("href")).toBe("/auth");
-    await neverFetched(queryClient, "directory", "public_directory");
+    await neverFetched(queryClient, "directory", "directoryFn");
   });
 
   it("pending members see public profiles and the welcome-in message, never the directory", async () => {
@@ -78,11 +76,11 @@ describe("/members", () => {
     expect(screen.getByText("Pia Lund")).toBeTruthy();
     expect(screen.getByText(/your directory unlocks once you’re welcomed in/i)).toBeTruthy();
     expect(screen.queryByRole("link", { name: /sign in to see the full directory/i })).toBeNull();
-    await neverFetched(queryClient, "directory", "public_directory");
+    await neverFetched(queryClient, "directory", "directoryFn");
   });
 
   it("shows a loading status, not an empty state, while the viewer is unknown", () => {
-    fake.results = [new Promise(() => {}) as never]; // getSession never settles
+    fake.results = [new Promise(() => {})]; // the viewer never settles
     renderWithQueries(<Page />);
     expect(screen.getByRole("status").textContent).toMatch(/loading members/i);
     expect(screen.queryByText(/no one has shared/i)).toBeNull();
@@ -90,18 +88,16 @@ describe("/members", () => {
   });
 
   it("surfaces a viewer error and retries the viewer", async () => {
-    fns.results = [new Error("offline")];
+    fake.results = [new Error("offline")];
     renderWithQueries(<Page />);
     const alert = await screen.findByRole("alert");
     expect(alert.textContent).toMatch(/couldn’t load/i);
-    expect(fns.calls).toEqual([["viewerFn"]]); // the viewer, not another query, took the error
-    // Raw public_profiles() rows (not MemberProfile cards): the query maps them itself.
-    const row = { full_name: "Pia Lund", role_title: "Founder", business: "Pia Co", neighborhood: "Astoria",
-      specialty: "Food", bio: "", looking_for: "", website: "", avatar_path: null, catalogue_number: 21 };
-    fns.results = [{ signedIn: false, member: false, admin: false }];
-    fake.results = [{ data: [row], error: null }];
+    expect(fake.calls).toEqual([["viewerFn"]]); // the viewer, not another query, took the error
+    const card = { id: "catalogue-21", name: "Pia Lund", role: "Founder", business: "Pia Co", neighborhood: "Astoria",
+      specialty: "Food", bio: "", lookingFor: "", catalogueNumber: 21 };
+    fake.results = [{ signedIn: false, member: false, admin: false }, [card]];
     fireEvent.click(within(alert).getByRole("button", { name: "Retry" }));
-    await waitFor(() => expect(fns.calls).toHaveLength(2));
+    await waitFor(() => expect(fake.calls).toEqual([["viewerFn"], ["viewerFn"], ["publicProfilesFn"]]));
     await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
   });
 

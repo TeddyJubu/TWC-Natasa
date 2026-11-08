@@ -10,8 +10,8 @@ const pageSource = (p: string) =>
     : read(p);
 
 describe("Step 5 rules", () => {
-  it.each(routes)("%s does not import the Supabase client or src/lib/account", (p) => {
-    expect(pageSource(p)).not.toMatch(/@\/integrations\/supabase\/client|@\/lib\/account/);
+  it.each(routes)("%s imports no server code (only server functions) or src/lib/account", (p) => {
+    expect(pageSource(p)).not.toMatch(/from "@\/server\/|from "[^"]*\.server"|@\/lib\/account/);
   });
 
   it("src/lib/account.ts is gone", () => {

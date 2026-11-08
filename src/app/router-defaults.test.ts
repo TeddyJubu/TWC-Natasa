@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@/app/supabase", async () => (await import("@/test/fake-supabase")).fakeSupabaseModule);
 
 import { getRouter } from "@/router";
 import { ErrorPage, NotFound } from "@/app/layout/StatusPages";

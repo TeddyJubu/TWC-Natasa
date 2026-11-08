@@ -3,9 +3,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { renderWithQueries } from "@/test/dom";
 import { expectNoSkippedHeadings } from "@/test/headings";
-import { fake } from "@/test/fake-supabase";
+import { fake } from "@/test/fake-fns";
 
-vi.mock("@/app/supabase", async () => (await import("@/test/fake-supabase")).fakeSupabaseModule);
+vi.mock("@/features/applications/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs }));
 
 import { Route } from "@/routes/join";
@@ -17,15 +17,13 @@ afterEach(() => {
   fake.reset();
 });
 
-type Result = { data: unknown; error: unknown };
 function deferred() {
-  let resolve!: (r: Result) => void;
-  const promise = new Promise<Result>((r) => (resolve = r));
-  return { promise: promise as never, resolve };
+  let resolve!: (r: unknown) => void;
+  const promise = new Promise<unknown>((r) => (resolve = r));
+  return { promise, resolve };
 }
 
-const signedOut: Result = { data: { session: null }, error: null };
-const ok: Result = { data: null, error: null };
+const ok = null;
 /**
  * The control a `<label>` names, like `getByLabelText` (exact string or regex on the label's text, and
  * more than one match is an error) but in one pass over the labels. `getByLabelText` costs ~0.4 s per call
@@ -45,9 +43,9 @@ const field = (label: RegExp) => byLabel(label) as HTMLInputElement;
 const type = (label: RegExp, value: string) => fireEvent.change(field(label), { target: { value } });
 const check = (label: string) => fireEvent.click(byLabel(label));
 const submitButton = () => screen.getByRole("button", { name: /submit application/i }) as HTMLButtonElement;
-const inserts = () => fake.calls.filter(([name]) => name === "insert");
+const inserts = () => fake.calls.filter(([name]) => name === "submitApplicationFn");
 const thanks = () => screen.queryByRole("heading", { name: /thank you for introducing yourself/i });
-// Mutations await getSupabase() and the session before inserting; let that settle.
+// Mutations call their server function asynchronously; let that settle.
 const settle = () => act(() => new Promise((r) => setTimeout(r, 20)));
 
 /** Fills only the fields the form requires (the default radio answers need nothing else but the newsletter consent). */
@@ -75,13 +73,13 @@ const renderSignedOut = () => renderWithQueries(<Page />, [[["applicant"], null]
 describe("/join", () => {
   it("shows the success state only after the insert resolves, with no reset on the live route", async () => {
     const insert = deferred();
-    fake.results = [signedOut, insert.promise];
+    fake.results = [insert.promise];
     renderSignedOut();
     fillMinimum();
     fireEvent.click(submitButton());
     await settle();
 
-    expect(inserts()).toEqual([["insert", expect.objectContaining({ full_name: "Rosa Diaz", email: "rosa@x.test", neighborhood: "Astoria", user_id: null })]]);
+    expect(inserts()).toEqual([["submitApplicationFn", expect.objectContaining({ fullName: "Rosa Diaz", email: "rosa@x.test", neighborhood: "Astoria" })]]);
     expect(thanks()).toBeNull();
     // aria-disabled, not disabled, so focus stays on the button while sending.
     expect(submitButton().getAttribute("aria-disabled")).toBe("true");
@@ -94,7 +92,7 @@ describe("/join", () => {
   });
 
   it("an insert error shows an alert, keeps the form and its values, and Retry resubmits", async () => {
-    fake.results = [signedOut, { data: null, error: { message: "violates check constraint" } }, signedOut, ok];
+    fake.results = [new Error("Some details aren’t valid."), ok];
     renderSignedOut();
     fillMinimum();
     fireEvent.click(submitButton());
@@ -113,7 +111,7 @@ describe("/join", () => {
   });
 
   it("Retry re-reads the form, so an edit made after the failure is what gets sent", async () => {
-    fake.results = [signedOut, { data: null, error: { message: "network" } }, signedOut, ok];
+    fake.results = [new Error("network"), ok];
     renderSignedOut();
     fillMinimum();
     fireEvent.click(submitButton());
@@ -141,7 +139,7 @@ describe("/join", () => {
 
   it("a second submit while the first is pending is ignored", async () => {
     const insert = deferred();
-    fake.results = [signedOut, insert.promise, signedOut, ok];
+    fake.results = [insert.promise, ok];
     renderSignedOut();
     fillMinimum();
     fireEvent.click(submitButton());
@@ -156,7 +154,7 @@ describe("/join", () => {
   });
 
   it("prefills name and email for a signed-in applicant", async () => {
-    fake.results = [{ data: { session: { user: { id: "u1", email: "rosa@x.test", user_metadata: { full_name: "Rosa Diaz" } } } }, error: null }];
+    fake.results = [{ email: "rosa@x.test", fullName: "Rosa Diaz" }];
     renderWithQueries(<Page />);
     await waitFor(() => expect(field(/^email address$/i).value).toBe("rosa@x.test"));
     expect(field(/^full name$/i).value).toBe("Rosa Diaz");
@@ -167,7 +165,7 @@ describe("/join", () => {
     fake.results = [session.promise];
     renderWithQueries(<Page />);
     type(/^full name$/i, "Rosie");
-    await act(async () => session.resolve({ data: { session: { user: { id: "u1", email: "rosa@x.test", user_metadata: { full_name: "Rosa Diaz" } } } }, error: null }));
+    await act(async () => session.resolve({ email: "rosa@x.test", fullName: "Rosa Diaz" }));
     await waitFor(() => expect(field(/^email address$/i).value).toBe("rosa@x.test"));
     expect(field(/^full name$/i).value).toBe("Rosie");
   });
@@ -186,7 +184,7 @@ describe("/join", () => {
   });
 
   it("an empty honeypot inserts as usual", async () => {
-    fake.results = [signedOut, ok];
+    fake.results = [ok];
     renderSignedOut();
     fillMinimum();
     fireEvent.click(submitButton());

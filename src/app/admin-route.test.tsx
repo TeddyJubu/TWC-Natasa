@@ -3,15 +3,14 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { isRedirect } from "@tanstack/react-router";
 import { renderWithQueries } from "@/test/dom";
-import { fake } from "@/test/fake-supabase";
+import { fake } from "@/test/fake-fns";
 
-vi.mock("@/app/supabase", async () => (await import("@/test/fake-supabase")).fakeSupabaseModule);
+vi.mock("@/features/admin/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 const emailApproval = vi.fn(async (_id: string) => ({ sent: true }) as { sent: true } | { sent: false; reason: string });
 vi.mock("@/features/admin/approval-email", () => ({ emailApproval: (id: string) => emailApproval(id) }));
 vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs }));
 vi.mock("@/features/auth/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 
-import { fake as authFake } from "@/test/fake-fns";
 import { Route as GuardRoute } from "@/routes/_authenticated/_admin/route";
 import { Route } from "@/routes/_authenticated/_admin/admin";
 
@@ -19,8 +18,7 @@ const Page = Route.options.component as React.ComponentType;
 afterEach(() => {
   cleanup();
   fake.reset();
-  authFake.reset();
-  emailApproval.mockClear();
+    emailApproval.mockClear();
 });
 
 const settle = () => act(() => new Promise((r) => setTimeout(r, 20)));
@@ -46,37 +44,34 @@ describe("_admin guard", () => {
   };
 
   it("resolves when the viewer is an admin", async () => {
-    authFake.results = [{ signedIn: true, member: true, admin: true }];
+    fake.results = [{ signedIn: true, member: true, admin: true }];
     await expect(beforeLoad()).resolves.toBeUndefined();
-    expect(authFake.calls).toEqual([["viewerFn"]]);
+    expect(fake.calls).toEqual([["viewerFn"]]);
   });
 
   it("redirects to /account when the viewer is not an admin", async () => {
-    authFake.results = [{ signedIn: true, member: true, admin: false }];
+    fake.results = [{ signedIn: true, member: true, admin: false }];
     await redirectsToAccount();
   });
 
   it("redirects to /account when the check errors", async () => {
-    authFake.results = [new Error("offline")];
+    fake.results = [new Error("offline")];
     await redirectsToAccount();
   });
 
   it("redirects for anything but exactly true", async () => {
-    authFake.results = [{ signedIn: true, member: true, admin: "true" }];
+    fake.results = [{ signedIn: true, member: true, admin: "true" }];
     await redirectsToAccount();
   });
 });
 
 describe("/admin", () => {
   describe("applications", () => {
-    it("lists pending first and says whether each is linked to an account", async () => {
-      fake.results = [{
-        data: [
-          application("a-old", "Old Approved", { status: "approved", created_at: "2026-11-05T00:00:00Z", reviewed_at: "2026-11-06T00:00:00Z", reviewed_by: "admin-1" }),
-          application("a-pend", "Pia Pending", { user_id: "u9" }),
-        ],
-        error: null,
-      }];
+    it("lists applications in the server's order (pending first) and says whether each is linked to an account", async () => {
+      fake.results = [[
+        application("a-pend", "Pia Pending", { user_id: "u9" }),
+        application("a-old", "Old Approved", { status: "approved", created_at: "2026-11-05T00:00:00Z", reviewed_at: "2026-11-06T00:00:00Z", reviewed_by: "admin-1" }),
+      ]];
       renderWithQueries(<Page />, [[["admin", "members"], members]]);
       const rows = await screen.findAllByRole("article");
       expect(rows.map((r) => within(r).getByRole("heading").textContent)).toEqual(["Pia Pending", "Old Approved"]);
@@ -87,18 +82,16 @@ describe("/admin", () => {
     });
 
     it("approves an application and shows the new status after the refetch", async () => {
-      fake.results = [{ data: [application("a1", "Pia Pending")], error: null }];
+      fake.results = [[application("a1", "Pia Pending")]];
       renderWithQueries(<Page />, [[["admin", "members"], members]]);
       const row = await screen.findByRole("article");
       fake.results = [
-        { data: null, error: null }, // the update
-        { data: [application("a1", "Pia Pending", { status: "approved", reviewed_at: "2026-11-08T12:00:00Z", reviewed_by: "admin-1" })], error: null },
-        { data: members, error: null }, // members refetch: profiles…
-        { data: [], error: null }, // …and applicant emails
+        null, // the review
+        [application("a1", "Pia Pending", { status: "approved", reviewed_at: "2026-11-08T12:00:00Z", reviewed_by: "admin-1" })],
+        members, // members refetch
       ];
       fireEvent.click(within(row).getByRole("button", { name: /approve/i }));
-      await waitFor(() => expect(fake.calls).toContainEqual(["update", { status: "approved" }]));
-      expect(fake.calls).toContainEqual(["eq", "id", "a1"]);
+      await waitFor(() => expect(fake.calls).toContainEqual(["reviewApplicationFn", { id: "a1", status: "approved" }]));
       await waitFor(() => expect(screen.getByRole("article").textContent).toMatch(/Approved/));
       expect(screen.getByRole("article").textContent).toMatch(/by Natasa Admin/);
       expect(emailApproval.mock.calls).toEqual([["a1"]]);
@@ -107,7 +100,7 @@ describe("/admin", () => {
 
     it("says when the welcome email wasn't sent, with the reason", async () => {
       emailApproval.mockResolvedValueOnce({ sent: false, reason: "email isn’t set up" });
-      fake.results = [{ data: [application("a1", "Pia Pending")], error: null }];
+      fake.results = [[application("a1", "Pia Pending")]];
       renderWithQueries(<Page />, [[["admin", "members"], members]]);
       const row = await screen.findByRole("article");
       fireEvent.click(within(row).getByRole("button", { name: /approve/i }));
@@ -115,21 +108,21 @@ describe("/admin", () => {
     });
 
     it("never emails on a decline", async () => {
-      fake.results = [{ data: [application("a1", "Pia Pending")], error: null }];
+      fake.results = [[application("a1", "Pia Pending")]];
       renderWithQueries(<Page />, [[["admin", "members"], members]]);
       const row = await screen.findByRole("article");
       fireEvent.click(within(row).getByRole("button", { name: /decline/i }));
-      await waitFor(() => expect(fake.calls).toContainEqual(["update", { status: "declined" }]));
+      await waitFor(() => expect(fake.calls).toContainEqual(["reviewApplicationFn", { id: "a1", status: "declined" }]));
       await settle();
       expect(emailApproval).not.toHaveBeenCalled();
       expect(within(row).queryByRole("status")).toBeNull();
     });
 
     it("shows a failed review as an alert and re-enables the buttons", async () => {
-      fake.results = [{ data: [application("a1", "Pia Pending")], error: null }];
+      fake.results = [[application("a1", "Pia Pending")]];
       renderWithQueries(<Page />, [[["admin", "members"], members]]);
       const row = await screen.findByRole("article");
-      fake.results = [{ data: null, error: { message: "permission denied" } }];
+      fake.results = [new Error("permission denied")];
       const approve = within(row).getByRole("button", { name: /approve/i }) as HTMLButtonElement;
       fireEvent.click(approve);
       expect((await within(row).findByRole("alert")).textContent).toMatch(/permission denied/);
@@ -137,21 +130,21 @@ describe("/admin", () => {
     });
 
     it("says when reviewer names can't load, with a Retry, instead of hiding it", async () => {
-      fake.results = [{ data: null, error: { message: "offline" } }, { data: [], error: null }];
+      fake.results = [new Error("offline")];
       renderWithQueries(<Page />, [[["admin", "applications"], [application("a1", "Pia Pending", { status: "approved", reviewed_by: "admin-1" })]]]);
       const alert = await screen.findByRole("alert");
       expect(alert.textContent).toMatch(/member names/i);
-      fake.results = [{ data: members, error: null }, { data: [], error: null }];
+      fake.results = [members];
       fireEvent.click(within(alert).getByRole("button", { name: "Retry" }));
       await waitFor(() => expect(screen.getByRole("article").textContent).toMatch(/by Natasa Admin/));
       expect(screen.queryByRole("alert")).toBeNull();
     });
 
     it("shows a load error with a Retry that refetches", async () => {
-      fake.results = [{ data: null, error: { message: "offline" } }];
+      fake.results = [new Error("offline")];
       renderWithQueries(<Page />, [[["admin", "members"], members]]);
       const alert = await screen.findByRole("alert");
-      fake.results = [{ data: [application("a1", "Pia Pending")], error: null }];
+      fake.results = [[application("a1", "Pia Pending")]];
       fireEvent.click(within(alert).getByRole("button", { name: "Retry" }));
       expect(await screen.findByRole("article")).toBeTruthy();
     });
@@ -168,17 +161,15 @@ describe("/admin", () => {
     const row = screen.getByRole("article");
     expect(row.textContent).toMatch(/Rosa Diaz/);
     expect(row.textContent).toMatch(/Morning/);
-    fake.results = [{ data: null, error: null }, { data: [{ ...booking, status: "confirmed" }], error: null }];
+    fake.results = [null, [{ ...booking, status: "confirmed" }]];
     fireEvent.click(within(row).getByRole("button", { name: /confirm/i }));
-    await waitFor(() => expect(fake.calls).toContainEqual(["update", { status: "confirmed" }]));
-    expect(fake.calls).toContainEqual(["from", "headshot_bookings"]);
+    await waitFor(() => expect(fake.calls).toContainEqual(["setBookingStatusFn", { id: "b1", status: "confirmed" }]));
     await waitFor(() => expect(screen.getByRole("article").textContent).toMatch(/Confirmed/));
   });
 
   it("bookings: when member names fail, shows an inline error with Retry instead of Unknown member", async () => {
     const booking = { id: "b1", user_id: "u1", preferred_date: "2026-12-03", preferred_time: "Morning", notes: "", status: "requested", created_at: "" };
-    const failed = [{ data: null, error: { message: "offline" } }, { data: [], error: null }];
-    fake.results = [...failed, ...failed];
+    fake.results = [new Error("offline"), new Error("offline")];
     renderWithQueries(<Page />, [[["admin", "applications"], []], [["admin", "bookings"], [booking]]]);
     await settle();
     fireEvent.click(screen.getByRole("tab", { name: "Bookings" }));
@@ -186,7 +177,7 @@ describe("/admin", () => {
     const alert = screen.getByRole("alert");
     expect(alert.textContent).toMatch(/member names/i);
     expect(screen.queryByText(/unknown member/i)).toBeNull();
-    fake.results = [{ data: members, error: null }, { data: [], error: null }];
+    fake.results = [members];
     fireEvent.click(within(alert).getByRole("button", { name: "Retry" }));
     await waitFor(() => expect(screen.getByRole("article").textContent).toMatch(/Rosa Diaz/));
   });
@@ -207,10 +198,9 @@ describe("/admin", () => {
     fireEvent.click(screen.getByRole("tab", { name: "Members" }));
     const row = screen.getByRole("row", { name: /Lena Ortiz/ });
     expect(row.textContent).toMatch(/lena@x\.test/);
-    fake.results = [{ data: null, error: null }];
+    fake.results = [null];
     fireEvent.click(within(row).getByRole("button", { name: /approve/i }));
-    await waitFor(() => expect(fake.calls).toContainEqual(["update", { status: "approved" }]));
-    expect(fake.calls.slice(0, 3)).toEqual([["from", "profiles"], ["update", { status: "approved" }], ["eq", "id", "u2"]]);
+    await waitFor(() => expect(fake.calls[0]).toEqual(["setMemberStatusFn", { id: "u2", status: "approved" }]));
     // No application on file: a quiet notice, no email call.
     expect((await within(row).findByRole("status")).textContent).toBe("Approved — email not sent (no application on file)");
     expect(emailApproval).not.toHaveBeenCalled();
@@ -223,13 +213,11 @@ describe("/admin", () => {
     ]);
     fireEvent.click(screen.getByRole("tab", { name: "Members" }));
     const row = screen.getByRole("row", { name: /Lena Ortiz/ });
-    fake.results = [{ data: null, error: null }, { data: { id: "app-9" }, error: null }];
+    fake.results = ["app-9"];
     fireEvent.click(within(row).getByRole("button", { name: /approve/i }));
     expect((await within(row).findByRole("status")).textContent).toBe("Welcome email sent");
-    expect(fake.calls.slice(3, 9)).toEqual([
-      ["from", "applications"], ["select", "id"], ["eq", "user_id", "u2"],
-      ["order", "created_at", { ascending: false }], ["limit", 1], ["maybeSingle"],
-    ]);
+    // The server returns her newest application's id for the email.
+    expect(fake.calls[0]).toEqual(["setMemberStatusFn", { id: "u2", status: "approved" }]);
     expect(emailApproval.mock.calls).toEqual([["app-9"]]);
   });
 
@@ -253,12 +241,12 @@ describe("/admin", () => {
       fireEvent.change(within(form).getByLabelText("Name"), { target: { value: "Woodside" } });
       fireEvent.change(within(form).getByLabelText("Slug"), { target: { value: "woodside" } });
       const created = { ...hood, slug: "woodside", name: "Woodside", color: "#2f9dff", sort_order: 2 };
-      fake.results = [{ data: null, error: null }, { data: [hood, created], error: null }];
+      fake.results = [null, [hood, created]];
       fireEvent.submit(form);
       await waitFor(() =>
-        expect(fake.calls).toContainEqual(["insert", { name: "Woodside", slug: "woodside", color: "#2f9dff", sort_order: 2 }]),
+        expect(fake.calls).toContainEqual(["createNeighborhoodFn", { name: "Woodside", slug: "woodside", color: "#2f9dff", sort_order: 2 }]),
       );
-      expect(fake.calls.some((c) => c[0] === "upload")).toBe(false);
+      expect(fake.calls.some((c) => c[0] === "saveNeighborhoodLogoFn")).toBe(false);
       expect(await screen.findByRole("form", { name: "Edit Woodside" })).toBeTruthy();
     });
 
@@ -266,12 +254,11 @@ describe("/admin", () => {
       open();
       const form = screen.getByRole("form", { name: "Edit Astoria" });
       fireEvent.click(within(form).getByRole("switch", { name: /^Active/ }));
-      fake.results = [{ data: null, error: null }, { data: [{ ...hood, active: false }], error: null }];
+      fake.results = [null, [{ ...hood, active: false }]];
       fireEvent.click(within(form).getByRole("button", { name: /save astoria/i }));
       await waitFor(() =>
-        expect(fake.calls).toContainEqual(["update", { name: "Astoria", color: "#ff9a1f", active: false, sort_order: 1 }]),
+        expect(fake.calls).toContainEqual(["updateNeighborhoodFn", { slug: "astoria", name: "Astoria", color: "#ff9a1f", active: false, sort_order: 1 }]),
       );
-      expect(fake.calls).toContainEqual(["eq", "slug", "astoria"]);
       await waitFor(() => expect(screen.getByRole("form", { name: "Edit Astoria" }).textContent).toMatch(/Inactive/));
     });
 
@@ -282,7 +269,7 @@ describe("/admin", () => {
       expect((await screen.findByRole("alert")).textContent).toMatch(/PNG or WebP/);
       fireEvent.click(screen.getByRole("button", { name: /save astoria/i }));
       await settle();
-      expect(fake.calls.some((c) => c[0] === "upload" || c[0] === "update")).toBe(false);
+      expect(fake.calls).toEqual([]);
     });
   });
 });

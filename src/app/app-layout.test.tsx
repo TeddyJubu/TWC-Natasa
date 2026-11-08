@@ -6,9 +6,7 @@ import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
 import { AppPage } from "@/app/layout/AppLayout";
 import type { Profile } from "@/features/members/queries";
 import { renderWithQueries } from "@/test/dom";
-import { fake } from "@/test/fake-supabase";
 
-vi.mock("@/app/supabase", async () => (await import("@/test/fake-supabase")).fakeSupabaseModule);
 vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs }));
 // The WebGL engine can't run in jsdom.
 vi.mock("@/index", async (orig) => ({
@@ -28,7 +26,6 @@ import { Route as Components } from "@/routes/components";
 vi.spyOn(Account, "useRouteContext").mockReturnValue({ user: { id: "u1" } } as never);
 afterEach(() => {
   cleanup();
-  fake.reset();
 });
 
 type AnyRoute = { options: { component?: unknown; head?: unknown } };

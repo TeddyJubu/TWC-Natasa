@@ -5,9 +5,9 @@ import type { MemberProfile } from "@/index";
 import { demoMembers } from "@/showcase/demo-members";
 import { renderWithQueries } from "@/test/dom";
 import { expectNoSkippedHeadings } from "@/test/headings";
-import { fake } from "@/test/fake-supabase";
+import { fake } from "@/test/fake-fns";
 
-vi.mock("@/app/supabase", async () => (await import("@/test/fake-supabase")).fakeSupabaseModule);
+vi.mock("@/features/members/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs }));
 // The WebGL engine can't run in jsdom; the route only decides which images it gets.
 vi.mock("@/index", async (orig) => ({
@@ -54,12 +54,12 @@ describe("/ (home) member gallery", () => {
     for (const m of demoMembers) expect(screen.queryByAltText(new RegExp(m.name))).toBeNull();
   });
 
-  it("fetches public_profiles() itself, and never the members-only directory", async () => {
-    fake.results = [{ data: [], error: null }];
+  it("fetches the public profiles itself, and never the members-only directory", async () => {
+    fake.results = [[]];
     renderWithQueries(<Page />);
     await act(() => new Promise((r) => setTimeout(r, 20)));
-    expect(fake.calls).toContainEqual(["rpc", "public_profiles"]);
-    expect(fake.calls).not.toContainEqual(["rpc", "public_directory"]);
+    expect(fake.calls).toContainEqual(["publicProfilesFn"]);
+    expect(fake.calls).not.toContainEqual(["directoryFn"]);
     expect(screen.queryByTestId("gallery")).toBeNull();
   });
 });

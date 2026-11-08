@@ -1,40 +1,16 @@
 import { queryOptions } from "@tanstack/react-query";
-import { getSupabase } from "@/app/supabase";
-import type { Database } from "@/integrations/supabase/types";
 import type { MemberProfile } from "@/index";
-import { toMemberProfile } from "./map";
 import { viewerFn } from "@/features/auth/fns";
+import { directoryFn, introsFn, ownProfileFn, publicProfilesFn } from "./fns";
 
-export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
-export type ProfileData = { profile: Profile; avatarUrl: string | undefined; logoUrl?: string };
+export type { Profile, ProfileData } from "./members.server";
+export type { Viewer } from "@/features/auth/viewer.server";
 
-/** Signed URLs for private avatars-bucket files (portraits and business logos); returns a path → url map. */
-export async function avatarUrls(paths: (string | null | undefined)[]) {
-  const list = paths.filter((p): p is string => !!p);
-  if (!list.length) return {} as Record<string, string>;
-  const supabase = await getSupabase();
-  const { data, error } = await supabase.storage.from("avatars").createSignedUrls(list, 60 * 60);
-  if (error) throw error;
-  return Object.fromEntries(
-    (data ?? []).filter((d) => d.signedUrl && d.path).map((d) => [d.path as string, d.signedUrl as string]),
-  ) as Record<string, string>;
-}
-
-const imageFor = (path: string | null | undefined, urls: Record<string, string>) => (path ? urls[path] : undefined);
-
+/** Approved, listed members with portrait and logo URLs (members and admins; the server checks). */
 export const directoryQuery = queryOptions({
   queryKey: ["directory"],
-  queryFn: async (): Promise<MemberProfile[]> => {
-    const supabase = await getSupabase();
-    const { data, error } = await supabase.rpc("public_directory");
-    if (error) throw error;
-    if (!data?.length) return [];
-    const urls = await avatarUrls([...data.map((d) => d.avatar_path), ...data.map((d) => d.business_logo_url)]);
-    return data.map((d) => toMemberProfile(d, { image: imageFor(d.avatar_path, urls), logo: imageFor(d.business_logo_url, urls) }));
-  },
+  queryFn: (): Promise<MemberProfile[]> => directoryFn(),
 });
-
-export type { Viewer } from "@/features/auth/viewer.server";
 
 /**
  * Who is looking: signed out, signed in but not approved, an approved member, and/or an admin. The server answers
@@ -45,66 +21,25 @@ export const viewerQuery = queryOptions({
   queryFn: () => viewerFn(),
 });
 
-/** Opted-in public cards (§2.10). public_profiles() returns no id, so cards are keyed by catalogue number. */
+/** Opted-in public cards (§2.10), keyed by catalogue number: the server sends no ids. */
 export const publicProfilesQuery = queryOptions({
   queryKey: ["public-profiles"],
-  queryFn: async (): Promise<MemberProfile[]> => {
-    const supabase = await getSupabase();
-    const { data, error } = await supabase.rpc("public_profiles");
-    if (error) throw error;
-    if (!data?.length) return [];
-    const urls = await avatarUrls(data.map((d) => d.avatar_path));
-    return data.map((d) =>
-      toMemberProfile({ ...d, id: `catalogue-${d.catalogue_number}` }, { image: imageFor(d.avatar_path, urls) }),
-    );
-  },
+  queryFn: (): Promise<MemberProfile[]> => publicProfilesFn(),
 });
 
+/** Her own profile with image URLs (keyed by her id; the server reads the session, never a passed id). */
 export const profileQuery = (userId: string) =>
   queryOptions({
     queryKey: ["profile", userId],
-    queryFn: async (): Promise<ProfileData | null> => {
-      const supabase = await getSupabase();
-      const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
-      if (error) throw error;
-      if (!data) return null;
-      const urls = await avatarUrls([data.avatar_path, data.business_logo_url]);
-      return { profile: data, avatarUrl: imageFor(data.avatar_path, urls), logoUrl: imageFor(data.business_logo_url, urls) };
-    },
+    queryFn: () => ownProfileFn(),
   });
 
-const INTROS = 4;
-
 /**
- * Up to four approved, listed members: the database returns same-neighborhood ones first (T15).
- * Without a neighborhood there is no "same" to ask for, so it takes the first four from anywhere.
+ * Up to four approved, listed members, same neighborhood first (T15). Without a neighborhood there is no "same"
+ * to ask for, so the first four from anywhere.
  */
 export const introsQuery = (userId: string, neighborhood: string | null) =>
   queryOptions({
     queryKey: ["intros", userId, neighborhood],
-    queryFn: async (): Promise<MemberProfile[]> => {
-      const supabase = await getSupabase();
-      const others = () =>
-        supabase.from("profiles").select("*").neq("id", userId).eq("status", "approved").eq("directory_visible", true);
-      if (neighborhood === null) {
-        const any = await others().order("catalogue_number").limit(INTROS);
-        if (any.error) throw any.error;
-        return withPortraits(any.data);
-      }
-      const near = await others().eq("neighborhood", neighborhood).order("catalogue_number").limit(INTROS);
-      if (near.error) throw near.error;
-      let picked = near.data;
-      if (picked.length < INTROS) {
-        const rest = await others().neq("neighborhood", neighborhood).order("catalogue_number").limit(INTROS - picked.length);
-        if (rest.error) throw rest.error;
-        picked = [...picked, ...rest.data];
-      }
-      return withPortraits(picked);
-    },
+    queryFn: (): Promise<MemberProfile[]> => introsFn({ data: { neighborhood } }),
   });
-
-async function withPortraits(rows: Profile[]): Promise<MemberProfile[]> {
-  if (!rows.length) return [];
-  const urls = await avatarUrls(rows.map((o) => o.avatar_path));
-  return rows.map((o) => toMemberProfile(o, { image: imageFor(o.avatar_path, urls) }));
-}
