@@ -15,6 +15,7 @@ The Women’s Collective is warm, direct, and editorial: full-bleed sky photogra
   - `CircularGallery`'s WebGL text colors are plain values, because canvas text can't read CSS tokens.
 - Serif for headings, big numbers and wordmarks; never bold it — weight 400 only. Sans for everything else.
 - Every section opens with a `Badge` above a centered serif `Heading` (use `SectionHeader`).
+- Exception: `/account` is a settings app — sans headings (the member's name is a medium-weight sans `h1`), no Badge/Hero rhythm, and the neutral `app-*` tokens (`bg-app`, `bg-app-sunken`, `border-app-line`, `border-app-rule`, `text-app-muted`, `text-app-accent`, `bg-app-tint`), used nowhere else.
 - Pages start with `Hero` (photo, glass badge, white headline left, short copy right, thin white rule, glass info card + big stat).
 - Rhythm: light sections → `tone="dome"` black panel → `tone="night"` continuation → light again. Don't scatter random greys.
 - Buttons have 12px corners (`rounded-control`), not pills; badges are pills. Cards use `rounded-card`.
