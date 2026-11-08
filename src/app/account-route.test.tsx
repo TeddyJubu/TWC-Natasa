@@ -26,7 +26,7 @@ afterEach(() => {
 
 const base: Profile = {
   id: "u1", full_name: "Rosa Diaz", role_title: "Founder", business: "Diaz Bakery", neighborhood: "Astoria",
-  specialty: "Food", bio: "", looking_for: "", website: "", avatar_path: null, directory_visible: false,
+  specialty: "Food", bio: "", looking_for: "", website: "", avatar_path: null, business_logo_url: null, directory_visible: false,
   public_profile: false, status: "approved", catalogue_number: 27, member_since: "2026-01-05T12:00:00Z",
   created_at: "", updated_at: "",
 };
@@ -40,13 +40,13 @@ const viewer = (admin = false) => [["viewer"], { signedIn: true, member: true, a
 
 function renderAccount(
   over: Partial<Profile> = {}, intros: MemberProfile[] = [], events: unknown[] = [], admin = false,
-  extra: [unknown[], unknown][] = [],
+  extra: [unknown[], unknown][] = [], logoUrl?: string,
 ) {
   const profile = { ...base, ...over };
   return renderWithQueries(<Page />, [
     ...extra,
     viewer(admin),
-    [["profile", "u1"], { profile, avatarUrl: undefined }],
+    [["profile", "u1"], { profile, avatarUrl: undefined, logoUrl }],
     [["events"], events],
     [["rsvps", "u1"], []],
     [["booking", "u1"], null],
@@ -55,6 +55,42 @@ function renderAccount(
 }
 
 describe("/account", () => {
+  describe("business logo", () => {
+    const png = () => new File(["x"], "logo.PNG", { type: "image/png" });
+
+    it("is optional: an upload stores it in her own avatars folder and points her profile at it", async () => {
+      renderAccount();
+      expect(screen.queryByRole("button", { name: /remove logo/i })).toBeNull();
+      fake.results = [{ data: null, error: null }, { data: { ...base, business_logo_url: "u1/logo-1.png" }, error: null }];
+      fireEvent.change(screen.getByLabelText(/upload a business logo/i), { target: { files: [png()] } });
+      await waitFor(() => expect(fake.calls).toContainEqual(["update", { business_logo_url: expect.stringMatching(/^u1\/logo-\d+\.png$/) }]));
+      const [, bucket, path] = fake.calls.find(([c]) => c === "upload")!;
+      expect(bucket).toBe("avatars");
+      expect(path).toMatch(/^u1\/logo-\d+\.png$/);
+    });
+
+    it("rejects a GIF or a file over 5 MB before any upload", async () => {
+      renderAccount();
+      const input = screen.getByLabelText(/upload a business logo/i);
+      fireEvent.change(input, { target: { files: [new File(["x"], "a.gif", { type: "image/gif" })] } });
+      expect((await screen.findByRole("alert")).textContent).toMatch(/JPG, PNG or WebP/);
+      const big = new File(["x"], "big.png", { type: "image/png" });
+      Object.defineProperty(big, "size", { value: 5 * 1024 * 1024 + 1 });
+      fireEvent.change(input, { target: { files: [big] } });
+      await waitFor(() => expect(screen.getByRole("alert").textContent).toMatch(/over 5 MB/));
+      expect(fake.calls.filter(([c]) => c === "upload")).toEqual([]);
+    });
+
+    it("shows her logo with a Remove button that clears it and deletes the file", async () => {
+      renderAccount({ business_logo_url: "u1/logo-1.png" }, [], [], false, [], "https://signed/logo");
+      expect((screen.getByRole("img", { name: "Diaz Bakery logo" }) as HTMLImageElement).src).toBe("https://signed/logo");
+      fake.results = [{ data: { ...base, business_logo_url: null }, error: null }, { data: null, error: null }];
+      fireEvent.click(screen.getByRole("button", { name: /remove logo/i }));
+      await waitFor(() => expect(fake.calls).toContainEqual(["remove", "avatars", ["u1/logo-1.png"]]));
+      expect(fake.calls).toContainEqual(["update", { business_logo_url: null }]);
+    });
+  });
+
   it("announces loading with role=status", () => {
     fake.results = [new Promise(() => {}) as never];
     renderWithQueries(<Page />, [viewer()]);

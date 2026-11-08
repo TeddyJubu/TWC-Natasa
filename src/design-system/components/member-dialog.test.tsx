@@ -95,6 +95,17 @@ describe("MemberDialog", () => {
     expect(dialog.textContent).toContain("Café owners who want fresh bread");
   });
 
+  it("shows the business logo when there is one, named for the business", () => {
+    render(<MemberDialog member={{ ...member, logo: "https://signed/logo.png" }} onClose={() => {}} />);
+    const logo = screen.getByRole("img", { name: "Diaz Bakery logo" }) as HTMLImageElement;
+    expect(logo.src).toBe("https://signed/logo.png");
+  });
+
+  it("shows no logo without one", () => {
+    render(<MemberDialog member={member} onClose={() => {}} />);
+    expect(screen.queryByRole("img", { name: /logo/i })).toBeNull();
+  });
+
   it("omits empty sections", () => {
     render(<MemberDialog member={{ ...member, neighborhood: "", bio: "", lookingFor: "", website: undefined }} onClose={() => {}} />);
     const dialog = screen.getByRole("dialog");

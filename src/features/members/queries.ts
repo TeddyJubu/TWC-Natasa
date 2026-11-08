@@ -5,9 +5,9 @@ import type { MemberProfile } from "@/index";
 import { toMemberProfile } from "./map";
 
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
-export type ProfileData = { profile: Profile; avatarUrl: string | undefined };
+export type ProfileData = { profile: Profile; avatarUrl: string | undefined; logoUrl?: string };
 
-/** Signed URLs for private avatar files; returns a path → url map. */
+/** Signed URLs for private avatars-bucket files (portraits and business logos); returns a path → url map. */
 export async function avatarUrls(paths: (string | null | undefined)[]) {
   const list = paths.filter((p): p is string => !!p);
   if (!list.length) return {} as Record<string, string>;
@@ -28,8 +28,8 @@ export const directoryQuery = queryOptions({
     const { data, error } = await supabase.rpc("public_directory");
     if (error) throw error;
     if (!data?.length) return [];
-    const urls = await avatarUrls(data.map((d) => d.avatar_path));
-    return data.map((d) => toMemberProfile(d, { image: imageFor(d.avatar_path, urls) }));
+    const urls = await avatarUrls([...data.map((d) => d.avatar_path), ...data.map((d) => d.business_logo_url)]);
+    return data.map((d) => toMemberProfile(d, { image: imageFor(d.avatar_path, urls), logo: imageFor(d.business_logo_url, urls) }));
   },
 });
 
@@ -76,8 +76,8 @@ export const profileQuery = (userId: string) =>
       const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
       if (error) throw error;
       if (!data) return null;
-      const urls = await avatarUrls([data.avatar_path]);
-      return { profile: data, avatarUrl: imageFor(data.avatar_path, urls) };
+      const urls = await avatarUrls([data.avatar_path, data.business_logo_url]);
+      return { profile: data, avatarUrl: imageFor(data.avatar_path, urls), logoUrl: imageFor(data.business_logo_url, urls) };
     },
   });
 

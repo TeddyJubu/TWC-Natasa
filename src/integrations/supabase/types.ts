@@ -182,6 +182,8 @@ export type Database = {
           avatar_path: string | null
           bio: string
           business: string
+          // BRIDGE (0005): hand-patched until the types are regenerated
+          business_logo_url: string | null
           catalogue_number: number | null
           created_at: string
           directory_visible: boolean
@@ -203,6 +205,8 @@ export type Database = {
           avatar_path?: string | null
           bio?: string
           business?: string
+          // BRIDGE (0005): hand-patched until the types are regenerated
+          business_logo_url?: string | null
           catalogue_number?: number | null
           created_at?: string
           directory_visible?: boolean
@@ -224,6 +228,8 @@ export type Database = {
           avatar_path?: string | null
           bio?: string
           business?: string
+          // BRIDGE (0005): hand-patched until the types are regenerated
+          business_logo_url?: string | null
           catalogue_number?: number | null
           created_at?: string
           directory_visible?: boolean
@@ -286,6 +292,8 @@ export type Database = {
           avatar_path: string
           bio: string
           business: string
+          // BRIDGE (0005): hand-patched until the types are regenerated
+          business_logo_url: string | null
           catalogue_number: number
           full_name: string
           id: string

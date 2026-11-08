@@ -34,6 +34,8 @@ export interface MemberProfile {
   imageAlt?: string;
   catalogueNumber?: number;
   website?: string;
+  /** Business logo URL, shown in `MemberDialog` when present. */
+  logo?: string;
 }
 
 /** Color signature for a catalogue card, supplied by the caller (e.g. from neighborhood data). */

@@ -7,7 +7,7 @@ import { pickerNames } from "@/features/neighborhoods/options";
 import { toneFor } from "@/features/neighborhoods/tone";
 import { toMemberProfile } from "@/features/members/map";
 import type { Profile } from "@/features/members/queries";
-import { useSaveProfile, useUploadAvatar, type ProfilePatch } from "@/features/members/mutations";
+import { useRemoveLogo, useSaveProfile, useUploadAvatar, useUploadLogo, type ProfilePatch } from "@/features/members/mutations";
 import { errorMessage } from "./helpers";
 
 /**
@@ -29,11 +29,13 @@ function readCard(form: HTMLFormElement, profile: Profile): ProfilePatch {
 
 /** 01 — the editable public card, its unsaved draft, and the live preview. */
 export function PublicCardSection({
-  userId, profile, avatar, neighborhood: n, hoodList,
+  userId, profile, avatar, logo, neighborhood: n, hoodList,
 }: {
   userId: string;
   profile: Profile;
   avatar?: string;
+  /** Signed URL of her business logo, if she has one. */
+  logo?: string;
   /** Her neighborhood, or null when she hasn't chosen one. */
   neighborhood: string | null;
   hoodList: Neighborhood[];
@@ -82,6 +84,7 @@ export function PublicCardSection({
                   </Select>
                 </FormField>
                 <FormField label="Website" htmlFor="website" index="06" optional><Input name="website" type="url" defaultValue={profile.website} maxLength={200} placeholder="https://" /></FormField>
+                <BusinessLogo userId={userId} path={profile.business_logo_url} url={logo} business={profile.business || profile.full_name} />
               </div>
             </FormSection>
             <FormSection index="B" title="In Your Words" description="Short and warm beats long and formal.">
@@ -123,5 +126,30 @@ export function PublicCardSection({
         </div>
       </Container>
     </Section>
+  );
+}
+
+/** Optional business logo, shown in her profile dialog; saved on pick, like the portrait. */
+function BusinessLogo({ userId, path, url, business }: { userId: string; path: string | null; url?: string; business: string }) {
+  const upload = useUploadLogo(userId);
+  const remove = useRemoveLogo(userId);
+  const failed = upload.isError ? upload.error : remove.isError ? remove.error : null;
+  return (
+    <div className="flex flex-col gap-3 md:col-span-2">
+      <FileUpload
+        label="Upload a business logo"
+        hint="Optional · JPG, PNG or WebP, up to 5 MB"
+        accept="image/jpeg,image/png,image/webp"
+        disabled={upload.isPending}
+        onChange={(e) => { const file = e.currentTarget.files?.[0]; e.currentTarget.value = ""; if (file) upload.mutate(file); }}
+      />
+      {path && (
+        <div className="flex items-center gap-5">
+          {url && <img src={url} alt={`${business} logo`} className="h-12 w-auto max-w-[10rem] object-contain" />}
+          <Button type="button" variant="outline" size="sm" disabled={remove.isPending} onClick={() => remove.mutate(path)}>Remove logo</Button>
+        </div>
+      )}
+      {failed && <p role="alert" className="text-sm text-danger">{errorMessage(failed)}</p>}
+    </div>
   );
 }

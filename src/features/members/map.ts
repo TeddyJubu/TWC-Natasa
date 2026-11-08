@@ -19,7 +19,7 @@ export type MemberRow = {
  * No neighborhood (null) becomes "", which the card leaves out. No portrait leaves `image` and `imageAlt`
  * undefined, so the card shows the member's initials rather than a stock photo passed off as them.
  */
-export function toMemberProfile(row: MemberRow, opts: { image?: string; placeholders?: boolean } = {}): MemberProfile {
+export function toMemberProfile(row: MemberRow, opts: { image?: string; logo?: string; placeholders?: boolean } = {}): MemberProfile {
   const fill = (value: string, placeholder: string) => (opts.placeholders ? value || placeholder : value);
   return {
     id: row.id,
@@ -34,5 +34,6 @@ export function toMemberProfile(row: MemberRow, opts: { image?: string; placehol
     imageAlt: opts.image ? `Portrait of ${opts.placeholders ? row.full_name || "member" : row.full_name}` : undefined,
     catalogueNumber: row.catalogue_number ?? undefined,
     website: row.website || undefined,
+    logo: opts.logo,
   };
 }

@@ -106,6 +106,10 @@ export function MemberDialog({ member, onClose }: MemberDialogProps) {
             </button>
           </div>
 
+          {member.logo && (
+            <img src={member.logo} alt={`${member.business || member.name} logo`} className="h-16 w-auto max-w-[12rem] self-start object-contain" />
+          )}
+
           {bio && <p className="text-base leading-relaxed text-ink-muted">{bio}</p>}
 
           {lookingFor && (

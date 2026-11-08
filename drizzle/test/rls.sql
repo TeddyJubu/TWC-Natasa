@@ -460,3 +460,55 @@ select pg_temp.ok((select status from profiles where id = '00000000-0000-4000-80
 select pg_temp.ok((select status = 'pending' and reviewed_at is null and reviewed_by is null
   from applications where email = 'only-25@x.test'), 'a no-JWT status change leaves the application alone');
 
+
+-- ---------- 0005: business logos ----------
+-- Logos live in the member's own avatars folder (`<uid>/logo-<ts>.<ext>`), so 0000's owner-write and
+-- 0002's "Avatar read" (avatar_folder_visible) policies apply unchanged.
+insert into auth.users (id, email, email_confirmed_at) values
+  ('00000000-0000-4000-8000-000000000030', 'logo-a@x.test', now()),
+  ('00000000-0000-4000-8000-000000000031', 'logo-b@x.test', now()),
+  ('00000000-0000-4000-8000-000000000032', 'logo-hidden@x.test', now());
+update profiles set status = 'approved', directory_visible = (id <> '00000000-0000-4000-8000-000000000032')
+  where id in ('00000000-0000-4000-8000-000000000030', '00000000-0000-4000-8000-000000000031', '00000000-0000-4000-8000-000000000032');
+insert into storage.objects (bucket_id, name) values
+  ('avatars', '00000000-0000-4000-8000-000000000031/logo-1.png'),
+  ('avatars', '00000000-0000-4000-8000-000000000032/logo-1.png');
+update profiles set business_logo_url = '00000000-0000-4000-8000-000000000031/logo-1.png' where id = '00000000-0000-4000-8000-000000000031';
+update profiles set business_logo_url = '00000000-0000-4000-8000-000000000032/logo-1.png' where id = '00000000-0000-4000-8000-000000000032';
+select pg_temp.ok((select is_nullable = 'YES' and data_type = 'text' from information_schema.columns
+  where table_schema = 'public' and table_name = 'profiles' and column_name = 'business_logo_url'), 'profiles.business_logo_url is nullable text');
+
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-4000-8000-000000000030';
+insert into storage.objects (bucket_id, name) values ('avatars', '00000000-0000-4000-8000-000000000030/logo-1.png');
+select pg_temp.ok(true, 'member can upload a logo to her own folder');
+do $$ begin
+  insert into storage.objects (bucket_id, name) values ('avatars', '00000000-0000-4000-8000-000000000031/logo-2.png');
+  raise exception 'FAIL: uploaded a logo into another member''s folder';
+exception when insufficient_privilege then raise notice 'ok  cannot upload a logo into another member''s folder';
+end $$;
+update profiles set business_logo_url = '00000000-0000-4000-8000-000000000030/logo-1.png' where id = auth.uid();
+select pg_temp.ok((select business_logo_url from profiles where id = auth.uid()) = '00000000-0000-4000-8000-000000000030/logo-1.png',
+  'owner can set her own logo');
+do $$ begin
+  update profiles set business_logo_url = '00000000-0000-4000-8000-000000000031/logo-1.png' where id = auth.uid();
+  raise exception 'FAIL: borrowed another member''s logo';
+exception when check_violation then raise notice 'ok  cannot point her logo at another member''s file';
+end $$;
+update profiles set business_logo_url = null where id = '00000000-0000-4000-8000-000000000031';
+select pg_temp.ok((select business_logo_url from public_directory() where id = '00000000-0000-4000-8000-000000000031')
+  = '00000000-0000-4000-8000-000000000031/logo-1.png', 'another member cannot change her logo; the directory returns it');
+select pg_temp.ok((select count(*) from storage.objects where name = '00000000-0000-4000-8000-000000000031/logo-1.png') = 1,
+  'members can read a listed member''s logo');
+select pg_temp.ok((select count(*) from storage.objects where name = '00000000-0000-4000-8000-000000000032/logo-1.png') = 0,
+  'members cannot read a hidden member''s logo');
+set request.jwt.claim.sub = '00000000-0000-4000-8000-000000000032';
+select pg_temp.ok((select count(*) from storage.objects where name = '00000000-0000-4000-8000-000000000032/logo-1.png') = 1,
+  'a hidden member still reads her own logo');
+update profiles set business_logo_url = null where id = auth.uid();
+select pg_temp.ok((select business_logo_url from profiles where id = auth.uid()) is null, 'owner can remove her logo');
+reset role;
+reset request.jwt.claim.sub;
+set role anon;
+select pg_temp.ok((select count(*) from storage.objects where name like '%/logo-%') = 0, 'anon reads no logos of non-public members');
+reset role;

@@ -116,7 +116,7 @@ function AccountPage() {
       )}
 
       {/* 01 Public card */}
-      <PublicCardSection userId={user.id} profile={profile} avatar={avatar} neighborhood={n} hoodList={hoodList} />
+      <PublicCardSection userId={user.id} profile={profile} avatar={avatar} logo={profileState.data?.logoUrl} neighborhood={n} hoodList={hoodList} />
 
       {/* 02 Gatherings & headshot */}
       <Section tone="dome">

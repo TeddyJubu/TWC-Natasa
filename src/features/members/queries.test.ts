@@ -53,6 +53,16 @@ describe("directoryQuery", () => {
     expect(out[0].website).toBeUndefined();
   });
 
+  it("signs business logos with the portraits and puts them on the profile", async () => {
+    fake.results = [
+      { data: [{ ...dirRow, business_logo_url: "u1/logo-1.png" }], error: null },
+      { data: [{ path: "u1/a.jpg", signedUrl: "https://signed/a" }, { path: "u1/logo-1.png", signedUrl: "https://signed/logo" }], error: null },
+    ];
+    const out = (await run(directoryQuery)) as { image: string; logo?: string }[];
+    expect(fake.calls[1]).toEqual(["createSignedUrls", "avatars", ["u1/a.jpg", "u1/logo-1.png"], 3600]);
+    expect(out[0]).toMatchObject({ image: "https://signed/a", logo: "https://signed/logo" });
+  });
+
   it("throws the rpc error", async () => {
     fake.results = [{ data: null, error: dbError }];
     await expect(run(directoryQuery)).rejects.toBe(dbError);
@@ -139,8 +149,16 @@ describe("profileQuery", () => {
       { data: profileRow, error: null },
       { data: [{ path: "u1/a.jpg", signedUrl: "https://signed/a" }], error: null },
     ];
-    expect(await run(profileQuery("u1"))).toEqual({ profile: profileRow, avatarUrl: "https://signed/a" });
+    expect(await run(profileQuery("u1"))).toEqual({ profile: profileRow, avatarUrl: "https://signed/a", logoUrl: undefined });
     expect(fake.calls.slice(0, 4)).toEqual([["from", "profiles"], ["select", "*"], ["eq", "id", "u1"], ["maybeSingle"]]);
+  });
+
+  it("signs her business logo too", async () => {
+    fake.results = [
+      { data: { ...profileRow, business_logo_url: "u1/logo-1.png" }, error: null },
+      { data: [{ path: "u1/a.jpg", signedUrl: "https://signed/a" }, { path: "u1/logo-1.png", signedUrl: "https://signed/logo" }], error: null },
+    ];
+    expect(await run(profileQuery("u1"))).toMatchObject({ avatarUrl: "https://signed/a", logoUrl: "https://signed/logo" });
   });
 
   it("returns null when the profile row is missing", async () => {
