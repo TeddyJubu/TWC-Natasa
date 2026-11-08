@@ -58,7 +58,7 @@ export function Row({ label, htmlFor, icon, empty, add, top, children }: {
   );
 }
 
-/** A small label: `accent` for what needs attention (verified, pending), `muted` for settled states. */
+/** A small label: `accent` to highlight (verified, pending, active), `muted` for settled or switched-off states. */
 export function Chip({ tone = "accent", children }: { tone?: "accent" | "muted"; children: React.ReactNode }) {
   return (
     <span className={cn(

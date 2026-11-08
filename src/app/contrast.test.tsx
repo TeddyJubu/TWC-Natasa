@@ -68,11 +68,6 @@ describe("ink-faint", () => {
     }
     expect(contrast(blend(light["ink-muted"], light.canvas, alpha), light.ink)).toBeGreaterThanOrEqual(AA_LARGE);
   });
-
-  it("admin phone tabs stay large text (24px), since idle tabs only clear 3:1", () => {
-    const admin = readFileSync(`${process.cwd()}/src/routes/_authenticated/_admin/admin.tsx`, "utf8");
-    expect(admin).not.toMatch(/\[role=tab\]\]:text-(xs|sm|base|lg|xl)\b/);
-  });
 });
 
 describe("homepage neighborhood cards", () => {
@@ -130,11 +125,11 @@ describe("mobile menu button", () => {
   });
 });
 
-describe("account app shell (neutral app palette)", () => {
-  // [text, background, alpha of a tinted background over `app`]: every text pair the /account shell uses.
+describe("internal-page app shell (neutral app palette)", () => {
+  // [text, background, alpha of a tinted background over `app`]: every text pair the app shell (/account, /admin) uses.
   const pairs: [string, string, number?][] = [
-    ["ink", "app"], ["ink", "app-sunken"], ["ink-muted", "app-sunken"], ["app-muted", "app"], ["app-muted", "app-sunken"],
-    ["app-accent", "app"], ["app-accent", "app-accent", 0.1], ["canvas", "ink"],
+    ["ink", "app"], ["ink", "app-sunken"], ["ink-muted", "app"], ["ink-muted", "app-sunken"], ["app-muted", "app"], ["app-muted", "app-sunken"],
+    ["app-accent", "app"], ["app-accent", "app-accent", 0.1], ["canvas", "ink"], ["danger", "app"], ["danger", "app-sunken"],
   ];
 
   it.each(["light", "night"] as const)("every text pair clears AA in %s", (mode) => {
@@ -145,10 +140,14 @@ describe("account app shell (neutral app palette)", () => {
     }
   });
 
-  it("the account sources use the app tokens, never raw hex or palette colours", () => {
-    const dir = `${process.cwd()}/src/features/account`;
-    const src = readdirSync(dir).filter((f) => /\.tsx?$/.test(f)).map((f) => readFileSync(`${dir}/${f}`, "utf8")).join("\n")
-      + readFileSync(`${process.cwd()}/src/routes/_authenticated/account.tsx`, "utf8");
+  it("the app-shell sources use the app tokens, never raw hex or palette colours", () => {
+    const read = (f: string) => readFileSync(`${process.cwd()}/${f}`, "utf8");
+    const dir = (d: string) => readdirSync(`${process.cwd()}/${d}`).filter((f) => /\.tsx?$/.test(f)).map((f) => `${d}/${f}`);
+    const src = [
+      ...dir("src/features/account"), "src/features/admin/panels.tsx",
+      "src/app/layout/AppShell.tsx", "src/app/layout/app-ui.tsx", "src/app/layout/app-classes.ts",
+      "src/routes/_authenticated/account.tsx", "src/routes/_authenticated/_admin/admin.tsx",
+    ].map(read).join("\n");
     expect(src).toMatch(/text-app-muted/);
     expect(src).toMatch(/text-app-accent/);
     expect(src).not.toMatch(/(?:bg|text|border|fill|stroke|ring|outline)-\[#|(?:bg|text|border)-(?:zinc|gray|neutral|slate|blue)-\d/);

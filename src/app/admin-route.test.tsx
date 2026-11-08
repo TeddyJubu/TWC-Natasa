@@ -19,7 +19,7 @@ const Page = Route.options.component as React.ComponentType;
 afterEach(() => {
   cleanup();
   fake.reset();
-    emailApproval.mockClear();
+  emailApproval.mockClear();
 });
 
 const settle = () => act(() => new Promise((r) => setTimeout(r, 20)));
@@ -66,26 +66,66 @@ describe("_admin guard", () => {
   });
 });
 
+const FETCH = Symbol("fetch");
+type AdminKey = "applications" | "members" | "neighborhoods" | "bookings";
+/** Seeds every admin read (empty lists, plus `members`) unless overridden; FETCH leaves that read to the queued fake results. */
+function renderAdmin(over: Partial<Record<AdminKey, unknown>> = {}, extra: [unknown[], unknown][] = []) {
+  const data: Record<AdminKey, unknown> = { applications: [], members, neighborhoods: [], bookings: [], ...over };
+  const seed = Object.entries(data).filter(([, v]) => v !== FETCH).map(([k, v]) => [["admin", k], v] as [unknown[], unknown]);
+  return renderWithQueries(<Page />, [...seed, ...extra]);
+}
+const card = (name: string) => screen.getByRole("region", { name });
+
 describe("/admin", () => {
+  describe("shell", () => {
+    it("is one main landmark with the Admin h1 in the top bar, after the skip link", () => {
+      const { container } = renderAdmin();
+      const main = screen.getByRole("main");
+      expect(screen.getAllByRole("main")).toHaveLength(1);
+      expect([main.id, main.tabIndex]).toEqual(["main", -1]);
+      expect(container.querySelector("a")!.getAttribute("href")).toBe("#main");
+      const h1 = screen.getAllByRole("heading", { level: 1 });
+      expect(h1.map((h) => h.textContent)).toEqual(["Admin"]);
+      expect(main.contains(h1[0])).toBe(true);
+    });
+
+    it("renders all four cards as anchored regions, and the sidebar marks the top one as here", () => {
+      renderAdmin();
+      for (const [name, id] of [["Applications", "applications"], ["All members", "members"], ["Neighborhoods", "neighborhoods"], ["Headshot bookings", "bookings"]]) {
+        expect(card(name).id).toBe(id);
+      }
+      const nav = screen.getAllByRole("navigation", { name: "Main" })[0];
+      const link = (name: string) => within(nav).getByRole("link", { name });
+      expect(link("Applications").getAttribute("href")).toBe("#applications");
+      expect(link("Applications").getAttribute("aria-current")).toBe("location");
+      expect(link("Headshot bookings").getAttribute("aria-current")).toBeNull();
+      // The other internal page's cards are router links, never "here".
+      expect(link("Profile").getAttribute("href")).toBe("/account#profile");
+      expect(link("Profile").getAttribute("aria-current")).toBeNull();
+      expect(screen.getByRole("button", { name: /sign out/i })).toBeTruthy();
+    });
+  });
+
   describe("applications", () => {
     it("lists applications in the server's order (pending first) and says whether each is linked to an account", async () => {
       fake.results = [[
         application("a-pend", "Pia Pending", { user_id: "u9" }),
         application("a-old", "Old Approved", { status: "approved", created_at: "2026-11-05T00:00:00Z", reviewed_at: "2026-11-06T00:00:00Z", reviewed_by: "admin-1" }),
       ]];
-      renderWithQueries(<Page />, [[["admin", "members"], members]]);
-      const rows = await screen.findAllByRole("article");
+      renderAdmin({ applications: FETCH });
+      const rows = await within(card("Applications")).findAllByRole("article");
       expect(rows.map((r) => within(r).getByRole("heading").textContent)).toEqual(["Pia Pending", "Old Approved"]);
       expect(rows[0].textContent).toMatch(/Linked to an account/);
       expect(rows[1].textContent).toMatch(/No account yet/);
       expect(rows[1].textContent).toMatch(/by Natasa Admin/);
       expect(rows[0].textContent).toMatch(/Industry/);
+      expect(card("Applications").textContent).toMatch(/1 pending · 2 in total/);
     });
 
     it("approves an application and shows the new status after the refetch", async () => {
       fake.results = [[application("a1", "Pia Pending")]];
-      renderWithQueries(<Page />, [[["admin", "members"], members]]);
-      const row = await screen.findByRole("article");
+      renderAdmin({ applications: FETCH });
+      const row = await within(card("Applications")).findByRole("article");
       fake.results = [
         null, // the review
         [application("a1", "Pia Pending", { status: "approved", reviewed_at: "2026-11-08T12:00:00Z", reviewed_by: "admin-1" })],
@@ -93,25 +133,26 @@ describe("/admin", () => {
       ];
       fireEvent.click(within(row).getByRole("button", { name: /approve/i }));
       await waitFor(() => expect(fake.calls).toContainEqual(["reviewApplicationFn", { id: "a1", status: "approved" }]));
-      await waitFor(() => expect(screen.getByRole("article").textContent).toMatch(/Approved/));
-      expect(screen.getByRole("article").textContent).toMatch(/by Natasa Admin/);
+      const updated = () => within(card("Applications")).getByRole("article");
+      await waitFor(() => expect(updated().textContent).toMatch(/Approved/));
+      expect(updated().textContent).toMatch(/by Natasa Admin/);
       expect(emailApproval.mock.calls).toEqual([["a1"]]);
-      expect(within(screen.getByRole("article")).getByRole("status").textContent).toBe("Welcome email sent");
+      expect(within(updated()).getByRole("status").textContent).toBe("Welcome email sent");
     });
 
     it("says when the welcome email wasn't sent, with the reason", async () => {
       emailApproval.mockResolvedValueOnce({ sent: false, reason: "email isn’t set up" });
       fake.results = [[application("a1", "Pia Pending")]];
-      renderWithQueries(<Page />, [[["admin", "members"], members]]);
-      const row = await screen.findByRole("article");
+      renderAdmin({ applications: FETCH });
+      const row = await within(card("Applications")).findByRole("article");
       fireEvent.click(within(row).getByRole("button", { name: /approve/i }));
       expect((await within(row).findByRole("status")).textContent).toBe("Approved — email not sent (email isn’t set up)");
     });
 
     it("never emails on a decline", async () => {
       fake.results = [[application("a1", "Pia Pending")]];
-      renderWithQueries(<Page />, [[["admin", "members"], members]]);
-      const row = await screen.findByRole("article");
+      renderAdmin({ applications: FETCH });
+      const row = await within(card("Applications")).findByRole("article");
       fireEvent.click(within(row).getByRole("button", { name: /decline/i }));
       await waitFor(() => expect(fake.calls).toContainEqual(["reviewApplicationFn", { id: "a1", status: "declined" }]));
       await settle();
@@ -121,8 +162,8 @@ describe("/admin", () => {
 
     it("shows a failed review as an alert and re-enables the buttons", async () => {
       fake.results = [[application("a1", "Pia Pending")]];
-      renderWithQueries(<Page />, [[["admin", "members"], members]]);
-      const row = await screen.findByRole("article");
+      renderAdmin({ applications: FETCH });
+      const row = await within(card("Applications")).findByRole("article");
       fake.results = [new Error("permission denied")];
       const approve = within(row).getByRole("button", { name: /approve/i }) as HTMLButtonElement;
       fireEvent.click(approve);
@@ -132,71 +173,60 @@ describe("/admin", () => {
 
     it("says when reviewer names can't load, with a Retry, instead of hiding it", async () => {
       fake.results = [new Error("offline")];
-      renderWithQueries(<Page />, [[["admin", "applications"], [application("a1", "Pia Pending", { status: "approved", reviewed_by: "admin-1" })]]]);
-      const alert = await screen.findByRole("alert");
+      renderAdmin({ applications: [application("a1", "Pia Pending", { status: "approved", reviewed_by: "admin-1" })], members: FETCH });
+      const alert = await within(card("Applications")).findByRole("alert");
       expect(alert.textContent).toMatch(/member names/i);
       fake.results = [members];
       fireEvent.click(within(alert).getByRole("button", { name: "Retry" }));
-      await waitFor(() => expect(screen.getByRole("article").textContent).toMatch(/by Natasa Admin/));
+      await waitFor(() => expect(within(card("Applications")).getByRole("article").textContent).toMatch(/by Natasa Admin/));
       expect(screen.queryByRole("alert")).toBeNull();
     });
 
     it("shows a load error with a Retry that refetches", async () => {
       fake.results = [new Error("offline")];
-      renderWithQueries(<Page />, [[["admin", "members"], members]]);
-      const alert = await screen.findByRole("alert");
+      renderAdmin({ applications: FETCH });
+      const alert = await within(card("Applications")).findByRole("alert");
       fake.results = [[application("a1", "Pia Pending")]];
       fireEvent.click(within(alert).getByRole("button", { name: "Retry" }));
-      expect(await screen.findByRole("article")).toBeTruthy();
+      expect(await within(card("Applications")).findByRole("article")).toBeTruthy();
     });
   });
 
+  const booking = { id: "b1", user_id: "u1", preferred_date: "2026-12-03", preferred_time: "Morning", notes: "", status: "requested", created_at: "" };
+
   it("bookings: Confirm updates the booking and shows it confirmed", async () => {
-    const booking = { id: "b1", user_id: "u1", preferred_date: "2026-12-03", preferred_time: "Morning", notes: "", status: "requested", created_at: "" };
-    renderWithQueries(<Page />, [
-      [["admin", "applications"], []],
-      [["admin", "members"], members],
-      [["admin", "bookings"], [booking]],
-    ]);
-    fireEvent.click(screen.getByRole("tab", { name: "Bookings" }));
-    const row = screen.getByRole("article");
+    renderAdmin({ bookings: [booking] });
+    const row = within(card("Headshot bookings")).getByRole("article");
     expect(row.textContent).toMatch(/Rosa Diaz/);
     expect(row.textContent).toMatch(/Morning/);
     fake.results = [null, [{ ...booking, status: "confirmed" }]];
     fireEvent.click(within(row).getByRole("button", { name: /confirm/i }));
     await waitFor(() => expect(fake.calls).toContainEqual(["setBookingStatusFn", { id: "b1", status: "confirmed" }]));
-    await waitFor(() => expect(screen.getByRole("article").textContent).toMatch(/Confirmed/));
+    await waitFor(() => expect(within(card("Headshot bookings")).getByRole("article").textContent).toMatch(/Confirmed/));
   });
 
   it("bookings: when member names fail, shows an inline error with Retry instead of Unknown member", async () => {
-    const booking = { id: "b1", user_id: "u1", preferred_date: "2026-12-03", preferred_time: "Morning", notes: "", status: "requested", created_at: "" };
-    fake.results = [new Error("offline"), new Error("offline")];
-    renderWithQueries(<Page />, [[["admin", "applications"], []], [["admin", "bookings"], [booking]]]);
+    fake.results = [new Error("offline")];
+    renderAdmin({ bookings: [booking], members: FETCH });
     await settle();
-    fireEvent.click(screen.getByRole("tab", { name: "Bookings" }));
-    await settle();
-    const alert = screen.getByRole("alert");
+    const bookings = card("Headshot bookings");
+    const alert = within(bookings).getByRole("alert");
     expect(alert.textContent).toMatch(/member names/i);
     expect(screen.queryByText(/unknown member/i)).toBeNull();
     fake.results = [members];
     fireEvent.click(within(alert).getByRole("button", { name: "Retry" }));
-    await waitFor(() => expect(screen.getByRole("article").textContent).toMatch(/Rosa Diaz/));
+    await waitFor(() => expect(within(card("Headshot bookings")).getByRole("article").textContent).toMatch(/Rosa Diaz/));
   });
 
   it("members: the table scrolls in a focusable, labelled region", () => {
-    renderWithQueries(<Page />, [[["admin", "applications"], []], [["admin", "members"], members]]);
-    fireEvent.click(screen.getByRole("tab", { name: "Members" }));
-    const region = screen.getByRole("region", { name: "Members" });
+    renderAdmin();
+    const region = within(card("All members")).getByRole("region", { name: "Members" });
     expect(region.tabIndex).toBe(0);
     expect(within(region).getByRole("table")).toBeTruthy();
   });
 
   it("members: approve sets the profile status directly", async () => {
-    renderWithQueries(<Page />, [
-      [["admin", "applications"], []],
-      [["admin", "members"], [member("u2", "Lena Ortiz", { status: "pending", catalogue_number: null, email: "lena@x.test" })]],
-    ]);
-    fireEvent.click(screen.getByRole("tab", { name: "Members" }));
+    renderAdmin({ members: [member("u2", "Lena Ortiz", { status: "pending", catalogue_number: null, email: "lena@x.test" })] });
     const row = screen.getByRole("row", { name: /Lena Ortiz/ });
     expect(row.textContent).toMatch(/lena@x\.test/);
     fake.results = [null];
@@ -208,11 +238,7 @@ describe("/admin", () => {
   });
 
   it("members: approve emails the member's newest application", async () => {
-    renderWithQueries(<Page />, [
-      [["admin", "applications"], []],
-      [["admin", "members"], [member("u2", "Lena Ortiz", { status: "pending", catalogue_number: null })]],
-    ]);
-    fireEvent.click(screen.getByRole("tab", { name: "Members" }));
+    renderAdmin({ members: [member("u2", "Lena Ortiz", { status: "pending", catalogue_number: null })] });
     const row = screen.getByRole("row", { name: /Lena Ortiz/ });
     fake.results = ["app-9"];
     fireEvent.click(within(row).getByRole("button", { name: /approve/i }));
@@ -224,16 +250,14 @@ describe("/admin", () => {
 
   describe("neighborhoods", () => {
     const hood = { slug: "astoria", name: "Astoria", color: "#ff9a1f", logo_path: null, logoUrl: null, active: true, sort_order: 1, created_at: "" };
-    const open = () => {
-      renderWithQueries(<Page />, [[["admin", "applications"], []], [["admin", "members"], members], [["admin", "neighborhoods"], [hood]]]);
-      fireEvent.click(screen.getByRole("tab", { name: "Neighborhoods" }));
-    };
+    const open = () => renderAdmin({ neighborhoods: [hood] });
 
-    it("shows the slug read-only for an existing row", () => {
+    it("shows the slug read-only for an existing row, its hint attached", () => {
       open();
       const slug = screen.getByLabelText("Slug", { selector: "#hood-astoria-slug" }) as HTMLInputElement;
       expect(slug.value).toBe("astoria");
       expect(slug.readOnly).toBe(true);
+      expect(document.getElementById(slug.getAttribute("aria-describedby")!)!.textContent).toBe("Fixed after creation.");
     });
 
     it("creating a neighborhood sends the insert", async () => {
