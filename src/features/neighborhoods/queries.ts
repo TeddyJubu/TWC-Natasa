@@ -4,7 +4,7 @@ import { getSupabase } from "@/app/supabase";
 /** Inactive rows stay in the list so cards that still use one keep its color and logo; pickers hide them (pickerNames). */
 export type Neighborhood = { slug: string; name: string; color: string; logoUrl: string | null; active: boolean };
 
-// Mirrors the seed in drizzle/migrations/0001_members_only_admin.sql (a test keeps them in sync).
+// Mirrors the seed in db/migrations/0001_init.sql (src/server/db.test.ts keeps them in sync).
 export const NEIGHBORHOOD_SEED: Neighborhood[] = [
   { slug: "long-island-city", name: "Long Island City", color: "#2f9dff", logoUrl: null, active: true },
   { slug: "astoria", name: "Astoria", color: "#ff9a1f", logoUrl: null, active: true },

@@ -1,4 +1,3 @@
-import { readFileSync } from "node:fs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { QueryClient, QueryObserver } from "@tanstack/react-query";
 
@@ -42,21 +41,6 @@ beforeEach(() => {
   h.reject = false;
   h.result = { data: [], error: null };
   vi.spyOn(console, "warn").mockImplementation(() => {});
-});
-
-describe("NEIGHBORHOOD_SEED", () => {
-  it("matches the 0001 migration seed exactly", () => {
-    const sql = readFileSync("drizzle/migrations/0001_members_only_admin.sql", "utf8");
-    const block = sql.match(/insert into public\.neighborhoods[^]*?values([^]*?)on conflict/i)![1];
-    const rows = [...block.matchAll(/\(\s*'([^']+)',\s*'([^']+)',\s*'(#[0-9a-fA-F]{6})',\s*(\d+)\s*\)/g)]
-      .map((m) => ({ slug: m[1], name: m[2], color: m[3], order: Number(m[4]) }))
-      .sort((a, b) => a.order - b.order);
-    expect(rows).toHaveLength(7);
-    expect(NEIGHBORHOOD_SEED.map((n) => [n.slug, n.name, n.color])).toEqual(
-      rows.map((r) => [r.slug, r.name, r.color]),
-    );
-    expect(NEIGHBORHOOD_SEED.every((n) => n.logoUrl === null && n.active)).toBe(true);
-  });
 });
 
 describe("neighborhoodsQuery", () => {
