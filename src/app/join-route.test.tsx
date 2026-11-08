@@ -172,6 +172,29 @@ describe("/join", () => {
     expect(field(/^full name$/i).value).toBe("Rosie");
   });
 
+  it("a filled honeypot shows the normal success state and never inserts", async () => {
+    renderSignedOut();
+    fillMinimum();
+    const trap = document.querySelector<HTMLInputElement>('input[name="fax-number"]')!;
+    expect(trap.tabIndex).toBe(-1);
+    expect(trap.autocomplete).toBe("off");
+    expect(trap.closest("[aria-hidden='true']")).not.toBeNull();
+    fireEvent.change(trap, { target: { value: "555-0199" } });
+    fireEvent.click(submitButton());
+    expect(await screen.findByRole("heading", { name: /thank you for introducing yourself/i })).toBeTruthy();
+    expect(fake.calls).toEqual([]);
+  });
+
+  it("an empty honeypot inserts as usual", async () => {
+    fake.results = [signedOut, ok];
+    renderSignedOut();
+    fillMinimum();
+    fireEvent.click(submitButton());
+    expect(await screen.findByRole("heading", { name: /thank you for introducing yourself/i })).toBeTruthy();
+    expect(inserts()).toHaveLength(1);
+    expect(JSON.stringify(inserts())).not.toMatch(/fax-number/);
+  });
+
   it("a required group left empty blocks submit with its error and never inserts", async () => {
     renderSignedOut();
     fillMinimum();

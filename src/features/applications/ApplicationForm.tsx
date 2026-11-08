@@ -34,6 +34,9 @@ export interface ApplicationFormProps {
   resettable?: boolean;
 }
 
+/** Name of the hidden anti-spam field; deliberately not a real application field. */
+const HONEYPOT = "fax-number";
+
 /** `invalid`: the parser rejected the answers (clears on the next edit). `send`: the insert failed (offers Retry). */
 type Failure = { kind: "invalid" | "send"; message: string };
 
@@ -48,6 +51,8 @@ export function ApplicationForm({ submit, initial, resettable }: ApplicationForm
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (inFlight.current) return;
+    // Honeypot: only bots fill the hidden field. They get the normal success state and nothing is saved.
+    if (new FormData(event.currentTarget).get(HONEYPOT)) return setStatus("sent");
     let application: ApplicationInput;
     try {
       application = parseApplication(new FormData(event.currentTarget));
@@ -148,6 +153,9 @@ function ApplicationFields({ initial, busy, failure, onSubmit, onEdit }: FieldsP
         <FormProgress items={progress} current={0} className="mt-12" />
       </header>
 
+      <div aria-hidden="true" className="absolute -left-[9999px] h-px w-px overflow-hidden">
+        <label>Leave this field empty<input name={HONEYPOT} type="text" tabIndex={-1} autoComplete="off" /></label>
+      </div>
       <div className="space-y-20 px-6 py-12 md:px-12 md:py-16">
         <FormSection headingAs="h2" index="01 — Personal information" title="Start With You" description="Private details stay private unless you explicitly authorize publication.">
           <div className="grid gap-8 md:grid-cols-2">
