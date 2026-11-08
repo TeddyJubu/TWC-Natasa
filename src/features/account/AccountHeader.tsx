@@ -1,9 +1,9 @@
 import { cn, initials } from "@/index";
 import type { Profile } from "@/features/members/queries";
 import { useUploadAvatar } from "@/features/members/mutations";
+import { Icon } from "@/app/layout/icons";
+import { Chip } from "@/app/layout/app-ui";
 import { errorMessage, monthYear } from "./helpers";
-import { Icon } from "./icons";
-import { Chip } from "./shared";
 
 // The design's 19 × 5 grid of 58px cells: a few warm and grey ones, faded out toward the name.
 const COLS = 19;

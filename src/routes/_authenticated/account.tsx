@@ -1,22 +1,22 @@
 import * as React from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Button, MemberDialog, type MemberProfile } from "@/index";
 import { AppPage } from "@/app/layout/AppLayout";
-import { getAuthClient } from "@/app/auth-client";
-import { emitAuthEvent } from "@/app/auth-events";
+import { AppShell, TopBar } from "@/app/layout/AppShell";
+import { InlineError } from "@/app/layout/app-ui";
+import { useSignOut } from "@/app/layout/sign-out";
 import { useNeighborhoods, type Neighborhood } from "@/features/neighborhoods/queries";
 import { profileQuery, viewerQuery, type Profile } from "@/features/members/queries";
 import { toMemberProfile } from "@/features/members/map";
 import { useSaveProfile, type ProfilePatch } from "@/features/members/mutations";
 import { AccountHeader } from "@/features/account/AccountHeader";
-import { AccountShell, TopBar } from "@/features/account/AccountShell";
 import { MembershipCard, PublicCard, VisibilityCard, WordsCard } from "@/features/account/ProfileCards";
 import { GatheringsList } from "@/features/account/GatheringsList";
 import { HeadshotBooking } from "@/features/account/HeadshotBooking";
 import { IntroductionsSection } from "@/features/account/IntroductionsSection";
+import { SaveActions } from "@/features/account/SaveActions";
 import { PROFILE_FORM, changedFields, errorMessage, fieldId, type CardKey, type ProfileEditor } from "@/features/account/helpers";
-import { InlineError } from "@/features/account/shared";
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
@@ -34,8 +34,6 @@ export const Route = createFileRoute("/_authenticated/account")({
 
 function AccountPage() {
   const { user } = Route.useRouteContext();
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const { data: hoodList = [] } = useNeighborhoods();
   const profileState = useQuery(profileQuery(user.id));
   // Only decides whether to show the Admin link; /admin's own guard and the database enforce access.
@@ -43,22 +41,8 @@ function AccountPage() {
   const profile = profileState.data?.profile;
   const avatar = profileState.data?.avatarUrl;
 
-  const [signOutError, setSignOutError] = React.useState<string | null>(null);
-
-  async function signOut() {
-    setSignOutError(null);
-    try {
-      const { error } = await (await getAuthClient()).signOut();
-      if (error) throw new Error(error.message ?? "We couldn’t sign you out. Please try again.");
-    } catch (error) {
-      setSignOutError(errorMessage(error));
-      return;
-    }
-    await queryClient.cancelQueries();
-    queryClient.clear();
-    emitAuthEvent("SIGNED_OUT");
-    navigate({ to: "/auth", replace: true });
-  }
+  // The not-found screen's own Sign out; the shell has its own.
+  const { signOut, error: signOutError } = useSignOut();
 
   if (profileState.isPending) {
     return <main id="main" tabIndex={-1} className="grid min-h-screen place-items-center bg-canvas outline-none"><span role="status" aria-label="Loading your profile" className="size-6 animate-spin rounded-full border-2 border-ink border-t-transparent" /></main>;
@@ -87,12 +71,11 @@ function AccountPage() {
 
   return (
     <AppPage>
-      <AccountShell admin={admin} onSignOut={signOut}>
+      <AppShell page="/account" admin={admin}>
         <ProfileEditorPage userId={user.id} profile={profile} avatar={avatar} logoUrl={profileState.data?.logoUrl} hoodList={hoodList}>
-          {signOutError && <p role="alert" className="px-4 pt-4 text-sm text-danger sm:px-8">{signOutError}</p>}
           {profileState.isError && <InlineError message="We couldn’t refresh your profile. What you see may be out of date." onRetry={() => void profileState.refetch()} />}
         </ProfileEditorPage>
-      </AccountShell>
+      </AppShell>
     </AppPage>
   );
 }
@@ -145,11 +128,13 @@ function ProfileEditorPage({ userId, profile, avatar, logoUrl, hoodList, childre
 
   return (
     <main id="main" tabIndex={-1} className="outline-none">
-      <TopBar
-        formId={PROFILE_FORM} dirty={dirty} pending={save.isPending} saved={saved} error={save.isError ? errorMessage(save.error) : null}
-        onSubmit={submit}
-        onPreview={() => setOpenMember(toMemberProfile(card, { image: avatar, logo: logoUrl, placeholders: true }))}
-      />
+      <TopBar section="My Account" icon="circle-user-round" title="Profile">
+        <SaveActions
+          formId={PROFILE_FORM} dirty={dirty} pending={save.isPending} saved={saved} error={save.isError ? errorMessage(save.error) : null}
+          onSubmit={submit}
+          onPreview={() => setOpenMember(toMemberProfile(card, { image: avatar, logo: logoUrl, placeholders: true }))}
+        />
+      </TopBar>
       {children}
       <div className="max-w-277">
         <AccountHeader userId={userId} profile={profile} avatar={avatar} />

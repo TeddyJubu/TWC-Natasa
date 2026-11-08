@@ -3,8 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { bookingQuery } from "@/features/events/queries";
 import { useBookHeadshot } from "@/features/events/mutations";
 import { localDateISO } from "@/features/events/format";
-import { errorMessage, fieldClass, linkClass, primaryButton } from "./helpers";
-import { Card, InlineError, Locked, Row } from "./shared";
+import { fieldClass, linkClass, primaryButton } from "@/app/layout/app-classes";
+import { Card, InlineError, Row } from "@/app/layout/app-ui";
+import { errorMessage } from "./helpers";
+import { Locked } from "./shared";
 
 /** What the member sees for each headshot booking status (the database allows only these three). */
 const BOOKING_COPY: Record<string, { title: string; body: string }> = {

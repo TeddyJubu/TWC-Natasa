@@ -4,9 +4,10 @@ import type { Neighborhood } from "@/features/neighborhoods/queries";
 import { pickerNames } from "@/features/neighborhoods/options";
 import type { Profile } from "@/features/members/queries";
 import { useRemoveLogo, useUploadLogo } from "@/features/members/mutations";
-import { PROFILE_FORM, errorMessage, fieldClass, fieldId, linkClass, monthYear, type ProfileEditor } from "./helpers";
-import type { IconName } from "./icons";
-import { Card, Chip, EditButton, Row, Toggle } from "./shared";
+import { fieldClass, linkClass } from "@/app/layout/app-classes";
+import type { IconName } from "@/app/layout/icons";
+import { Card, Chip, EditButton, Row, Toggle } from "@/app/layout/app-ui";
+import { PROFILE_FORM, errorMessage, fieldId, monthYear, type ProfileEditor } from "./helpers";
 
 type TextRow = {
   key: "full_name" | "role_title" | "business" | "specialty" | "website"; label: string; icon?: IconName; empty: string; max: number;

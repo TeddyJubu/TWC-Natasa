@@ -5,8 +5,10 @@ import { toneFor } from "@/features/neighborhoods/tone";
 import { eventsQuery, rsvpsQuery } from "@/features/events/queries";
 import { useToggleRsvp } from "@/features/events/mutations";
 import { eventWhen } from "@/features/events/format";
-import { errorMessage, hoodStyle, primaryButton, secondaryButton } from "./helpers";
-import { Card, InlineError, Locked } from "./shared";
+import { primaryButton, secondaryButton } from "@/app/layout/app-classes";
+import { Card, InlineError } from "@/app/layout/app-ui";
+import { errorMessage, hoodStyle } from "./helpers";
+import { Locked } from "./shared";
 
 /** Upcoming gatherings with her RSVPs; applicants see what unlocks. */
 export function GatheringsList({ userId, approved, hoodList }: { userId: string; approved: boolean; hoodList: Neighborhood[] }) {

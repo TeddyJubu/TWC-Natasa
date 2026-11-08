@@ -111,12 +111,19 @@ describe("/account", () => {
     expect(screen.getByRole("main").id).toBe("main");
   });
 
-  it("shows an Admin link to /admin for admins only", () => {
+  it("shows the Admin group, linking /admin's cards, to admins only", () => {
     renderAccount({}, [], [], true);
-    expect(screen.getByRole("link", { name: "Admin" }).getAttribute("href")).toBe("/admin");
+    const nav = screen.getAllByRole("navigation", { name: "Main" })[0];
+    const href = (name: string) => within(nav).getByRole("link", { name }).getAttribute("href");
+    expect(within(nav).getByText("Admin")).toBeTruthy();
+    expect([href("Applications"), href("All members"), href("Neighborhoods"), href("Headshot bookings")])
+      .toEqual(["/admin#applications", "/admin#members", "/admin#neighborhoods", "/admin#bookings"]);
+    // Another page's cards are never "here".
+    expect(within(nav).getByRole("link", { name: "Applications" }).getAttribute("aria-current")).toBeNull();
     cleanup();
     renderAccount();
-    expect(screen.queryByRole("link", { name: "Admin" })).toBeNull();
+    expect(screen.queryByText("Admin")).toBeNull();
+    expect(screen.queryByRole("link", { name: "Applications" })).toBeNull();
   });
 
   it("shows a declined application as declined, not in review", () => {
@@ -360,7 +367,7 @@ describe("/account", () => {
   describe("navigation", () => {
     it("links Home and Members, anchors this page's cards, and has no Notifications", () => {
       renderAccount();
-      const nav = screen.getAllByRole("navigation", { name: "Account" })[0];
+      const nav = screen.getAllByRole("navigation", { name: "Main" })[0];
       const href = (name: string) => within(nav).getByRole("link", { name }).getAttribute("href");
       expect([href("Home"), href("Members"), href("Gatherings"), href("Introductions")]).toEqual(["/", "/members", "#gatherings", "#introductions"]);
       expect([href("Profile"), href("Public card"), href("Visibility"), href("Headshot session")]).toEqual(["#profile", "#public-card", "#visibility", "#headshot"]);
@@ -378,7 +385,7 @@ describe("/account", () => {
       fireEvent.click(menu);
       expect(menu.getAttribute("aria-expanded")).toBe("true");
       const drawer = screen.getByRole("dialog", { name: "Menu" });
-      expect(within(drawer).getByRole("link", { name: "Admin" })).toBeTruthy();
+      expect(within(drawer).getByRole("link", { name: "Applications" })).toBeTruthy();
       expect(within(drawer).getByRole("button", { name: /sign out/i })).toBeTruthy();
       fireEvent.keyDown(drawer, { key: "Escape" });
       expect(screen.queryByRole("dialog", { name: "Menu" })).toBeNull();

@@ -3,7 +3,8 @@ import { MemberCard, type MemberProfile } from "@/index";
 import type { Neighborhood } from "@/features/neighborhoods/queries";
 import { toneFor } from "@/features/neighborhoods/tone";
 import { introsQuery } from "@/features/members/queries";
-import { Card, InlineError, Locked } from "./shared";
+import { Card, InlineError } from "@/app/layout/app-ui";
+import { Locked } from "./shared";
 
 /** Introductions to other members in the black contact-sheet panel; each card opens the page's MemberDialog. */
 export function IntroductionsSection({
