@@ -1,11 +1,10 @@
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Badge, Button, FormField, FormNotice, Input, Select } from "@/index";
 import { bookingQuery } from "@/features/events/queries";
 import { useBookHeadshot } from "@/features/events/mutations";
 import { localDateISO } from "@/features/events/format";
-import { errorMessage } from "./helpers";
-import { InlineError } from "./shared";
+import { errorMessage, fieldClass, linkClass, primaryButton } from "./helpers";
+import { Card, InlineError, Locked, Row } from "./shared";
 
 /** What the member sees for each headshot booking status (the database allows only these three). */
 const BOOKING_COPY: Record<string, { title: string; body: string }> = {
@@ -14,43 +13,94 @@ const BOOKING_COPY: Record<string, { title: string; body: string }> = {
   declined: { title: "We couldn’t fit this one in", body: "Please choose another date." },
 };
 const bookingCopy = (status: string) => BOOKING_COPY[status] ?? BOOKING_COPY.requested;
+const longDate = (iso: string) => new Date(iso + "T12:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
 
-/** 02 — her headshot session: the current request’s status, or the form to make or change one. Approved members only. */
-export function HeadshotBooking({ userId }: { userId: string }) {
+const DATE_ID = "headshot-date";
+const NOTES_ID = "headshot-notes";
+
+/** Her headshot session: the current request's status, or the request rows (values until an Add opens them). */
+export function HeadshotBooking({ userId, approved }: { userId: string; approved: boolean }) {
+  return (
+    <Card id="headshot" title="Headshot session" subtitle="Included with your membership — your portrait, professionally done">
+      {approved ? <Booking userId={userId} /> : <Locked />}
+    </Card>
+  );
+}
+
+function Booking({ userId }: { userId: string }) {
   const bookingState = useQuery(bookingQuery(userId));
   const book = useBookHeadshot(userId);
-  const [changingBooking, setChangingBooking] = React.useState(false);
-  const booking = changingBooking ? null : bookingState.data ?? null;
+  const [changing, setChanging] = React.useState(false);
+  const [editing, setEditing] = React.useState(false);
+  const [focus, setFocus] = React.useState<string | null>(null);
+  const [request, setRequest] = React.useState({ preferred_date: "", preferred_time: "Morning", notes: "" });
+  const booking = changing ? null : bookingState.data ?? null;
 
-  function bookHeadshot(e: React.FormEvent<HTMLFormElement>) {
+  React.useLayoutEffect(() => {
+    if (focus) document.getElementById(focus)?.focus();
+    setFocus(null);
+  }, [focus]);
+
+  const open = (id: string) => { setEditing(true); setFocus(id); };
+
+  function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const f = new FormData(e.currentTarget);
-    book.mutate(
-      { preferred_date: String(f.get("date")), preferred_time: String(f.get("time")), notes: String(f.get("notes") ?? "") },
-      { onSuccess: () => setChangingBooking(false) },
+    if (!request.preferred_date) return open(DATE_ID);
+    book.mutate(request, { onSuccess: () => { setChanging(false); setEditing(false); } });
+  }
+
+  if (bookingState.isError) return <InlineError message="We couldn’t load your headshot request." onRetry={() => void bookingState.refetch()} />;
+
+  if (booking) {
+    const copy = bookingCopy(booking.status);
+    return (
+      <div className="flex flex-col items-start gap-1 px-5.5 py-4 text-[15px]">
+        <p className="font-medium text-ink">{copy.title}</p>
+        <p className="text-app-muted">{longDate(booking.preferred_date)} · {booking.preferred_time}. {copy.body}</p>
+        <button
+          type="button" className={linkClass}
+          onClick={() => {
+            book.reset();
+            setRequest({ preferred_date: booking.preferred_date, preferred_time: booking.preferred_time, notes: booking.notes ?? "" });
+            setChanging(true);
+            open(DATE_ID);
+          }}
+        >
+          Change request
+        </button>
+      </div>
     );
   }
 
   return (
-    <div className="rounded-panel border border-line p-7">
-      <Badge variant="solid">Headshot session</Badge>
-      <h3 className="mt-5 font-display text-3xl">Your Portrait, Professionally Done</h3>
-      {bookingState.isError ? (
-        <div className="mt-6"><InlineError message="We couldn’t load your headshot request." onRetry={() => void bookingState.refetch()} /></div>
-      ) : booking ? (
-        <FormNotice className="mt-6" title={bookingCopy(booking.status).title} tone={booking.status === "confirmed" ? "accent" : "soft"}>
-          {new Date(booking.preferred_date + "T12:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })} · {booking.preferred_time}. {bookingCopy(booking.status).body}
-          <button type="button" className="mt-3 block underline underline-offset-4" onClick={() => { book.reset(); setChangingBooking(true); }}>Change request</button>
-        </FormNotice>
-      ) : (
-        <form onSubmit={bookHeadshot} className="mt-6 flex flex-col gap-6">
-          <FormField label="Preferred date" htmlFor="date"><Input name="date" type="date" required min={localDateISO()} /></FormField>
-          <FormField label="Time of day" htmlFor="time"><Select name="time"><option>Morning</option><option>Afternoon</option><option>Evening</option></Select></FormField>
-          <FormField label="Notes" htmlFor="notes" optional><Input name="notes" maxLength={300} placeholder="Bringing products, a team…" /></FormField>
-          {book.isError && <p role="alert" className="text-sm text-danger">{errorMessage(book.error)}</p>}
-          <Button type="submit" variant="white" disabled={book.isPending}>Request my session</Button>
-        </form>
-      )}
-    </div>
+    <form onSubmit={submit} className="divide-y divide-app-rule">
+      <Row
+        label="Preferred date" htmlFor={editing ? DATE_ID : undefined} icon="calendar" empty={!editing && !request.preferred_date}
+        add={editing ? undefined : { field: "preferred date", onClick: () => open(DATE_ID) }}
+      >
+        {editing
+          ? <input id={DATE_ID} type="date" required min={localDateISO()} value={request.preferred_date} className={fieldClass} onChange={(e) => setRequest({ ...request, preferred_date: e.currentTarget.value })} />
+          : request.preferred_date ? longDate(request.preferred_date) : "Choose a date"}
+      </Row>
+      <Row label="Time of day" htmlFor={editing ? "headshot-time" : undefined} icon="sun">
+        {editing ? (
+          <select id="headshot-time" value={request.preferred_time} className={fieldClass} onChange={(e) => setRequest({ ...request, preferred_time: e.currentTarget.value })}>
+            <option>Morning</option><option>Afternoon</option><option>Evening</option>
+          </select>
+        ) : request.preferred_time}
+      </Row>
+      <Row
+        label="Notes" htmlFor={editing ? NOTES_ID : undefined} icon="notebook-pen" empty={!editing && !request.notes}
+        add={editing ? undefined : { field: "notes", onClick: () => open(NOTES_ID) }}
+      >
+        {editing
+          ? <input id={NOTES_ID} maxLength={300} placeholder="Bringing products, a team…" value={request.notes} className={fieldClass} onChange={(e) => setRequest({ ...request, notes: e.currentTarget.value })} />
+          : request.notes || "Bringing products, a team…"}
+      </Row>
+      <div className="flex flex-wrap items-center justify-end gap-4 bg-app-sunken px-5.5 py-3.5">
+        {book.isError && <p role="alert" className="mr-auto text-sm text-danger">{errorMessage(book.error)}</p>}
+        <button type="submit" disabled={book.isPending} className={primaryButton}>{book.isPending ? "Sending…" : "Request my session"}</button>
+      </div>
+    </form>
   );
 }

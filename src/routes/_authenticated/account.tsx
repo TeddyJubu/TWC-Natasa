@@ -1,20 +1,22 @@
 import * as React from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Container, Section, SectionHeader } from "@/index";
-import { AppNav, AppPage } from "@/app/layout/AppLayout";
+import { Button, MemberDialog, type MemberProfile } from "@/index";
+import { AppPage } from "@/app/layout/AppLayout";
 import { getAuthClient } from "@/app/auth-client";
 import { emitAuthEvent } from "@/app/auth-events";
-import { useNeighborhoods } from "@/features/neighborhoods/queries";
-import { toneFor } from "@/features/neighborhoods/tone";
-import { profileQuery, viewerQuery } from "@/features/members/queries";
+import { useNeighborhoods, type Neighborhood } from "@/features/neighborhoods/queries";
+import { profileQuery, viewerQuery, type Profile } from "@/features/members/queries";
+import { toMemberProfile } from "@/features/members/map";
+import { useSaveProfile, type ProfilePatch } from "@/features/members/mutations";
 import { AccountHeader } from "@/features/account/AccountHeader";
-import { PublicCardSection } from "@/features/account/PublicCardSection";
+import { AccountShell, TopBar } from "@/features/account/AccountShell";
+import { MembershipCard, PublicCard, VisibilityCard, WordsCard } from "@/features/account/ProfileCards";
 import { GatheringsList } from "@/features/account/GatheringsList";
 import { HeadshotBooking } from "@/features/account/HeadshotBooking";
 import { IntroductionsSection } from "@/features/account/IntroductionsSection";
-import { errorMessage } from "@/features/account/helpers";
-import { InlineError, Locked } from "@/features/account/shared";
+import { PROFILE_FORM, changedFields, errorMessage, fieldId, type CardKey, type ProfileEditor } from "@/features/account/helpers";
+import { InlineError } from "@/features/account/shared";
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
@@ -40,10 +42,6 @@ function AccountPage() {
   const admin = useQuery(viewerQuery).data?.admin === true;
   const profile = profileState.data?.profile;
   const avatar = profileState.data?.avatarUrl;
-  const approved = profile?.status === "approved";
-  const declined = profile?.status === "declined";
-  // Her neighborhood, or null when she hasn't chosen one.
-  const n = profile?.neighborhood || null;
 
   const [signOutError, setSignOutError] = React.useState<string | null>(null);
 
@@ -87,55 +85,85 @@ function AccountPage() {
     );
   }
 
-  const tone = toneFor(n, hoodList);
-
   return (
     <AppPage>
-      <AppNav
-        links={[
-          { label: "Home", href: "/" }, { label: "Members", href: "/members" }, { label: "Profile", href: "/account" },
-          ...(admin ? [{ label: "Admin", href: "/admin" }] : []),
-        ]}
-        action={<Button variant="outline" size="sm" onClick={signOut}>Sign out</Button>}
-      />
-      <main id="main" tabIndex={-1} className="outline-none">
-      {signOutError && <p role="alert" className="bg-surface py-3 text-center text-sm text-danger">{signOutError}</p>}
-      {profileState.isError && (
-        <Container className="py-3">
-          <InlineError message="We couldn’t refresh your profile. What you see may be out of date." onRetry={() => void profileState.refetch()} />
-        </Container>
-      )}
-
-      {/* Header */}
-      <AccountHeader profile={profile} avatar={avatar} approved={approved} declined={declined} neighborhood={n} tone={tone} />
-
-      {!approved && (
-        <div className="bg-sun py-3 text-center text-sm text-sun-ink">
-          {declined
-            ? "Your application wasn’t approved this time. Your card stays private and isn’t shown to anyone."
-            : "Your application is being reviewed. Polish your card now — it goes live the day you’re welcomed in."}
-        </div>
-      )}
-
-      {/* 01 Public card */}
-      <PublicCardSection userId={user.id} profile={profile} avatar={avatar} logo={profileState.data?.logoUrl} neighborhood={n} hoodList={hoodList} />
-
-      {/* 02 Gatherings & headshot */}
-      <Section tone="dome">
-        <Container className="flex flex-col gap-16">
-          <SectionHeader badgeVariant="solid" badge="02 — Gatherings" title="Where We’ll See You Next" intro="Save your seat at upcoming events and book your included headshot session." />
-          {!approved ? <Locked /> : (
-            <div className="grid gap-10 lg:grid-cols-[1.3fr_0.9fr]">
-              <GatheringsList userId={user.id} hoodList={hoodList} />
-              <HeadshotBooking userId={user.id} />
-            </div>
-          )}
-        </Container>
-      </Section>
-
-      {/* 03 Introductions */}
-      <IntroductionsSection userId={user.id} approved={approved} neighborhood={n} hoodList={hoodList} />
-      </main>
+      <AccountShell admin={admin} onSignOut={signOut}>
+        <ProfileEditorPage userId={user.id} profile={profile} avatar={avatar} logoUrl={profileState.data?.logoUrl} hoodList={hoodList}>
+          {signOutError && <p role="alert" className="px-4 pt-4 text-sm text-danger sm:px-8">{signOutError}</p>}
+          {profileState.isError && <InlineError message="We couldn’t refresh your profile. What you see may be out of date." onRetry={() => void profileState.refetch()} />}
+        </ProfileEditorPage>
+      </AccountShell>
     </AppPage>
+  );
+}
+
+/**
+ * The page column. Edits collect in one draft over the saved profile; Save sends only the fields that changed
+ * (edits go live at once, as before). Portrait, logo and headshot requests save on their own, as they always have.
+ */
+function ProfileEditorPage({ userId, profile, avatar, logoUrl, hoodList, children }: {
+  userId: string; profile: Profile; avatar?: string; logoUrl?: string; hoodList: Neighborhood[];
+  children: React.ReactNode;
+}) {
+  const save = useSaveProfile(userId);
+  const [draft, setDraft] = React.useState<ProfilePatch>({});
+  const [editing, setEditing] = React.useState<Partial<Record<CardKey, boolean>>>({});
+  const [focus, setFocus] = React.useState<string | null>(null);
+  const [saved, setSaved] = React.useState(false);
+  const [openMember, setOpenMember] = React.useState<MemberProfile | null>(null);
+  const card = { ...profile, ...draft };
+  const changes = changedFields(profile, draft);
+  const dirty = Object.keys(changes).length > 0;
+
+  // "Add" opens a card and focuses its field once it has rendered.
+  React.useLayoutEffect(() => {
+    if (focus) document.getElementById(focus)?.focus();
+    setFocus(null);
+  }, [focus]);
+
+  const editor: ProfileEditor = {
+    card,
+    set: (patch) => { setSaved(false); setDraft((d) => ({ ...d, ...patch })); },
+    isEditing: (key) => !!editing[key],
+    toggle: (key) => setEditing((e) => ({ ...e, [key]: !e[key] })),
+    add: (key, field) => { setEditing((e) => ({ ...e, [key]: true })); setFocus(fieldId(field)); },
+  };
+
+  function submit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!dirty) return;
+    save.mutate(changes, {
+      onSuccess: (next) => {
+        // Keep only what still differs from the saved row (typing during the save survives), and show values again.
+        setDraft((d) => changedFields(next, d));
+        setEditing({});
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2500);
+      },
+    });
+  }
+
+  return (
+    <main id="main" tabIndex={-1} className="outline-none">
+      <TopBar
+        formId={PROFILE_FORM} dirty={dirty} pending={save.isPending} saved={saved} error={save.isError ? errorMessage(save.error) : null}
+        onSubmit={submit}
+        onPreview={() => setOpenMember(toMemberProfile(card, { image: avatar, logo: logoUrl, placeholders: true }))}
+      />
+      {children}
+      <div className="max-w-277">
+        <AccountHeader userId={userId} profile={profile} avatar={avatar} />
+        <div className="flex flex-col gap-6 px-4 pt-2 pb-14 sm:px-8 lg:px-12">
+          <PublicCard editor={editor} userId={userId} logoPath={profile.business_logo_url} logoUrl={logoUrl} hoodList={hoodList} />
+          <WordsCard editor={editor} />
+          <MembershipCard profile={profile} />
+          <VisibilityCard editor={editor} />
+          <HeadshotBooking userId={userId} approved={profile.status === "approved"} />
+          <GatheringsList userId={userId} approved={profile.status === "approved"} hoodList={hoodList} />
+          <IntroductionsSection userId={userId} approved={profile.status === "approved"} neighborhood={profile.neighborhood || null} hoodList={hoodList} onOpen={setOpenMember} />
+        </div>
+      </div>
+      <MemberDialog member={openMember} onClose={() => setOpenMember(null)} />
+    </main>
   );
 }

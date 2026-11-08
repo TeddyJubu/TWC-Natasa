@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 // T26: WCAG AA contrast, asserted against the real token values in theme.css.
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { Input, MemberCard, Navbar, Statement, Tabs, buttonVariants, type MemberProfile } from "@/index";
@@ -143,5 +143,14 @@ describe("account app shell (neutral app palette)", () => {
       const back = alpha === undefined ? t[bg] : blend(t[bg], t.app, alpha);
       expect({ fg, bg, ok: contrast(t[fg], back) >= AA }).toEqual({ fg, bg, ok: true });
     }
+  });
+
+  it("the account sources use the app tokens, never raw hex or palette colours", () => {
+    const dir = `${process.cwd()}/src/features/account`;
+    const src = readdirSync(dir).filter((f) => /\.tsx?$/.test(f)).map((f) => readFileSync(`${dir}/${f}`, "utf8")).join("\n")
+      + readFileSync(`${process.cwd()}/src/routes/_authenticated/account.tsx`, "utf8");
+    expect(src).toMatch(/text-app-muted/);
+    expect(src).toMatch(/text-app-accent/);
+    expect(src).not.toMatch(/(?:bg|text|border|fill|stroke|ring|outline)-\[#|(?:bg|text|border)-(?:zinc|gray|neutral|slate|blue)-\d/);
   });
 });

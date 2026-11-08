@@ -57,6 +57,10 @@ function renderAccount(
   ]);
 }
 
+const button = (name: RegExp | string) => screen.getByRole("button", { name }) as HTMLButtonElement;
+const save = () => button(/save changes/i);
+const editPublicCard = () => fireEvent.click(button("Edit public card"));
+
 describe("/account", () => {
   describe("business logo", () => {
     const png = () => new File(["x"], "logo.PNG", { type: "image/png" });
@@ -65,7 +69,7 @@ describe("/account", () => {
       renderAccount();
       expect(screen.queryByRole("button", { name: /remove logo/i })).toBeNull();
       fake.results = [{ ...base, business_logo_url: "u1/logo-1.png" }];
-      fireEvent.change(screen.getByLabelText(/upload a business logo/i), { target: { files: [png()] } });
+      fireEvent.change(screen.getByLabelText(/add business logo/i), { target: { files: [png()] } });
       await waitFor(() => expect(fake.calls.map(([c]) => c)).toContain("/api/images"));
       const form = fake.calls.find(([c]) => c === "/api/images")![1] as FormData;
       expect([form.get("kind"), (form.get("file") as File).name]).toEqual(["logo", "logo.PNG"]);
@@ -73,7 +77,7 @@ describe("/account", () => {
 
     it("rejects a GIF or a file over 5 MB before any upload", async () => {
       renderAccount();
-      const input = screen.getByLabelText(/upload a business logo/i);
+      const input = screen.getByLabelText(/add business logo/i);
       fireEvent.change(input, { target: { files: [new File(["x"], "a.gif", { type: "image/gif" })] } });
       expect((await screen.findByRole("alert")).textContent).toMatch(/JPG, PNG or WebP/);
       const big = new File(["x"], "big.png", { type: "image/png" });
@@ -131,15 +135,38 @@ describe("/account", () => {
     expect(screen.getByText(/being reviewed/i)).toBeTruthy();
   });
 
+  it("a pending member sees the review state: honest subline, no verified badge, membership card agrees", () => {
+    renderAccount({ status: "pending", catalogue_number: null, member_since: null });
+    expect(screen.getByRole("heading", { level: 1, name: "Rosa Diaz" })).toBeTruthy();
+    expect(screen.getByText(/application under review/i)).toBeTruthy();
+    expect(screen.queryByText(/approved member since/i)).toBeNull();
+    expect(screen.queryByRole("img", { name: /verified/i })).toBeNull();
+    expect(screen.queryByText("Verified")).toBeNull();
+    const membership = screen.getByRole("region", { name: "Membership" });
+    expect(within(membership).getByText(/being reviewed/i)).toBeTruthy();
+    expect(within(membership).getByText(/assigned once you’re approved/i)).toBeTruthy();
+  });
+
+  it("an approved member gets the verified badge and her number in the subline", () => {
+    renderAccount();
+    expect(screen.getByRole("img", { name: "Verified member" })).toBeTruthy();
+    expect(screen.getByText("Member No. 27 · Approved member since January 2026")).toBeTruthy();
+    const membership = screen.getByRole("region", { name: "Membership" });
+    expect(within(membership).getByText("Verified")).toBeTruthy();
+    expect(within(membership).getByText("No. 27")).toBeTruthy();
+  });
+
   it("hides an inactive neighborhood from the select unless it is her current one", () => {
     const hoods = NEIGHBORHOOD_SEED.map((n) => (n.slug === "rego-park" ? { ...n, active: false } : n));
     const options = () =>
       within(screen.getByRole("combobox", { name: /neighborhood/i })).getAllByRole("option").map((o) => o.textContent);
     renderAccount({ neighborhood: "Astoria" }, [], [], false, [[["neighborhoods"], hoods]]);
+    editPublicCard();
     expect(options()).toContain("Sunnyside");
     expect(options()).not.toContain("Rego Park");
     cleanup();
     renderAccount({ neighborhood: "Rego Park" }, [], [], false, [[["neighborhoods"], hoods]]);
+    editPublicCard();
     expect(options().filter((o) => o === "Rego Park")).toHaveLength(1);
     expect((screen.getByRole("combobox", { name: /neighborhood/i }) as HTMLSelectElement).value).toBe("Rego Park");
   });
@@ -149,16 +176,16 @@ describe("/account", () => {
 
     it("offers a blank first choice, selected when she has none", () => {
       renderAccount({ neighborhood: null });
+      editPublicCard();
       const first = within(select()).getAllByRole("option")[0] as HTMLOptionElement;
       expect(first.textContent).toBe("Choose your neighborhood");
       expect(first.value).toBe("");
       expect(select().value).toBe("");
     });
 
-    it("shows a dash in the header and introduces neighbors from across the constellation", () => {
+    it("says it isn't chosen yet and introduces neighbors from across the constellation", () => {
       renderAccount({ neighborhood: null });
-      const term = screen.getByText("Neighborhood", { selector: "dt" });
-      expect(term.nextElementSibling?.textContent).toBe("—");
+      expect(screen.getByText("Not chosen yet")).toBeTruthy();
       expect(screen.getByText("Neighbors from across the constellation.")).toBeTruthy();
     });
 
@@ -169,9 +196,10 @@ describe("/account", () => {
 
     it("saves the blank choice as null", async () => {
       renderAccount({ neighborhood: "Astoria" });
+      editPublicCard();
       fireEvent.change(select(), { target: { value: "" } });
       fake.results = [{ ...base, neighborhood: null }];
-      fireEvent.click(screen.getByRole("button", { name: /save my card/i }));
+      fireEvent.click(save());
       await waitFor(() => expect(fake.calls).toContainEqual(["saveProfileFn", expect.objectContaining({ neighborhood: null })]));
     });
   });
@@ -196,10 +224,9 @@ describe("/account", () => {
       renderAccount({ directory_visible: true });
       fireEvent.click(publicSwitch());
       fake.results = [{ ...base, directory_visible: true, public_profile: true }];
-      fireEvent.click(screen.getByRole("button", { name: /save my card/i }));
-      await waitFor(() =>
-        expect(fake.calls).toContainEqual(["saveProfileFn", expect.objectContaining({ directory_visible: true, public_profile: true })]),
-      );
+      fireEvent.click(save());
+      // Only what changed is sent: the directory was already on.
+      await waitFor(() => expect(fake.calls[0]).toEqual(["saveProfileFn", { public_profile: true }]));
     });
 
     it("switching the directory off un-publishes on save, and re-listing doesn't republish", async () => {
@@ -211,7 +238,7 @@ describe("/account", () => {
       expect(publicSwitch().checked).toBe(false);
       fireEvent.click(directorySwitch());
       fake.results = [{ ...base }];
-      fireEvent.click(screen.getByRole("button", { name: /save my card/i }));
+      fireEvent.click(save());
       await waitFor(() =>
         expect(fake.calls).toContainEqual(["saveProfileFn", expect.objectContaining({ directory_visible: false, public_profile: false })]),
       );
@@ -249,34 +276,114 @@ describe("/account", () => {
     });
   });
 
-  it("previews unsaved edits and says they are unsaved", () => {
-    renderAccount();
-    const preview = screen.getByRole("complementary", { name: /card preview/i });
-    expect(within(preview).queryByText(/unsaved/i)).toBeNull();
-    fireEvent.input(screen.getByLabelText(/full name/i), { target: { value: "Rosa M. Diaz" } });
-    expect(within(preview).getAllByText("Rosa M. Diaz").length).toBeGreaterThan(0);
-    expect(within(preview).getByText(/unsaved/i)).toBeTruthy();
-    expect(fake.calls).toEqual([]);
+  describe("editing and saving", () => {
+    it("Save is disabled while nothing has changed", () => {
+      renderAccount();
+      expect(save().disabled).toBe(true);
+      editPublicCard();
+      expect(save().disabled).toBe(true);
+    });
+
+    it("edit → dirty → save sends only the changed fields, then goes quiet and clean", async () => {
+      renderAccount();
+      editPublicCard();
+      fireEvent.change(screen.getByLabelText(/^role/i), { target: { value: "  Owner " } });
+      expect(save().disabled).toBe(false);
+      fake.results = [{ ...base, role_title: "Owner" }];
+      fireEvent.click(save());
+      await waitFor(() => expect(fake.calls[0]).toEqual(["saveProfileFn", { role_title: "Owner" }]));
+      expect(fake.calls.filter(([c]) => c === "saveProfileFn")).toHaveLength(1);
+      expect(await screen.findByText("Saved")).toBeTruthy();
+      expect(save().disabled).toBe(true);
+      expect(screen.getByText("Owner")).toBeTruthy();
+    });
+
+    it("shows a quiet error when the save fails, keeping the edit", async () => {
+      renderAccount();
+      editPublicCard();
+      fireEvent.change(screen.getByLabelText(/^role/i), { target: { value: "Owner" } });
+      fake.results = [new Error("We couldn’t save that.")];
+      fireEvent.click(save());
+      expect((await screen.findByRole("alert")).textContent).toMatch(/couldn’t save that/);
+      expect(save().disabled).toBe(false);
+    });
+
+    it("a row's Add opens its card for editing with that field focused", () => {
+      renderAccount({ website: "" });
+      fireEvent.click(button("Add website"));
+      expect(document.activeElement).toBe(screen.getByLabelText(/^website/i));
+      expect(screen.getByLabelText(/^full name/i)).toBeTruthy();
+    });
+
+    it("Edit and Add buttons name their card or field", () => {
+      renderAccount({ business: "", website: "" });
+      expect(button("Edit public card")).toBeTruthy();
+      expect(button("Edit in your words")).toBeTruthy();
+      expect(button("Add business")).toBeTruthy();
+      expect(button("Add website")).toBeTruthy();
+    });
+
+    it("doesn't call a portrait pick or a reverted edit unsaved, and goes clean after saving", async () => {
+      renderAccount();
+      const ok = new File(["x"], "me.png", { type: "image/png" });
+      fake.results = [new Promise(() => {}) as never]; // upload never settles
+      fireEvent.change(screen.getByLabelText(/upload a portrait/i), { target: { files: [ok] } });
+      await act(() => new Promise((r) => setTimeout(r, 20))); // let the upload take its never-settling result
+      expect(save().disabled).toBe(true);
+      editPublicCard();
+      const name = screen.getByLabelText(/^full name/i);
+      fireEvent.change(name, { target: { value: "Rosa M. Diaz" } });
+      fireEvent.change(name, { target: { value: "Rosa Diaz" } });
+      expect(save().disabled).toBe(true);
+      fireEvent.change(name, { target: { value: "Rosa M. Diaz" } });
+      expect(save().disabled).toBe(false);
+      fake.reset();
+      fake.results = [{ ...base, full_name: "Rosa M. Diaz" }];
+      fireEvent.click(save());
+      await waitFor(() => expect(save().disabled).toBe(true));
+      expect(screen.getByRole("heading", { level: 1, name: "Rosa M. Diaz" })).toBeTruthy();
+    });
+
+    it("Preview card opens the member dialog with her unsaved values", () => {
+      restoreDialog = stubDialog();
+      renderAccount();
+      editPublicCard();
+      fireEvent.change(screen.getByLabelText(/^full name/i), { target: { value: "Rosa M. Diaz" } });
+      fireEvent.change(screen.getByLabelText(/^role/i), { target: { value: "Head Baker" } });
+      fireEvent.click(button(/preview card/i));
+      const dialog = screen.getByRole("dialog", { name: "Rosa M. Diaz, member profile" });
+      expect(within(dialog).getByText("Head Baker · Diaz Bakery")).toBeTruthy();
+      expect(fake.calls).toEqual([]);
+    });
   });
 
-  it("doesn't call a portrait pick or a reverted edit unsaved, and goes clean after saving", async () => {
-    renderAccount();
-    const preview = screen.getByRole("complementary", { name: /card preview/i });
-    const name = screen.getByLabelText(/full name/i);
-    const ok = new File(["x"], "me.png", { type: "image/png" });
-    fake.results = [new Promise(() => {}) as never]; // upload never settles
-    fireEvent.change(screen.getByLabelText(/upload a portrait/i), { target: { files: [ok] } });
-    await act(() => new Promise((r) => setTimeout(r, 20))); // let the upload take its never-settling result
-    expect(within(preview).queryByText(/unsaved/i)).toBeNull();
-    fireEvent.input(name, { target: { value: "Rosa M. Diaz" } });
-    fireEvent.input(name, { target: { value: "Rosa Diaz" } });
-    expect(within(preview).queryByText(/unsaved/i)).toBeNull();
-    fireEvent.input(name, { target: { value: "Rosa M. Diaz" } });
-    fake.reset();
-    fake.results = [{ ...base, full_name: "Rosa M. Diaz" }];
-    fireEvent.click(screen.getByRole("button", { name: /save my card/i }));
-    await waitFor(() => expect(within(preview).queryByText(/unsaved/i)).toBeNull());
-    expect(within(preview).getAllByText("Rosa M. Diaz").length).toBeGreaterThan(0);
+  describe("navigation", () => {
+    it("links Home and Members, anchors this page's cards, and has no Notifications", () => {
+      renderAccount();
+      const nav = screen.getAllByRole("navigation", { name: "Account" })[0];
+      const href = (name: string) => within(nav).getByRole("link", { name }).getAttribute("href");
+      expect([href("Home"), href("Members"), href("Gatherings"), href("Introductions")]).toEqual(["/", "/members", "#gatherings", "#introductions"]);
+      expect([href("Profile"), href("Public card"), href("Visibility"), href("Headshot session")]).toEqual(["#profile", "#public-card", "#visibility", "#headshot"]);
+      expect(within(nav).getByRole("link", { name: "Profile" }).getAttribute("aria-current")).toBe("location");
+      expect(within(nav).queryByText("Notifications")).toBeNull();
+      expect(document.getElementById("gatherings")).toBeTruthy();
+      expect(document.getElementById("introductions")).toBeTruthy();
+    });
+
+    it("the menu button opens the same nav in a drawer that closes on Escape", () => {
+      restoreDialog = stubDialog();
+      renderAccount({}, [], [], true);
+      const menu = button("Open menu");
+      expect(menu.getAttribute("aria-expanded")).toBe("false");
+      fireEvent.click(menu);
+      expect(menu.getAttribute("aria-expanded")).toBe("true");
+      const drawer = screen.getByRole("dialog", { name: "Menu" });
+      expect(within(drawer).getByRole("link", { name: "Admin" })).toBeTruthy();
+      expect(within(drawer).getByRole("button", { name: /sign out/i })).toBeTruthy();
+      fireEvent.keyDown(drawer, { key: "Escape" });
+      expect(screen.queryByRole("dialog", { name: "Menu" })).toBeNull();
+      expect(menu.getAttribute("aria-expanded")).toBe("false");
+    });
   });
 
   describe("gatherings and headshot dates", () => {
@@ -320,7 +427,23 @@ describe("/account", () => {
       setTz("America/Los_Angeles");
       vi.useFakeTimers({ now: new Date("2026-11-09T03:00:00Z"), toFake: ["Date"] });
       renderAccount();
+      fireEvent.click(button("Add preferred date"));
+      expect(document.activeElement).toBe(screen.getByLabelText(/preferred date/i));
       expect(screen.getByLabelText(/preferred date/i).getAttribute("min")).toBe("2026-11-08");
+    });
+
+    it("requests a headshot session through the existing booking call", async () => {
+      renderAccount();
+      fireEvent.click(button("Add preferred date"));
+      fireEvent.change(screen.getByLabelText(/preferred date/i), { target: { value: "2099-12-03" } });
+      fireEvent.change(screen.getByLabelText(/time of day/i), { target: { value: "Evening" } });
+      fireEvent.change(screen.getByLabelText(/^notes/i), { target: { value: "Bringing cakes" } });
+      fake.results = [{ id: "b1", user_id: "u1", preferred_date: "2099-12-03", preferred_time: "Evening", notes: "Bringing cakes", status: "requested", created_at: "" }];
+      fireEvent.click(button(/request my session/i));
+      await waitFor(() =>
+        expect(fake.calls).toContainEqual(["bookHeadshotFn", { preferred_date: "2099-12-03", preferred_time: "Evening", notes: "Bringing cakes" }]),
+      );
+      expect(await screen.findByText(/request received/i)).toBeTruthy();
     });
 
     // T6: the member sees what an admin decided, not "Request received" forever.
