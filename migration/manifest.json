@@ -120,9 +120,9 @@
       "source": "crm.md:Mirror cadence",
       "acceptance": "Mirror cadence: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "src/server/legacy-import.test.ts › \"is re-runnable…\" + scripts/import-legacy.ts: one-shot, insert-only import replaces the 5 s JSONL mirror; SQLite is the only store (retired by CRM-024)"
+      "evidence": "src/server/legacy-import.test.ts › \"is re-runnable…\" + scripts/import-legacy.ts: one-shot, insert-only import replaces the 5 s JSONL mirror; SQLite is the only store (retired by CRM-024) | verified 2026-11-09: one-shot insert-only import replaces JSONL mirror (legacy-import.test.ts › is re-runnable)"
     },
     {
       "id": "CRM-013",
@@ -239,9 +239,9 @@
       "source": "crm.md:Source of truth today = six JSONL files owned by other services",
       "acceptance": "Source of truth today = six JSONL files owned by other services: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
-      "status": "built",
+      "status": "verified",
       "target": "/admin#members",
-      "evidence": "src/server/legacy-import.ts + scripts/import-legacy.ts read the JSONL exports once; src/server/legacy-import.test.ts › \"imports the fixtures…\" and \"scales to the real shape: 128 applications, 120 members, 44 subscribers\". review_responses/links → members-links, spotlight_answers → members-links, custom rows → custom-forms (counted as skipped)"
+      "evidence": "src/server/legacy-import.ts + scripts/import-legacy.ts read the JSONL exports once; src/server/legacy-import.test.ts › \"imports the fixtures…\" and \"scales to the real shape: 128 applications, 120 members, 44 subscribers\". review_responses/links → members-links, spotlight_answers → members-links, custom rows → custom-forms (counted as skipped) | verified 2026-11-09: JSONL one-shot import; scale 128/120/44 (legacy-import.test.ts)"
     },
     {
       "id": "CRM-025",
@@ -278,18 +278,18 @@
       "source": "crm.md:Item id schemes",
       "acceptance": "Item id schemes: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
-      "status": "built",
+      "status": "verified",
       "target": "/admin#members",
-      "evidence": "applications.legacy_id = app-<record_id> | app-<hash(at|email)[:12]>, newsletter_subscribers.legacy_id = newsletter-<id> (db/migrations/0003_legacy_import.sql); src/server/legacy-import.test.ts › \"keeps both applications from one email (CRM-173) and ids a row with no record_id by hash (CRM-028)\". Contact/partnership ids are not kept (surrogate uuid; de-duplicated on kind+email+time)"
+      "evidence": "applications.legacy_id = app-<record_id> | app-<hash(at|email)[:12]>, newsletter_subscribers.legacy_id = newsletter-<id> (db/migrations/0003_legacy_import.sql); src/server/legacy-import.test.ts › \"keeps both applications from one email (CRM-173) and ids a row with no record_id by hash (CRM-028)\". Contact/partnership ids are not kept (surrogate uuid; de-duplicated on kind+email+time) | verified 2026-11-09: applications.legacy_id record_id|hash; newsletter-<id> (legacy-import.test.ts › CRM-028)"
     },
     {
       "id": "CRM-029",
       "source": "crm.md:Application → item",
       "acceptance": "Application → item: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
-      "status": "built",
+      "status": "verified",
       "target": "/admin#members",
-      "evidence": "import side only: email lower-cased, name falls back to email, area = neighborhood_city|base_area, answers kept + answers.legacy; src/server/legacy-import.test.ts › \"lowercases the email, keeps the answers, labels the origin (CRM-031)…\". The /admin list rendering stays with admin-inbox"
+      "evidence": "import side only: email lower-cased, name falls back to email, area = neighborhood_city|base_area, answers kept + answers.legacy; src/server/legacy-import.test.ts › \"lowercases the email, keeps the answers, labels the origin (CRM-031)…\". The /admin list rendering stays with admin-inbox | verified 2026-11-09: import lowercases email, keeps answers + area (legacy-import.test.ts › CRM-031)"
     },
     {
       "id": "CRM-030",
@@ -350,9 +350,9 @@
       "source": "crm.md:Newsletter subscribers",
       "acceptance": "Newsletter subscribers: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "newsletter_subscribers (0003) ← subscribers.jsonl + Beehiiv rows in members.jsonl + newsletter form rows; src/server/legacy-import.test.ts › \"keeps the newsletter list, records consent only where a form recorded it…\"; 44-row scale test"
+      "evidence": "newsletter_subscribers (0003) ← subscribers.jsonl + Beehiiv rows in members.jsonl + newsletter form rows; src/server/legacy-import.test.ts › \"keeps the newsletter list, records consent only where a form recorded it…\"; 44-row scale test | verified 2026-11-09: newsletter_subscribers from subscribers.jsonl + Beehiiv + form rows (legacy-import.test.ts)"
     },
     {
       "id": "CRM-037",
@@ -386,9 +386,9 @@
       "source": "crm.md:Tombstones",
       "acceptance": "Tombstones: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "Import: a submissions.jsonl row with deleted:true is never an answer, and an answer whose CRM item id (sha256(at|form_id|email)[:12]) a tombstone names is skipped (importResponses in src/features/forms/import.server.ts; src/features/forms/import.test.ts › \"imports the representable forms…\": 'deletion marker' 1, 'deleted for good' 1). After import SQLite is the source of truth, so no file is re-read. Delete-for-good in /admin is CRM-132."
+      "evidence": "Import: a submissions.jsonl row with deleted:true is never an answer, and an answer whose CRM item id (sha256(at|form_id|email)[:12]) a tombstone names is skipped (importResponses in src/features/forms/import.server.ts; src/features/forms/import.test.ts › \"imports the representable forms…\": 'deletion marker' 1, 'deleted for good' 1). After import SQLite is the source of truth, so no file is re-read. Delete-for-good in /admin is CRM-132. | verified 2026-11-09: deleted:true + tombstone answers skipped (forms/import.test.ts)"
     },
     {
       "id": "CRM-041",
@@ -954,27 +954,27 @@
       "source": "crm.md:Versioned definitions",
       "acceptance": "Versioned definitions: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "built",
+      "status": "verified",
       "target": "/admin#forms",
-      "evidence": "Minimal admin editor on Form responses writes through saveForm (saveAdminForm, requireAdmin): create mints an 8-char id at version 1; edit bumps version and stores the previous slug in custom_form_old_slugs for 301. No separate form_versions/drafts table — publish is this write (CRM-104 light). tests: forms.test.ts, policy.test.ts, admin-route.test.tsx"
+      "evidence": "Minimal admin editor on Form responses writes through saveForm (saveAdminForm, requireAdmin): create mints an 8-char id at version 1; edit bumps version and stores the previous slug in custom_form_old_slugs for 301. No separate form_versions/drafts table — publish is this write (CRM-104 light). tests: forms.test.ts, policy.test.ts, admin-route.test.tsx | verified 2026-11-09: saveAdminForm create v1 + edit bumps version + old slug 301 (forms.test.ts saveAdminForm, policy.test.ts, admin-route)"
     },
     {
       "id": "CRM-105",
       "source": "crm.md:Publish guards",
       "acceptance": "Publish guards: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "built",
+      "status": "verified",
       "target": "/admin#forms",
-      "evidence": "Light publish guards only: checkQuestions blocks bad definitions before write; slug shape + UNIQUE/CHECK refused with clear AccessError; version increments on every edit. Not built: shared draft, seenVersion concurrency, restore, 'No changes' short-circuit (CRM-105 light — enough to publish without the Classic editor)."
+      "evidence": "Light publish guards only: checkQuestions blocks bad definitions before write; slug shape + UNIQUE/CHECK refused with clear AccessError; version increments on every edit. Not built: shared draft, seenVersion concurrency, restore, 'No changes' short-circuit (CRM-105 light — enough to publish without the Classic editor). | verified 2026-11-09: checkQuestions + slug UNIQUE/CHECK + version bump on edit (forms.test.ts checkQuestions/saveAdminForm, policy.test.ts)"
     },
     {
       "id": "CRM-106",
       "source": "crm.md:Question model",
       "acceptance": "Question model: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "built",
+      "status": "verified",
       "target": "/admin#forms",
-      "evidence": "Admin editor + public renderer share the 11 types in QUESTION_TYPES (short, email, phone, url, number, date, paragraph, dropdown, radio, checkboxes, yesno) with old key/choice/value limits (schema.ts checkQuestions). Importer still converts scale/rating/consent/time and skips file/ranking/grid/address. Not native: the other 11 CRM types."
+      "evidence": "Admin editor + public renderer share the 11 types in QUESTION_TYPES (short, email, phone, url, number, date, paragraph, dropdown, radio, checkboxes, yesno) with old key/choice/value limits (schema.ts checkQuestions). Importer still converts scale/rating/consent/time and skips file/ranking/grid/address. Not native: the other 11 CRM types. | verified 2026-11-09: QUESTION_TYPES (11) shared by FormEditor + checkQuestions (schema.ts, forms.test.ts, FormEditor.tsx)"
     },
     {
       "id": "CRM-107",
@@ -1061,27 +1061,27 @@
       "source": "crm.md:Forms list + create + duplicate",
       "acceptance": "Forms list + create + duplicate: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "built",
+      "status": "verified",
       "target": "/admin#forms",
-      "evidence": "Form responses lists every custom form (name, slug, /f/ link, open/closed, version, counts) and Add a form creates one (name, slug, intro, thanks, closed_message, open, one_per_email, questions) via saveAdminForm. Not built: duplicate, templates, listed-on-/forms flag, draft status."
+      "evidence": "Form responses lists every custom form (name, slug, /f/ link, open/closed, version, counts) and Add a form creates one (name, slug, intro, thanks, closed_message, open, one_per_email, questions) via saveAdminForm. Not built: duplicate, templates, listed-on-/forms flag, draft status. | verified 2026-11-09: Form responses list + Add a form via saveAdminForm (forms.test.ts adminFormResponses/saveAdminForm, admin-route); duplicate still not built"
     },
     {
       "id": "CRM-118",
       "source": "crm.md:Slugs",
       "acceptance": "Slugs: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "built",
+      "status": "verified",
       "target": "/admin#forms",
-      "evidence": "Admin editor validates slug shape before write; table CHECK refuses reserved names; UNIQUE refuses taken slugs; rename keeps old slug in custom_form_old_slugs (301). No separate slug-check endpoint (inline in saveAdminForm)."
+      "evidence": "Admin editor validates slug shape before write; table CHECK refuses reserved names; UNIQUE refuses taken slugs; rename keeps old slug in custom_form_old_slugs (301). No separate slug-check endpoint (inline in saveAdminForm). | verified 2026-11-09: slug shape/reserved/taken + rename → custom_form_old_slugs (forms.test.ts saveForm/saveAdminForm)"
     },
     {
       "id": "CRM-119",
       "source": "crm.md:Editor workflow",
       "acceptance": "Editor workflow: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "built",
+      "status": "verified",
       "target": "/admin#forms",
-      "evidence": "Minimal editor workflow on Form responses: create/edit meta + questions (saveAdminForm → saveForm), open/close + closed message (setFormOpen). Not built: drafts, restore, preview-shell, look/thanks-rules, published/custom JSON rewrite."
+      "evidence": "Minimal editor workflow on Form responses: create/edit meta + questions (saveAdminForm → saveForm), open/close + closed message (setFormOpen). Not built: drafts, restore, preview-shell, look/thanks-rules, published/custom JSON rewrite. | verified 2026-11-09: create/edit via saveAdminForm + open/close via setFormOpen (forms.test.ts, admin-route FormEditor)"
     },
     {
       "id": "CRM-120",
@@ -1716,9 +1716,9 @@
       "source": "backoffice.md:**Applications have already moved off intake on `join",
       "acceptance": "**Applications have already moved off intake on `join: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "built",
+      "status": "verified",
       "target": "/join",
-      "evidence": "migration/caddy-twc-redirects.caddy (twc_members_cutover) @joinform now covers members.thewomenscollective.club/join too (GET/HEAD; /join/thanks and POSTs stay on intake); src/app/cutover-redirects.test.ts; local smoke ok. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
+      "evidence": "migration/caddy-twc-redirects.caddy (twc_members_cutover) @joinform now covers members.thewomenscollective.club/join too (GET/HEAD; /join/thanks and POSTs stay on intake); src/app/cutover-redirects.test.ts; local smoke ok. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09). | verified 2026-11-09: members.*/join GET/HEAD → new join; cutover-redirects.test + LIVE smoke 2026-11-09"
     },
     {
       "id": "OPS-008",
@@ -3471,9 +3471,9 @@
       "source": "backoffice.md:`${STORE}` = `/data/submissions.jsonl`",
       "acceptance": "`${STORE}` = `/data/submissions.jsonl`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
-      "status": "built",
+      "status": "verified",
       "target": "parity",
-      "evidence": "readRows/importInbox read the submissions.jsonl record shape (at, form, fields, spam, tombstones skipped OPS-225); src/server/legacy-import.test.ts › \"turns contact and partnership submissions into archived inbox rows; spam, custom forms and tombstones stay out\""
+      "evidence": "readRows/importInbox read the submissions.jsonl record shape (at, form, fields, spam, tombstones skipped OPS-225); src/server/legacy-import.test.ts › \"turns contact and partnership submissions into archived inbox rows; spam, custom forms and tombstones stay out\" | verified 2026-11-09: submissions.jsonl → archived inbox; spam/tombstones out (legacy-import.test.ts)"
     },
     {
       "id": "OPS-223",
@@ -6319,9 +6319,9 @@
       "source": "site.md:Intro and \"what it is\"",
       "acceptance": "Intro and \"what it is\": behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
-      "status": "built",
+      "status": "verified",
       "target": "/fellowship",
-      "evidence": "src/app/fellowship-partnerships-route.test.tsx › /fellowship is Western Queens only; \"free to join\" dropped until fees are settled (AUDIT note in final report)"
+      "evidence": "src/app/fellowship-partnerships-route.test.tsx › /fellowship is Western Queens only; \"free to join\" dropped until fees are settled (AUDIT note in final report) | verified 2026-11-09: /fellowship Western Queens only; free-to-join dropped (fellowship-partnerships-route.test.tsx)"
     },
     {
       "id": "SITE-037",
@@ -6337,18 +6337,18 @@
       "source": "site.md:\"Who it's for\" (eligibility, flagged as a placeholder)",
       "acceptance": "\"Who it's for\" (eligibility, flagged as a placeholder): behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "built",
+      "status": "verified",
       "target": "/fellowship",
-      "evidence": "src/app/fellowship-partnerships-route.test.tsx › /fellowship states no eligibility rules, fees or review timelines (placeholder lists deliberately dropped)"
+      "evidence": "src/app/fellowship-partnerships-route.test.tsx › /fellowship states no eligibility rules, fees or review timelines (placeholder lists deliberately dropped) | verified 2026-11-09: no eligibility/fees/timeline placeholders (fellowship-partnerships-route.test.tsx)"
     },
     {
       "id": "SITE-039",
       "source": "site.md:Community principles",
       "acceptance": "Community principles: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "built",
+      "status": "verified",
       "target": "/fellowship",
-      "evidence": "src/app/fellowship-partnerships-route.test.tsx › /fellowship links \"Read the code of conduct\" → /code-of-conduct; principles copy on page"
+      "evidence": "src/app/fellowship-partnerships-route.test.tsx › /fellowship links \"Read the code of conduct\" → /code-of-conduct; principles copy on page | verified 2026-11-09: code of conduct link + principles on /fellowship (fellowship-partnerships-route.test.tsx)"
     },
     {
       "id": "SITE-040",
@@ -6374,9 +6374,9 @@
       "source": "site.md:Partnership copy",
       "acceptance": "Partnership copy: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "built",
+      "status": "verified",
       "target": "/partnerships",
-      "evidence": "src/app/fellowship-partnerships-route.test.tsx › /partnerships shows the four ways in; copy has no prices or invented facts"
+      "evidence": "src/app/fellowship-partnerships-route.test.tsx › /partnerships shows the four ways in; copy has no prices or invented facts | verified 2026-11-09: /partnerships four ways in; no prices/invented facts (fellowship-partnerships-route.test.tsx)"
     },
     {
       "id": "SITE-043",
@@ -6597,9 +6597,9 @@
       "source": "site.md:Stored-submission sources of truth",
       "acceptance": "Stored-submission sources of truth: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
-      "status": "built",
+      "status": "verified",
       "target": "public-site",
-      "evidence": "contact/partnership rows → inbox_messages, newsletter rows → newsletter_subscribers, via scripts/import-legacy.ts; src/server/legacy-import.test.ts › \"imports the fixtures and says what it skipped and why\""
+      "evidence": "contact/partnership rows → inbox_messages, newsletter rows → newsletter_subscribers, via scripts/import-legacy.ts; src/server/legacy-import.test.ts › \"imports the fixtures and says what it skipped and why\" | verified 2026-11-09: contact/partnership → inbox_messages, newsletter → newsletter_subscribers (legacy-import.test.ts)"
     },
     {
       "id": "SITE-070",
@@ -7229,9 +7229,9 @@
       "source": "site.md:/contact, PARTIAL",
       "acceptance": "/contact, PARTIAL: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "/contact",
-      "evidence": "/contact now has consent (required, server-checked), a honeypot and the spotlight/accessibility/conduct topics; partnership fields live on /api/partnerships (SITE-171). Turnstile skipped per AUDIT-TASKS (CSP same-origin). src/features/contact/{schema.ts,ContactForm.tsx}; src/app/contact-route.test.tsx"
+      "evidence": "/contact now has consent (required, server-checked), a honeypot and the spotlight/accessibility/conduct topics; partnership fields live on /api/partnerships (SITE-171). Turnstile skipped per AUDIT-TASKS (CSP same-origin). src/features/contact/{schema.ts,ContactForm.tsx}; src/app/contact-route.test.tsx | verified 2026-11-09: /contact consent + honeypot + newer topics (contact-route.test.tsx, contact schema)"
     },
     {
       "id": "SITE-146",
