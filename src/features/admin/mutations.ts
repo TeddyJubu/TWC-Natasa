@@ -6,7 +6,8 @@ import { checkLogo, validateNeighborhood } from "./format";
 import { emailApproval, type ApprovalNotice } from "./approval-email";
 import { postApi } from "@/app/api";
 import {
-  createNeighborhoodFn, reviewApplicationFn, setBookingStatusFn, setMemberStatusFn, updateNeighborhoodFn,
+  createEventFn, createNeighborhoodFn, deleteEventFn, reviewApplicationFn, setBookingStatusFn, setMemberStatusFn, updateEventFn,
+  updateNeighborhoodFn,
 } from "./fns";
 
 export type Review = { id: string; status: Exclude<MembershipStatus, "pending"> };
@@ -129,8 +130,33 @@ export const updateNeighborhoodMutation = (qc: QueryClient) => ({
   onSettled: refreshAfterLogo(qc),
 });
 
+/** Today's events columns; `starts_at` is an ISO instant (the form converts its New York wall-clock input). */
+export type GatheringInput = { title: string; description: string; location: string; neighborhood: string; starts_at: string; kind: string };
+
+/** Creates the gathering, or updates it when `id` is given. */
+export const saveEvent = async ({ id, ...input }: GatheringInput & { id?: string }): Promise<void> => {
+  if (id) await updateEventFn({ data: { id, ...input } });
+  else await createEventFn({ data: input });
+};
+
+// Admin card, members' account list and the public calendar all show gatherings.
+const EVENT_KEYS: QueryKey[] = [["admin", "events"], ["events"], ["public-events"]];
+
+export const saveEventMutation = (qc: QueryClient) => ({
+  mutationFn: saveEvent,
+  onSuccess: () => invalidate(qc, EVENT_KEYS),
+});
+
+/** Its saved seats go with it (cascade); the card confirms first. */
+export const deleteEventMutation = (qc: QueryClient) => ({
+  mutationFn: (id: string) => deleteEventFn({ data: { id } }),
+  onSuccess: () => invalidate(qc, EVENT_KEYS),
+});
+
 export const useReviewApplication = () => useMutation(reviewApplicationMutation(useQueryClient()));
 export const useSetMemberStatus = () => useMutation(setMemberStatusMutation(useQueryClient()));
 export const useSetBookingStatus = () => useMutation(setBookingStatusMutation(useQueryClient()));
 export const useCreateNeighborhood = () => useMutation(createNeighborhoodMutation(useQueryClient()));
 export const useUpdateNeighborhood = () => useMutation(updateNeighborhoodMutation(useQueryClient()));
+export const useSaveEvent = () => useMutation(saveEventMutation(useQueryClient()));
+export const useDeleteEvent = () => useMutation(deleteEventMutation(useQueryClient()));

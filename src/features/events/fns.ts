@@ -10,6 +10,17 @@ export const eventsFn = createServerFn()
     return serve((c) => m.listEvents(c, data.from));
   });
 
+/** Public: upcoming gatherings (public-safe fields only), from `from` or now. */
+export const publicEventsFn = createServerFn()
+  .validator((input: unknown) => {
+    const from = (input as { from?: unknown } | null)?.from;
+    return { from: typeof from === "string" && !Number.isNaN(Date.parse(from)) ? new Date(from).toISOString() : new Date().toISOString() };
+  })
+  .handler(async ({ data }) => {
+    const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./events.server")]);
+    return serve((c) => m.publicEvents(c, data.from));
+  });
+
 export const rsvpsFn = createServerFn().handler(async () => {
   const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./events.server")]);
   return serve(m.rsvps);

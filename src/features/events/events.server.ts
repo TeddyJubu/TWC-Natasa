@@ -16,6 +16,16 @@ export function listEvents({ db, actor }: Ctx, from?: string): EventRow[] {
   return db.prepare("select * from events where starts_at >= ? order by starts_at").all(from ?? "") as EventRow[];
 }
 
+/** What anyone may see of a gathering: no RSVPs, no member data. */
+export type PublicEvent = Pick<EventRow, "id" | "title" | "description" | "location" | "neighborhood" | "starts_at" | "kind">;
+
+/** Upcoming gatherings for the public /gatherings page, soonest first. No guard: anonymous visitors allowed. */
+export function publicEvents({ db }: Ctx, from: string): PublicEvent[] {
+  return db.prepare(
+    "select id, title, description, location, neighborhood, starts_at, kind from events where starts_at >= ? order by starts_at",
+  ).all(from) as PublicEvent[];
+}
+
 /** Event ids she has an RSVP for. */
 export function rsvps({ db, actor }: Ctx): string[] {
   const me = requireMember(db, actor);

@@ -10,11 +10,12 @@ import { openDb, type DB } from "./db";
 import type { Ctx } from "./context.server";
 import { mediaFile, serveMedia, writeMedia } from "./media";
 import { directory, intros, memberPage, publicProfiles, removeLogo, saveProfile, uploadImage } from "@/features/members/members.server";
-import { bookHeadshot, listEvents, setRsvp } from "@/features/events/events.server";
+import { bookHeadshot, listEvents, publicEvents, setRsvp } from "@/features/events/events.server";
 import { submitApplication } from "@/features/applications/applications.server";
 import { listNeighborhoods } from "@/features/neighborhoods/neighborhoods.server";
 import {
-  adminApplications, adminMembers, createNeighborhood, reviewApplication, setBookingStatus, setMemberStatus,
+  adminApplications, adminEvents, adminMembers, createEvent, createNeighborhood, deleteEvent, reviewApplication, setBookingStatus,
+  setMemberStatus, updateEvent,
 } from "@/features/admin/admin.server";
 import { TINY } from "@/test/images";
 
@@ -460,6 +461,59 @@ describe("access rules (ported from the RLS checks)", () => {
   it("intros show only other approved, listed members, and only to members", () => {
     expect(intros(as(id("15")), null)).toEqual([]);
     expect(intros(as(L30), null).map((m) => m.id)).not.toContain(L30);
+  });
+
+  // ---------- Gatherings: the public calendar and the admin card ----------
+  const gathering = { title: "Skyline Picnic", description: "", location: "Rainey Park", neighborhood: "Astoria", starts_at: "2026-12-05T17:00:00.000Z", kind: "gathering" };
+  let picnic = "";
+  it("fixture: an approved member saves a seat", () => {
+    picnic = createEvent(as(A), gathering);
+    setRsvp(as(F), { eventId: picnic, going: true });
+    expect(get<{ n: number }>("select count(*) as n from event_rsvps where event_id = ?", picnic).n).toBe(1);
+  });
+  it("anon reads upcoming gatherings, public fields only, no RSVPs or member data", () => {
+    const rows = publicEvents(anon(), "2026-12-01T00:00:00.000Z");
+    expect(rows.map((r) => r.title)).toEqual(["Skyline Picnic"]);
+    expect(Object.keys(rows[0]).sort()).toEqual(["description", "id", "kind", "location", "neighborhood", "starts_at", "title"]);
+    expect(JSON.stringify(rows)).not.toContain(F);
+    expect(JSON.stringify(rows)).not.toContain("public@x.test");
+  });
+  it("public gatherings leave out past ones", () => expect(publicEvents(anon(), "2026-12-06T00:00:00.000Z")).toEqual([]));
+  it("pending member reads public gatherings, still not the members' list", () => {
+    expect(publicEvents(as(C), "2026-12-01T00:00:00.000Z")).toHaveLength(1);
+    throwsAccess(() => listEvents(as(C)));
+  });
+  it.each([["anon", null], ["pending member", C], ["approved member", F]])("%s cannot read or change gatherings as an admin", (_who, who) => {
+    throwsAccess(() => adminEvents(as(who)));
+    throwsAccess(() => createEvent(as(who), gathering));
+    throwsAccess(() => updateEvent(as(who), { ...gathering, id: picnic, title: "Hijacked" }));
+    throwsAccess(() => deleteEvent(as(who), { id: picnic }));
+    expect(get<{ title: string }>("select title from events where id = ?", picnic).title).toBe("Skyline Picnic");
+  });
+  it("admin sees each gathering's guest list", () => {
+    const row = adminEvents(as(A)).find((e) => e.id === picnic)!;
+    expect(row.guests.map((g) => [g.user_id, g.full_name, g.email])).toEqual([[F, "Pia", "public@x.test"]]);
+  });
+  it("admin edits a gathering", () => {
+    updateEvent(as(A), { ...gathering, id: picnic, title: "  Skyline Supper ", kind: "supper" });
+    expect(get<{ title: string; kind: string }>("select title, kind from events where id = ?", picnic)).toEqual({ title: "Skyline Supper", kind: "supper" });
+  });
+  it.each([
+    ["an empty title", { title: "  " }, /title/],
+    ["an empty location", { location: "" }, /location/],
+    ["an unknown neighborhood", { neighborhood: "Atlantis" }, /neighborhood/],
+    ["an unknown kind", { kind: "rave" }, /kind/],
+    ["a start that isn't a date", { starts_at: "next Saturday" }, /start time/],
+    ["an over-long description", { description: "x".repeat(601) }, /description/],
+  ])("admin cannot save a gathering with %s", (_what, over, message) => {
+    expect(() => createEvent(as(A), { ...gathering, ...over })).toThrow(message);
+    expect(() => updateEvent(as(A), { ...gathering, ...over, id: picnic })).toThrow(message);
+  });
+  it("editing a gathering that doesn't exist fails", () => expect(() => updateEvent(as(A), { ...gathering, id: "nope" })).toThrow(/gathering/));
+  it("deleting a gathering deletes its saved seats", () => {
+    deleteEvent(as(A), { id: picnic });
+    expect(get<{ n: number }>("select count(*) as n from events where id = ?", picnic).n).toBe(0);
+    expect(get<{ n: number }>("select count(*) as n from event_rsvps where event_id = ?", picnic).n).toBe(0);
   });
 });
 

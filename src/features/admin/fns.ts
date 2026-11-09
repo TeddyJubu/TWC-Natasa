@@ -58,3 +58,31 @@ export const updateNeighborhoodFn = createServerFn({ method: "POST" })
     const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./admin.server")]);
     return serve((c) => m.updateNeighborhood(c, data));
   });
+
+type EventInput = { title: string; description: string; location: string; neighborhood: string; starts_at: string; kind: string };
+
+export const adminEventsFn = createServerFn().handler(async () => {
+  const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./admin.server")]);
+  return serve(m.adminEvents);
+});
+
+export const createEventFn = createServerFn({ method: "POST" })
+  .validator(pass<EventInput>)
+  .handler(async ({ data }) => {
+    const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./admin.server")]);
+    return serve((c) => m.createEvent(c, data));
+  });
+
+export const updateEventFn = createServerFn({ method: "POST" })
+  .validator(pass<EventInput & { id: string }>)
+  .handler(async ({ data }) => {
+    const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./admin.server")]);
+    return serve((c) => m.updateEvent(c, data));
+  });
+
+export const deleteEventFn = createServerFn({ method: "POST" })
+  .validator(pass<{ id: string }>)
+  .handler(async ({ data }) => {
+    const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./admin.server")]);
+    return serve((c) => m.deleteEvent(c, data));
+  });

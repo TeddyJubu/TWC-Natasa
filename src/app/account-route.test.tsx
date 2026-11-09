@@ -115,9 +115,10 @@ describe("/account", () => {
     renderAccount({}, [], [], true);
     const nav = screen.getAllByRole("navigation", { name: "Main" })[0];
     const href = (name: string) => within(nav).getByRole("link", { name }).getAttribute("href");
-    expect(within(nav).getByText("Admin")).toBeTruthy();
-    expect([href("Applications"), href("All members"), href("Neighborhoods"), href("Headshot bookings")])
-      .toEqual(["/admin#applications", "/admin#members", "/admin#neighborhoods", "/admin#bookings"]);
+    expect(within(nav).getByText("Admin", { selector: "summary" })).toBeTruthy();
+    expect([href("Applications"), href("All members"), href("Neighborhoods"), href("Headshot bookings"), href("Admin Gatherings")])
+      .toEqual(["/admin#applications", "/admin#members", "/admin#neighborhoods", "/admin#bookings", "/admin#gatherings"]);
+    expect(href("Gatherings")).toBe("#gatherings");
     // Another page's cards are never "here".
     expect(within(nav).getByRole("link", { name: "Applications" }).getAttribute("aria-current")).toBeNull();
     cleanup();

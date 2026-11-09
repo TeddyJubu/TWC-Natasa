@@ -6,7 +6,8 @@ import { checkImage, removeMedia, writeMedia } from "@/server/media";
 import { bad, isObject, oneOf, str, type Json } from "@/server/validate";
 import { checkSize, fileBytes, readForm, respond } from "@/server/request";
 import { toProfile, type MembershipStatus, type Profile } from "@/features/members/members.server";
-import type { Booking } from "@/features/events/events.server";
+import type { Booking, EventRow } from "@/features/events/events.server";
+import { EVENT_KINDS } from "@/features/events/format";
 import { neighborhoodRows, type NeighborhoodRow } from "@/features/neighborhoods/neighborhoods.server";
 import { mediaUrl } from "@/server/media";
 import { attachEmails, sortApplications, validateNeighborhood } from "./format";
@@ -20,6 +21,11 @@ export type AdminApplication = {
 export type AdminMember = Profile & { email: string | null };
 export type AdminNeighborhood = NeighborhoodRow & { logoUrl: string | null };
 export type AdminBooking = Booking;
+/** Someone who saved a seat: admin-only (the email especially). */
+export type AdminGuest = {
+  user_id: string; full_name: string; catalogue_number: number | null; neighborhood: string | null; email: string; saved_at: string;
+};
+export type AdminEvent = EventRow & { guests: AdminGuest[] };
 const STATUSES = ["pending", "approved", "declined"] as const;
 
 export function adminApplications({ db, actor }: Ctx): AdminApplication[] {
@@ -144,4 +150,59 @@ export function neighborhoodLogoRequest(c: Ctx, request: Request): Promise<Respo
     const form = await readForm(request);
     return saveNeighborhoodLogo(c, str(form.get("slug"), "neighborhood", 100), await fileBytes(form));
   });
+}
+
+// ---------- Gatherings ----------
+
+/** Every gathering, past ones included, soonest first, each with its guest list (oldest RSVP first). */
+export function adminEvents({ db, actor }: Ctx): AdminEvent[] {
+  requireAdmin(db, actor);
+  const byEvent = new Map<string, AdminGuest[]>();
+  // ponytail: every guest list in one read; page per event if lists grow past a few hundred seats.
+  const guests = db.prepare(
+    `select r.event_id, r.user_id, r.created_at as saved_at, coalesce(p.full_name, '') as full_name, p.catalogue_number, p.neighborhood, u.email
+     from event_rsvps r join "user" u on u.id = r.user_id left join profiles p on p.id = r.user_id order by r.created_at`,
+  ).all() as (AdminGuest & { event_id: string })[];
+  for (const { event_id, ...guest } of guests) byEvent.set(event_id, [...(byEvent.get(event_id) ?? []), guest]);
+  const events = db.prepare("select * from events order by starts_at").all() as EventRow[];
+  return events.map((e) => ({ ...e, guests: byEvent.get(e.id) ?? [] }));
+}
+
+/** Today's events columns, checked: required text trimmed, a known neighborhood, an ISO start, a known kind. */
+function eventFields(db: Ctx["db"], input: unknown) {
+  if (!isObject(input)) throw bad("gathering");
+  const title = str(input.title, "title", 200).trim();
+  const location = str(input.location, "location", 200).trim();
+  const description = str(input.description ?? "", "description", 600).trim();
+  const neighborhood = str(input.neighborhood, "neighborhood", 200);
+  const startsAt = str(input.starts_at, "start time", 40);
+  if (!title) throw bad("title");
+  if (!location) throw bad("location");
+  if (!/^\d{4}-\d{2}-\d{2}T/.test(startsAt) || Number.isNaN(Date.parse(startsAt))) throw bad("start time");
+  if (!db.prepare("select 1 from neighborhoods where name = ?").get(neighborhood)) throw bad("neighborhood");
+  return { title, description, location, neighborhood, starts_at: new Date(startsAt).toISOString(), kind: oneOf(input.kind, EVENT_KINDS, "kind") };
+}
+
+/** Returns the new gathering's id. */
+export function createEvent({ db, actor }: Ctx, input: unknown): string {
+  requireAdmin(db, actor);
+  const e = eventFields(db, input);
+  return (db.prepare("insert into events (title, description, location, neighborhood, starts_at, kind) values (?, ?, ?, ?, ?, ?) returning id")
+    .get(e.title, e.description, e.location, e.neighborhood, e.starts_at, e.kind) as { id: string }).id;
+}
+
+export function updateEvent({ db, actor }: Ctx, input: unknown): void {
+  requireAdmin(db, actor);
+  const e = eventFields(db, input);
+  const id = str((input as Record<string, unknown>).id, "gathering", 64);
+  const changed = db.prepare("update events set title = ?, description = ?, location = ?, neighborhood = ?, starts_at = ?, kind = ? where id = ?")
+    .run(e.title, e.description, e.location, e.neighborhood, e.starts_at, e.kind, id).changes;
+  if (!changed) throw bad("gathering");
+}
+
+/** Its RSVPs go with it (on delete cascade); the UI confirms with the seat count first. */
+export function deleteEvent({ db, actor }: Ctx, input: unknown): void {
+  requireAdmin(db, actor);
+  if (!isObject(input)) throw bad("gathering");
+  db.prepare("delete from events where id = ?").run(str(input.id, "gathering", 64));
 }

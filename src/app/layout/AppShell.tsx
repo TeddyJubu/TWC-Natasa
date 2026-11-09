@@ -9,7 +9,8 @@ import { useSignOut } from "./sign-out";
 
 /** The internal pages: each renders `AppShell` with its own path. */
 export type ShellPage = "/account" | "/admin";
-type NavItem = { label: string; icon: IconName; to: "/" | "/members" | ShellPage; hash?: string };
+/** `sr` prefixes the accessible name where a label repeats in another group ("Admin Gatherings"). */
+type NavItem = { label: string; icon: IconName; to: "/" | "/members" | ShellPage; hash?: string; sr?: string };
 type NavGroup = { label: string; items: NavItem[]; fold?: boolean };
 
 const COLLECTIVE: NavItem[] = [
@@ -29,6 +30,7 @@ const ADMIN: NavItem[] = [
   { label: "All members", icon: "badge-check", to: "/admin", hash: "members" },
   { label: "Neighborhoods", icon: "map-pin", to: "/admin", hash: "neighborhoods" },
   { label: "Headshot bookings", icon: "calendar", to: "/admin", hash: "bookings" },
+  { label: "Gatherings", icon: "calendar-days", to: "/admin", hash: "gatherings", sr: "Admin" },
 ];
 
 /** The Admin group only for admins; UX only, since /admin's guard and every admin server function check again. */
@@ -113,7 +115,7 @@ function NavLink({ item, page, active, onNavigate }: { item: NavItem; page: Shel
     "flex w-full items-center gap-3.5 rounded-[10px] px-3 py-2.5 text-[15.5px] transition-colors",
     current ? "bg-app-line font-medium text-ink" : "text-ink hover:bg-app-line/50", ring,
   );
-  const body = <><Icon name={item.icon} className={cn("size-4.75", current ? "text-ink" : "text-ink-muted")} />{item.label}</>;
+  const body = <><Icon name={item.icon} className={cn("size-4.75", current ? "text-ink" : "text-ink-muted")} />{item.sr && <span className="sr-only">{item.sr} </span>}{item.label}</>;
   return (
     <li>
       {here
