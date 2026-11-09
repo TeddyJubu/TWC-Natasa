@@ -63,12 +63,13 @@ Page rows and host redirects from this file are active in `/opt/nbwc/Caddyfile` 
 `twc_members_cutover`, `twc_nbwc_cutover`, plus `@spotlight` on members hosts after 0008). Backup: `Caddyfile.before-twc-cutover-20261109-151319`; spotlight add-on `Caddyfile.before-spotlight-redir-*`.
 Smoke: `bun scripts/smoke-cutover.ts` → ok. Apex `/` still coming-soon.
 
+## Directory portraits (SITE-118 / SITE-167)
+
+| Old path | Response | Notes |
+|---|---|---|
+| `/assets/img/directory`, `/assets/img/directory/*` | `404` (`error @old_directory_img`) | Personal portraits from the old static directory. Files stay archived on disk; never invent stand-in photos. New portraits only via `/media/*` visibility rules. Snippet in `twc_apex_cutover` — paste onto the live apex block (repo ready; see AUDIT-TASKS). |
+
 ## Not redirected yet
 
-- Static assets under `/assets/*`, `/embed.js`, favicons and `robots.txt` stay with the archived site files in `/opt/nbwc/site`.
+- Other static assets under `/assets/*` (except `/assets/img/directory/*` above), `/embed.js`, favicons and `robots.txt` stay with the archived site files in `/opt/nbwc/site`.
 - Apex `/f/*` custom forms (OPS-518): **held** — live CRM currently has 0 `custom_forms`; `twc_forms_cutover` is prepared but not enabled. After a real form is published and `scripts/import-forms.ts` reports `imported`/`updated` slugs, paste that snippet (or a slug list). Still on the old stack: `/f/<slug>/thanks-<n>`, `thanks-go`, `thanks-waitlist`, `full`, `event.ics`, `/f/media/*`, `/forms`.
-- `admin.*` / `crm.*` → new `/admin` (`twc_admin_cutover` / `twc_crm_cutover`): snippets ready in
-  `migration/caddy-twc-redirects.caddy`, **not enabled** on the VPS. All-method 301 (unlike
-  GET/HEAD-only page/join/review redirects — these hosts are dashboards, not public forms). Smoke
-  rows are commented in `scripts/smoke-cutover.ts` until the integrator pastes; see AUDIT-TASKS
-  "admin-crm-cutover — repo ready". Do not stop intake/crm in that paste step.

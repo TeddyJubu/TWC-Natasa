@@ -91,6 +91,12 @@
 	@old_404 path /404 /404.html
 	error @old_404 404
 
+	# SITE-118/167: old directory portraits under /assets/img/directory/ stay on disk (archive +
+	# /f/* writer) but must not be fetchable. 404 like /404 — never invent stand-in photos. Other
+	# /assets/* (form-logic.js, brand, stock) keep serving. App portraits live only at /media/*.
+	@old_directory_img path /assets/img/directory /assets/img/directory/*
+	error @old_directory_img 404
+
 	# One hop to the app's form (SITE-107/164; was apex → join.* → new.*).
 	@apply path /apply /apply.html
 	redir @apply https://new.thewomenscollective.club/join 301

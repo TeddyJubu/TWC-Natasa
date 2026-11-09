@@ -6380,9 +6380,9 @@
       "source": "site.md:Directory data is personal data on a hand-built page",
       "acceptance": "Directory data is personal data on a hand-built page: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
+      "status": "built",
       "target": "/members",
-      "evidence": "AUDIT 2026-11-09: page redirects; personal directory HTML archived in twc-site-archive-20261109-151319.tar.gz but still on disk for /f/* writer. Image path restriction still open (SITE-167/118)."
+      "evidence": "directory-media-lockdown 2026-11-09: static cards not ported; public directory = publicProfiles() only (approved + directory_visible + public_profile; members.server.ts). /directory(.html) 301 → /members already verified (SITE-004). Old portraits locked with SITE-118/167 (@old_directory_img 404 snippet ready). No stand-in photos (MemberCard initials mat)."
     },
     {
       "id": "SITE-030",
@@ -7133,9 +7133,9 @@
       "source": "site.md:Directory images",
       "acceptance": "Directory images: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
+      "status": "built",
       "target": "/members",
-      "evidence": "AUDIT 2026-11-09: same as SITE-167 — directory portraits remain under /opt/nbwc/site/assets/img/directory/ after archive; not restricted yet."
+      "evidence": "directory-media-lockdown 2026-11-09: new portraits only via /media/* (canSeeAvatarFolder + public/<n>/avatar|logo; media.ts). Old /assets/img/directory/* → 404 via @old_directory_img in twc_apex_cutover (migration/caddy-twc-redirects.caddy; redirects.md; cutover-redirects.test.ts). Snippet ready — paste into live apex block; smoke row commented until then. Files stay on disk (archive). Never invent stand-in photos."
     },
     {
       "id": "SITE-119",
@@ -7547,9 +7547,9 @@
       "source": "site.md:Real member data in `directory.html` and `assets/img/directory/`",
       "acceptance": "Real member data in `directory.html` and `assets/img/directory/`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
+      "status": "built",
       "target": "/members",
-      "evidence": "AUDIT 2026-11-09: directory.html 301s to /members, but files stay in /opt/nbwc/site including assets/img/directory/ (still publicly fetchable). Restrict or move images still open."
+      "evidence": "directory-media-lockdown 2026-11-09: directory.html already 301s (SITE-004 verified). /assets/img/directory/* 404 via @old_directory_img (same pattern as /404); app /media/* enforces visibility (media.test.ts + policy.test.ts). Snippet ready, not yet pasted on VPS — do not mark verified until smoke uncommented + ok. Archive keeps files; no stand-in photos."
     },
     {
       "id": "SITE-168",
