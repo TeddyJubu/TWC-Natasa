@@ -1,15 +1,15 @@
 import * as React from "react";
 import { createPortal } from "react-dom";
-import cosmos from "../assets/illustrations/trail-flower-cosmos.webp";
-import buttercup from "../assets/illustrations/trail-flower-buttercup.webp";
-import forgetMeNot from "../assets/illustrations/trail-flower-forgetmenot.webp";
-import daisy from "../assets/illustrations/trail-flower-daisy.webp";
-import lavender from "../assets/illustrations/trail-flower-lavender.webp";
+import sun from "../assets/illustrations/trail-star-sun.svg";
+import blue from "../assets/illustrations/trail-star-blue.svg";
+import gold from "../assets/illustrations/trail-star-gold.svg";
+import rose from "../assets/illustrations/trail-star-rose.svg";
+import lilac from "../assets/illustrations/trail-star-lilac.svg";
 import { cn } from "../lib/utils";
 
-const flowerImages = [cosmos, buttercup, forgetMeNot, daisy, lavender];
+const starImages = [sun, blue, gold, rose, lilac];
 
-/** Rendered pixel size of the bundled flowers (2x the `small` 3rem display size). */
+/** Intrinsic pixel size of the bundled stars (2x the `small` 3rem display size). */
 const TRAIL_IMAGE_SIZE = 96;
 const FINE_POINTER_QUERY = "(hover: hover) and (pointer: fine)";
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
@@ -43,7 +43,7 @@ export interface ImageTrailProps extends React.HTMLAttributes<HTMLDivElement> {
  * Renders nothing on the server, for touch and for reduced motion, so those never download the images.
  */
 export const ImageTrail = React.forwardRef<HTMLDivElement, ImageTrailProps>(
-  ({ images = flowerImages, size = "tiny", count = 24, className, ...props }, forwardedRef) => {
+  ({ images = starImages, size = "tiny", count = 24, className, ...props }, forwardedRef) => {
     const localRef = React.useRef<HTMLDivElement | null>(null);
     const itemRefs = React.useRef<Array<HTMLImageElement | null>>([]);
     const enabled = React.useSyncExternalStore(subscribeToPointerTraits, canShowTrail, serverSnapshot);
@@ -77,20 +77,26 @@ export const ImageTrail = React.forwardRef<HTMLDivElement, ImageTrailProps>(
 
         previousX = event.clientX;
         previousY = event.clientY;
-        const rotation = ((itemIndex * 47) % 42) - 21;
-        const driftX = ((itemIndex * 29) % 18) - 9;
-        const driftY = 10 + ((itemIndex * 17) % 16);
-        const origin = `translate3d(${event.clientX}px, ${event.clientY}px, 0) translate(-50%, -50%)`;
+        // Glitter: each star lands a little off the pointer at its own size, then flickers out as it turns.
+        // The spread is derived from the index, not random, so the trail looks the same on every run.
+        const rotation = (itemIndex * 47) % 90;
+        const scale = 0.5 + ((itemIndex * 37) % 70) / 100;
+        const x = event.clientX + ((itemIndex * 29) % 32) - 16;
+        const y = event.clientY + ((itemIndex * 17) % 32) - 16;
+        const at = (size: number, turn: number) =>
+          `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%) scale(${size}) rotate(${rotation + turn}deg)`;
 
         item.getAnimations().forEach((animation) => animation.cancel());
         item.animate([
-          { opacity: 0, transform: `${origin} scale(0.35) rotate(${rotation - 8}deg)` },
-          { opacity: 0.96, transform: `${origin} scale(1) rotate(${rotation}deg)`, offset: 0.22 },
-          { opacity: 0.84, transform: `translate3d(${event.clientX + driftX}px, ${event.clientY - driftY}px, 0) translate(-50%, -50%) scale(0.92) rotate(${rotation + 4}deg)`, offset: 0.64 },
-          { opacity: 0, transform: `translate3d(${event.clientX + driftX * 1.7}px, ${event.clientY - driftY * 2.2}px, 0) translate(-50%, -50%) scale(0.68) rotate(${rotation + 10}deg)` },
+          { opacity: 0, transform: at(0, -45) },
+          { opacity: 1, transform: at(scale, 0), offset: 0.18 },
+          { opacity: 0.3, transform: at(scale * 0.65, 20), offset: 0.42 },
+          { opacity: 1, transform: at(scale * 0.95, 40), offset: 0.62 },
+          { opacity: 0.25, transform: at(scale * 0.5, 60), offset: 0.82 },
+          { opacity: 0, transform: at(0, 90) },
         ], {
-          duration: 820,
-          easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+          duration: 900,
+          easing: "ease-out",
           fill: "both",
         });
       };

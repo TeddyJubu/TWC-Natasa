@@ -39,7 +39,7 @@ describe("ImageTrail", () => {
     expect(document.querySelectorAll("img")).toHaveLength(0);
   });
 
-  it("renders 96px WebP flowers on the client for a fine, hovering pointer", async () => {
+  it("renders 96px SVG stars on the client for a fine, hovering pointer", async () => {
     stubDevice({ finePointer: true, reducedMotion: false });
     render(<ImageTrail count={6} />);
     await act(async () => {});
@@ -48,7 +48,7 @@ describe("ImageTrail", () => {
     for (const img of images) {
       expect(img.getAttribute("width")).toBe("96");
       expect(img.getAttribute("height")).toBe("96");
-      expect(img.getAttribute("src")).toMatch(/\.webp$/);
+      expect(img.getAttribute("src")).toMatch(/trail-star-[a-z]+\.svg$|^data:image\/svg\+xml/);
     }
   });
 

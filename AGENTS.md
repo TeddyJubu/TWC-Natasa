@@ -9,7 +9,7 @@
 - Long membership forms compose reusable field, choice, notice, progress, section, and action primitives — keeps dense applications consistent and accessible.
 - The uploaded constellation artwork is the canonical logo and `ConstellationLogo` owns its fixed color variants — preserves the original geometry across every brand context.
 - Immersive image strips use the self-contained OGL circular gallery with a static reduced-motion fallback — preserves the editorial arc while remaining accessible and attach-safe.
-- Decorative pointer motion uses the self-contained flower `ImageTrail`, disabled for touch and reduced motion — keeps the playful flourish accessible and attach-safe.
+- Decorative pointer motion uses the self-contained star `ImageTrail` (glittering sparkles), disabled for touch and reduced motion — keeps the playful flourish accessible and attach-safe.
 - Motion that starts on its own either stops within 5 s (`CurvedLoop`) or has a pause control (`Ribbon`) — WCAG 2.2.2, even when the motion is decorative and `aria-hidden`.
 - Catalogue cards open details through `MemberCard`'s `onOpen` and one `MemberDialog` (a native modal `<dialog>`) per page; members without a portrait get the card's initials mat, never a stand-in photo — keeps cards honest and the dialog accessible without a dialog library.
 - Demo member profiles live in `src/showcase/demo-members.ts` (with their portraits in `src/showcase/assets/`), outside the design system and the public barrel; only `MemberProfile` is type-exported with `MemberCard` — keeps the reusable API typed without pulling sample portraits into consumer bundles.

@@ -125,7 +125,7 @@ describe("root route", () => {
     expect(root).toMatch(/useRouteFocus\(resolvedPathname\)/);
   });
 
-  it("does not mount the flower ImageTrail (live pages own it via AppPage)", () => {
+  it("does not mount the star ImageTrail (live pages own it via AppPage)", () => {
     const root = readFileSync(resolve(process.cwd(), "src/routes/__root.tsx"), "utf8");
     expect(root).not.toMatch(/\bImageTrail\b/);
   });
