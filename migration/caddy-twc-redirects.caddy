@@ -176,19 +176,16 @@
 	redir @forms_moved https://new.thewomenscollective.club{uri} 301
 }
 
-# NOT ENABLED — after CRM parity (BRIEF 8): admin.thewomenscollective.club { … } becomes only this
-# (plus its header block), and intake can stop once members.* review/spotlight also have nowhere left to go.
-# All-method 301 (no `method GET HEAD`): the whole host is the old dashboard, not a public form — there
-# is no stale POST body to preserve (unlike apex/join/review/forms cutovers). Every path collapses to
-# /admin (path and query dropped). Do not stop intake/crm containers in the same paste step.
+# ENABLED 2026-11-09 — admin.thewomenscollective.club { … } is this redir (plus its header block).
+# All-method 301 (no `method GET HEAD`): dashboard host, not a public form. Path/query dropped.
+# Intake containers were NOT stopped in the same step — stop only when nothing left points at them.
 (twc_admin_cutover) {
 	redir https://new.thewomenscollective.club/admin 301
 }
 
-# NOT ENABLED — after CRM parity: crm.thewomenscollective.club { … } keeps `tls internal` (Cloudflare
-# "Full" to origin) and replaces `request_header`/`reverse_proxy crm:3000` with this.
-# Same all-method 301 as twc_admin_cutover (dashboard host, not a form POST path). crm-test /
-# crm.srv1881521.hstgr.cloud is a separate block — leave it alone until the integrator decides.
+# ENABLED 2026-11-09 — crm.thewomenscollective.club { … } keeps `tls internal` (Cloudflare
+# "Full" to origin) and uses this instead of `request_header`/`reverse_proxy crm:3000`.
+# Same all-method 301 as twc_admin_cutover. crm-test / crm.srv1881521.hstgr.cloud left alone.
 (twc_crm_cutover) {
 	redir https://new.thewomenscollective.club/admin 301
 }
