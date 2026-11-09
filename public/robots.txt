@@ -2,5 +2,6 @@ User-agent: *
 Disallow: /colors
 Disallow: /typography
 Disallow: /components
+Disallow: /review
 
 Sitemap: https://new.thewomenscollective.club/sitemap.xml

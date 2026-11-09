@@ -293,6 +293,12 @@ Owner-authorized cutover of the old static site (`/opt/nbwc/site`), CRM (`crm.th
 - **Consent copy (SITE-061):** the old checkbox text, reused as-is; the field is `consent` (true, or "on" from a form post). Honeypot field is `honeypot` (the brief's contract), not the old `bot-field`.
 - **New contact topics (SITE-055):** the old labels "Nominating someone for Member Monday", "Accessibility", "Reporting conduct", before "Something else"; stored as the label.
 - **Inbox scope:** archive only (no restore or archived view yet); CRM views, search, spam and notes (CRM-063/064) stay `todo`.
+- **Review links (members-links, CRM-171/OPS-087):** `member_links` (0003) stores only the token's SHA-256; the URL is shown once in the `/admin` mint result to copy into the admin's own message (the app never emails it, as the CRM never did). 32 random bytes, base64url; 30-day TTL (old `LINK_TTL_DAYS` default); revoke and "one live link per kind" set `expires_at` to now, as the old intake did.
+- **Review link host:** `/review?t=<token>` on the new app, token-only (no sign-in: imported members may have no login). Bad, used, expired, revoked, Spotlight-purpose and no-longer-approved tokens all get one neutral 404. `noindex`, `Disallow: /review`, `referrer: no-referrer`. vps-cutover: `members.*/review?t=…` should 301 here keeping the query.
+- **Review answers** go to `member_reviews` and the new `/admin` "Member reviews" card (Mark handled); they never change the profile. Unlike the old intake, every radio/checkbox value is checked against its options. The thank-you replaces the form in place (no `/review/thanks` URL). Not stored: `consent_version` (no registry yet). No admin alert email on a new review yet (notifications).
+- **Review form switch** (`forms_state` "review" closed, OPS-031/081) is not in this slice; links are always on (CRM-087).
+- **Fresh link after a response (OPS-089):** fixed — admins can always make a new link for an approved member.
+- **OPS-027 / OPS-144 / OPS-146** (owner `notifications`) are satisfied by this slice (invalid-link 404, required fields, separate optional permissions); left for that owner to flip.
 
 ### Progress
 
@@ -302,5 +308,7 @@ Owner-authorized cutover of the old static site (`/opt/nbwc/site`), CRM (`crm.th
 - [x] Seed `migration/manifest.json` from all inventories (902 items)
 - [x] public-pages: `/fellowship`, `/partnerships`, `migration/redirects.md` (merged)
 - [x] admin-inbox: `0002_inbox.sql`, `/api/contact` + `/api/partnerships` store then email, `/admin` Inbox card; consent + honeypot (merged)
-- [ ] Workstreams remaining: data-import, members-links, custom-forms, notifications, vps-cutover
+- [x] members-links: `0003_member_links.sql` (hashed single-use review links + `member_reviews`), `/admin` mint/revoke/status + "Member reviews" card, public `/review?t=` + `POST /api/review`; 24 items `built`
+- [ ] members-links follow-up — **Spotlight** (CRM-037/083/097, OPS-028/029/049/115): Weekly Spotlight form behind a `purpose = 'spotlight'` link (the table already accepts it; review lookups filter on purpose), its answers store + `/admin` listing, import of historical `spotlight_answers.jsonl` (data-import). CRM-090 (agent never sees the link) awaits an owner retire.
+- [ ] Workstreams remaining: data-import, custom-forms, notifications, vps-cutover
 - [ ] `migration:check` passes; final Haiku sweep green; live smoke; old services stopped

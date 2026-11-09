@@ -12,7 +12,7 @@ const QUICK = [
 ] as const;
 
 /** One centred card on a cream band: logo, Caveat line, h1, message, actions. */
-function StatusPage({ script, tilt, title, intro, children }: {
+export function StatusPage({ script, tilt, title, intro, children }: {
   script: string; tilt: string; title: string; intro: string; children: React.ReactNode;
 }) {
   return (

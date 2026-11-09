@@ -1,4 +1,4 @@
-// The six /admin cards (sidebar anchors). Data and rules live in ./queries, ./mutations and ./format; these only render.
+// The /admin cards (sidebar anchors). Data and rules live in ./queries, ./mutations and ./format; these only render.
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/index";
@@ -19,6 +19,10 @@ import {
 } from "./mutations";
 import type { ApprovalNotice } from "./approval-email";
 import { checkLogo, formatAnswers, formatDate, formatDay, humanizeKey, reviewerName, type AnswerEntry } from "./format";
+import {
+  adminReviewsQuery, reviewLinkStatesQuery, useMarkReviewDone, useMintReviewLink, useRevokeReviewLink, type AdminReview, type LinkState,
+} from "@/features/member-links/queries";
+import { reviewEntries } from "@/features/member-links/schema";
 
 const errorMessage = (error: unknown) =>
   (error as { message?: string } | null)?.message || "Something went wrong. Please try again.";
@@ -245,10 +249,12 @@ const headCell = cn(cell, "twc-eyebrow py-3.5 whitespace-nowrap");
 
 export function MembersPanel() {
   const members = useQuery(adminMembersQuery);
+  const links = useQuery(reviewLinkStatesQuery);
   const list = members.data ?? [];
   return (
     <Card id="members" title="All members" subtitle={members.data ? `${list.length} profiles · approve or decline directly` : "Every member profile"}>
       <QueryGate query={members} what="members">
+        {links.isError && <InlineError message="We couldn’t load review links right now." onRetry={() => void links.refetch()} />}
         {list.length === 0 ? <Empty>No member profiles yet.</Empty> : (
           // `relative` contains the sr-only (absolute) caption and header, or they escape the scroll clip and widen the page.
           <div role="region" aria-label="Members" tabIndex={0} className="relative overflow-x-auto focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-app-accent">
@@ -260,7 +266,7 @@ export function MembersPanel() {
                   <th scope="col" className={headCell}><span className="sr-only">Actions</span></th>
                 </tr>
               </thead>
-              <tbody>{list.map((m) => <MemberRow key={m.id} member={m} />)}</tbody>
+              <tbody>{list.map((m) => <MemberRow key={m.id} member={m} link={links.data?.[m.id] ?? null} />)}</tbody>
             </table>
           </div>
         )}
@@ -269,7 +275,7 @@ export function MembersPanel() {
   );
 }
 
-function MemberRow({ member }: { member: AdminMember }) {
+function MemberRow({ member, link }: { member: AdminMember; link: LinkState | null }) {
   const setStatus = useSetMemberStatus();
   const name = member.full_name || "Unnamed member";
   return (
@@ -291,9 +297,99 @@ function MemberRow({ member }: { member: AdminMember }) {
           />
           <MutationError mutation={setStatus} />
           <EmailNotice notice={setStatus.data} />
+          {member.status === "approved" && <ReviewLink memberId={member.id} name={name} link={link} />}
         </div>
       </td>
     </tr>
+  );
+}
+
+const LINK_STATE: Record<LinkState["state"], (l: LinkState) => string> = {
+  active: (l) => `Review link open until ${formatDate(l.expires_at)}`,
+  used: (l) => `Review link used ${formatDate(l.used_at)}`,
+  expired: (l) => `Review link closed ${formatDate(l.expires_at)}`,
+};
+
+/**
+ * A personal review link (CRM-082–089): its state, Make / Revoke, and the new URL shown once to copy into the
+ * admin's own message. Only its hash is stored, so a lost URL means making a new one (which closes the old).
+ */
+function ReviewLink({ memberId, name, link }: { memberId: string; name: string; link: LinkState | null }) {
+  const mint = useMintReviewLink();
+  const revoke = useRevokeReviewLink();
+  const [copied, setCopied] = React.useState(false);
+  const busy = mint.isPending || revoke.isPending;
+  const copy = (url: string) => navigator.clipboard?.writeText(url).then(() => setCopied(true), () => setCopied(false));
+  return (
+    <div className="flex flex-col gap-2 border-t border-app-rule pt-2">
+      {link && <p className={meta}>{LINK_STATE[link.state](link)}</p>}
+      <div className="flex flex-wrap gap-2.5">
+        <button type="button" className={secondaryButton} aria-label={`Make a review link for ${name}`} disabled={busy}
+          onClick={() => { setCopied(false); revoke.reset(); mint.mutate(memberId); }}>
+          {link?.state === "active" ? "New review link" : "Make review link"}
+        </button>
+        {link?.state === "active" && (
+          <button type="button" className={secondaryButton} aria-label={`Revoke the review link for ${name}`} disabled={busy}
+            onClick={() => { mint.reset(); revoke.mutate(memberId); }}>
+            Revoke
+          </button>
+        )}
+      </div>
+      <MutationError mutation={mint} />
+      <MutationError mutation={revoke} />
+      {mint.data && (
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor={`link-${memberId}`} className={meta}>Shown once — copy it into your own message to {name}. Opens one time, until {formatDate(mint.data.expires_at)}.</label>
+          <div className="flex gap-2">
+            <input id={`link-${memberId}`} readOnly value={mint.data.url} className={cn(fieldClass, "min-w-0 flex-1")} onFocus={(e) => e.currentTarget.select()} />
+            <button type="button" className={secondaryButton} onClick={() => copy(mint.data.url)}>Copy</button>
+          </div>
+          {copied && <p role="status" className={meta}>Copied</p>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------- Member reviews ----------
+
+export function MemberReviewsPanel() {
+  const reviews = useQuery(adminReviewsQuery);
+  const list = reviews.data ?? [];
+  return (
+    <Card id="reviews" title="Member reviews" subtitle={reviews.data ? `${list.length} waiting · answers from personal review links` : "Answers from personal review links"}>
+      <QueryGate query={reviews} what="member reviews">
+        {list.length === 0 ? <Empty>Nothing waiting.</Empty> : list.map((r) => <ReviewRow key={r.id} review={r} />)}
+      </QueryGate>
+    </Card>
+  );
+}
+
+/** Nothing here changes her profile: a person applies corrections and removals by hand (OPS-020, OPS-089). */
+function ReviewRow({ review: r }: { review: AdminReview }) {
+  const done = useMarkReviewDone();
+  const name = r.full_name || "Unnamed member";
+  const entries = reviewEntries(r.answers);
+  return (
+    <Item
+      headingId={`review-${r.id}`} title={name} status={String(r.answers.membership ?? "review")}
+      details={<p className={meta}>Sent {formatDate(r.created_at)}</p>}
+    >
+      <details className="group rounded-md bg-app-sunken">
+        <summary className={cn("flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-md px-3.5 text-sm font-medium text-ink [&::-webkit-details-marker]:hidden", ring)}>
+          <Icon name="chevron-down" className="size-3.25 -rotate-90 text-app-muted transition-transform group-open:rotate-0 motion-reduce:transition-none" />
+          Answers ({entries.length})
+        </summary>
+        <AnswerList entries={entries} />
+      </details>
+      <MutationError mutation={done} />
+      <div>
+        <button type="button" className={secondaryButton} aria-label={`Mark the review from ${name} as handled`} disabled={done.isPending}
+          onClick={() => done.mutate(r.id)}>
+          Mark handled
+        </button>
+      </div>
+    </Item>
   );
 }
 
