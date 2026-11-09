@@ -47,8 +47,9 @@ afterAll(() => vi.unstubAllEnvs());
 describe("application-received alert", () => {
   it("emails every admin once with who applied and where to read it — and none of the answers", async () => {
     expect((await post(apply())).status).toBe(204);
-    expect(sent.mails.map((m) => m.to).sort()).toEqual(["admin2@x.test", "admin@x.test"]);
-    const [mail] = sent.mails;
+    const admins = sent.mails.filter((m) => m.to.endsWith("@x.test") && m.to.startsWith("admin"));
+    expect(admins.map((m) => m.to).sort()).toEqual(["admin2@x.test", "admin@x.test"]);
+    const [mail] = admins;
     expect(mail!.subject).toBe("New application: Bea Lopez");
     expect(mail!.text).toContain("Bea Lopez has sent a membership application.");
     expect(mail!.text).toContain("https://new.example/admin#applications");
@@ -75,6 +76,33 @@ describe("application-received alert", () => {
 
   it("strips line breaks from the applicant's name so it can't inject a header", async () => {
     await post(apply({ fullName: "Bea\r\nBcc: x@evil.test" }), "203.0.113.12");
-    expect(sent.mails[0]!.subject).toBe("New application: Bea Bcc: x@evil.test");
+    const admin = sent.mails.find((m) => m.subject.startsWith("New application:"));
+    expect(admin!.subject).toBe("New application: Bea Bcc: x@evil.test");
+  });
+});
+
+describe("application confirmation to the applicant", () => {
+  it("emails the applicant a short thank-you with no admin link", async () => {
+    expect((await post(apply())).status).toBe(204);
+    const confirm = sent.mails.find((m) => m.to === "bea@x.test");
+    expect(confirm).toBeTruthy();
+    expect(confirm!.subject).toBe("We got your application");
+    expect(confirm!.text).toContain("Hi Bea,");
+    expect(confirm!.text).toContain("We've received your application");
+    expect(confirm!.text).toContain("membership application");
+    expect(confirm!.text).not.toContain("/admin");
+    expect(confirm!.text).not.toContain("private notes");
+  });
+
+  it("uses 'there' when the name is not a plain greeting", async () => {
+    await post(apply({ fullName: "https://evil.test" }), "203.0.113.13");
+    const confirm = sent.mails.find((m) => m.to === "bea@x.test");
+    expect(confirm!.text).toContain("Hi there,");
+  });
+
+  it("a failing confirmation still answers 204 with the application stored", async () => {
+    sent.result = (to) => (to === "bea@x.test" ? { sent: false, reason: "send-failed" } : { sent: true });
+    expect((await post(apply(), "203.0.113.14")).status).toBe(204);
+    expect(db.prepare("select count(*) as n from applications").get()).toEqual({ n: 1 });
   });
 });

@@ -4,7 +4,7 @@ import { subscribeIfConsented } from "@/server/beehiiv";
 import type { Ctx } from "@/server/context.server";
 import type { DB } from "@/server/db";
 import { appUrl } from "@/server/email";
-import { notifyAdmins, oneLine } from "@/server/notify";
+import { confirmFooter, confirmSubmitter, firstName, notifyAdmins, oneLine } from "@/server/notify";
 import { bad, isObject, str } from "@/server/validate";
 import { checkSize, clientIp, HttpError, rateLimit, respond } from "@/server/request";
 
@@ -34,6 +34,19 @@ export async function alertApplication(db: DB, { fullName }: Pick<Stored, "fullN
   } catch {
     console.warn("[application] stored, but the admin alert failed");
   }
+}
+
+/**
+ * Short thank-you to the applicant after a successful store. No admin links. Never throws: the row is already stored.
+ */
+export async function confirmApplication({ email, fullName }: Stored): Promise<void> {
+  const hi = firstName(fullName);
+  const text = [
+    `Hi ${hi},`, "",
+    "Thank you for applying to The Women's Collective. We've received your application and will be in touch once we've had a chance to read it.", "",
+    confirmFooter("membership application"),
+  ].join("\n");
+  await confirmSubmitter({ to: email, subject: "We got your application", text }, "[application]");
 }
 
 /**
@@ -80,5 +93,6 @@ export function submitApplicationRequest(c: Ctx, request: Request): Promise<Resp
     const stored = submitApplication(c, input);
     await optInApplicant(c.db, stored);
     await alertApplication(c.db, stored);
+    await confirmApplication(stored);
   });
 }

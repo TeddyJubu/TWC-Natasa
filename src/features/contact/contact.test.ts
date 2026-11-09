@@ -138,14 +138,20 @@ describe("rateLimit", () => {
 });
 
 describe("POST /api/contact", () => {
-  it("stores the message for the inbox, emails every admin (only admins) and answers 204", async () => {
+  it("stores the message for the inbox, emails every admin and a confirmation to the sender, and answers 204", async () => {
     expect((await send("192.0.2.10")).status).toBe(204);
     expect(stored()).toEqual([{
       kind: "contact", name: "Rosa Diaz", email: "rosa@x.test", topic: "Partnerships", business: null, collaboration_type: null,
       message: "Coffee next week?", status: "new",
     }]);
-    expect(sent.mails.map((m) => m.to).sort()).toEqual(["admin1@x.test", "admin2@x.test"]);
-    expect(sent.mails[0]!.text).toContain("rosa@x.test");
+    expect(sent.mails.map((m) => m.to).sort()).toEqual(["admin1@x.test", "admin2@x.test", "rosa@x.test"]);
+    const admin = sent.mails.find((m) => m.to === "admin1@x.test")!;
+    expect(admin.text).toContain("rosa@x.test");
+    const confirm = sent.mails.find((m) => m.to === "rosa@x.test")!;
+    expect(confirm.subject).toBe("We got your message");
+    expect(confirm.text).toContain("Hi Rosa,");
+    expect(confirm.text).toContain("contact form");
+    expect(confirm.text).not.toContain("/admin");
   });
 
   it("still succeeds, stored, when no email goes out (the inbox has it)", async () => {
@@ -198,13 +204,18 @@ describe("POST /api/contact", () => {
 });
 
 describe("POST /api/partnerships", () => {
-  it("stores the inquiry (the brief's JSON contract) and emails every admin", async () => {
+  it("stores the inquiry (the brief's JSON contract), emails every admin, and confirms the sender", async () => {
     expect((await send("192.0.2.30", partner, "partnership")).status).toBe(204);
     expect(stored()).toEqual([{
       kind: "partnership", name: "Ana Ruiz", email: "ana@x.test", topic: null, business: "Ruiz Bakery", collaboration_type: "supply",
       message: "We could bake for a gathering.", status: "new",
     }]);
-    expect(sent.mails.map((m) => m.subject)).toEqual(Array(2).fill("Partnership inquiry: supply — Ana Ruiz"));
+    expect(sent.mails.filter((m) => m.to.startsWith("admin")).map((m) => m.subject)).toEqual(Array(2).fill("Partnership inquiry: supply — Ana Ruiz"));
+    const confirm = sent.mails.find((m) => m.to === "ana@x.test")!;
+    expect(confirm.subject).toBe("Thanks for reaching out about a partnership");
+    expect(confirm.text).toContain("Hi Ana,");
+    expect(confirm.text).toContain("partnerships form");
+    expect(confirm.text).not.toContain("/admin");
   });
 
   it("stores no business as null, and refuses an unknown collaboration type", async () => {
