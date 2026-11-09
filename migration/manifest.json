@@ -1037,56 +1037,70 @@
       "source": "crm.md:Two membership forms on the engine",
       "acceptance": "Two membership forms on the engine: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin#members"
+      "status": "built",
+      "target": "retired",
+      "evidence": "Retired: CRM /api/member-forms/:kind editor (draft/publish/restore) for application+review. Rebuild uses fixed scrapbook /join + personal /review?t= + Spotlight — no membership form builder. Custom-forms editor is /admin Form responses only (CRM-104–119 light).",
+      "retired": "no-membership-form-editor"
     },
     {
       "id": "CRM-111",
       "source": "crm.md:Blocks",
       "acceptance": "Blocks: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "evidence": "Retired: CRM membership-form block types (/ menu). Join/review/Spotlight are fixed React forms in the app, not block-canvas definitions.",
+      "retired": "no-membership-form-editor"
     },
     {
       "id": "CRM-112",
       "source": "crm.md:Locked \"core\" questions",
       "acceptance": "Locked \"core\" questions: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin#members"
+      "status": "built",
+      "target": "retired",
+      "evidence": "Retired: CRM locked 'core' questions editable in the membership form editor. Rebuild keeps required keys in application/review schemas (src/features/applications + member-links); no CRM reword/move UI.",
+      "retired": "no-membership-form-editor"
     },
     {
       "id": "CRM-113",
       "source": "crm.md:Validation rules",
       "acceptance": "Validation rules: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "evidence": "Retired: CRM membership check_definition / publish validation for block canvas. No membership definition publisher; custom forms use checkQuestions only.",
+      "retired": "no-membership-form-editor"
     },
     {
       "id": "CRM-114",
       "source": "crm.md:Consent versions",
       "acceptance": "Consent versions: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin#members"
+      "status": "built",
+      "target": "retired",
+      "evidence": "Retired: CRM consent fingerprint / consent_version minting on membership form publish. No membership-<kind> publish path; legacy consent_version kept only on imported rows (legacy-import).",
+      "retired": "no-membership-form-editor"
     },
     {
       "id": "CRM-115",
       "source": "crm.md:Published file",
       "acceptance": "Published file: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "evidence": "Retired: published/membership-<kind>.json (0600) read by intake when INTAKE_MEMBERSHIP_ENGINE=1. Rebuild serves scrapbook /join|/review natively; no published membership JSON.",
+      "retired": "no-membership-form-editor"
     },
     {
       "id": "CRM-116",
       "source": "crm.md:Preview rendered by intake",
       "acceptance": "Preview rendered by intake: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin#members"
+      "status": "built",
+      "target": "retired",
+      "evidence": "Retired: CRM → intake /internal/membership/preview + membership-v1.ts question lists for the Classic editor. No membership form preview API; /join and /review are the live forms.",
+      "retired": "no-membership-form-editor"
     },
     {
       "id": "CRM-117",
@@ -2336,16 +2350,20 @@
       "source": "backoffice.md:JSON internal actions registry",
       "acceptance": "JSON internal actions registry: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "parity"
+      "status": "built",
+      "target": "retired",
+      "evidence": "Retired: intake INTERNAL_JSON_ACTIONS (/internal/merge/*, /internal/membership/preview, /internal/members/link|revoke|status). Merge retired (crm-admin-parity-7); membership preview is Classic form-editor (CRM-110–116); link mint/revoke/status are /admin server fns (mintReviewLink/revokeReviewLink/reviewLinkStates, requireAdmin).",
+      "retired": "no-membership-form-editor"
     },
     {
       "id": "OPS-074",
       "source": "backoffice.md:`POST /internal/membership/preview`",
       "acceptance": "`POST /internal/membership/preview`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/join"
+      "status": "built",
+      "target": "retired",
+      "evidence": "Retired: POST /internal/membership/preview (draft HTML + engine flag). Classic membership form editor only — not rebuilt (CRM-116).",
+      "retired": "no-membership-form-editor"
     },
     {
       "id": "OPS-075",
@@ -3036,16 +3054,18 @@
       "source": "backoffice.md:Tokens: `secrets.token_urlsafe(24)` (192 bits). Only the SHA-256 hash is stored, and the token is never printed or logge",
       "acceptance": "Tokens: `secrets.token_urlsafe(24)` (192 bits). Only the SHA-256 hash is stored, and the token is never printed or logge: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "/admin#members",
+      "evidence": "32 random bytes base64url; only SHA-256 token_hash stored (member_links, 0003); URL returned once by mintReviewLink; LINK_TTL_DAYS=30; never logged. src/features/member-links/member-links.server.ts; member-links.test.ts + spotlight.test.ts ('stores only the token\\'s SHA-256'). | verified 2026-11-09: hash-only mint (randomBytes(32)); same as CRM-171/OPS-087"
     },
     {
       "id": "OPS-159",
       "source": "backoffice.md:Revoke (`/internal/members/link/revoke`) expires live links and returns the count. Status (`/internal/members/link/statu",
       "acceptance": "Revoke (`/internal/members/link/revoke`) expires live links and returns the count. Status (`/internal/members/link/statu: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "/admin#members",
+      "evidence": "revokeReviewLink (requireAdmin) expires live links and returns count; reviewLinkStates → none/active/used/expired + dates, never the token. /admin All members ReviewLink control (panels.tsx). member-links.server.ts; member-links.test.ts; admin-route.test.tsx. | verified 2026-11-09: revoke + status on /admin (same as CRM-085/086); old /internal/members/link/* not used"
     },
     {
       "id": "OPS-160",
@@ -3140,16 +3160,20 @@
       "source": "backoffice.md:The editor preview (`/internal/membership/preview`) works even with the engine off. It renders a draft with a made-up me",
       "acceptance": "The editor preview (`/internal/membership/preview`) works even with the engine off. It renders a draft with a made-up me: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "parity"
+      "status": "built",
+      "target": "retired",
+      "evidence": "Retired: membership editor preview works with engine off. No membership form editor or preview endpoint in the rebuild.",
+      "retired": "no-membership-form-editor"
     },
     {
       "id": "OPS-172",
       "source": "backoffice.md:With `INTAKE_MEMBERSHIP_ENGINE` not equal to 1",
       "acceptance": "With `INTAKE_MEMBERSHIP_ENGINE` not equal to 1: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/join"
+      "status": "built",
+      "target": "retired",
+      "evidence": "Retired: INTAKE_MEMBERSHIP_ENGINE off-path (legacy byte-identical /join|/review, /spotlight 404, ignore published files). Rebuild has no engine flag — scrapbook /join + /review + /spotlight always; links always on (CRM-087). No membership-<kind>.json publish/read path in the Node app.",
+      "retired": "no-membership-form-editor"
     },
     {
       "id": "OPS-173",
@@ -4074,8 +4098,10 @@
       "source": "backoffice.md:CRM routes, membership forms:",
       "acceptance": "CRM routes, membership forms:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "parity"
+      "status": "built",
+      "target": "retired",
+      "evidence": "Retired: CRM /api/member-forms/:kind/* editor routes. Member-link mint/revoke/status live as /admin server fns (CRM-082–086 verified); membership form editor not ported.",
+      "retired": "no-membership-form-editor"
     },
     {
       "id": "OPS-285",
