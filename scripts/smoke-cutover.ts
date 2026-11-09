@@ -35,8 +35,8 @@ export function checks(md: string, formSlug?: string): Check[] {
     { host: APEX, path: "/about.html?form=x", ...to(`${NEW}/about`) }, // query dropped
     { host: APEX, path: "/404", status: 404 },
     { host: APEX, path: "/404.html", status: 404 },
-    // SITE-118/167: uncomment after integrator pastes @old_directory_img into the live apex block.
-    // { host: APEX, path: "/assets/img/directory/smoke-not-a-file.jpg", status: 404 },
+    // SITE-118/167: enabled 2026-11-09 — old directory portraits 404 on apex.
+    { host: APEX, path: "/assets/img/directory/smoke-not-a-file.jpg", status: 404 },
     { host: APEX, path: "/apply", ...to(`${NEW}/join`) },
     { host: APEX, path: "/apply.html", ...to(`${NEW}/join`) },
     { host: APEX, path: "/login", ...to(`${NEW}/auth`, 302) },
