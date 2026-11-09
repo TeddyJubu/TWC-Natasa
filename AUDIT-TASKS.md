@@ -294,6 +294,8 @@ Owner-authorized cutover of the old static site (`/opt/nbwc/site`), CRM (`crm.th
 - [x] Inventory OPS Part D: `ops-part-d.md` OPS-393–OPS-535 (143 items); merged `fcd8af9`
 - [x] Inventory CRM: `crm.md` CRM-001–CRM-188 (188 items); Classic default; merged `ee5f5e1`
 - [x] Inventory SITE: `site.md` SITE-001–SITE-179 (179 items); merged
-- [ ] Seed `migration/manifest.json` from all inventories
-- [ ] Workstreams built and verified (public-pages, data-import, admin-inbox, members-links, custom-forms, notifications, vps-cutover)
+- [x] Seed `migration/manifest.json` from all inventories (902 items)
+- [x] public-pages: `/fellowship`, `/partnerships`, `migration/redirects.md` (merged); partnership POST still 501 until admin-inbox
+- [ ] admin-inbox (in progress): replace partnership stub; store contact messages
+- [ ] Workstreams remaining: data-import, members-links, custom-forms, notifications, vps-cutover
 - [ ] `migration:check` passes; final Haiku sweep green; live smoke; old services stopped
