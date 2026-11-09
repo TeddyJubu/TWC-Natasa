@@ -129,6 +129,7 @@ describe("/admin", () => {
       renderAdmin({ inbox: [msg("m1"), msg("m2", { kind: "partnership", name: "Ana Ruiz", email: "ana@x.test", topic: null, business: "Ruiz Bakery", collaboration_type: "supply" })] });
       const inbox = card("Inbox");
       expect(within(inbox).getByText(/2 waiting/)).toBeTruthy();
+      expect(within(inbox).getByLabelText("View")).toBeTruthy();
       const rosa = within(inbox).getByRole("article", { name: "Rosa Diaz" });
       expect(within(rosa).getByRole("link", { name: "rosa@x.test" }).getAttribute("href")).toBe("mailto:rosa@x.test");
       expect(rosa.textContent).toContain("Press");
@@ -142,6 +143,24 @@ describe("/admin", () => {
     it("says when nothing is waiting", () => {
       renderAdmin();
       expect(within(card("Inbox")).getByText("Nothing waiting.")).toBeTruthy();
+    });
+
+    it("Archived filter lists archived messages and hides Archive", () => {
+      renderAdmin({
+        inbox: [
+          msg("m1"),
+          msg("m2", { name: "Ana Ruiz", email: "ana@x.test", status: "archived", created_at: "2026-10-01T15:00:00Z" }),
+        ],
+      });
+      const inbox = card("Inbox");
+      expect(within(inbox).getByText(/1 waiting/)).toBeTruthy();
+      expect(within(inbox).getByRole("article", { name: "Rosa Diaz" })).toBeTruthy();
+      expect(within(inbox).queryByRole("article", { name: "Ana Ruiz" })).toBeNull();
+      fireEvent.change(within(inbox).getByLabelText("View"), { target: { value: "archived" } });
+      expect(within(inbox).getByText(/1 archived/)).toBeTruthy();
+      expect(within(inbox).queryByRole("article", { name: "Rosa Diaz" })).toBeNull();
+      const ana = within(inbox).getByRole("article", { name: "Ana Ruiz" });
+      expect(within(ana).queryByRole("button", { name: /Archive/ })).toBeNull();
     });
 
     it("archives a message and refetches the inbox", async () => {

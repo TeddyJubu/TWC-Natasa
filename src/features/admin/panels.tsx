@@ -157,6 +157,11 @@ const STATUS_FILTER: Option[] = [
 ];
 const DUPLICATES = "duplicate";
 const APPLICATION_FILTER: Option[] = [...STATUS_FILTER, { value: DUPLICATES, label: "Possible duplicates" }];
+/** Inbox triage (CRM-063): Needs attention = status new; Archived lists what archive already wrote. No Spam view. */
+const INBOX_FILTER: Option[] = [
+  { value: "new", label: "Needs attention" },
+  { value: "archived", label: "Archived" },
+];
 
 /** A card's filter (CRM-062): narrows its rows together with the page's search box. */
 function FilterSelect({ id, label, value, options, onChange }: { id: string; label: string; value: string; options: Option[]; onChange: (value: string) => void }) {
@@ -352,12 +357,25 @@ function LoggedActions({ subject, name, actions }: {
 
 export function InboxPanel({ query = "" }: { query?: string }) {
   const inbox = useQuery(adminInboxQuery);
-  const all = inbox.data ?? [];
-  const list = all.filter((m) => matchesSearch(query, [m.name, m.email, m.business]));
+  const [status, setStatus] = React.useState<"new" | "archived">("new");
+  const loaded = inbox.data ?? [];
+  const inView = loaded.filter((m) => m.status === status);
+  const list = inView.filter((m) => matchesSearch(query, [m.name, m.email, m.business]));
+  const waiting = loaded.filter((m) => m.status === "new").length;
+  const archived = loaded.filter((m) => m.status === "archived").length;
+  const subtitle = inbox.data
+    ? `${shownOf(list.length, inView.length)}${status === "new" ? `${waiting} waiting` : `${archived} archived`} · contact messages and partnership inquiries`
+    : "Contact messages and partnership inquiries";
   return (
-    <Card id="inbox" title="Inbox" subtitle={inbox.data ? `${shownOf(list.length, all.length)}${all.length} waiting · contact messages and partnership inquiries` : "Contact messages and partnership inquiries"}>
+    <Card id="inbox" title="Inbox" subtitle={subtitle}>
       <QueryGate query={inbox} what="messages">
-        {list.length === 0 ? <Empty>{all.length ? "No messages match." : "Nothing waiting."}</Empty> : list.map((m) => <InboxRow key={m.id} message={m} />)}
+        <div className={cn(pad, "py-4")}>
+          <FilterSelect id="inbox-status" label="View" value={status} options={INBOX_FILTER}
+            onChange={(v) => setStatus(v === "archived" ? "archived" : "new")} />
+        </div>
+        {list.length === 0
+          ? <Empty>{inView.length ? "No messages match." : status === "new" ? "Nothing waiting." : "Nothing archived."}</Empty>
+          : list.map((m) => <InboxRow key={m.id} message={m} />)}
       </QueryGate>
     </Card>
   );
@@ -378,13 +396,17 @@ function InboxRow({ message: m }: { message: InboxMessage }) {
       <Disclosure label="Message">
         <p className="border-t border-app-rule px-3.5 py-3.5 text-sm break-words whitespace-pre-line text-ink">{m.message}</p>
       </Disclosure>
-      <MutationError mutation={archive} />
-      <div>
-        <button type="button" className={secondaryButton} aria-label={`Archive the message from ${m.name}`} disabled={archive.isPending}
-          onClick={() => archive.mutate(m.id)}>
-          Archive
-        </button>
-      </div>
+      {m.status === "new" && (
+        <>
+          <MutationError mutation={archive} />
+          <div>
+            <button type="button" className={secondaryButton} aria-label={`Archive the message from ${m.name}`} disabled={archive.isPending}
+              onClick={() => archive.mutate(m.id)}>
+              Archive
+            </button>
+          </div>
+        </>
+      )}
     </Item>
   );
 }

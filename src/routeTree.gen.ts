@@ -34,6 +34,7 @@ import { Route as TypographyRouteImport } from './routes/typography'
 import { Route as VerifiedRouteImport } from './routes/verified'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/_admin/route'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
+import { Route as ApiSplatRouteImport } from './routes/api/$'
 import { Route as ApiApplicationsRouteImport } from './routes/api/applications'
 import { Route as ApiContactRouteImport } from './routes/api/contact'
 import { Route as ApiImagesRouteImport } from './routes/api/images'
@@ -173,6 +174,11 @@ const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   path: '/account',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiSplatRoute = ApiSplatRouteImport.update({
+  id: '/api/$',
+  path: '/api/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiApplicationsRoute = ApiApplicationsRouteImport.update({
   id: '/api/applications',
   path: '/api/applications',
@@ -273,6 +279,7 @@ export interface FileRoutesByFullPath {
   '/typography': typeof TypographyRoute
   '/verified': typeof VerifiedRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/api/$': typeof ApiSplatRoute
   '/api/applications': typeof ApiApplicationsRoute
   '/api/contact': typeof ApiContactRoute
   '/api/images': typeof ApiImagesRoute
@@ -313,6 +320,7 @@ export interface FileRoutesByTo {
   '/typography': typeof TypographyRoute
   '/verified': typeof VerifiedRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/api/$': typeof ApiSplatRoute
   '/api/applications': typeof ApiApplicationsRoute
   '/api/contact': typeof ApiContactRoute
   '/api/images': typeof ApiImagesRoute
@@ -356,6 +364,7 @@ export interface FileRoutesById {
   '/verified': typeof VerifiedRoute
   '/_authenticated/_admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/account': typeof AuthenticatedAccountRoute
+  '/api/$': typeof ApiSplatRoute
   '/api/applications': typeof ApiApplicationsRoute
   '/api/contact': typeof ApiContactRoute
   '/api/images': typeof ApiImagesRoute
@@ -398,6 +407,7 @@ export interface FileRouteTypes {
     | '/typography'
     | '/verified'
     | '/account'
+    | '/api/$'
     | '/api/applications'
     | '/api/contact'
     | '/api/images'
@@ -438,6 +448,7 @@ export interface FileRouteTypes {
     | '/typography'
     | '/verified'
     | '/account'
+    | '/api/$'
     | '/api/applications'
     | '/api/contact'
     | '/api/images'
@@ -480,6 +491,7 @@ export interface FileRouteTypes {
     | '/verified'
     | '/_authenticated/_admin'
     | '/_authenticated/account'
+    | '/api/$'
     | '/api/applications'
     | '/api/contact'
     | '/api/images'
@@ -521,6 +533,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   TypographyRoute: typeof TypographyRoute
   VerifiedRoute: typeof VerifiedRoute
+  ApiSplatRoute: typeof ApiSplatRoute
   ApiApplicationsRoute: typeof ApiApplicationsRoute
   ApiContactRoute: typeof ApiContactRoute
   ApiImagesRoute: typeof ApiImagesRoute
@@ -714,6 +727,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/$': {
+      id: '/api/$'
+      path: '/api/$'
+      fullPath: '/api/$'
+      preLoaderRoute: typeof ApiSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/applications': {
       id: '/api/applications'
       path: '/api/applications'
@@ -873,6 +893,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   TypographyRoute: TypographyRoute,
   VerifiedRoute: VerifiedRoute,
+  ApiSplatRoute: ApiSplatRoute,
   ApiApplicationsRoute: ApiApplicationsRoute,
   ApiContactRoute: ApiContactRoute,
   ApiImagesRoute: ApiImagesRoute,
