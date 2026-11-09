@@ -457,16 +457,20 @@
       "source": "crm.md:Spam verdicts are mirrored, not computed",
       "acceptance": "Spam verdicts are mirrored, not computed: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "archive-only-inbox",
+      "evidence": "Retired: mirrored spam verdicts (item_spam / spam events from submissions.py / spam_hook). Rebuild has no spamcheck.py or forms spam_hook and does not invent a spam column — inbox_messages.status stays new/archived (CHECK). Day-to-day triage is Needs attention (new) + Archived (CRM-063/091 archiveMessage). AUDIT-TASKS.md spam-retire-archive-only."
     },
     {
       "id": "CRM-048",
       "source": "crm.md:Spam rule",
       "acceptance": "Spam rule: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "archive-only-inbox",
+      "evidence": "Retired: Spam rule / Spam view / mark spam|not_spam|auto. Admins archive junk from Needs attention; no separate Spam inbox view. Replacement: archive-only-inbox (adminInbox + Archived filter; panels.tsx, admin-route.test.tsx, policy.test.ts). AUDIT-TASKS.md spam-retire-archive-only."
     },
     {
       "id": "CRM-049",
@@ -1727,8 +1731,10 @@
       "source": "crm.md:PORT-WITH-CARE — spam is advisory and mirrored",
       "acceptance": "PORT-WITH-CARE — spam is advisory and mirrored: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "archive-only-inbox",
+      "evidence": "Retired PORT-WITH-CARE: advisory mirrored spam + visible Spam count. Rebuild keeps \"never silently dropped\" via store-then-archive (messages stay in inbox until an admin archives them) without a verdict pipeline or Spam view. AUDIT-TASKS.md spam-retire-archive-only."
     },
     {
       "id": "OPS-001",
@@ -2231,8 +2237,10 @@
       "source": "backoffice.md:Spam label (never blocks)",
       "acceptance": "Spam label (never blocks): behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/join"
+      "status": "built",
+      "target": "retired",
+      "retired": "archive-only-inbox",
+      "evidence": "Retired: intake spam_hook.on_store labelling. No spam label on applications; honeypot + IP rate limits remain. Junk triage is admin archive on the inbox (archive-only-inbox), not mirrored scores. AUDIT-TASKS.md spam-retire-archive-only."
     },
     {
       "id": "OPS-062",
@@ -3752,8 +3760,10 @@
       "source": "backoffice.md:Spam scoring",
       "acceptance": "Spam scoring: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "built",
+      "target": "retired",
+      "retired": "archive-only-inbox",
+      "evidence": "Retired: forms spamcheck.py scoring. No spamcheck in the Node app; contact/partnership use honeypot + consent + rate limit; applications carry no score stamp. Day-to-day junk is archived in archive-only-inbox. AUDIT-TASKS.md spam-retire-archive-only."
     },
     {
       "id": "OPS-247",
@@ -6054,8 +6064,10 @@
       "source": "ops-part-d.md:A spam label silently removes a real opt-in.",
       "acceptance": "A spam label silently removes a real opt-in.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "archive-only-inbox",
+      "evidence": "Retired-with-care: old hazard was spam.likely silently skipping Beehiiv/webhook/Notion with no admin release. Rebuild has no spam verdict that gates subscribeIfConsented — opt-in needs explicit consent only (src/server/beehiiv.ts); junk contact/partnership rows are archived by admins (archive-only-inbox), not dropped from Beehiiv by a label. No \"release held spam\" UI invented. AUDIT-TASKS.md spam-retire-archive-only."
     },
     {
       "id": "OPS-523",
