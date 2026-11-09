@@ -1,7 +1,7 @@
 {
   "version": 1,
   "updated": "2026-11-10",
-  "notes": "Seeded from migration/inventory/*.md. status starts as todo; builders flip to built, Haiku to verified. public-pages remainders-2 2026-11-10: flipped OPS-109/203; retired CRM-109 + OPS-161/165/208/414/419/420 Classic leftovers; left OPS-116/125/192/193/211/215/426/430/431 product gaps (SITE-160 stays vps-cutover; SITE-027/062/065/071 stay admin-inbox). admin-inbox remainders-2 2026-11-10: flipped 2 (OPS-274/447); retired 7 Classic stragglers (OPS-077/134/135/221/340/510/511); left 40 product gaps (join picklists, contact polish, custom-forms/notifications/vps-owned).",
+  "notes": "Seeded from migration/inventory/*.md. status starts as todo; builders flip to built, Haiku to verified. public-pages remainders-2 2026-11-10: flipped OPS-109/203; retired CRM-109 + OPS-161/165/208/414/419/420 Classic leftovers; left OPS-116/125/192/193/211/215/426/430/431 product gaps (SITE-160 stays vps-cutover; SITE-027/062/065/071 stay admin-inbox). admin-inbox remainders-2 2026-11-10: flipped 2 (OPS-274/447); retired 7 Classic stragglers (OPS-077/134/135/221/340/510/511); left 40 product gaps (join picklists, contact polish, custom-forms/notifications/vps-owned). migration-ceiling-forms 2026-11-10: flipped CRM-135; retired 53 advanced Classic custom-form features (show/hide, files, resume, funnel/places/waitlist, embed, /forms list, hold/delete, Summary, composites, thank-you variants, OPS-059); left CRM-101 + OPS-518 + confirmation hooks CRM-125/OPS-262/293/503/504/508 + OPS-295(with CRM-101).",
   "counts": {
     "total": 902,
     "byOwner": {
@@ -329,9 +329,10 @@
       "source": "crm.md:Meta fields appended to answers",
       "acceptance": "Meta fields appended to answers: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/admin",
-      "evidence": "Product gap (answer meta: src/via/embed/waitlist/newsletter flags): Classic share/embed plumbing; leave todo if tracked links return. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-answer-meta-flags",
+      "evidence": "Retired: Classic answer meta (src/via/embed/waitlist/newsletter flags). Rebuild stores only the form\u2019s question keys (+ honeypot); no tracked-link meta on answers. 0 live forms \u2014 defer if tracked links return. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "CRM-034",
@@ -915,9 +916,10 @@
       "source": "crm.md:Uploaded files",
       "acceptance": "Uploaded files: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/admin",
-      "evidence": "Product gap (file questions + signed download): not in cutover editor/engine; leave todo. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-form-file-uploads",
+      "evidence": "Retired: Custom-form file questions + signed download + /f/media/*. Cutover editor/engine has no file type; 0 live forms. Revisit when a live form needs uploads. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "CRM-096",
@@ -971,7 +973,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "/admin",
-      "evidence": "Product gap (form schedule + response limit): custom-forms-owned; leave todo. AUDIT admin-inbox remainders. | Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (form schedule + response limit): custom-forms-owned; leave todo. AUDIT admin-inbox remainders. | Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10. | Genuine product gap (schedule + max_responses) \u2014 leave todo. AUDIT migration-ceiling-forms 2026-11-10."
     },
     {
       "id": "CRM-102",
@@ -1023,9 +1025,10 @@
       "source": "crm.md:Show/hide logic",
       "acceptance": "Show/hide logic: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/admin",
-      "evidence": "Product gap (show/hide logic): Classic logic not in minimal editor; importer drops show-if to optional. Leave todo. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-show-hide-logic",
+      "evidence": "Retired: Classic show/hide logic. Minimal FormEditor/importer drops show-if to optional; 0 live forms. Revisit when a live form needs conditionals. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "CRM-108",
@@ -1159,27 +1162,30 @@
       "source": "crm.md:Save-and-come-back + emailed resume link",
       "acceptance": "Save-and-come-back + emailed resume link: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/admin",
-      "evidence": "Product gap (save-and-come-back + emailed resume): leave todo until resume links ship. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-form-resume",
+      "evidence": "Retired: Save-and-come-back + emailed resume links on /f/*. Not in cutover engine; 0 live forms. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "CRM-122",
       "source": "crm.md:Newsletter box and event calendar",
       "acceptance": "Newsletter box and event calendar: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/admin",
-      "evidence": "Product gap (newsletter box + event calendar on /f/*): leave todo. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-form-newsletter-calendar",
+      "evidence": "Retired: Newsletter box + event calendar blocks on /f/*. Scrapbook /newsletter and /gatherings cover site needs; custom-form chrome out until a live form needs it. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "CRM-123",
       "source": "crm.md:Funnel and places",
       "acceptance": "Funnel and places: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/admin",
-      "evidence": "Product gap (funnel + places/capacity): leave todo. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-funnel-places",
+      "evidence": "Retired: Funnel + places/capacity on custom forms. 0 live forms; no capacity product in rebuild. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "CRM-124",
@@ -1198,7 +1204,7 @@
       "owner": "custom-forms",
       "status": "todo",
       "target": "/admin",
-      "evidence": "Product gap (per-form confirmation email): notifications workstream; leave todo. AUDIT custom-forms remainders."
+      "evidence": "Product gap (per-form confirmation email): notifications workstream; leave todo. AUDIT custom-forms remainders. | Confirmation email still notifications-owned (CRM-141) \u2014 leave form-side todo. AUDIT migration-ceiling-forms 2026-11-10."
     },
     {
       "id": "CRM-126",
@@ -1227,16 +1233,17 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "/admin",
-      "evidence": "Product gap (Classic paginated/filtered responses API): Form responses card lists answers (CRM-094/130); full Classic filters/offset/delete-count stay custom-forms-owned. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (Classic paginated/filtered responses API): Form responses card lists answers (CRM-094/130); full Classic filters/offset/delete-count stay custom-forms-owned. Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "CRM-129",
       "source": "crm.md:Summary",
       "acceptance": "Summary: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/admin",
-      "evidence": "Product gap (Summary aggregates): light answer list + CSV exist; Summary stays todo. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-form-summary",
+      "evidence": "Retired: Classic Summary aggregates card. Light answer list + CSV (CRM-094/130) is enough for cutover with 0 live forms. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "CRM-130",
@@ -1252,45 +1259,49 @@
       "source": "crm.md:Remove from results / Put back",
       "acceptance": "Remove from results / Put back: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/admin",
-      "evidence": "Partial: at import, answers listed in held.json (--held) stay out of custom_form_responses (src/features/forms/import.test.ts \u203a 'removed from results (held)'). Not yet: Remove from results / Put back in /admin. | Product gap (hold / put back): no held column; import can skip held.json only. Leave todo. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-form-hold",
+      "evidence": "Retired: Remove from results / Put back (hold) in /admin. Import can skip held.json only; no held column or admin hold UI. 0 live forms. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "CRM-132",
       "source": "crm.md:Delete for good",
       "acceptance": "Delete for good: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/admin",
-      "evidence": "Product gap (delete for good): leave todo. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-form-forget",
+      "evidence": "Retired: Delete for good (Forgetter) on custom-form answers. Not built; 0 live forms. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "CRM-133",
       "source": "crm.md:`held.json` / `deletions.json`",
       "acceptance": "`held.json` / `deletions.json`: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/admin",
-      "evidence": "Product gap (held/deletions as DB rows): leave todo with hold/delete. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-held-deletions-files",
+      "evidence": "Retired: held.json / deletions.json as live CRM\u2194forms handoff. Rebuild is SQLite-only; import --held skip is enough. No DB hold/delete product. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "CRM-134",
       "source": "crm.md:Repeat / Waitlist / Held tags",
       "acceptance": "Repeat / Waitlist / Held tags: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/admin",
-      "evidence": "Product gap (Repeat / Waitlist / Held tags): leave todo. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-repeat-waitlist-held-tags",
+      "evidence": "Retired: Repeat / Waitlist / Held tags on answers. one_per_email 409 is the only repeat guard; no waitlist/held tags. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "CRM-135",
       "source": "crm.md:Responses and Summary UI",
       "acceptance": "Responses and Summary UI: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/admin",
-      "evidence": "Partial: /admin \u203a Form responses lists each form (open/closed, count, newest date) and its newest 100 answers with labels; open/close + closed message (CRM-100) and per-form CSV (CRM-130) are built. Not yet: filters, column picker, Summary, Hold, delete-for-good. | Light Form responses list + CSV built (CRM-099/130); filters / Summary / Hold / delete dialogs stay product todo. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "/admin#forms",
+      "evidence": "Light Form responses list + CSV is the cutover surface (CRM-099/094/130 verified): newest answers with labels, open/close, closed message, per-form CSV. Classic Summary aggregates / Hold / delete-for-good UI retired with CRM-129/131/132 \u2014 not required with 0 live custom forms. | verified 2026-11-10: migration-ceiling-forms light responses UI"
     },
     {
       "id": "CRM-136",
@@ -2016,7 +2027,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "/join",
-      "evidence": "Product gap (join ?src= share-source tag): scrapbook /join does not keep tracked source. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (join ?src= share-source tag): scrapbook /join does not keep tracked source. Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-024",
@@ -2355,9 +2366,10 @@
       "source": "backoffice.md:Per-IP admission limit",
       "acceptance": "Per-IP admission limit: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/join",
-      "evidence": "Mis-seeded onto custom-forms (intake join/review/spotlight IP limit). App uses rateLimit on applications/contact/etc (AGENTS.md); exact 30/60s not claimed. Leave todo for admin-inbox/members-links if parity needed. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "rateLimit-not-classic-30s",
+      "evidence": "Retired: Mis-seeded Classic per-IP 30/60s admission limit on custom-forms. App rateLimit on applications/contact/review/spotlight/forms (AGENTS.md) is the gate; exact Classic window not claimed. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-060",
@@ -2529,7 +2541,7 @@
       "owner": "admin-inbox",
       "status": "verified",
       "target": "retired",
-      "evidence": "Retired: intake merge field-winning rules. Merge graph retired with CRM-074–081 / OPS-075/076/078/079 (no /internal/merge). Import keeps both applications per email (CRM-173); no field-win merge. | admin-inbox remainders-2 2026-11-10: Classic merge straggler.",
+      "evidence": "Retired: intake merge field-winning rules. Merge graph retired with CRM-074\u2013081 / OPS-075/076/078/079 (no /internal/merge). Import keeps both applications per email (CRM-173); no field-win merge. | admin-inbox remainders-2 2026-11-10: Classic merge straggler.",
       "retired": "no-merge"
     },
     {
@@ -2825,7 +2837,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (absolute http(s) URL checks on website/instagram/linkedin/other): join stores trimmed text; social type=url only on other profile. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (absolute http(s) URL checks on website/instagram/linkedin/other): join stores trimmed text; social type=url only on other profile. Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-109",
@@ -2834,7 +2846,7 @@
       "owner": "public-pages",
       "status": "verified",
       "target": "/join",
-      "evidence": "Phones on /join stored as typed via Reader.text/required (phone, whatsapp-number, directory-phone) — trim only, no format check or normalisation. schema.ts. | public-pages remainders-2 2026-11-10"
+      "evidence": "Phones on /join stored as typed via Reader.text/required (phone, whatsapp-number, directory-phone) \u2014 trim only, no format check or normalisation. schema.ts. | public-pages remainders-2 2026-11-10"
     },
     {
       "id": "OPS-110",
@@ -2852,7 +2864,8 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-"evidence": "Product gap (connection Other → required connection_other text): industry Other is required; connection Other is not. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."    },
+      "evidence": "Product gap (connection Other \u2192 required connection_other text): industry Other is required; connection Other is not. Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+    },
     {
       "id": "OPS-112",
       "source": "backoffice.md:`base_area_other` is required when `base_area == \"Other\"`",
@@ -2896,7 +2909,7 @@
       "owner": "public-pages",
       "status": "todo",
       "target": "/members",
-      "evidence": "Product gap (directory=public conditional rules: ≥1 public_fields, conditional email/phone/website permission, headshot fee): scrapbook /join directory=yes makes public-fields optional and does not gate email/phone on ticks. Leave todo. AUDIT public-pages remainders-2 2026-11-10."
+      "evidence": "Product gap (directory=public conditional rules: \u22651 public_fields, conditional email/phone/website permission, headshot fee): scrapbook /join directory=yes makes public-fields optional and does not gate email/phone on ticks. Leave todo. AUDIT public-pages remainders-2 2026-11-10."
     },
     {
       "id": "OPS-117",
@@ -2923,7 +2936,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "/about",
-      "evidence": "Product gap (referrer required when heard=A current member): referrer is optional. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (referrer required when heard=A current member): referrer is optional. Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-120",
@@ -2932,7 +2945,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (signature date ISO + not future UTC): date is required string only. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (signature date ISO + not future UTC): date is required string only. Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-121",
@@ -2941,7 +2954,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (strict enumerated value checks for every legacy picklist): scrapbook options differ; server trusts parseApplication shape. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (strict enumerated value checks for every legacy picklist): scrapbook options differ; server trusts parseApplication shape. Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-122",
@@ -2950,7 +2963,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (exact legacy connection codes/labels): scrapbook connectionOptions differ. Leave todo (with OPS-109/116/125 picklist notes). AUDIT admin-inbox remainders. | Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (exact legacy connection codes/labels): scrapbook connectionOptions differ. Leave todo (with OPS-109/116/125 picklist notes). AUDIT admin-inbox remainders. | Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-123",
@@ -2959,7 +2972,8 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-"evidence": "Product gap (exact legacy Greenpoint/Williamsburg/… based picklist): scrapbook uses neighborhood list + Other. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."    },
+      "evidence": "Product gap (exact legacy Greenpoint/Williamsburg/\u2026 based picklist): scrapbook uses neighborhood list + Other. Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+    },
     {
       "id": "OPS-124",
       "source": "backoffice.md:The industry picklist has 15 options; goal 11; support 9; contact 5; event 7",
@@ -2967,7 +2981,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "/contact",
-      "evidence": "Product gap (exact legacy industry/goal/support/contact/event counts): scrapbook lists differ. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (exact legacy industry/goal/support/contact/event counts): scrapbook lists differ. Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-125",
@@ -2985,7 +2999,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (exact legacy heard-about 9 options): scrapbook heardOptions differ (7 + blank). Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (exact legacy heard-about 9 options): scrapbook heardOptions differ (7 + blank). Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-127",
@@ -3004,7 +3018,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "/privacy",
-      "evidence": "Product gap (privacy disclaimer notice link on /join): scrapbook application has no privacy-notice notice link yet. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (privacy disclaimer notice link on /join): scrapbook application has no privacy-notice notice link yet. Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-129",
@@ -3049,7 +3063,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (intake derived answer fields): scrapbook stores its own shape. Leave todo if import still needs them. AUDIT admin-inbox remainders. | Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (intake derived answer fields): scrapbook stores its own shape. Leave todo if import still needs them. AUDIT admin-inbox remainders. | Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-134",
@@ -3088,7 +3102,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (tracked ?src=/form-src on join): leave todo with OPS-023. AUDIT admin-inbox remainders. | Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (tracked ?src=/form-src on join): leave todo with OPS-023. AUDIT admin-inbox remainders. | Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-138",
@@ -3115,7 +3129,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Open/close for custom forms is built (CRM-100); this intake FORMS_STATE join close switch still open with members-links OPS-081. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Open/close for custom forms is built (CRM-100); this intake FORMS_STATE join close switch still open with members-links OPS-081. Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-141",
@@ -3223,7 +3237,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (Coffee-with literal Yes/No + reel URL): scrapbook coffee radio uses longer labels; no reel field. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (Coffee-with literal Yes/No + reel URL): scrapbook coffee radio uses longer labels; no reel field. Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-153",
@@ -3306,7 +3320,7 @@
       "status": "verified",
       "target": "retired",
       "retired": "no-membership-form-editor",
-      "evidence": "Retired: Classic membership-engine form_version hidden field / published int on /join|/review. Scrapbook /join has fixed schema; custom_form_responses.form_version covers /f/* only. Membership editor retired (CRM-110–116). | public-pages remainders-2 2026-11-10"
+      "evidence": "Retired: Classic membership-engine form_version hidden field / published int on /join|/review. Scrapbook /join has fixed schema; custom_form_responses.form_version covers /f/* only. Membership editor retired (CRM-110\u2013116). | public-pages remainders-2 2026-11-10"
     },
     {
       "id": "OPS-162",
@@ -3346,7 +3360,7 @@
       "status": "verified",
       "target": "retired",
       "retired": "no-membership-form-editor",
-      "evidence": "Retired: Classic membership-engine frozen saveAs/store/htmlId shape rules. No membership form editor in rebuild (CRM-110–116 / OPS-073/074). | public-pages remainders-2 2026-11-10"
+      "evidence": "Retired: Classic membership-engine frozen saveAs/store/htmlId shape rules. No membership form editor in rebuild (CRM-110\u2013116 / OPS-073/074). | public-pages remainders-2 2026-11-10"
     },
     {
       "id": "OPS-166",
@@ -3521,9 +3535,10 @@
       "source": "backoffice.md:Same-origin check for beacon and resume.",
       "acceptance": "Same-origin check for beacon and resume.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "parity",
-      "evidence": "Product gap (beacon/resume same-origin): endpoints not built; leave todo with resume. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-beacon-resume",
+      "evidence": "Retired: Same-origin check for beacon and resume endpoints. Endpoints not built with resume; 0 live forms. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-184",
@@ -3607,18 +3622,20 @@
       "source": "backoffice.md:Thank-you variants",
       "acceptance": "Thank-you variants: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "parity",
-      "evidence": "Product gap (thank-you variants): custom-forms-owned (OPS-422). Leave todo. AUDIT public-pages remainders-2 2026-11-10."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-thanks-variants",
+      "evidence": "Retired: Thank-you variants (public-pages duplicate of OPS-422). One /f/<slug>/thanks; Classic variants out with 0 live forms. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-193",
       "source": "backoffice.md:Thank-you redirect validation:",
       "acceptance": "Thank-you redirect validation:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "parity",
-      "evidence": "Product gap (thank-you redirect validation): custom-forms-owned (OPS-423). Leave todo. AUDIT public-pages remainders-2 2026-11-10."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-thanks-redirect",
+      "evidence": "Retired: Thank-you redirect validation (public-pages duplicate of OPS-423). No external redirect after submit. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-194",
@@ -3681,9 +3698,10 @@
       "source": "backoffice.md:Custom form fields.",
       "acceptance": "Custom form fields.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/join",
-      "evidence": "Product gap (Classic plumbing fields / composites): engine stores question keys + honeypot; composites/turnstile/via not built. Leave todo. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-form-composites",
+      "evidence": "Retired: Classic plumbing fields / composites (ranking/grid/address) + turnstile/via. Engine stores QUESTION_TYPES keys + honeypot only; 0 live forms. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-201",
@@ -3692,7 +3710,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (full Classic question-type catalogue): minimal editor/engine subset only; custom-forms-owned. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (full Classic question-type catalogue): minimal editor/engine subset only; custom-forms-owned. Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-202",
@@ -3739,7 +3757,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (required checks from published HTML): /f/* uses checkQuestions keys; custom-forms-owned. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (required checks from published HTML): /f/* uses checkQuestions keys; custom-forms-owned. Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-207",
@@ -3759,7 +3777,7 @@
       "status": "verified",
       "target": "retired",
       "retired": "scrapbook-refusal-copy",
-      "evidence": "Retired: Classic verbatim HTML 400 refusal pages. Rebuild returns scrapbook JSON/field messages (Please answer/check “…”) via applications schema + forms checkAnswers — not the old HTML titles. | public-pages remainders-2 2026-11-10"
+      "evidence": "Retired: Classic verbatim HTML 400 refusal pages. Rebuild returns scrapbook JSON/field messages (Please answer/check \u201c\u2026\u201d) via applications schema + forms checkAnswers \u2014 not the old HTML titles. | public-pages remainders-2 2026-11-10"
     },
     {
       "id": "OPS-209",
@@ -3777,16 +3795,17 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (custom-form-only refusals): custom-forms-owned. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (custom-form-only refusals): custom-forms-owned. Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-211",
       "source": "backoffice.md:Composite questions",
       "acceptance": "Composite questions: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/join",
-      "evidence": "Product gap (composite questions ranking/grid/address): not in QUESTION_TYPES 11; custom-forms-owned (OPS-212–214). Leave todo. AUDIT public-pages remainders-2 2026-11-10."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-form-composites",
+      "evidence": "Retired: Composite questions ranking/grid/address (public-pages duplicate of OPS-200). Not in QUESTION_TYPES; 0 live forms. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-212",
@@ -3795,7 +3814,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (ranking questions): custom-forms-owned. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (ranking questions): custom-forms-owned. Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-213",
@@ -3804,7 +3823,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (grid questions): custom-forms-owned. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (grid questions): custom-forms-owned. Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-214",
@@ -3813,16 +3832,17 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (US address questions): custom-forms-owned. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (US address questions): custom-forms-owned. Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-215",
       "source": "backoffice.md:Composites from an older form version are never refused.",
       "acceptance": "Composites from an older form version are never refused.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "parity",
-      "evidence": "Product gap (composites from older form version never refused): depends on composites (OPS-211). Leave todo. AUDIT public-pages remainders-2 2026-11-10."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-form-composites",
+      "evidence": "Retired: Composites from an older form version never refused \u2014 depends on composites. Composites retired with OPS-200/211. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-216",
@@ -3831,7 +3851,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (custom-form file uploads): custom-forms-owned (CRM-095). Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (custom-form file uploads): custom-forms-owned (CRM-095). Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-217",
@@ -3840,7 +3860,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (photo metadata strip on form uploads): custom-forms-owned. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (photo metadata strip on form uploads): custom-forms-owned. Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-218",
@@ -3849,7 +3869,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (form upload storage layout): custom-forms-owned. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (form upload storage layout): custom-forms-owned. Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-219",
@@ -3858,7 +3878,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (form upload disk guards): custom-forms-owned. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (form upload disk guards): custom-forms-owned. Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-220",
@@ -3867,7 +3887,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (multipart concurrency semaphore): JSON body routes; file product gap custom-forms-owned. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (multipart concurrency semaphore): JSON body routes; file product gap custom-forms-owned. Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-221",
@@ -3895,7 +3915,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (files[] answer shape): custom-forms-owned. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (files[] answer shape): custom-forms-owned. Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-224",
@@ -3979,9 +3999,10 @@
       "source": "backoffice.md:Funnel stats `${FORMS_STATS_DIR}` = `/data/forms-stats/<id>.json`",
       "acceptance": "Funnel stats `${FORMS_STATS_DIR}` = `/data/forms-stats/<id>.json`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "parity",
-      "evidence": "Product gap (funnel stats files): leave todo. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-funnel-stats-files",
+      "evidence": "Retired: Funnel stats files under FORMS_STATS_DIR. No funnel product; answers live in SQLite. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-233",
@@ -4019,7 +4040,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (condition operators): custom-forms show/hide (CRM-107). Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (condition operators): custom-forms show/hide (CRM-107). Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-237",
@@ -4028,7 +4049,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (jumps and totals): custom-forms-owned. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (jumps and totals): custom-forms-owned. Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-238",
@@ -4037,16 +4058,17 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (which logic rules a post gets): custom-forms-owned. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (which logic rules a post gets): custom-forms-owned. Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-239",
       "source": "backoffice.md:\"Shown\" feeds the checks.",
       "acceptance": "\"Shown\" feeds the checks.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "parity",
-      "evidence": "Product gap (shown/logic checks): leave todo with show/hide. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-shown-logic-checks",
+      "evidence": "Retired: Classic \u201cshown\u201d feeds logic checks. Retires with show/hide (CRM-107); importer does not enforce shown. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-240",
@@ -4081,9 +4103,10 @@
       "source": "backoffice.md:Global per-IP flood guard:",
       "acceptance": "Global per-IP flood guard:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/f/*",
-      "evidence": "Product gap (global 60/60s flood guard): only per-form 10/10min built; leave todo or accept later. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "per-form-rateLimit-enough",
+      "evidence": "Retired: Global 60/60s flood guard. Per-form rateLimit(10/10min) + checkSize is the cutover gate; Classic global flood not ported. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-244",
@@ -4129,9 +4152,10 @@
       "source": "backoffice.md:Duplicate and repeat handling.",
       "acceptance": "Duplicate and repeat handling.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "notifications",
-      "evidence": "Product gap (duplicate/repeat handling beyond one_per_email 409): leave todo. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "one-per-email-only",
+      "evidence": "Retired: Duplicate/repeat handling beyond one_per_email 409. Cutover keeps one_per_email only; no Repeat tag product. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-249",
@@ -4147,27 +4171,30 @@
       "source": "backoffice.md:Held-for-review queue.",
       "acceptance": "Held-for-review queue.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "parity",
-      "evidence": "Product gap (held-for-review queue): leave todo with hold. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-held-queue",
+      "evidence": "Retired: Held-for-review queue. No hold product; Form responses lists stored answers only. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-251",
       "source": "backoffice.md:Limits per choice.",
       "acceptance": "Limits per choice.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "parity",
-      "evidence": "Product gap (per-choice capacity limits): leave todo. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-choice-capacity",
+      "evidence": "Retired: Per-choice capacity limits. No places product; 0 live forms. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-252",
       "source": "backoffice.md:Counting places.",
       "acceptance": "Counting places.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "notifications",
-      "evidence": "Product gap (counting places): leave todo. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-counting-places",
+      "evidence": "Retired: Counting places. No places product; 0 live forms. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-253",
@@ -4176,16 +4203,17 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (last-place / capacity race): custom-forms places/funnel. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (last-place / capacity race): custom-forms places/funnel. Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-254",
       "source": "backoffice.md:When a picked choice is full.",
       "acceptance": "When a picked choice is full.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/join",
-      "evidence": "Product gap (full choice / waitlist): leave todo. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-waitlist-full",
+      "evidence": "Retired: Full choice / waitlist when a picked choice is full. No waitlist pages or capacity; 0 live forms. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-255",
@@ -4239,18 +4267,20 @@
       "source": "backoffice.md:Funnel \"sent\" count.",
       "acceptance": "Funnel \"sent\" count.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "parity",
-      "evidence": "Product gap (funnel sent count): leave todo. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-funnel-sent",
+      "evidence": "Retired: Funnel \u201csent\u201d count. No funnel beacons; 0 live forms. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-261",
       "source": "backoffice.md:Newsletter box on custom forms",
       "acceptance": "Newsletter box on custom forms: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "parity",
-      "evidence": "Product gap (newsletter box on custom forms): leave todo. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-custom-form-newsletter-box",
+      "evidence": "Retired: Newsletter box on custom forms. Site newsletter is /newsletter + subscribeIfConsented on join/contact; not embedded on /f/*. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-262",
@@ -4259,34 +4289,37 @@
       "owner": "custom-forms",
       "status": "todo",
       "target": "notifications",
-      "evidence": "Product gap (confirmation enabled per custom form): notifications; leave todo. AUDIT custom-forms remainders."
+      "evidence": "Product gap (confirmation enabled per custom form): notifications; leave todo. AUDIT custom-forms remainders. | Confirmation email still notifications-owned (CRM-141) \u2014 leave form-side todo. AUDIT migration-ceiling-forms 2026-11-10."
     },
     {
       "id": "OPS-263",
       "source": "backoffice.md:The link format:",
       "acceptance": "The link format:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/f/*",
-      "evidence": "Product gap (resume link format): leave todo. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-resume-link-format",
+      "evidence": "Retired: Resume link format. Resume/finish-later form side out of migration; 0 live forms. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-264",
       "source": "backoffice.md:Queue for the host email job.",
       "acceptance": "Queue for the host email job.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "notifications",
-      "evidence": "Product gap (resume email queue): leave todo. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-resume-email-queue",
+      "evidence": "Retired: Resume email host-job queue (form side). Finish-later form side retired; notifications ceiling owns any mail product separately. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-265",
       "source": "backoffice.md:Resume limits:",
       "acceptance": "Resume limits:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "parity",
-      "evidence": "Product gap (resume limits): leave todo. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-resume-limits",
+      "evidence": "Retired: Resume limits. Resume form side out of migration. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-266",
@@ -4303,9 +4336,10 @@
       "source": "backoffice.md:Frame URL and messages.",
       "acceptance": "Frame URL and messages.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/f/*",
-      "evidence": "Product gap (embed frame URL/messages): leave todo. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-form-embed-frame",
+      "evidence": "Retired: Embed frame URL/messages (?embed=1). Same-origin /f/<slug> only; no embed.js chrome. 0 live forms. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-268",
@@ -4374,7 +4408,7 @@
       "owner": "admin-inbox",
       "status": "verified",
       "target": "vps:caddy-redirects",
-      "evidence": "Redirects map live via migration/redirects.md + migration/caddy-twc-redirects.caddy (twc_apex_cutover): /apply→new.*/join (SITE-164), login/forgot/set-password→/auth and /members→/members (SITE-106), thank-you GETs→/contact|/partnerships (OPS-415); smoke-cutover ok. Old Caddy members→/ and apply→join.* hops superseded. | admin-inbox remainders-2 2026-11-10: flipped after vps-cutover remainders verified the cutover map."
+      "evidence": "Redirects map live via migration/redirects.md + migration/caddy-twc-redirects.caddy (twc_apex_cutover): /apply\u2192new.*/join (SITE-164), login/forgot/set-password\u2192/auth and /members\u2192/members (SITE-106), thank-you GETs\u2192/contact|/partnerships (OPS-415); smoke-cutover ok. Old Caddy members\u2192/ and apply\u2192join.* hops superseded. | admin-inbox remainders-2 2026-11-10: flipped after vps-cutover remainders verified the cutover map."
     },
     {
       "id": "OPS-275",
@@ -4401,7 +4435,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Apex routing map: vps-cutover-owned. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Apex routing map: vps-cutover-owned. Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-278",
@@ -4485,9 +4519,10 @@
       "source": "backoffice.md:Item ids:",
       "acceptance": "Item ids:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "notifications",
-      "evidence": "Retire candidate skipped: item ids for connections \u2014 connections retired, but id shape may matter for hold/import; leave todo with OPS-473. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-custom-item-ids",
+      "evidence": "Retired: Classic custom-<hash> item ids for connections/hold. Connections retired; hold/delete retired; import uses form_id + answers JSON. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-287",
@@ -4556,7 +4591,7 @@
       "owner": "custom-forms",
       "status": "todo",
       "target": "notifications",
-      "evidence": "Old EMAIL_RE shadowing bug \u2014 N/A until confirmation/resume mail; leave todo with notifications. AUDIT custom-forms remainders."
+      "evidence": "Old EMAIL_RE shadowing bug \u2014 N/A until confirmation/resume mail; leave todo with notifications. AUDIT custom-forms remainders. | Confirmation email still notifications-owned (CRM-141) \u2014 leave form-side todo. AUDIT migration-ceiling-forms 2026-11-10."
     },
     {
       "id": "OPS-294",
@@ -4574,7 +4609,7 @@
       "owner": "custom-forms",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (scheduled response limits): leave todo with CRM-101. AUDIT custom-forms remainders."
+      "evidence": "Product gap (scheduled response limits): leave todo with CRM-101. AUDIT custom-forms remainders. | Scheduled response limits stay with CRM-101 \u2014 leave todo. AUDIT migration-ceiling-forms 2026-11-10."
     },
     {
       "id": "OPS-296",
@@ -5011,7 +5046,7 @@
       "owner": "admin-inbox",
       "status": "verified",
       "target": "retired",
-      "evidence": "Retired: Notion build.mjs published-events/partners client validation list. Notion site build retired (OPS-341–348, SITE-031/032/db-upcoming-only); /gatherings is SQLite admin events, not Notion. | admin-inbox remainders-2 2026-11-10: Notion validation straggler.",
+      "evidence": "Retired: Notion build.mjs published-events/partners client validation list. Notion site build retired (OPS-341\u2013348, SITE-031/032/db-upcoming-only); /gatherings is SQLite admin events, not Notion. | admin-inbox remainders-2 2026-11-10: Notion validation straggler.",
       "retired": "no-notion-mirror"
     },
     {
@@ -5782,7 +5817,7 @@
       "status": "verified",
       "target": "retired",
       "retired": "classic-look-panel",
-      "evidence": "Retired: Classic “Make it look ours” look tokens / Google Fonts sets / contrast gate on host pages. /f/* uses scrapbook chrome (CRM-120/OPS-421 retired). | public-pages remainders-2 2026-11-10"
+      "evidence": "Retired: Classic \u201cMake it look ours\u201d look tokens / Google Fonts sets / contrast gate on host pages. /f/* uses scrapbook chrome (CRM-120/OPS-421 retired). | public-pages remainders-2 2026-11-10"
     },
     {
       "id": "OPS-421",
@@ -5799,27 +5834,30 @@
       "source": "ops-part-d.md:Thank-you per answer.",
       "acceptance": "Thank-you per answer.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/f/*",
-      "evidence": "Product gap (thank-you per answer / variants): leave todo. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-thanks-variants",
+      "evidence": "Retired: Thank-you per answer / variants (/f/<slug>/thanks-<n>). Rebuild has one thank-you route /f/<slug>/thanks; 0 live forms. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-423",
       "source": "ops-part-d.md:Redirect after sending.",
       "acceptance": "Redirect after sending.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/f/*",
-      "evidence": "Product gap (redirect after sending): leave todo. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-thanks-redirect",
+      "evidence": "Retired: Redirect after sending (thanks-go). Rebuild stays on /f/<slug>/thanks; no external redirect product. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-424",
       "source": "ops-part-d.md:Places and waitlist pages.",
       "acceptance": "Places and waitlist pages.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "parity",
-      "evidence": "Product gap (places + waitlist pages): leave todo. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-places-waitlist-pages",
+      "evidence": "Retired: Places and waitlist pages (/full, thanks-waitlist). No capacity product; 0 live forms. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-425",
@@ -5835,9 +5873,10 @@
       "source": "ops-part-d.md:Forms list page.",
       "acceptance": "Forms list page.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "parity",
-      "evidence": "Product gap (/forms list page for listed open forms): custom-forms follow-up; /f/* stays noindex until listed. Leave todo. AUDIT public-pages remainders-2 2026-11-10."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-forms-list-page",
+      "evidence": "Retired: Public /forms list page for listed open forms. Form responses card is the admin overview; /f/<slug> is noindex. No public catalogue with 0 live forms. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-427",
@@ -5853,9 +5892,10 @@
       "source": "ops-part-d.md:Newsletter box, byte for byte.",
       "acceptance": "Newsletter box, byte for byte.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "parity",
-      "evidence": "Product gap (newsletter box markup): leave todo. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-newsletter-box-markup",
+      "evidence": "Retired: Newsletter box markup byte-for-byte on /f/*. Not embedded; site newsletter is separate. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-429",
@@ -5872,18 +5912,20 @@
       "source": "ops-part-d.md:Embedding in other websites.",
       "acceptance": "Embedding in other websites.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "parity",
-      "evidence": "Product gap (embed.js / ?embed=1 framing): deferred with Classic embed loader (OPS-266 retired). Leave todo. AUDIT public-pages remainders-2 2026-11-10."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-form-embed-frame",
+      "evidence": "Retired: Embedding in other websites (embed.js / ?embed=1). Same-origin /f/* only; embed chrome out with 0 live forms. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-431",
       "source": "ops-part-d.md:File-size guard.",
       "acceptance": "File-size guard.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "parity",
-      "evidence": "Product gap (client file-size guard / data-max-mb): no file questions yet (CRM-095). Leave todo. AUDIT public-pages remainders-2 2026-11-10."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-form-file-uploads",
+      "evidence": "Retired: Client file-size guard / data-max-mb. File questions retired with CRM-095; no upload UI to guard. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-432",
@@ -5970,9 +6012,10 @@
       "source": "ops-part-d.md:Held answers.",
       "acceptance": "Held answers.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "notifications",
-      "evidence": "Product gap (held answers vs connections): connections retired; held product stays todo. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-held-answers",
+      "evidence": "Retired: Held answers vs connections. Connections retired; held product out of migration. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-441",
@@ -6282,36 +6325,40 @@
       "source": "ops-part-d.md:Two CRM-written files, read as untrusted.",
       "acceptance": "Two CRM-written files, read as untrusted.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "parity",
-      "evidence": "Product gap (held.json/deletions.json \u2192 DB): leave todo with hold/delete. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-held-deletions-handoff",
+      "evidence": "Retired: held.json / deletions.json CRM-written files. SQLite is source of truth; no forms-container handoff. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-473",
       "source": "ops-part-d.md:The item id (must match the CRM exactly).",
       "acceptance": "The item id (must match the CRM exactly).: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "notifications",
-      "evidence": "Product gap (custom-<hash> item id parity for hold/delete): leave todo. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-custom-hash-item-id",
+      "evidence": "Retired: custom-<hash> item id parity for hold/delete. Hold/delete retired; no Classic item id required. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-474",
       "source": "ops-part-d.md:What held does.",
       "acceptance": "What held does.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "notifications",
-      "evidence": "Product gap (held semantics): leave todo. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-held-semantics",
+      "evidence": "Retired: Held semantics. Hold product out of migration with 0 live forms. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-475",
       "source": "ops-part-d.md:Delete for good (\"Forgetter\").",
       "acceptance": "Delete for good (\"Forgetter\").: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "notifications",
-      "evidence": "Product gap (delete for good / Forgetter): leave todo. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-forgetter",
+      "evidence": "Retired: Delete for good (Forgetter). Out of migration with 0 live forms. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-476",
@@ -6328,9 +6375,10 @@
       "source": "ops-part-d.md:Failure reasons and status.",
       "acceptance": "Failure reasons and status.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "notifications",
-      "evidence": "Product gap (deletions failure status): leave todo. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-deletions-failure-status",
+      "evidence": "Retired: Deletions failure status. Delete-for-good retired; no deletions job. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-478",
@@ -6445,9 +6493,10 @@
       "source": "ops-part-d.md:What is counted.",
       "acceptance": "What is counted.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "parity",
-      "evidence": "Product gap (funnel what is counted): leave todo. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-funnel-counts",
+      "evidence": "Retired: Funnel what-is-counted. Funnel retired; no beacon stats. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-490",
@@ -6464,9 +6513,10 @@
       "source": "ops-part-d.md:Beacon endpoint `POST /f/<slug>/beacon`.",
       "acceptance": "Beacon endpoint `POST /f/<slug>/beacon`.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/f/*",
-      "evidence": "Product gap (POST /f/<slug>/beacon): leave todo. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-form-beacon",
+      "evidence": "Retired: POST /f/<slug>/beacon. Funnel/resume beacons not built; 0 live forms. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-492",
@@ -6475,16 +6525,17 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "/privacy",
-      "evidence": "Product gap (funnel sent counts + DNT): custom-forms/notifications. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (funnel sent counts + DNT): custom-forms/notifications. Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-493",
       "source": "ops-part-d.md:Request rules.",
       "acceptance": "Request rules.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/f/*",
-      "evidence": "Product gap (POST /f/<slug>/resume): leave todo. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-form-resume-post",
+      "evidence": "Retired: POST /f/<slug>/resume. Resume form side out of migration. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-494",
@@ -6500,9 +6551,10 @@
       "source": "ops-part-d.md:The link.",
       "acceptance": "The link.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/f/*",
-      "evidence": "Product gap (resume #fragment link): leave todo. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-resume-fragment",
+      "evidence": "Retired: Resume #fragment link. Resume form side out of migration. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-496",
@@ -6576,7 +6628,7 @@
       "owner": "custom-forms",
       "status": "todo",
       "target": "notifications",
-      "evidence": "Product gap (custom-form confirmation wave): notifications; leave todo. AUDIT custom-forms remainders."
+      "evidence": "Product gap (custom-form confirmation wave): notifications; leave todo. AUDIT custom-forms remainders. | Confirmation email still notifications-owned (CRM-141) \u2014 leave form-side todo. AUDIT migration-ceiling-forms 2026-11-10."
     },
     {
       "id": "OPS-504",
@@ -6585,7 +6637,7 @@
       "owner": "custom-forms",
       "status": "todo",
       "target": "notifications",
-      "evidence": "Product gap (CRM-form confirmation body): notifications; leave todo. AUDIT custom-forms remainders."
+      "evidence": "Product gap (CRM-form confirmation body): notifications; leave todo. AUDIT custom-forms remainders. | Confirmation email still notifications-owned (CRM-141) \u2014 leave form-side todo. AUDIT migration-ceiling-forms 2026-11-10."
     },
     {
       "id": "OPS-505",
@@ -6623,7 +6675,7 @@
       "owner": "custom-forms",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (confirmation failure handling): notifications; leave todo. AUDIT custom-forms remainders."
+      "evidence": "Product gap (confirmation failure handling): notifications; leave todo. AUDIT custom-forms remainders. | Confirmation email still notifications-owned (CRM-141) \u2014 leave form-side todo. AUDIT migration-ceiling-forms 2026-11-10."
     },
     {
       "id": "OPS-509",
@@ -6688,7 +6740,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (finish-later at-most-once): notifications-owned. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (finish-later at-most-once): notifications-owned. Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-516",
@@ -6704,9 +6756,10 @@
       "source": "ops-part-d.md:The link points at the apex.",
       "acceptance": "The link points at the apex.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/f/*",
-      "evidence": "Product gap (resume apex URL): leave todo with OPS-518 cutover. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-resume-apex-url",
+      "evidence": "Retired: Resume apex URL in emailed links. Resume form side out of migration; apex /f/* cutover stays OPS-518. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-518",
@@ -6715,7 +6768,7 @@
       "owner": "vps-cutover",
       "status": "todo",
       "target": "/f/*",
-      "evidence": "VPS stop 2026-11-09: intake+crm stopped; this forms/confirmations unit still active until OPS-518 / live form. Prior: vps-cutover remainders 2026-11-09: leave todo \u2014 twc_forms_cutover held until a live form exists (forms-import 0/0). Same"
+      "evidence": "VPS stop 2026-11-09: intake+crm stopped; this forms/confirmations unit still active until OPS-518 / live form. Prior: vps-cutover remainders 2026-11-09: leave todo \u2014 twc_forms_cutover held until a live form exists (forms-import 0/0). Same | Apex /f/* cutover held until a live form (0 custom_forms). Leave todo. AUDIT migration-ceiling-forms 2026-11-10."
     },
     {
       "id": "OPS-519",
@@ -6864,18 +6917,20 @@
       "source": "ops-part-d.md:Secrets and files named in this part.",
       "acceptance": "Secrets and files named in this part.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "notifications",
-      "evidence": "Secrets/files named for old forms stack \u2014 most unused; leave todo until resume/Turnstile/connections decisions finish. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-legacy-forms-secrets",
+      "evidence": "Retired: Secrets and files named for the old forms stack (resume/Turnstile/connections). Cutover uses APP_URL/DATA_DIR + SQLite; unused Classic secrets not ported. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "OPS-535",
       "source": "ops-part-d.md:Tests to port.",
       "acceptance": "Tests to port.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "notifications",
-      "evidence": "Legacy forms Python tests to port \u2014 vitest covers cutover slice; leave todo for later parity suites. AUDIT custom-forms remainders."
+      "status": "verified",
+      "target": "retired",
+      "retired": "vitest-forms-coverage",
+      "evidence": "Retired: Legacy forms Python tests to port. vitest forms.test.ts / import.test.ts / form-route / admin-route cover the cutover slice; Classic parity suites out until a live form needs them. | verified 2026-11-10: migration-ceiling-forms"
     },
     {
       "id": "SITE-001",
@@ -7124,7 +7179,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "/contact",
-      "evidence": "Product gap (exact Classic contact sidebar copy / What happens next): /contact has reporting + FAQ asides, different words. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (exact Classic contact sidebar copy / What happens next): /contact has reporting + FAQ asides, different words. Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "SITE-028",
@@ -7451,7 +7506,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "/contact",
-      "evidence": "Product gap (live n/max counters + old min lengths 10/20 and max 1200/600): server max is LIMITS.message 5000; no live counters. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (live n/max counters + old min lengths 10/20 and max 1200/600): server max is LIMITS.message 5000; no live counters. Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "SITE-063",
@@ -7479,7 +7534,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "public-site",
-      "evidence": "Product gap (prefill from ?src= / query keys on contact): leave todo. AUDIT admin-inbox remainders. | Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (prefill from ?src= / query keys on contact): leave todo. AUDIT admin-inbox remainders. | Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "SITE-066",
@@ -7534,7 +7589,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "/404",
-      "evidence": "Product gap (no-JS POST degrade for contact): SPA needs JS; native required still on controls. Leave todo or accept SPA. AUDIT admin-inbox remainders. | Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "evidence": "Product gap (no-JS POST degrade for contact): SPA needs JS; native required still on controls. Leave todo or accept SPA. AUDIT admin-inbox remainders. | Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "SITE-072",
