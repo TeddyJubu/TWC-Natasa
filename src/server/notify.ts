@@ -1,5 +1,6 @@
-// Server-only: emailing the admins. Every alert (new contact message, partnership inquiry, member review) goes through
-// notifyAdmins(), which goes through sendEmail() — so a missing Cloudflare config or a failed send never fails a request.
+// Server-only: emailing the admins. Every alert (new contact message, partnership inquiry, application, member review,
+// Spotlight answer) goes through notifyAdmins(), which goes through sendEmail() — so a missing Cloudflare config or a
+// failed send never fails a request.
 import type { DB } from "./db";
 import { sendEmail, type Email } from "./email";
 

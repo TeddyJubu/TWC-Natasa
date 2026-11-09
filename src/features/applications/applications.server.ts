@@ -3,6 +3,8 @@
 import { subscribeIfConsented } from "@/server/beehiiv";
 import type { Ctx } from "@/server/context.server";
 import type { DB } from "@/server/db";
+import { appUrl } from "@/server/email";
+import { notifyAdmins, oneLine } from "@/server/notify";
 import { bad, isObject, str } from "@/server/validate";
 import { checkSize, clientIp, HttpError, rateLimit, respond } from "@/server/request";
 
@@ -10,7 +12,7 @@ export type Applicant = { email: string; fullName: string };
 
 export type Stored = Applicant & { answers: Record<string, unknown> };
 
-/** Stores the application; returns what was stored so the caller can act on it (the newsletter opt-in). */
+/** Stores the application; returns what was stored so the caller can act on it (the newsletter opt-in and admin alert). */
 export function submitApplication({ db, actor }: Ctx, input: unknown): Stored {
   if (!isObject(input) || !isObject(input.answers)) throw bad("application");
   const stored = { email: str(input.email, "email", 254), fullName: str(input.fullName, "name", 120), answers: input.answers };
@@ -18,6 +20,20 @@ export function submitApplication({ db, actor }: Ctx, input: unknown): Stored {
     stored.email, stored.fullName, str(input.neighborhood ?? "", "neighborhood", 60), JSON.stringify(stored.answers), actor?.id ?? null,
   );
   return stored;
+}
+
+/**
+ * Tells every admin a new application is waiting: who applied and where to read it. No answers (OPS-384 retired the
+ * legacy-key dump). Never throws: the row is already stored.
+ */
+export async function alertApplication(db: DB, { fullName }: Pick<Stored, "fullName">): Promise<void> {
+  try {
+    const text = [`${oneLine(fullName)} has sent a membership application.`, "",
+      `Read it in the Applications card: ${appUrl()}/admin#applications`].join("\n");
+    if (!(await notifyAdmins(db, { subject: oneLine(`New application: ${fullName}`), text }))) console.warn("[application] stored, but no admin email went out");
+  } catch {
+    console.warn("[application] stored, but the admin alert failed");
+  }
 }
 
 /**
@@ -61,6 +77,8 @@ export function submitApplicationRequest(c: Ctx, request: Request): Promise<Resp
     } catch {
       throw bad("application");
     }
-    await optInApplicant(c.db, submitApplication(c, input));
+    const stored = submitApplication(c, input);
+    await optInApplicant(c.db, stored);
+    await alertApplication(c.db, stored);
   });
 }
