@@ -59,14 +59,15 @@
   --bl-elmhurst: #12d9bd;
   --bl-forest-hills: #5fd35f;
   --bl-rego-park: #ff4438;
-  /* Neutral app palette: the internal-page app shell only (/account, /admin; DESIGN.md "Internal pages"). */
-  --bl-app: #ffffff;
-  --bl-app-sunken: #fafafa; /* sidebar, card heads */
-  --bl-app-line: #eaeaec; /* outlines, controls, active nav */
-  --bl-app-rule: #f1f1f3; /* row dividers, grid cells */
-  --bl-app-muted: #71717a; /* labels and secondary text: 4.8:1 on app */
-  --bl-app-accent: #1468c4; /* Add links, verified badge and chip; the mock's #1570d1 is 4.4:1 on its chip */
-  --bl-app-tint: #fceff3; /* the header grid's few warm cells */
+  /* App palette: the internal-page app shell only (/account, /admin; DESIGN.md "Internal pages"), in the scrapbook's paper and cream. */
+  --bl-app: #fcfcfa; /* paper: sidebar, top bar, cards */
+  --bl-app-sunken: #f3f0e8; /* cream: the app background, hovers, sub-panels, date tiles */
+  --bl-app-line: #dbdbd9; /* ink at 15% on paper: outlines and dividers */
+  --bl-app-rule: #dbdbd9; /* row dividers: the boards use one line weight */
+  --bl-app-muted: #6b6b66; /* labels and secondary text: 4.6:1 on cream */
+  --bl-app-accent: #1670b0; /* blue ink: verified badge, inline links, focus outline */
+  --bl-app-pending: #edd22e; /* sun: "under review", "pending", "requested" chips */
+  --bl-app-ok: #c6f3df; /* mint: "approved", "active", "confirmed" chips */
 }
 
 /* Night: black sections and dark mode. Tokens invert so components need no tone props. */
@@ -86,7 +87,8 @@
   --bl-app-rule: #1c1c1f;
   --bl-app-muted: #a1a1aa;
   --bl-app-accent: #60a5fa;
-  --bl-app-tint: #2a1820;
+  --bl-app-pending: #4a3f0a;
+  --bl-app-ok: #0f3a2a;
 }
 .tone-night { background: var(--bl-canvas); color: var(--bl-ink); }
 
@@ -123,7 +125,8 @@
   --color-app-rule: var(--bl-app-rule);
   --color-app-muted: var(--bl-app-muted);
   --color-app-accent: var(--bl-app-accent);
-  --color-app-tint: var(--bl-app-tint);
+  --color-app-pending: var(--bl-app-pending);
+  --color-app-ok: var(--bl-app-ok);
   --color-ring: var(--bl-sky);
 
   --font-display: "Gilda Display", Georgia, serif;

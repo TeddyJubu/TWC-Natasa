@@ -45,13 +45,13 @@ function AccountPage() {
   const { signOut, error: signOutError } = useSignOut();
 
   if (profileState.isPending) {
-    return <main id="main" tabIndex={-1} className="grid min-h-screen place-items-center bg-canvas outline-none"><span role="status" aria-label="Loading your profile" className="size-6 animate-spin rounded-full border-2 border-ink border-t-transparent" /></main>;
+    return <main id="main" tabIndex={-1} className="grid min-h-screen place-items-center bg-app-sunken outline-none"><span role="status" aria-label="Loading your profile" className="size-6 animate-spin rounded-full border-2 border-ink border-t-transparent" /></main>;
   }
 
   // Only when there is nothing to show: a failed background refetch keeps the cached profile (and unsaved edits).
   if (!profile) {
     return (
-      <main id="main" tabIndex={-1} className="grid min-h-screen place-items-center bg-canvas p-6 text-ink outline-none">
+      <main id="main" tabIndex={-1} className="grid min-h-screen place-items-center bg-app-sunken p-6 text-ink outline-none">
         <div className="flex max-w-md flex-col items-center gap-5 text-center">
           <p className="font-display text-2xl">{profileState.isError ? "We Couldn’t Load Your Profile" : "Profile Not Found"}</p>
           <p role="alert" className="text-sm text-ink-muted">
@@ -72,7 +72,10 @@ function AccountPage() {
   return (
     <AppPage>
       <AppShell page="/account" admin={admin}>
-        <ProfileEditorPage userId={user.id} profile={profile} avatar={avatar} logoUrl={profileState.data?.logoUrl} hoodList={hoodList}>
+        <ProfileEditorPage
+          userId={user.id} profile={profile} avatar={avatar} logoUrl={profileState.data?.logoUrl} hoodList={hoodList}
+          applied={profileState.data?.hasApplication === true}
+        >
           {profileState.isError && <InlineError message="We couldn’t refresh your profile. What you see may be out of date." onRetry={() => void profileState.refetch()} />}
         </ProfileEditorPage>
       </AppShell>
@@ -84,8 +87,8 @@ function AccountPage() {
  * The page column. Edits collect in one draft over the saved profile; Save sends only the fields that changed
  * (edits go live at once, as before). Portrait, logo and headshot requests save on their own, as they always have.
  */
-function ProfileEditorPage({ userId, profile, avatar, logoUrl, hoodList, children }: {
-  userId: string; profile: Profile; avatar?: string; logoUrl?: string; hoodList: Neighborhood[];
+function ProfileEditorPage({ userId, profile, avatar, logoUrl, hoodList, applied, children }: {
+  userId: string; profile: Profile; avatar?: string; logoUrl?: string; hoodList: Neighborhood[]; applied: boolean;
   children: React.ReactNode;
 }) {
   const save = useSaveProfile(userId);
@@ -95,6 +98,7 @@ function ProfileEditorPage({ userId, profile, avatar, logoUrl, hoodList, childre
   const [saved, setSaved] = React.useState(false);
   const [openMember, setOpenMember] = React.useState<MemberProfile | null>(null);
   const card = { ...profile, ...draft };
+  const approved = profile.status === "approved";
   const changes = changedFields(profile, draft);
   const dirty = Object.keys(changes).length > 0;
 
@@ -128,25 +132,22 @@ function ProfileEditorPage({ userId, profile, avatar, logoUrl, hoodList, childre
 
   return (
     <main id="main" tabIndex={-1} className="outline-none">
-      <TopBar section="My Account" icon="circle-user-round" title="Profile">
+      <TopBar title="My account" who={{ name: profile.full_name || "Neighbor", avatar }} />
+      {children}
+      <div className="flex max-w-250 flex-col gap-6 px-4 pt-5 pb-4 sm:px-8 sm:pt-8">
+        <AccountHeader userId={userId} profile={profile} avatar={avatar} />
+        <PublicCard editor={editor} userId={userId} logoPath={profile.business_logo_url} logoUrl={logoUrl} hoodList={hoodList} />
+        <WordsCard editor={editor} />
+        <MembershipCard profile={profile} />
+        <VisibilityCard editor={editor} />
+        <HeadshotBooking userId={userId} approved={approved} applied={applied} />
+        <GatheringsList userId={userId} approved={approved} applied={applied} hoodList={hoodList} />
+        <IntroductionsSection userId={userId} approved={approved} applied={applied} neighborhood={profile.neighborhood || null} hoodList={hoodList} onOpen={setOpenMember} />
         <SaveActions
           formId={PROFILE_FORM} dirty={dirty} pending={save.isPending} saved={saved} error={save.isError ? errorMessage(save.error) : null}
           onSubmit={submit}
           onPreview={() => setOpenMember(toMemberProfile(card, { image: avatar, logo: logoUrl, placeholders: true }))}
         />
-      </TopBar>
-      {children}
-      <div className="max-w-277">
-        <AccountHeader userId={userId} profile={profile} avatar={avatar} />
-        <div className="flex flex-col gap-6 px-4 pt-2 pb-14 sm:px-8 lg:px-12">
-          <PublicCard editor={editor} userId={userId} logoPath={profile.business_logo_url} logoUrl={logoUrl} hoodList={hoodList} />
-          <WordsCard editor={editor} />
-          <MembershipCard profile={profile} />
-          <VisibilityCard editor={editor} />
-          <HeadshotBooking userId={userId} approved={profile.status === "approved"} />
-          <GatheringsList userId={userId} approved={profile.status === "approved"} hoodList={hoodList} />
-          <IntroductionsSection userId={userId} approved={profile.status === "approved"} neighborhood={profile.neighborhood || null} hoodList={hoodList} onOpen={setOpenMember} />
-        </div>
       </div>
       <MemberDialog member={openMember} onClose={() => setOpenMember(null)} />
     </main>

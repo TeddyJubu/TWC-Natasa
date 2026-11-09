@@ -1,4 +1,5 @@
 import * as React from "react";
+import { cn } from "@/index";
 import { useQuery } from "@tanstack/react-query";
 import { bookingQuery } from "@/features/events/queries";
 import { useBookHeadshot } from "@/features/events/mutations";
@@ -9,10 +10,10 @@ import { errorMessage } from "./helpers";
 import { Locked } from "./shared";
 
 /** What the member sees for each headshot booking status (the database allows only these three). */
-const BOOKING_COPY: Record<string, { title: string; body: string }> = {
-  requested: { title: "Request received", body: "We’ll confirm it here once it’s scheduled." },
-  confirmed: { title: "Session confirmed", body: "See you then. Changing it sends it back for confirmation." },
-  declined: { title: "We couldn’t fit this one in", body: "Please choose another date." },
+const BOOKING_COPY: Record<string, { title: string; body: string; notice: string }> = {
+  requested: { title: "Request received", body: "We’ll confirm it here once it’s scheduled.", notice: "twc-notice" },
+  confirmed: { title: "Session confirmed", body: "See you then. Changing it sends it back for confirmation.", notice: "twc-notice twc-notice--mint" },
+  declined: { title: "We couldn’t fit this one in", body: "Please choose another date.", notice: "twc-notice twc-notice--danger" },
 };
 const bookingCopy = (status: string) => BOOKING_COPY[status] ?? BOOKING_COPY.requested;
 const longDate = (iso: string) => new Date(iso + "T12:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
@@ -21,10 +22,10 @@ const DATE_ID = "headshot-date";
 const NOTES_ID = "headshot-notes";
 
 /** Her headshot session: the current request's status, or the request rows (values until an Add opens them). */
-export function HeadshotBooking({ userId, approved }: { userId: string; approved: boolean }) {
+export function HeadshotBooking({ userId, approved, applied }: { userId: string; approved: boolean; applied: boolean }) {
   return (
     <Card id="headshot" title="Headshot session" subtitle="Included with your membership — your portrait, professionally done">
-      {approved ? <Booking userId={userId} /> : <Locked />}
+      {approved ? <Booking userId={userId} /> : <Locked applied={applied} />}
     </Card>
   );
 }
@@ -56,11 +57,13 @@ function Booking({ userId }: { userId: string }) {
   if (booking) {
     const copy = bookingCopy(booking.status);
     return (
-      <div className="flex flex-col items-start gap-1 px-5.5 py-4 text-[15px]">
-        <p className="font-medium text-ink">{copy.title}</p>
-        <p className="text-app-muted">{longDate(booking.preferred_date)} · {booking.preferred_time}. {copy.body}</p>
+      <div className="p-5 sm:px-7 sm:py-6">
+      <div className={cn(copy.notice, "items-start")}>
+        <p className="twc-notice__title">{copy.title}</p>
+        <p className="text-[15px] text-ink">{longDate(booking.preferred_date)} · {booking.preferred_time}. {copy.body}</p>
         <button
-          type="button" className={linkClass}
+          // Ink, not blue: blue ink misses AA on the mint and rose notices.
+          type="button" className={cn(linkClass, "text-ink")}
           onClick={() => {
             book.reset();
             setRequest({ preferred_date: booking.preferred_date, preferred_time: booking.preferred_time, notes: booking.notes ?? "" });
@@ -70,6 +73,7 @@ function Booking({ userId }: { userId: string }) {
         >
           Change request
         </button>
+      </div>
       </div>
     );
   }
@@ -99,9 +103,9 @@ function Booking({ userId }: { userId: string }) {
           ? <input id={NOTES_ID} maxLength={300} placeholder="Bringing products, a team…" value={request.notes} className={fieldClass} onChange={(e) => setRequest({ ...request, notes: e.currentTarget.value })} />
           : request.notes || "Bringing products, a team…"}
       </Row>
-      <div className="flex flex-wrap items-center justify-end gap-4 bg-app-sunken px-5.5 py-3.5">
+      <div className="flex flex-wrap items-center justify-end gap-4 px-5 py-4 sm:px-7">
         {book.isError && <p role="alert" className="mr-auto text-sm text-danger">{errorMessage(book.error)}</p>}
-        <button type="submit" disabled={book.isPending} className={primaryButton}>{book.isPending ? "Sending…" : "Request my session"}</button>
+        <button type="submit" disabled={book.isPending} className={primaryButton}>{book.isPending ? "Sending…" : <>Request my session <span aria-hidden className="twc-arrow">→</span></>}</button>
       </div>
     </form>
   );

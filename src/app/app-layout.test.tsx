@@ -27,6 +27,7 @@ import { Route as Typography } from "@/routes/typography";
 import { Route as Components } from "@/routes/components";
 
 vi.spyOn(Account, "useRouteContext").mockReturnValue({ user: { id: "u1" } } as never);
+vi.spyOn(Admin, "useRouteContext").mockReturnValue({ user: { id: "u1", email: "rosa@x.test", name: "Rosa Diaz" } } as never);
 afterEach(() => {
   cleanup();
 });

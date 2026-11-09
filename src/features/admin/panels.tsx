@@ -3,7 +3,7 @@ import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/index";
 import { fieldClass, primaryButton, ring, secondaryButton } from "@/app/layout/app-classes";
-import { Card, Chip, InlineError, Toggle } from "@/app/layout/app-ui";
+import { Card, Chip, InlineError, Toggle, type ChipTone } from "@/app/layout/app-ui";
 import { Icon } from "@/app/layout/icons";
 import { toneFor } from "@/features/neighborhoods/tone";
 import { useNeighborhoods } from "@/features/neighborhoods/queries";
@@ -26,7 +26,8 @@ const errorMessage = (error: unknown) =>
 /** Inline `--hood` for a neighborhood color, consumed via `bg-(--hood)`. */
 const hoodStyle = (color: string) => ({ "--hood": color }) as React.CSSProperties;
 
-const meta = "text-[13.5px]/5 text-app-muted";
+const meta = "text-[13px]/[1.5] text-app-muted";
+const pad = "px-5 sm:px-7";
 
 // ---------- Shared states ----------
 
@@ -38,7 +39,7 @@ function QueryGate({ query, what, children }: { query: Loadable; what: string; c
   if (query.data === undefined) {
     return query.isError
       ? <InlineError message={`We couldn’t load ${what} right now.`} onRetry={retry} />
-      : <p role="status" className="px-5.5 py-4 text-sm text-app-muted">Loading {what}…</p>;
+      : <p role="status" className={cn(pad, "py-4 text-sm text-app-muted")}>Loading {what}…</p>;
   }
   return (
     <>
@@ -67,13 +68,14 @@ function EmailNotice({ notice }: { notice: ApprovalNotice | null | undefined }) 
   );
 }
 
-/** Waiting on an admin (pending, requested) in the accent; settled states muted. */
+/** Waiting on an admin (pending, requested) in sun; approved/confirmed in mint; declined in danger. */
+const STATUS_TONE: Record<string, ChipTone> = { pending: "pending", requested: "pending", approved: "ok", confirmed: "ok", declined: "no" };
 function StatusChip({ status }: { status: string }) {
-  return <Chip tone={status === "pending" || status === "requested" ? "accent" : "muted"}>{humanizeKey(status)}</Chip>;
+  return <Chip tone={STATUS_TONE[status] ?? "muted"}>{humanizeKey(status)}</Chip>;
 }
 
 function Empty({ children }: { children: React.ReactNode }) {
-  return <p className="px-5.5 py-4 text-[15px] text-app-muted">{children}</p>;
+  return <p className={cn(pad, "py-4 text-[15px] text-app-muted")}>{children}</p>;
 }
 
 /** Buttons for every outcome except the current one; all disabled while a change is in flight. */
@@ -103,10 +105,10 @@ function Item({ headingId, title, status, details, children }: {
   headingId: string; title: string; status: string; details: React.ReactNode; children: React.ReactNode;
 }) {
   return (
-    <article aria-labelledby={headingId} className="flex flex-col gap-3.5 px-5.5 py-4.5">
+    <article aria-labelledby={headingId} className={cn(pad, "flex flex-col gap-3.5 py-5")}>
       <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
         <div className="flex min-w-0 flex-col gap-0.5">
-          <h3 id={headingId} className="text-[15px] font-medium break-words text-ink">{title}</h3>
+          <h3 id={headingId} className="text-base font-medium break-words text-ink">{title}</h3>
           {details}
         </div>
         <StatusChip status={status} />
@@ -153,8 +155,8 @@ function ApplicationRow({ app, members }: { app: AdminApplication; members: Admi
         <p className={meta}>{humanizeKey(app.status)} {formatDate(app.reviewed_at)}{by && ` by ${by}`}</p>
       )}
       {answers.length > 0 && (
-        <details className="group rounded-lg border border-app-line">
-          <summary className={cn("flex cursor-pointer list-none items-center gap-1.5 rounded-lg px-3.5 py-2.5 text-sm font-medium text-ink [&::-webkit-details-marker]:hidden", ring)}>
+        <details className="group rounded-md bg-app-sunken">
+          <summary className={cn("flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-md px-3.5 text-sm font-medium text-ink [&::-webkit-details-marker]:hidden", ring)}>
             <Icon name="chevron-down" className="size-3.25 -rotate-90 text-app-muted transition-transform group-open:rotate-0 motion-reduce:transition-none" />
             Answers ({answers.length})
           </summary>
@@ -193,7 +195,9 @@ function AnswerList({ entries }: { entries: AnswerEntry[] }) {
 
 // ---------- Members ----------
 
-const cell = "py-3.5 pr-4 first:pl-5.5 last:pr-5.5";
+const cell = "py-4 pr-5 first:pl-5 last:pr-5 sm:first:pl-7 sm:last:pr-7";
+/** Table header cells: the kit's eyebrow. */
+const headCell = cn(cell, "twc-eyebrow py-3.5 whitespace-nowrap");
 
 export function MembersPanel() {
   const members = useQuery(adminMembersQuery);
@@ -203,13 +207,13 @@ export function MembersPanel() {
       <QueryGate query={members} what="members">
         {list.length === 0 ? <Empty>No member profiles yet.</Empty> : (
           // `relative` contains the sr-only (absolute) caption and header, or they escape the scroll clip and widen the page.
-          <div role="region" aria-label="Members" tabIndex={0} className="relative overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset">
-            <table className="w-full min-w-[52rem] text-left text-sm">
+          <div role="region" aria-label="Members" tabIndex={0} className="relative overflow-x-auto focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-app-accent">
+            <table className="w-full min-w-[52rem] text-left text-[15px]">
               <caption className="sr-only">Every member profile</caption>
               <thead>
-                <tr className="border-b border-app-rule text-[13px] text-app-muted">
-                  {["Name", "Status", "Listed", "Public", "Catalogue", "Email"].map((h) => <th key={h} scope="col" className={cn(cell, "py-2.5 font-normal")}>{h}</th>)}
-                  <th scope="col" className={cn(cell, "py-2.5 font-normal")}><span className="sr-only">Actions</span></th>
+                <tr className="border-b border-app-rule">
+                  {["Name", "Status", "Listed", "Public", "Catalogue", "Email"].map((h) => <th key={h} scope="col" className={headCell}>{h}</th>)}
+                  <th scope="col" className={headCell}><span className="sr-only">Actions</span></th>
                 </tr>
               </thead>
               <tbody>{list.map((m) => <MemberRow key={m.id} member={m} />)}</tbody>
@@ -230,7 +234,7 @@ function MemberRow({ member }: { member: AdminMember }) {
       <td className={cell}><StatusChip status={member.status} /></td>
       <td className={cell}>{member.directory_visible ? "Yes" : "No"}</td>
       <td className={cell}>{member.public_profile ? "Yes" : "No"}</td>
-      <td className={cell}>{member.catalogue_number ?? "—"}</td>
+      <td className={cn(cell, "twc-index whitespace-nowrap")}>{member.catalogue_number === null ? "—" : `Nº ${String(member.catalogue_number).padStart(3, "0")}`}</td>
       <td className={cn(cell, "break-all")}>{member.email ?? "—"}</td>
       <td className={cell}>
         <div className="flex flex-col gap-2">
@@ -273,10 +277,10 @@ function useLogoPick() {
 /** Label above, control, optional hint (the control's `aria-describedby` is `${id}-hint`). */
 function Field({ id, label, hint, children }: { id: string; label: string; hint?: string; children: React.ReactNode }) {
   return (
-    <div className="flex min-w-0 flex-col gap-1.5">
-      <label htmlFor={id} className="text-[13.5px] text-app-muted">{label}</label>
+    <div className="twc-field">
+      <label htmlFor={id}>{label}</label>
       {children}
-      {hint && <p id={`${id}-hint`} className="text-xs text-app-muted">{hint}</p>}
+      {hint && <p id={`${id}-hint`} className="twc-hint">{hint}</p>}
     </div>
   );
 }
@@ -286,11 +290,11 @@ function LogoPicker({ id, label, hint, pick }: { id: string; label: string; hint
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-        <label className={cn(secondaryButton, "cursor-pointer has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-app")}>
-          <Icon name="image" className="size-3.75 text-ink-muted" />{label}
+        <label className={cn(secondaryButton, "cursor-pointer has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-3 has-[:focus-visible]:outline-app-accent")}>
+          <Icon name="image" className="size-3.75" />{label}
           <input id={id} type="file" accept="image/png,image/webp" aria-describedby={`${id}-hint`} className="sr-only" onChange={pick.onChange} />
         </label>
-        <span id={`${id}-hint`} className="text-[13px] text-app-muted">{hint}</span>
+        <span id={`${id}-hint`} className="twc-hint">{hint}</span>
       </div>
       {pick.error
         ? <p role="alert" className="text-sm text-danger">{pick.error}</p>
@@ -299,7 +303,9 @@ function LogoPicker({ id, label, hint, pick }: { id: string; label: string; hint
   );
 }
 
-const colorField = cn(fieldClass, "h-9 cursor-pointer p-1");
+const colorField = cn(fieldClass, "h-13 cursor-pointer p-1.5");
+/** A cream sub-panel inside a card: the add/edit forms. */
+const subpanel = "m-3 flex flex-col gap-5 rounded-md bg-app-sunken p-5 sm:m-5";
 
 export function NeighborhoodsPanel() {
   const hoods = useQuery(adminNeighborhoodsQuery);
@@ -338,9 +344,9 @@ function AddNeighborhood({ nextOrder }: { nextOrder: number }) {
   }
 
   return (
-    <form key={formKey} onSubmit={submit} aria-label="Add a neighborhood" className="flex flex-col gap-4 bg-app-sunken/60 px-5.5 py-5">
-      <h3 className="text-[15px] font-medium text-ink">Add a neighborhood</h3>
-      <div className="grid gap-4 md:grid-cols-3">
+    <form key={formKey} onSubmit={submit} aria-label="Add a neighborhood" className={subpanel}>
+      <h3 className="font-display text-xl/[1.3] text-ink">Add a neighborhood</h3>
+      <div className="grid gap-5 md:grid-cols-3">
         <Field id="hood-new-name" label="Name"><input id="hood-new-name" name="name" required maxLength={60} className={fieldClass} /></Field>
         <Field id="hood-new-slug" label="Slug" hint="Lowercase words joined by hyphens. Can’t be changed later.">
           <input id="hood-new-slug" name="slug" required pattern="[a-z0-9]+(-[a-z0-9]+)*" placeholder="woodside" aria-describedby="hood-new-slug-hint" className={fieldClass} />
@@ -349,7 +355,7 @@ function AddNeighborhood({ nextOrder }: { nextOrder: number }) {
       </div>
       <LogoPicker id="hood-new-logo" label="Upload a logo" hint="Optional · PNG or WebP, up to 2 MB" pick={pick} />
       <MutationError mutation={create} />
-      <div className="flex justify-end"><button type="submit" className={primaryButton} disabled={create.isPending}>Add neighborhood</button></div>
+      <div className="flex justify-end"><button type="submit" className={primaryButton} disabled={create.isPending}>Add neighborhood <span aria-hidden className="twc-arrow">→</span></button></div>
     </form>
   );
 }
@@ -380,15 +386,16 @@ function NeighborhoodRow({ hood }: { hood: AdminNeighborhood }) {
     <form
       key={[hood.name, hood.color, hood.active, hood.sort_order, hood.logo_path].join("|")}
       onSubmit={submit}
-      aria-label={`Edit ${hood.name}`} className="flex flex-col gap-4 px-5.5 py-5">
-      <div className="flex items-center gap-3">
-        <span aria-hidden className="grid size-9 shrink-0 place-items-center overflow-hidden rounded-full bg-(--hood)" style={hoodStyle(hood.color)}>
-          {logoSrc && <img src={logoSrc} alt="" className="size-7 object-contain" />}
+      aria-label={`Edit ${hood.name}`} className={cn(pad, "flex flex-col gap-5 py-5")}>
+      <div className="flex flex-wrap items-center gap-x-3.5 gap-y-2">
+        <span aria-hidden className="grid size-7 shrink-0 place-items-center overflow-hidden rounded-full bg-(--hood)" style={hoodStyle(hood.color)}>
+          {logoSrc && <img src={logoSrc} alt="" className="size-5.5 object-contain" />}
         </span>
-        <h3 className="min-w-0 flex-1 text-[15px] font-medium break-words text-ink">{hood.name}</h3>
-        <Chip tone={hood.active ? "accent" : "muted"}>{hood.active ? "Active" : "Inactive"}</Chip>
+        <h3 className="min-w-0 font-display text-xl/[1.3] break-words text-ink">{hood.name}</h3>
+        <span className="twc-index mr-auto">{hood.slug} · order {hood.sort_order}</span>
+        <Chip tone={hood.active ? "ok" : "muted"}>{hood.active ? "Active" : "Inactive"}</Chip>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <Field id={id("name")} label="Name"><input id={id("name")} name="name" defaultValue={hood.name} required maxLength={60} className={fieldClass} /></Field>
         <Field id={id("slug")} label="Slug" hint="Fixed after creation.">
           <input id={id("slug")} value={hood.slug} readOnly aria-describedby={`${id("slug")}-hint`} className={cn(fieldClass, "bg-app-sunken text-app-muted")} />
@@ -396,7 +403,7 @@ function NeighborhoodRow({ hood }: { hood: AdminNeighborhood }) {
         <Field id={id("color")} label="Color"><input id={id("color")} type="color" name="color" defaultValue={hood.color} className={colorField} /></Field>
         <Field id={id("sort")} label="Sort order"><input id={id("sort")} type="number" name="sort_order" step={1} defaultValue={hood.sort_order} required className={fieldClass} /></Field>
       </div>
-      <div className="rounded-lg border border-app-line">
+      <div className="rounded-md shadow-[inset_0_0_0_1px_var(--color-app-line)]">
         <Toggle
           id={id("active")}
           name="active"
@@ -484,7 +491,7 @@ export function GatheringsPanel() {
           : <GatheringsTable rows={upcoming} caption="Upcoming gatherings" {...actions} />}
         {past.length > 0 && (
           <details className="group">
-            <summary className={cn("flex cursor-pointer list-none items-center gap-1.5 px-5.5 py-3.5 text-sm font-medium text-ink [&::-webkit-details-marker]:hidden", ring)}>
+            <summary className={cn(pad, "flex min-h-12 cursor-pointer list-none items-center gap-1.5 text-sm font-medium text-ink [&::-webkit-details-marker]:hidden", ring)}>
               <Icon name="chevron-down" className="size-3.25 -rotate-90 text-app-muted transition-transform group-open:rotate-0 motion-reduce:transition-none" />
               Past gatherings ({past.length})
             </summary>
@@ -505,13 +512,13 @@ function GatheringsTable({ rows, caption, onEdit, onGuests }: {
 }) {
   const { data: hoodList = [] } = useNeighborhoods();
   return (
-    <div role="region" aria-label={caption} tabIndex={0} className="relative overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset">
-      <table className="w-full min-w-[48rem] text-left text-sm">
+    <div role="region" aria-label={caption} tabIndex={0} className="relative overflow-x-auto focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-app-accent">
+      <table className="w-full min-w-[48rem] text-left text-[15px]">
         <caption className="sr-only">{caption}</caption>
         <thead>
-          <tr className="border-b border-app-rule text-[13px] text-app-muted">
-            {["When", "Gathering", "Neighborhood", "Seats saved"].map((h) => <th key={h} scope="col" className={cn(cell, "py-2.5 font-normal whitespace-nowrap")}>{h}</th>)}
-            <th scope="col" className={cn(cell, "py-2.5 font-normal")}><span className="sr-only">Actions</span></th>
+          <tr className="border-b border-app-rule">
+            {["When", "Gathering", "Neighborhood", "Seats saved"].map((h) => <th key={h} scope="col" className={headCell}>{h}</th>)}
+            <th scope="col" className={headCell}><span className="sr-only">Actions</span></th>
           </tr>
         </thead>
         <tbody>
@@ -522,15 +529,15 @@ function GatheringsTable({ rows, caption, onEdit, onGuests }: {
               <tr key={e.id} className="border-b border-app-rule align-middle last:border-0">
                 <td className={cell}>
                   <div className="flex items-center gap-3.5 whitespace-nowrap">
-                    <span className="flex w-12 shrink-0 flex-col rounded-md bg-app-sunken py-1 text-center">
-                      <span className="text-[11px] uppercase text-app-muted">{when.month}</span>
-                      <span className="font-display text-2xl leading-none text-ink">{when.day}</span>
+                    <span className="flex w-14 shrink-0 flex-col gap-0.5 rounded-md bg-app-sunken pt-1.5 pb-2 text-center">
+                      <span className="font-fragment text-[11px]/[14px] tracking-[1px] uppercase text-app-muted">{when.month}</span>
+                      <span className="font-display text-[26px]/none text-ink">{when.day}</span>
                     </span>
                     <span>{when.weekday} · {when.time}</span>
                   </div>
                 </td>
-                <th scope="row" className={cn(cell, "font-normal")}>
-                  <span className="block text-[15px] font-medium text-ink">{e.title}</span>
+                <th scope="row" className={cn(cell, "min-w-52 font-normal")}>
+                  <span className="block font-display text-xl/[1.3] text-ink">{e.title}</span>
                   <span className={meta}>{kindLabel(e.kind)} · {e.location}</span>
                 </th>
                 <td className={cell}>
@@ -539,7 +546,7 @@ function GatheringsTable({ rows, caption, onEdit, onGuests }: {
                     {e.neighborhood}
                   </span>
                 </td>
-                <td className={cn(cell, "tabular-nums")}>{e.guests.length}</td>
+                <td className={cn(cell, "font-fragment tabular-nums")}>{e.guests.length}</td>
                 <td className={cell}>
                   <div className="flex gap-2">
                     <button type="button" className={cn(secondaryButton, "whitespace-nowrap")} aria-label={`Edit ${e.title}`} onClick={() => onEdit(e)}>Edit</button>
@@ -589,12 +596,12 @@ function GatheringForm({ event, onDone }: { event: AdminEvent | null; onDone: ()
   }
 
   return (
-    <form onSubmit={submit} aria-labelledby={id("heading")} className="flex flex-col gap-4 bg-app-sunken/60 px-5.5 py-5">
+    <form onSubmit={submit} aria-labelledby={id("heading")} className={subpanel}>
       <div className="flex flex-col gap-0.5">
-        <h3 id={id("heading")} className="text-[15px] font-medium text-ink">{event ? `Edit ${event.title}` : "Add a gathering"}</h3>
+        <h3 id={id("heading")} className="font-display text-xl/[1.3] text-ink">{event ? `Edit ${event.title}` : "Add a gathering"}</h3>
         <p className={meta}>Members see it in Gatherings as soon as you save.</p>
       </div>
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-5 md:grid-cols-2">
         <div className="md:col-span-2">
           <Field id={id("title")} label="Title">
             <input ref={titleRef} id={id("title")} name="title" required maxLength={200} defaultValue={event?.title} placeholder="Founders Supper Club" className={fieldClass} />
@@ -636,7 +643,7 @@ function GatheringForm({ event, onDone }: { event: AdminEvent | null; onDone: ()
         {event ? <button type="button" className={secondaryButton} disabled={busy} onClick={confirmDelete}>Delete gathering</button> : <span />}
         <div className="flex gap-2.5">
           <button type="button" className={secondaryButton} onClick={onDone}>Cancel</button>
-          <button type="submit" className={primaryButton} disabled={busy}>Save gathering</button>
+          <button type="submit" className={primaryButton} disabled={busy}>Save gathering <span aria-hidden className="twc-arrow">→</span></button>
         </div>
       </div>
     </form>
@@ -655,9 +662,9 @@ function GuestList({ event, onClose }: { event: AdminEvent; onClose: () => void 
   const copy = () => navigator.clipboard.writeText(event.guests.map((g) => g.email).join(", ")).then(() => setCopied("yes"), () => setCopied("no"));
   return (
     <section aria-labelledby={headingId} className="flex flex-col">
-      <div className="flex flex-wrap items-start justify-between gap-3 px-5.5 py-4">
+      <div className={cn(pad, "flex flex-wrap items-start justify-between gap-3 border-t border-app-line py-5")}>
         <div className="flex min-w-0 flex-col gap-0.5">
-          <h3 id={headingId} className="text-[15px] font-medium break-words text-ink">Guest list · {event.title}</h3>
+          <h3 id={headingId} className="font-display text-xl/[1.3] break-words text-ink">Guest list · {event.title}</h3>
           <p className={meta}>{n} member{n === 1 ? "" : "s"} saved a seat</p>
         </div>
         <div className="flex gap-2">
@@ -665,16 +672,16 @@ function GuestList({ event, onClose }: { event: AdminEvent; onClose: () => void 
           <button type="button" className={secondaryButton} aria-label={`Close the guest list for ${event.title}`} onClick={onClose}>Close</button>
         </div>
       </div>
-      {copied && <p role="status" className="px-5.5 pb-3 text-sm text-app-muted">{copied === "yes" ? "Emails copied" : "Couldn’t copy. Select the emails below instead."}</p>}
+      {copied && <p role="status" className={cn(pad, "pb-3 text-sm text-app-muted")}>{copied === "yes" ? "Emails copied" : "Couldn’t copy. Select the emails below instead."}</p>}
       {n === 0 ? <Empty>No seats saved yet.</Empty> : (
         <ul className="divide-y divide-app-rule border-t border-app-rule">
           {event.guests.map((g) => {
             const color = toneFor(g.neighborhood, hoodList)?.color;
             return (
-              <li key={g.user_id} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-5.5 py-3.5">
+              <li key={g.user_id} className={cn(pad, "flex flex-wrap items-center justify-between gap-x-4 gap-y-1 py-4")}>
                 <span className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
                   <span className="text-[15px] font-medium text-ink">{g.full_name || "Unnamed member"}</span>
-                  {g.catalogue_number !== null && <span className="text-[13px] text-app-muted tabular-nums">Nº {String(g.catalogue_number).padStart(3, "0")}</span>}
+                  {g.catalogue_number !== null && <span className="twc-index">Nº {String(g.catalogue_number).padStart(3, "0")}</span>}
                   {g.neighborhood && (
                     <span className={cn(meta, "inline-flex items-center gap-1.5")}>
                       <span aria-hidden className={cn("size-2 rounded-full", color ? "bg-(--hood)" : "bg-app-line")} style={color ? hoodStyle(color) : undefined} />

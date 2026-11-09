@@ -108,11 +108,16 @@ describe("mobile menu button", () => {
   });
 });
 
-describe("internal-page app shell (neutral app palette)", () => {
+describe("internal-page app shell (scrapbook app palette)", () => {
   // [text, background, alpha of a tinted background over `app`]: every text pair the app shell (/account, /admin) uses.
+  // app = paper cards/sidebar/top bar, app-sunken = cream background, sub-panels, date tiles and notices.
   const pairs: [string, string, number?][] = [
     ["ink", "app"], ["ink", "app-sunken"], ["ink-muted", "app"], ["ink-muted", "app-sunken"], ["app-muted", "app"], ["app-muted", "app-sunken"],
-    ["app-accent", "app"], ["app-accent", "app-accent", 0.1], ["canvas", "ink"], ["danger", "app"], ["danger", "app-sunken"],
+    ["app-accent", "app"], ["app-accent", "app-sunken"], ["danger", "app"], ["danger", "app-sunken"],
+    // The current nav pill: paper text on ink.
+    ["app", "ink"],
+    // Status chips and notices: ink on sun (pending) and mint (ok); danger on cream (declined) is above.
+    ["ink", "app-pending"], ["ink", "app-ok"],
   ];
 
   it.each(["light", "night"] as const)("every text pair clears AA in %s", (mode) => {
@@ -133,6 +138,8 @@ describe("internal-page app shell (neutral app palette)", () => {
     ].map(read).join("\n");
     expect(src).toMatch(/text-app-muted/);
     expect(src).toMatch(/text-app-accent/);
+    expect(src).toMatch(/bg-app-pending/);
+    expect(src).toMatch(/bg-app-ok/);
     expect(src).not.toMatch(/(?:bg|text|border|fill|stroke|ring|outline)-\[#|(?:bg|text|border)-(?:zinc|gray|neutral|slate|blue)-\d/);
   });
 });
