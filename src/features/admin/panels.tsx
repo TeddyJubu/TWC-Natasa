@@ -88,7 +88,13 @@ function Empty({ children }: { children: React.ReactNode }) {
   return <p className={cn(pad, "py-4 text-[15px] text-app-muted")}>{children}</p>;
 }
 
-/** Buttons for every outcome except the current one; all disabled while a change is in flight. */
+/** Confirm copy for a decision (CRM-071). Undo-decline names the restore; everything else is "Label name?". */
+function decisionConfirm(label: string, status: string, subject: string): string {
+  if (status === "pending") return `Undo decline for ${subject}? She’ll go back to pending.`;
+  return `${label} ${subject}?`;
+}
+
+/** Buttons for every outcome except the current one; confirm first (CRM-071); disabled while a change is in flight. */
 function Decisions<S extends string>({ current, options, subject, pending, onDecide }: {
   current: string; options: { status: S; label: string }[]; subject: string; pending: boolean; onDecide: (status: S) => void;
 }) {
@@ -101,7 +107,7 @@ function Decisions<S extends string>({ current, options, subject, pending, onDec
           className={i === 0 ? primaryButton : secondaryButton}
           aria-label={`${o.label} ${subject}`}
           disabled={pending}
-          onClick={() => onDecide(o.status)}
+          onClick={() => { if (window.confirm(decisionConfirm(o.label, o.status, subject))) onDecide(o.status); }}
         >
           {o.label}
         </button>
@@ -269,7 +275,15 @@ function InboxRow({ message: m }: { message: InboxMessage }) {
   );
 }
 
-const REVIEW_OPTIONS = [{ status: "approved" as const, label: "Approve" }, { status: "declined" as const, label: "Decline" }];
+/** Approve / Decline always; Undo decline only when she is declined (CRM-069 / CRM-071 / CRM-174). */
+function reviewOptions(current: string) {
+  const options: { status: "pending" | "approved" | "declined"; label: string }[] = [
+    { status: "approved", label: "Approve" },
+    { status: "declined", label: "Decline" },
+  ];
+  if (current === "declined") options.push({ status: "pending", label: "Undo decline" });
+  return options;
+}
 
 // ---------- Applications ----------
 
@@ -331,7 +345,7 @@ function ApplicationRow({ app, members, notes }: { app: AdminApplication; member
       <EmailNotice notice={review.data} />
       <Decisions
         current={app.status}
-        options={REVIEW_OPTIONS}
+        options={reviewOptions(app.status)}
         subject={app.full_name}
         pending={review.isPending}
         onDecide={(status) => review.mutate({ id: app.id, status })}
@@ -431,7 +445,7 @@ function MemberRow({ member, link, spotlight, notes, app }: {
         <div className="flex flex-col gap-2">
           <Decisions
             current={member.status}
-            options={REVIEW_OPTIONS}
+            options={reviewOptions(member.status)}
             subject={name}
             pending={setStatus.isPending}
             onDecide={(status) => setStatus.mutate({ id: member.id, status })}

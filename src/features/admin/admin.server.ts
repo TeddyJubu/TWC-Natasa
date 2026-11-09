@@ -99,8 +99,8 @@ export function reviewApplication({ db, actor }: Ctx, input: unknown): void {
 }
 
 /**
- * Sets a profile's status directly. Approving or declining also gives her newest application the same decision
- * (0004), recorded as this admin; putting a profile back to pending isn't a review and leaves the application.
+ * Sets a profile's status directly. Approve, decline and undo-decline (back to pending) also give her newest
+ * application the same decision (0004 / CRM-069), recorded as this admin.
  * Returns that newest application's id (null when she has none), for the welcome email.
  */
 export function setMemberStatus({ db, actor }: Ctx, input: unknown): string | null {
@@ -112,7 +112,7 @@ export function setMemberStatus({ db, actor }: Ctx, input: unknown): string | nu
     const changed = db.prepare("update profiles set status = ? where id = ? and status is not ?").run(status, id, status).changes > 0;
     if (changed) logAction(db, me.id, status, { member_id: id });
     const app = db.prepare("select id from applications where user_id = ? order by created_at desc, id desc limit 1").get(id) as { id: string } | undefined;
-    if (changed && status !== "pending" && app) {
+    if (changed && app) {
       db.prepare("update applications set status = ?, reviewed_by = ? where id = ? and status is not ?").run(status, me.id, app.id, status);
     }
     return app?.id ?? null;

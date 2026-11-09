@@ -10,7 +10,7 @@ import {
   updateNeighborhoodFn,
 } from "./fns";
 
-export type Review = { id: string; status: Exclude<MembershipStatus, "pending"> };
+export type Review = { id: string; status: MembershipStatus };
 export type BookingReview = { id: string; status: "confirmed" | "declined" };
 
 const invalidate = (qc: QueryClient, keys: QueryKey[]) =>
@@ -18,7 +18,7 @@ const invalidate = (qc: QueryClient, keys: QueryKey[]) =>
 
 /**
  * The server syncs the linked profile and records reviewed_at / reviewed_by.
- * An approval then sends the welcome email; the result is a notice (null for a decline), never a failure.
+ * An approval then sends the welcome email; decline and undo-decline (back to pending) send nothing.
  */
 export async function reviewApplication({ id, status }: Review): Promise<ApprovalNotice | null> {
   await reviewApplicationFn({ data: { id, status } });
@@ -26,8 +26,8 @@ export async function reviewApplication({ id, status }: Review): Promise<Approva
 }
 
 /**
- * Admins set the profile status directly; the server gives the newest application the same status (0004) and
- * returns its id, so an approval emails that application's applicant (or says there's none on file).
+ * Admins set the profile status directly; the server gives the newest application the same decision
+ * (approve / decline / undo-decline → pending) and returns its id, so an approval can email that applicant.
  */
 export async function setMemberStatus({ id, status }: Review): Promise<ApprovalNotice | null> {
   const newest = await setMemberStatusFn({ data: { id, status } });
