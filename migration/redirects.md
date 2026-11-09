@@ -60,7 +60,7 @@ Source of truth for the `vps-cutover` workstream (SITE-100, SITE-162, SITE-164).
 ## Live on the VPS (2026-11-09)
 
 Page rows and host redirects from this file are active in `/opt/nbwc/Caddyfile` (`twc_apex_cutover`,
-`twc_members_cutover`, `twc_nbwc_cutover`). Backup: `Caddyfile.before-twc-cutover-20261109-151319`.
+`twc_members_cutover`, `twc_nbwc_cutover`, plus `@spotlight` on members hosts after 0008). Backup: `Caddyfile.before-twc-cutover-20261109-151319`; spotlight add-on `Caddyfile.before-spotlight-redir-*`.
 Smoke: `bun scripts/smoke-cutover.ts` → ok. Apex `/` still coming-soon.
 
 ## Not redirected yet
