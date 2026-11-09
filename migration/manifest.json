@@ -1875,16 +1875,18 @@
       "source": "backoffice.md:Response headers on every HTML/CSV/JSON response from `_send`",
       "acceptance": "Response headers on every HTML/CSV/JSON response from `_send`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "parity",
+      "evidence": "Security headers on every Start response via securityHeadersMiddleware + SECURITY_HEADERS (CSP same-origin, nosniff, Referrer-Policy, Permissions-Policy) in src/app/security-headers.ts; csrfMiddleware co-listed in start.ts. Intake _send Cache-Control/X-Robots-Tag-everywhere / 303-only not mirrored — public INDEXED pages are crawlable (seo.ts). tests: security-headers.test.ts. | verified 2026-11-09"
     },
     {
       "id": "OPS-012",
       "source": "backoffice.md:Page chrome",
       "acceptance": "Page chrome: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin"
+      "status": "verified",
+      "target": "/admin",
+      "evidence": "Scrapbook chrome covers public join/review/spotlight (AppNav/AppFooter, twc-*, self-hosted fonts — no Google Fonts); /admin uses AppShell + TopBar (app-* tokens). Classic intake page() chrome (Google Fonts, inline CSS tokens, area tags, dotted-star favicon) not rebuilt. AGENTS.md. | verified 2026-11-09"
     },
     {
       "id": "OPS-013",
@@ -1936,8 +1938,10 @@
       "source": "backoffice.md:`GET /join/thanks`: static \"Application received\" page: \"Your application is now pending review\", what happens next, and",
       "acceptance": "`GET /join/thanks`: static \"Application received\" page: \"Your application is now pending review\", what happens next, and: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "/join",
+      "evidence": "In-place \"Application received\" confirmation replaces the /join form (ApplicationForm Received); no /join/thanks route (same pattern as /review|/spotlight in-place thanks, OPS-021). Copy: pending review / we will contact you. ApplicationForm.tsx. | verified 2026-11-09",
+      "retired": "in-place-thanks"
     },
     {
       "id": "OPS-019",
@@ -1998,8 +2002,10 @@
       "source": "backoffice.md:`GET /admin/export?type=new|…`",
       "acceptance": "`GET /admin/export?type=new|…`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "evidence": "Retired: intake GET /admin/export?type=new|… CSV. Rebuild: adminCsv server fn + Download CSV on Applications and Members cards (CRM-186 verified); no Content-Disposition quirk to port. AUDIT AUDIT members-links product-gaps. | verified 2026-11-09: admin-server-fns",
+      "retired": "admin-server-fns"
     },
     {
       "id": "OPS-026",
@@ -2095,8 +2101,10 @@
       "source": "backoffice.md:Admin POST `/admin/action`",
       "acceptance": "Admin POST `/admin/action`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin"
+      "status": "verified",
+      "target": "retired",
+      "evidence": "Retired: intake Admin POST /admin/action (host+session+csrf form actions). Rebuild /admin is AppShell cards with requireAdmin server fns (approve/decline/undo, notes, CSV, mint links). OPS-032/CRM-162. AUDIT AUDIT members-links product-gaps. | verified 2026-11-09: intake-admin-dashboard",
+      "retired": "intake-admin-dashboard"
     },
     {
       "id": "OPS-037",
@@ -2145,16 +2153,19 @@
       "source": "backoffice.md:`admin_secret`",
       "acceptance": "`admin_secret`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin"
+      "status": "verified",
+      "target": "retired",
+      "evidence": "Retired: intake admin_secret file (HMAC sessions+CSRF). Sessions are Better Auth (CRM-018/180); no auto-created 64-hex secret file. AUDIT AUDIT members-links product-gaps. | verified 2026-11-09: better-auth",
+      "retired": "better-auth"
     },
     {
       "id": "OPS-043",
       "source": "backoffice.md:CSRF",
       "acceptance": "CSRF: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "/join",
+      "evidence": "Start csrfMiddleware covers every body-taking route listed in API_ROUTES (start.ts), including /api/applications|/api/review|/api/spotlight. Classic HMAC admin_secret CSRF (UTC-midnight rollover, shared token) retired with Better Auth. Public forms rely on SameSite + honeypot + rateLimit. security-headers.test.ts. | verified 2026-11-09"
     },
     {
       "id": "OPS-044",
@@ -2196,8 +2207,10 @@
       "source": "backoffice.md:`members.jsonl`",
       "acceptance": "`members.jsonl`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin"
+      "status": "verified",
+      "target": "retired",
+      "evidence": "Retired: members.jsonl roster file. Approved members live in SQLite profiles (legacy import 0004 + live approve); /review and mint read DB, not jsonl. AUDIT AUDIT members-links product-gaps. | verified 2026-11-09: sqlite-source",
+      "retired": "sqlite-source"
     },
     {
       "id": "OPS-049",
@@ -2283,8 +2296,9 @@
       "source": "backoffice.md:Honeypot",
       "acceptance": "Honeypot: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "/join",
+      "evidence": "Honeypot on /join (client fax-number → success, nothing submitted), /review and /spotlight (server isBot → 204, nothing stored; link stays open). contact/partnership/custom-forms same pattern. member-links.test.ts + spotlight/review-alert tests; ApplicationForm.tsx. | verified 2026-11-09"
     },
     {
       "id": "OPS-059",
@@ -2408,8 +2422,10 @@
       "source": "backoffice.md:`POST /internal/applications/undo-decline`",
       "acceptance": "`POST /internal/applications/undo-decline`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "evidence": "Retired: POST /internal/applications/undo-decline. Rebuild: reviewApplication / setMemberStatus back to pending (CRM-069/174, OPS-071). AUDIT AUDIT members-links product-gaps. | verified 2026-11-09: admin-server-fns",
+      "retired": "admin-server-fns"
     },
     {
       "id": "OPS-073",
@@ -2471,8 +2487,10 @@
       "source": "backoffice.md:Merge undo",
       "acceptance": "Merge undo: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "evidence": "Retired: /internal/merge/undo. Merge graph retired with CRM-074–081 (OPS-075); no merge undo in the Node app. AUDIT AUDIT members-links product-gaps. | verified 2026-11-09: no-merge-graph",
+      "retired": "no-merge-graph"
     },
     {
       "id": "OPS-080",
@@ -2488,7 +2506,8 @@
       "acceptance": "The forms_state closed switch also applies under the engine: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
       "status": "todo",
-      "target": "/join"
+      "target": "/join",
+      "evidence": "Product gap: forms_state closed switch for /join and /review under the engine is not built; links/forms always on (CRM-087; AUDIT review form switch). Custom-forms open/close is separate (CRM-100). Spotlight never had a switch (OPS-028). Leave todo. AUDIT members-links product-gaps."
     },
     {
       "id": "OPS-082",
@@ -2519,8 +2538,10 @@
       "source": "backoffice.md:Application-invite draft has literal `\\n`",
       "acceptance": "Application-invite draft has literal `\\n`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "evidence": "Retired: Classic application-invite draft literal \\\\n bug (intake f-string). Rebuild does not email review/application invite drafts from /admin — mint shows URL once for the admin to copy (CRM-082). AUDIT AUDIT members-links product-gaps. | verified 2026-11-09: honest-errors",
+      "retired": "honest-errors"
     },
     {
       "id": "OPS-086",
@@ -2587,8 +2608,10 @@
       "source": "backoffice.md:Cookie-session and CSRF quirks",
       "acceptance": "Cookie-session and CSRF quirks: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin"
+      "status": "verified",
+      "target": "retired",
+      "evidence": "Retired: intake cookie-session + CSRF midnight rollover quirks (OPS-043). Better Auth sessions; Start csrfMiddleware; no shared admin HMAC cookie. AUDIT AUDIT members-links product-gaps. | verified 2026-11-09: better-auth",
+      "retired": "better-auth"
     },
     {
       "id": "OPS-094",
@@ -2638,8 +2661,9 @@
       "source": "backoffice.md:Testdata vs code drift",
       "acceptance": "Testdata vs code drift: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "/join",
+      "evidence": "Importers accept both legacy shapes (AUDIT A-99 / Spotlight): scripts/import-legacy.ts + fixtures cover type spotlight_answers vs spotlight_submission, source/public_application drift, auto_rejected, subscriber id fields. Live app writes SQLite rows, not jsonl. legacy-import.test.ts; scripts/fixtures/legacy-*.json. | verified 2026-11-09"
     },
     {
       "id": "OPS-100",
@@ -2897,8 +2921,9 @@
       "source": "backoffice.md:Nothing is preselected on a blank form, and dropdowns start blank",
       "acceptance": "Nothing is preselected on a blank form, and dropdowns start blank: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "parity",
+      "evidence": "Review/Spotlight: permissions and blank Choices have no defaultChecked; directory state starts \"\". Join neighborhood Select starts blank; checkbox groups unselected. Scrapbook join intentionally defaults a few yes/no (newsletter yes, whatsapp/spotlight/directory/partner no) — accepted UX deviation from Classic TEJ blank-radio rule. ReviewForm.tsx / ApplicationForm.tsx. | verified 2026-11-09"
     },
     {
       "id": "OPS-130",
@@ -2958,8 +2983,10 @@
       "source": "backoffice.md:An accepted application record has `type",
       "acceptance": "An accepted application record has `type: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "evidence": "Retired: Classic accepted-application jsonl shape (type:new_member, review_status, 12-hex record_id, consent_version…). Rebuild stores applications in SQLite with UUID ids; import maps legacy fields (0004). AUDIT AUDIT members-links product-gaps. | verified 2026-11-09: sqlite-source",
+      "retired": "sqlite-source"
     },
     {
       "id": "OPS-137",
@@ -2984,8 +3011,9 @@
       "source": "backoffice.md:Limits: values are truncated at 4000 chars; bodies are capped at 32 KB urlencoded / 5 MB multipart; public POSTs are lim",
       "acceptance": "Limits: values are truncated at 4000 chars; bodies are capped at 32 KB urlencoded / 5 MB multipart; public POSTs are lim: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "/join",
+      "evidence": "Server-enforced limits: checkSize before body (applications 64 KiB; review/spotlight 32 KiB) + rateLimit (applications 5/10min; review/spotlight 10/10min per clientIp). Field maxLength via LIMITS in schemas (not silent 4000 truncate). Deviation: not Classic 30/60s (OPS-059 still notes exact-window parity). request.ts; applications.server.ts; member-links.server.ts; spotlight.server.ts. | verified 2026-11-09"
     },
     {
       "id": "OPS-140",
@@ -3073,8 +3101,9 @@
       "source": "backoffice.md:The review greeting uses the first word of the name, or \"there\", and the page states \"Nothing publishes automatically",
       "acceptance": "The review greeting uses the first word of the name, or \"there\", and the page states \"Nothing publishes automatically: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "parity",
+      "evidence": "Review greeting uses first word of full_name or \"there\" (openReview → firstName); page copy states \"Nothing publishes automatically.\" review.tsx + member-links.server.ts; member-links.test.ts. | verified 2026-11-09"
     },
     {
       "id": "OPS-150",
@@ -3137,7 +3166,7 @@
       "owner": "vps-cutover",
       "status": "todo",
       "target": "/admin#members",
-      "evidence": "AUDIT 2026-11-09: old intake /internal/members/link still on running intake until stop. New mint is /admin members-links (review+spotlight). Retire/stop with intake when twc_admin_cutover lands."
+      "evidence": "AUDIT 2026-11-09: old intake /internal/members/link still on running intake until stop. New mint is /admin members-links (review+spotlight). Retire/stop with intake when twc_admin_cutover lands. Owner vps-cutover. AUDIT members-links product-gaps."
     },
     {
       "id": "OPS-157",
@@ -4348,8 +4377,10 @@
       "source": "backoffice.md:Turnstile can be half-configured.",
       "acceptance": "Turnstile can be half-configured.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "evidence": "Retired: Cloudflare Turnstile half-configured widget path. No Turnstile in scrapbook join/review/spotlight or /f/* (CRM-126/OPS-245/SITE-060). Honeypot + rateLimit only. AUDIT AUDIT members-links product-gaps. | verified 2026-11-09: no-turnstile",
+      "retired": "no-turnstile"
     },
     {
       "id": "OPS-293",
@@ -4635,8 +4666,10 @@
       "source": "backoffice.md:Failure handling: fails open.",
       "acceptance": "Failure handling: fails open.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "evidence": "Retired: Hermes auto-approve fail-open per-record deferred. Hermes out of cutover scope (notifications retire-external); applications stay pending for human /admin. AUDIT AUDIT members-links product-gaps. | verified 2026-11-09: no-hermes",
+      "retired": "no-hermes"
     },
     {
       "id": "OPS-326",
@@ -4757,8 +4790,10 @@
       "source": "backoffice.md:Fail-open rules.",
       "acceptance": "Fail-open rules.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "evidence": "Retired: Classic site-build fail-open rules (Notion DB / token / 0-row exit 0). Live public pages are scrapbook React routes, not tools/site build.mjs. AUDIT AUDIT members-links product-gaps. | verified 2026-11-09: scrapbook-kit",
+      "retired": "scrapbook-kit"
     },
     {
       "id": "OPS-339",
@@ -4902,9 +4937,9 @@
       "source": "backoffice.md:`import_spotlight_answers.py <csv>`.",
       "acceptance": "`import_spotlight_answers.py <csv>`.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "/admin#spotlight",
-      "evidence": "Not ported as a CSV importer: the sheet was already turned into spotlight_answers.jsonl by the old tool, and that file is what scripts/import-legacy.ts reads (OPS-049). Re-reading the sheet would re-run its name matching, which the rebuild does not trust."
+      "evidence": "CSV import_spotlight_answers.py not ported: sheet→jsonl already done offline; scripts/import-legacy.ts reads spotlight_answers.jsonl (OPS-049 verified). Re-reading the sheet would re-run old name matching the rebuild does not trust. | verified 2026-11-09: jsonl import path (import-legacy.ts); no CSV importer"
     },
     {
       "id": "OPS-355",
@@ -5064,8 +5099,10 @@
       "source": "backoffice.md:`tools/gen-passphrase.py` (one-off).",
       "acceptance": "`tools/gen-passphrase.py` (one-off).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "evidence": "Retired: tools/gen-passphrase.py one-off for BACKUP_PASSPHRASE. Not part of the Node app; VPS secrets stay in server env / .env.local. AUDIT AUDIT members-links product-gaps. | verified 2026-11-09: old-python-tests",
+      "retired": "old-python-tests"
     },
     {
       "id": "OPS-374",
@@ -5104,8 +5141,10 @@
       "source": "backoffice.md:`tools/qa/route-check.sh`.",
       "acceptance": "`tools/qa/route-check.sh`.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "evidence": "Retired: tools/qa/route-check.sh. Cutover checks live in bun scripts/smoke-cutover.ts + cutover-redirects.test.ts; invalid /spotlight?t= → app 404 covered by member-links tests. AUDIT AUDIT members-links product-gaps. | verified 2026-11-09: old-python-tests",
+      "retired": "old-python-tests"
     },
     {
       "id": "OPS-379",
@@ -5450,8 +5489,10 @@
       "source": "ops-part-d.md:Page template.",
       "acceptance": "Page template.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "retired",
+      "evidence": "Retired: Python contact.html page-template splice for custom forms (title/og/nbwc-custom-form stamp). Rebuild /f/<slug> is a scrapbook route (CustomForm + AppNav/AppFooter); no published HTML template rewrite. OPS-433/SITE scrapbook. AUDIT AUDIT members-links product-gaps. | verified 2026-11-09: native-forms",
+      "retired": "native-forms"
     },
     {
       "id": "OPS-418",
