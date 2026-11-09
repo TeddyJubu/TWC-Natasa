@@ -5,7 +5,7 @@
 //
 // What it never does: approve anyone through sign-up (members are written to `legacy_members`, claimed by a
 // verified email in the 0004 triggers), copy review tokens (members-links mints fresh hashed ones), or import
-// custom-form rows (custom-forms).
+// custom-form rows (scripts/import-forms.ts, src/features/forms/import.server.ts).
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import type { DB } from "./db";

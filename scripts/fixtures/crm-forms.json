@@ -1,0 +1,154 @@
+{
+ "custom_forms": [
+  {
+   "id": "qademo01",
+   "name": "Salon feedback (demo)",
+   "slug": "qa-results-demo",
+   "intro": "Made-up answers for the import checks.\n\nSecond paragraph.",
+   "thanks": "Thank you — we've got it.",
+   "open": 1,
+   "closed_message": "",
+   "created_by": "crm-demo@example.com",
+   "created_at": "2026-10-01T09:00:00.000Z",
+   "updated_by": null,
+   "updated_at": null,
+   "card_title": "",
+   "card_text": "",
+   "listed": 0,
+   "look": "",
+   "thanks_rules": "",
+   "one_per_email": 0
+  },
+  {
+   "id": "swapdemo",
+   "name": "Winter swap (demo)",
+   "slug": "winter-swap",
+   "intro": "",
+   "thanks": "",
+   "open": 0,
+   "closed_message": "The swap is full — see you in spring.",
+   "created_by": "crm-demo@example.com",
+   "created_at": "2026-10-01T09:00:00.000Z",
+   "updated_by": null,
+   "updated_at": null,
+   "card_title": "",
+   "card_text": "",
+   "listed": 0,
+   "look": "",
+   "thanks_rules": "",
+   "one_per_email": 1
+  },
+  {
+   "id": "filesdmo",
+   "name": "Stall photos (demo)",
+   "slug": "stall-photos",
+   "intro": "",
+   "thanks": "",
+   "open": 1,
+   "closed_message": "",
+   "created_by": "crm-demo@example.com",
+   "created_at": "2026-10-01T09:00:00.000Z",
+   "updated_by": null,
+   "updated_at": null,
+   "card_title": "",
+   "card_text": "",
+   "listed": 0,
+   "look": "",
+   "thanks_rules": "",
+   "one_per_email": 0
+  },
+  {
+   "id": "draftdmo",
+   "name": "Half made (demo)",
+   "slug": "half-made",
+   "intro": "",
+   "thanks": "",
+   "open": 1,
+   "closed_message": "",
+   "created_by": "crm-demo@example.com",
+   "created_at": "2026-10-01T09:00:00.000Z",
+   "updated_by": null,
+   "updated_at": null,
+   "card_title": "",
+   "card_text": "",
+   "listed": 0,
+   "look": "",
+   "thanks_rules": "",
+   "one_per_email": 0
+  }
+ ],
+ "custom_form_slugs": [
+  {
+   "slug": "salon-feedback",
+   "form_id": "qademo01",
+   "added_by": "crm-demo@example.com",
+   "added_at": "2026-10-01T09:00:00.000Z"
+  },
+  {
+   "slug": "qa-results-demo",
+   "form_id": "qademo01",
+   "added_by": "crm-demo@example.com",
+   "added_at": "2026-10-02T09:00:00.000Z"
+  },
+  {
+   "slug": "winter-swap",
+   "form_id": "swapdemo",
+   "added_by": "crm-demo@example.com",
+   "added_at": "2026-10-01T09:00:00.000Z"
+  },
+  {
+   "slug": "stall-photos",
+   "form_id": "filesdmo",
+   "added_by": "crm-demo@example.com",
+   "added_at": "2026-10-01T09:00:00.000Z"
+  },
+  {
+   "slug": "half-made",
+   "form_id": "draftdmo",
+   "added_by": "crm-demo@example.com",
+   "added_at": "2026-10-01T09:00:00.000Z"
+  }
+ ],
+ "form_versions": [
+  {
+   "kind": "custom:qademo01",
+   "version": 1,
+   "definition": "{\"submitLabel\": \"Send\", \"fields\": [{\"key\": \"name\", \"type\": \"short\", \"label\": \"Your name\", \"required\": true}, {\"key\": \"email\", \"type\": \"email\", \"label\": \"Email\", \"required\": true}, {\"key\": \"coming\", \"type\": \"radio\", \"label\": \"Are you coming?\", \"choices\": [{\"value\": \"yes\", \"label\": \"Yes, see you there\"}, {\"value\": \"no\", \"label\": \"Not this time\"}]}, {\"key\": \"heard\", \"type\": \"short\", \"label\": \"How did you hear about it?\"}]}",
+   "published_by": "crm-demo@example.com",
+   "published_at": "2026-10-01T09:00:00.000Z",
+   "summary": "made up"
+  },
+  {
+   "kind": "custom:qademo01",
+   "version": 2,
+   "definition": "{\"submitLabel\": \"Send\", \"fields\": [{\"key\": \"name\", \"type\": \"short\", \"label\": \"Your name\", \"required\": true}, {\"key\": \"email\", \"type\": \"email\", \"label\": \"Email\", \"required\": true}, {\"key\": \"coming\", \"type\": \"radio\", \"label\": \"Are you coming?\", \"choices\": [{\"value\": \"yes\", \"label\": \"Yes, see you there\"}, {\"value\": \"no\", \"label\": \"Not this time\"}]}, {\"key\": \"diet\", \"type\": \"checkboxes\", \"label\": \"Anything we should know?\", \"choices\": [{\"value\": \"vegan\", \"label\": \"Vegan\"}, {\"value\": \"gf\", \"label\": \"Gluten-free\"}, {\"value\": \"nuts\", \"label\": \"Nut allergy\"}]}, {\"key\": \"plus_one\", \"type\": \"yesno\", \"label\": \"Bringing a guest?\"}, {\"key\": \"recommend\", \"type\": \"scale\", \"label\": \"How likely are you to recommend The Women's Collective to a friend?\", \"min\": 0, \"max\": 10, \"minLabel\": \"Not likely\", \"maxLabel\": \"Very likely\"}, {\"key\": \"guest_name\", \"type\": \"short\", \"label\": \"Your guest's name\", \"required\": true, \"showIf\": {\"key\": \"plus_one\", \"is\": \"yes\"}}, {\"key\": \"feedback\", \"type\": \"paragraph\", \"label\": \"Anything else?\"}]}",
+   "published_by": "crm-demo@example.com",
+   "published_at": "2026-10-02T09:00:00.000Z",
+   "summary": "made up"
+  },
+  {
+   "kind": "custom:swapdemo",
+   "version": 1,
+   "definition": "{\"submitLabel\": \"Send\", \"fields\": [{\"key\": \"intro\", \"type\": \"statement\", \"label\": \"Bring one thing, take one thing.\"}, {\"key\": \"name\", \"type\": \"short\", \"label\": \"Your name\", \"required\": true}, {\"key\": \"email\", \"type\": \"email\", \"label\": \"Email\", \"required\": true}, {\"key\": \"arrive\", \"type\": \"time\", \"label\": \"When will you arrive?\"}, {\"key\": \"stars\", \"type\": \"rating\", \"label\": \"How was the last swap?\"}, {\"key\": \"src\", \"type\": \"hidden\", \"label\": \"Source\", \"value\": \"flyer\"}, {\"key\": \"consent\", \"type\": \"consent\", \"label\": \"I'm happy for you to hold these details. See the [privacy policy](privacy.html).\", \"required\": true}]}",
+   "published_by": "crm-demo@example.com",
+   "published_at": "2026-10-01T09:00:00.000Z",
+   "summary": "made up"
+  },
+  {
+   "kind": "custom:filesdmo",
+   "version": 1,
+   "definition": "{\"submitLabel\": \"Send\", \"fields\": [{\"key\": \"name\", \"type\": \"short\", \"label\": \"Your name\", \"required\": true}, {\"key\": \"email\", \"type\": \"email\", \"label\": \"Email\", \"required\": true}, {\"key\": \"photo\", \"type\": \"file\", \"label\": \"A photo of your stall\"}, {\"key\": \"rank\", \"type\": \"ranking\", \"label\": \"Rank the days\", \"choices\": [{\"value\": \"sat\", \"label\": \"Saturday\"}, {\"value\": \"sun\", \"label\": \"Sunday\"}]}]}",
+   "published_by": "crm-demo@example.com",
+   "published_at": "2026-10-01T09:00:00.000Z",
+   "summary": "made up"
+  },
+  {
+   "kind": "contact",
+   "version": 1,
+   "definition": "{\"submitLabel\": \"Send\", \"fields\": [{\"key\": \"name\", \"type\": \"short\", \"label\": \"Your name\", \"required\": true}]}",
+   "published_by": "website",
+   "published_at": "2026-09-01T09:00:00.000Z",
+   "summary": "site form, not custom"
+  }
+ ]
+}
