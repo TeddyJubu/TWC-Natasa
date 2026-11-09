@@ -139,15 +139,16 @@ describe("/partnerships", () => {
   });
 
   it("keeps the form and shows the server's message when the inquiry couldn't be sent", async () => {
-    sendPartnership.mockRejectedValue(new Error("Partnership inquiries aren’t open online just yet."));
+    sendPartnership.mockRejectedValue(new Error("Too many messages from here. Please try again later."));
     show(Partnerships);
     fill();
     fireEvent.click(screen.getByLabelText(/I’m happy for/));
     submit();
     const alert = await screen.findByRole("alert");
     expect(alert.textContent).toContain("Your inquiry didn’t send.");
-    expect(alert.textContent).toContain("aren’t open online just yet");
+    expect(alert.textContent).toContain("Too many messages from here");
     await waitFor(() => expect((screen.getByRole("button", { name: /send inquiry/i }) as HTMLButtonElement).disabled).toBe(false));
     expect((screen.getByLabelText(/what did you have in mind/i) as HTMLTextAreaElement).value).toBe("A glazing workshop.");
   });
 });
+

@@ -2,7 +2,7 @@ import { createCsrfMiddleware, createStart } from "@tanstack/react-start";
 import { securityHeadersMiddleware } from "@/app/security-headers";
 
 // Defining a start instance replaces Start's default request middleware, so its CSRF check for server
-// functions is restated here, extended to our own POST routes (cookie-authenticated uploads, applications and contact messages).
+// functions is restated here, extended to our own POST routes (cookie-authenticated uploads, applications, contact messages and partnership inquiries).
 // Better Auth's /api/auth/* checks origins itself.
 const API_ROUTES = /^\/api\/(images|neighborhood-logos|applications|contact|partnerships)\/?$/;
 export const csrfMiddleware = createCsrfMiddleware({

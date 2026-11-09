@@ -206,3 +206,23 @@ export function deleteEvent({ db, actor }: Ctx, input: unknown): void {
   if (!isObject(input)) throw bad("gathering");
   db.prepare("delete from events where id = ?").run(str(input.id, "gathering", 64));
 }
+
+// ---------- Inbox (migration 0002): /contact messages and /partnerships inquiries ----------
+
+export type InboxMessage = {
+  id: string; kind: "contact" | "partnership"; name: string; email: string; topic: string | null; business: string | null;
+  collaboration_type: string | null; message: string; status: "new" | "archived"; created_at: string;
+};
+
+/** Messages still waiting (status new), newest first. Archived ones stay in the table, out of the list. */
+export function adminInbox({ db, actor }: Ctx): InboxMessage[] {
+  requireAdmin(db, actor);
+  return db.prepare("select * from inbox_messages where status = 'new' order by created_at desc, rowid desc").all() as InboxMessage[];
+}
+
+// ponytail: archive only; add an "Archived" view + restore when admins ask for one.
+export function archiveMessage({ db, actor }: Ctx, input: unknown): void {
+  requireAdmin(db, actor);
+  if (!isObject(input)) throw bad("message");
+  db.prepare("update inbox_messages set status = 'archived' where id = ?").run(str(input.id, "message", 64));
+}

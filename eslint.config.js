@@ -7,7 +7,7 @@ import tseslint from "typescript-eslint";
 export default tseslint.config(
   {
     // Generated files are never hand-edited, so they aren't linted: TanStack Router's routeTree.gen.ts.
-    ignores: ["dist", ".output", ".nitro", ".tanstack", "data", "src/routeTree.gen.ts"],
+    ignores: ["dist", ".output", ".nitro", ".tanstack", "data", ".migration", "src/routeTree.gen.ts"],
   },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],

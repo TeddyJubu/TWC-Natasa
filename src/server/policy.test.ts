@@ -13,8 +13,9 @@ import { directory, intros, memberPage, ownProfile, publicProfiles, removeLogo, 
 import { bookHeadshot, listEvents, publicEvents, setRsvp } from "@/features/events/events.server";
 import { submitApplication } from "@/features/applications/applications.server";
 import { listNeighborhoods } from "@/features/neighborhoods/neighborhoods.server";
+import { receiveMessage } from "@/features/contact/contact.server";
 import {
-  adminApplications, adminEvents, adminMembers, createEvent, createNeighborhood, deleteEvent, reviewApplication, setBookingStatus,
+  adminApplications, adminEvents, adminInbox, adminMembers, archiveMessage, createEvent, createNeighborhood, deleteEvent, reviewApplication, setBookingStatus,
   setMemberStatus, updateEvent,
 } from "@/features/admin/admin.server";
 import { TINY } from "@/test/images";
@@ -515,6 +516,30 @@ describe("access rules (ported from the RLS checks)", () => {
     expect(get<{ n: number }>("select count(*) as n from events where id = ?", picnic).n).toBe(0);
     expect(get<{ n: number }>("select count(*) as n from event_rsvps where event_id = ?", picnic).n).toBe(0);
   });
+  // ---------- Inbox (0002): anyone writes through the two forms; only admins read or archive ----------
+  const inboxed = (email: string) => get<{ status: string } | undefined>("select status from inbox_messages where email = ?", email);
+  it("anon can send a contact message and a partnership inquiry", async () => {
+    await receiveMessage(anon(), "contact", { name: "Vi", email: "vi@x.test", topic: "Press", message: "Hi", consent: true });
+    await receiveMessage(anon(), "partnership", { name: "Jo", email: "jo@x.test", collaboration_type: "host", message: "Hi", consent: true });
+    expect([inboxed("vi@x.test")?.status, inboxed("jo@x.test")?.status]).toEqual(["new", "new"]);
+  });
+  it("a sender cannot set a message's status or kind", async () => {
+    await receiveMessage(anon(), "contact", { name: "Sly", email: "sly@x.test", topic: "Press", message: "Hi", consent: true, status: "archived", kind: "partnership" });
+    expect(get<{ status: string; kind: string }>("select status, kind from inbox_messages where email = 'sly@x.test'")).toEqual({ status: "new", kind: "contact" });
+  });
+  it.each([["anon", null], ["pending member", C], ["approved member", B]])("%s cannot read or archive the inbox", (_who, who) => {
+    const msg = get<{ id: string }>("select id from inbox_messages where email = 'vi@x.test'").id;
+    throwsAccess(() => adminInbox(as(who)));
+    throwsAccess(() => archiveMessage(as(who), { id: msg }));
+    expect(inboxed("vi@x.test")?.status).toBe("new");
+  });
+  it("admin reads waiting messages newest first, and archives one out of the list", () => {
+    expect(adminInbox(as(A)).map((m) => m.email)).toEqual(["sly@x.test", "jo@x.test", "vi@x.test"]);
+    archiveMessage(as(A), { id: adminInbox(as(A)).find((m) => m.email === "vi@x.test")!.id });
+    expect(inboxed("vi@x.test")?.status).toBe("archived");
+    expect(adminInbox(as(A)).map((m) => m.email)).toEqual(["sly@x.test", "jo@x.test"]);
+  });
+  it("admin archive refuses a malformed id", () => expect(() => archiveMessage(as(A), { id: 42 })).toThrow(/Invalid message/));
 });
 
 /** Every server function the browser can call, by export name. */

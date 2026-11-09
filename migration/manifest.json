@@ -740,16 +740,18 @@
       "source": "crm.md:Contact messages",
       "acceptance": "Contact messages: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/contact"
+      "status": "built",
+      "target": "/contact",
+      "evidence": "Contact messages stored (kind contact: name, email, topic, message) and listed in the /admin Inbox card with archive; admin-only via requireAdmin (adminInbox/archiveMessage in src/features/admin/admin.server.ts; src/server/policy.test.ts). Alerts = existing admin email. Form on/off switch and submitter confirmations not in this slice (CRM-099/notifications)."
     },
     {
       "id": "CRM-092",
       "source": "crm.md:Partnership enquiries",
       "acceptance": "Partnership enquiries: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "Partnership inquiries stored (kind partnership: name, email, business, collaboration_type, message) via POST /api/partnerships and listed in the /admin Inbox card; requireAdmin + policy tests. Public /partnerships form page is public-pages' (SITE-149)."
     },
     {
       "id": "CRM-093",
@@ -6256,8 +6258,9 @@
       "source": "site.md:Partnership form",
       "acceptance": "Partnership form: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/partnerships"
+      "status": "built",
+      "target": "/partnerships",
+      "evidence": "src/features/contact/contact.test.ts + admin Inbox"
     },
     {
       "id": "SITE-057",
@@ -6970,8 +6973,9 @@
       "source": "site.md:/contact, PARTIAL",
       "acceptance": "/contact, PARTIAL: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/contact"
+      "status": "built",
+      "target": "/contact",
+      "evidence": "/contact now has consent (required, server-checked), a honeypot and the spotlight/accessibility/conduct topics; partnership fields live on /api/partnerships (SITE-171). Turnstile skipped per AUDIT-TASKS (CSP same-origin). src/features/contact/{schema.ts,ContactForm.tsx}; src/app/contact-route.test.tsx"
     },
     {
       "id": "SITE-146",
@@ -7003,8 +7007,9 @@
       "source": "site.md:/partnerships, MISSING",
       "acceptance": "/partnerships, MISSING: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/partnerships"
+      "status": "built",
+      "target": "/partnerships",
+      "evidence": "src/features/contact/contact.test.ts + admin Inbox"
     },
     {
       "id": "SITE-150",
@@ -7165,24 +7170,27 @@
       "source": "site.md:Contact messages are not stored in the new app",
       "acceptance": "Contact messages are not stored in the new app: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/contact"
+      "status": "built",
+      "target": "/contact",
+      "evidence": "Messages stored in inbox_messages (db/migrations/0002_inbox.sql) before admins are emailed; a failed email still succeeds (the inbox has it). receiveMessage in src/features/contact/contact.server.ts; /admin Inbox card (src/features/admin/panels.tsx InboxPanel). Tests: src/features/contact/contact.test.ts, src/server/policy.test.ts (Inbox)"
     },
     {
       "id": "SITE-170",
       "source": "site.md:Spam defences regress on `/contact`",
       "acceptance": "Spam defences regress on `/contact`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/contact"
+      "status": "built",
+      "target": "/contact",
+      "evidence": "Honeypot (fake 204, nothing stored or sent), required consent, 5-per-IP-per-10-min limit per form, 16 KB cap; /api/partnerships added to API_ROUTES (src/start.ts) with a CSRF test in src/app/security-headers.test.ts. Turnstile skipped (AUDIT-TASKS). Tests: src/features/contact/contact.test.ts"
     },
     {
       "id": "SITE-171",
       "source": "site.md:Partnership inquiry fields are a superset of contact",
       "acceptance": "Partnership inquiry fields are a superset of contact: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/contact"
+      "status": "built",
+      "target": "/contact",
+      "evidence": "One inbox table with kind contact|partnership; partnership adds business (optional) and collaboration_type (host|teach|supply|support|other, DB CHECK). POST /api/partnerships (src/routes/api/partnerships.ts) takes the brief's JSON contract; checkPartnership in src/features/contact/schema.ts. Tests: src/features/contact/contact.test.ts"
     },
     {
       "id": "SITE-172",

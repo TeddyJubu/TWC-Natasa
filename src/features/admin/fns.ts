@@ -86,3 +86,15 @@ export const deleteEventFn = createServerFn({ method: "POST" })
     const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./admin.server")]);
     return serve((c) => m.deleteEvent(c, data));
   });
+
+export const adminInboxFn = createServerFn().handler(async () => {
+  const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./admin.server")]);
+  return serve(m.adminInbox);
+});
+
+export const archiveMessageFn = createServerFn({ method: "POST" })
+  .validator(pass<{ id: string }>)
+  .handler(async ({ data }) => {
+    const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./admin.server")]);
+    return serve((c) => m.archiveMessage(c, data));
+  });
