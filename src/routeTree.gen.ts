@@ -24,6 +24,7 @@ import { Route as MembersRouteImport } from './routes/members'
 import { Route as NeighborhoodsRouteImport } from './routes/neighborhoods'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as TypographyRouteImport } from './routes/typography'
 import { Route as VerifiedRouteImport } from './routes/verified'
@@ -113,6 +114,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -198,6 +204,7 @@ export interface FileRoutesByFullPath {
   '/neighborhoods': typeof NeighborhoodsRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/typography': typeof TypographyRoute
   '/verified': typeof VerifiedRoute
@@ -227,6 +234,7 @@ export interface FileRoutesByTo {
   '/neighborhoods': typeof NeighborhoodsRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/typography': typeof TypographyRoute
   '/verified': typeof VerifiedRoute
@@ -258,6 +266,7 @@ export interface FileRoutesById {
   '/neighborhoods': typeof NeighborhoodsRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/typography': typeof TypographyRoute
   '/verified': typeof VerifiedRoute
@@ -290,6 +299,7 @@ export interface FileRouteTypes {
     | '/neighborhoods'
     | '/privacy'
     | '/reset-password'
+    | '/sitemap.xml'
     | '/terms'
     | '/typography'
     | '/verified'
@@ -319,6 +329,7 @@ export interface FileRouteTypes {
     | '/neighborhoods'
     | '/privacy'
     | '/reset-password'
+    | '/sitemap.xml'
     | '/terms'
     | '/typography'
     | '/verified'
@@ -349,6 +360,7 @@ export interface FileRouteTypes {
     | '/neighborhoods'
     | '/privacy'
     | '/reset-password'
+    | '/sitemap.xml'
     | '/terms'
     | '/typography'
     | '/verified'
@@ -381,6 +393,7 @@ export interface RootRouteChildren {
   NeighborhoodsRoute: typeof NeighborhoodsRoute
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   TypographyRoute: typeof TypographyRoute
   VerifiedRoute: typeof VerifiedRoute
@@ -499,6 +512,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terms': {
@@ -645,6 +665,7 @@ const rootRouteChildren: RootRouteChildren = {
   NeighborhoodsRoute: NeighborhoodsRoute,
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   TypographyRoute: TypographyRoute,
   VerifiedRoute: VerifiedRoute,
