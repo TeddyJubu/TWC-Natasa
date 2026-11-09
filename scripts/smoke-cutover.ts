@@ -44,11 +44,14 @@ export function checks(md: string, formSlug?: string): Check[] {
     { host: "members.thewomenscollective.club", path: "/join", ...to(`${NEW}/join`) },
     { host: "members.thewomenscollective.club", path: `/review?t=${BAD_TOKEN}`, ...to(`${NEW}/review?t=${BAD_TOKEN}`) },
     { host: "members.nbwc.site", path: `/review?t=${BAD_TOKEN}`, ...to(`${NEW}/review?t=${BAD_TOKEN}`) },
+    { host: "members.thewomenscollective.club", path: `/spotlight?t=${BAD_TOKEN}`, ...to(`${NEW}/spotlight?t=${BAD_TOKEN}`) },
+    { host: "members.nbwc.site", path: `/spotlight?t=${BAD_TOKEN}`, ...to(`${NEW}/spotlight?t=${BAD_TOKEN}`) },
     { host: "join.nbwc.site", path: "/", ...to(`${NEW}/join`) },
     { host: "forms.nbwc.site", path: "/", ...to(`${NEW}/join`) },
     { host: "nbwc.site", path: "/apply", ...to(`${NEW}/join`) },
     // The app's own answer for a bad link: the one neutral 404 (members-links).
     { host: "new.thewomenscollective.club", path: `/review?t=${BAD_TOKEN}`, status: 404 },
+    { host: "new.thewomenscollective.club", path: `/spotlight?t=${BAD_TOKEN}`, status: 404 },
   );
   // /f/* stays on the old stack until forms-import lands (redirects.md "Not redirected yet").
   if (formSlug) list.push({ host: APEX, path: `/f/${formSlug}`, status: 200 });
