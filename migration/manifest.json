@@ -8,10 +8,10 @@
       "admin-inbox": 220,
       "vps-cutover": 179,
       "notifications": 176,
+      "data-import": 24,
       "custom-forms": 114,
-      "public-pages": 113,
       "members-links": 76,
-      "data-import": 24
+      "public-pages": 113
     }
   },
   "items": [
@@ -595,8 +595,10 @@
       "source": "crm.md:Item summary list columns",
       "acceptance": "Item summary list columns: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin#members"
+      "status": "verified",
+      "target": "retired",
+      "retired": "classic-item-columns",
+      "evidence": "Retired: Classic unified item-summary columns (kind/unread/spam/area tags/custom-form name). Rebuild uses separate /admin cards (Applications, Inbox, All members, Form responses) with card-specific columns; unified items APIs already retired (CRM-027/049/056/170). AUDIT admin-inbox remainders. | verified 2026-11-09: classic-item-columns"
     },
     {
       "id": "CRM-062",
@@ -966,7 +968,8 @@
       "acceptance": "Schedule + response limit: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "/admin"
+      "target": "/admin",
+      "evidence": "Product gap (form schedule + response limit): custom-forms-owned; leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "CRM-102",
@@ -1219,7 +1222,8 @@
       "acceptance": "Responses list: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "/admin"
+      "target": "/admin",
+      "evidence": "Product gap (Classic paginated/filtered responses API): Form responses card lists answers (CRM-094/130); full Classic filters/offset/delete-count stay custom-forms-owned. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "CRM-129",
@@ -1897,8 +1901,10 @@
       "source": "backoffice.md:`GET /robots.txt`: `User-agent: *\\nDisallow: /` as text/plain, every host (`intake.py:2537-2538`).",
       "acceptance": "`GET /robots.txt`: `User-agent: *\\nDisallow: /` as text/plain, every host (`intake.py:2537-2538`).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "public-robots",
+      "evidence": "Retired: Intake robots Disallow:/ on every host. Rebuild public/robots.txt allows indexed pages; Disallow showcase + /review + /spotlight (SITE-156). AUDIT admin-inbox remainders. | verified 2026-11-09: public-robots"
     },
     {
       "id": "OPS-015",
@@ -1921,8 +1927,9 @@
       "source": "backoffice.md:`POST /join`: the application submit, in this order (`intake.py:2602-2665, 2691-2723`):",
       "acceptance": "`POST /join`: the application submit, in this order (`intake.py:2602-2665, 2691-2723`):: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "/join",
+      "evidence": "POST /api/applications (API_ROUTES): checkSize → rateLimit(5/10min) → submitApplication → optInApplicant → alertApplication → confirmApplication (applications.server.ts). Scrapbook /join ApplicationForm → parseApplication. tests: application-alert.test.ts, schema.test.ts, join-route.test.tsx. | verified 2026-11-09"
     },
     {
       "id": "OPS-018",
@@ -1975,7 +1982,8 @@
       "acceptance": "Share-source tag `?src=`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "/join"
+      "target": "/join",
+      "evidence": "Product gap (join ?src= share-source tag): scrapbook /join does not keep tracked source. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-024",
@@ -1998,8 +2006,10 @@
       "source": "backoffice.md:`GET /admin/login` redirects",
       "acceptance": "`GET /admin/login` redirects: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "verified",
+      "target": "retired",
+      "retired": "better-auth",
+      "evidence": "Retired: Intake GET /admin/login|/logout cookie redirects. Rebuild: Better Auth /auth; /admin behind _authenticated/_admin. CRM-018/022 verified. AUDIT admin-inbox remainders. | verified 2026-11-09: better-auth"
     },
     {
       "id": "OPS-027",
@@ -2033,8 +2043,10 @@
       "source": "backoffice.md:`GET /assets/form-webmcp",
       "acceptance": "`GET /assets/form-webmcp: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-webmcp",
+      "evidence": "Retired: GET /assets/form-webmcp.js. Rebuild has no WebMCP (CRM-156–160 / OPS-173). AUDIT admin-inbox remainders. | verified 2026-11-09: no-webmcp"
     },
     {
       "id": "OPS-031",
@@ -2049,8 +2061,10 @@
       "source": "backoffice.md:Dashboard layout",
       "acceptance": "Dashboard layout: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "verified",
+      "target": "retired",
+      "retired": "intake-admin-dashboard",
+      "evidence": "Retired: Intake render_admin dashboard HTML. Rebuild /admin is AppShell cards (CRM-162/168). AUDIT admin-inbox remainders. | verified 2026-11-09: intake-admin-dashboard"
     },
     {
       "id": "OPS-033",
@@ -2121,8 +2135,10 @@
       "source": "backoffice.md:Session cookie",
       "acceptance": "Session cookie: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "verified",
+      "target": "retired",
+      "retired": "better-auth",
+      "evidence": "Retired: twc_admin HMAC cookie. Sessions are Better Auth server-side (CRM-018/180). AUDIT admin-inbox remainders. | verified 2026-11-09: better-auth"
     },
     {
       "id": "OPS-042",
@@ -2145,8 +2161,10 @@
       "source": "backoffice.md:Locking and atomic-write contract",
       "acceptance": "Locking and atomic-write contract: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "sqlite-tx",
+      "evidence": "Retired: JSONL flock/atomic-write contract. Rebuild writes SQLite via tx()/prepare (CRM-176); no shared intake files. AUDIT admin-inbox remainders. | verified 2026-11-09: sqlite-tx"
     },
     {
       "id": "OPS-045",
@@ -2169,8 +2187,9 @@
       "source": "backoffice.md:Application `answers` keys",
       "acceptance": "Application `answers` keys: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "/join",
+      "evidence": "Application answers omit blank optionals via compact() in parseApplication (schema.ts); required fields throw. schema.test.ts. | verified 2026-11-09"
     },
     {
       "id": "OPS-048",
@@ -2211,24 +2230,28 @@
       "source": "backoffice.md:Other files",
       "acceptance": "Other files: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "sqlite-source",
+      "evidence": "Retired: Intake ancillary files (staging links, forms_state mirrors, etc.). Source of truth is SQLite tables + DATA_DIR uploads. AUDIT admin-inbox remainders. | verified 2026-11-09: sqlite-source"
     },
     {
       "id": "OPS-053",
       "source": "backoffice.md:Admin \"Issue link\"",
       "acceptance": "Admin \"Issue link\": behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "verified",
+      "target": "/admin#members",
+      "evidence": "Admin mints personal links on /admin (Make review link / Invite to Spotlight); URL shown once; SHA-256 only stored (member_links 0003). OPS-158/159 verified. members-links.server.ts. | verified 2026-11-09"
     },
     {
       "id": "OPS-054",
       "source": "backoffice.md:Link validation and consumption",
       "acceptance": "Link validation and consumption: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "/review",
+      "evidence": "Link validation/consumption: openReview/openSpotlight; bad/used/expired/revoked → one 404; answers stored in same tx that marks used. OPS-019/020/027 verified. | verified 2026-11-09"
     },
     {
       "id": "OPS-055",
@@ -2251,8 +2274,9 @@
       "source": "backoffice.md:CRM-issued personal links",
       "acceptance": "CRM-issued personal links: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "/admin#members",
+      "evidence": "CRM-issued personal links rebuilt as member_links (purpose review|spotlight); mint/revoke/state under requireAdmin. OPS-051/158/159. | verified 2026-11-09"
     },
     {
       "id": "OPS-058",
@@ -2294,24 +2318,28 @@
       "source": "backoffice.md:Size limits",
       "acceptance": "Size limits: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "parity",
+      "evidence": "Body size checked from Content-Length before read: applications 64 KiB, contact/partnerships/forms via checkSize (request.ts). 411 unknown / 413 oversize. forms.test.ts + contact.test.ts. | verified 2026-11-09"
     },
     {
       "id": "OPS-063",
       "source": "backoffice.md:Multipart and logo rules",
       "acceptance": "Multipart and logo rules: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-join-logo-upload",
+      "evidence": "Retired: Intake multipart business_logo rules. Scrapbook /join has no logo upload (directory logo is account later); applications POST is JSON only. AUDIT admin-inbox remainders. | verified 2026-11-09: no-join-logo-upload"
     },
     {
       "id": "OPS-064",
       "source": "backoffice.md:Application validation",
       "acceptance": "Application validation: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "/join",
+      "evidence": "Application validation is parseApplication (schema.ts) on the client and again before store; required lists, conditional WhatsApp/partner/directory/newsletter, guidelines. schema.test.ts. | verified 2026-11-09"
     },
     {
       "id": "OPS-065",
@@ -2360,16 +2388,20 @@
       "source": "backoffice.md:`POST /internal/applications/approve`",
       "acceptance": "`POST /internal/applications/approve`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "admin-server-fns",
+      "evidence": "Retired: intake POST /internal/applications/approve {record_id,actor}. Rebuild: reviewApplication / setMemberStatus (requireAdmin, UUID ids) on /admin. CRM-066/068 verified. AUDIT admin-inbox remainders. | verified 2026-11-09: admin-server-fns"
     },
     {
       "id": "OPS-071",
       "source": "backoffice.md:`POST /internal/applications/decline`",
       "acceptance": "`POST /internal/applications/decline`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "admin-server-fns",
+      "evidence": "Retired: intake POST /internal/applications/decline. Rebuild: reviewApplication status declined + undo-decline. CRM-069/174 verified. AUDIT admin-inbox remainders. | verified 2026-11-09: admin-server-fns"
     },
     {
       "id": "OPS-072",
@@ -2423,7 +2455,8 @@
       "acceptance": "Field-winning rules: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap / import field-winning rules: data-import-owned if still needed. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-078",
@@ -2570,16 +2603,19 @@
       "source": "backoffice.md:Fake-success catch-all",
       "acceptance": "Fake-success catch-all: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "honest-errors",
+      "evidence": "Retired: Intake fake-success catch-all on any ValueError. Rebuild: only honeypot fakes success; validation/size/rate-limit return real errors. AUDIT admin-inbox remainders. | verified 2026-11-09: honest-errors"
     },
     {
       "id": "OPS-096",
       "source": "backoffice.md:`Content-Length` is trusted",
       "acceptance": "`Content-Length` is trusted: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "parity",
+      "evidence": "Content-Length: checkSize requires numeric length (411) and max (413); non-numeric no longer 500. request.ts; forms.test.ts unsized case. | verified 2026-11-09"
     },
     {
       "id": "OPS-097",
@@ -2651,8 +2687,9 @@
       "source": "backoffice.md:At least one box is required in each of `connection`, `industry`, `goal` and `support`",
       "acceptance": "At least one box is required in each of `connection`, `industry`, `goal` and `support`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "/join",
+      "evidence": "At least one choice required for connection, industry, community-goals, member-support (requiredList in parseApplication). schema.test.ts. | verified 2026-11-09"
     },
     {
       "id": "OPS-106",
@@ -2676,7 +2713,8 @@
       "acceptance": "`website_social`, `instagram_url`, `linkedin_url` and `other_profile_url` must be absolute `http`/`https` URLs with a host: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (absolute http(s) URL checks on website/instagram/linkedin/other): join stores trimmed text; social type=url only on other profile. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-109",
@@ -2691,8 +2729,9 @@
       "source": "backoffice.md:Names are stored as typed",
       "acceptance": "Names are stored as typed: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "/join",
+      "evidence": "Names stored as typed (stripped only) via Reader.text/required — no case fold. schema.ts. | verified 2026-11-09"
     },
     {
       "id": "OPS-111",
@@ -2700,15 +2739,17 @@
       "acceptance": "`connection_other_text` is required when \"Other connection\" is ticked, and is stored as `connection_other`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (connection Other → required connection_other text): industry Other is required; connection Other is not. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-112",
       "source": "backoffice.md:`base_area_other` is required when `base_area == \"Other\"`",
       "acceptance": "`base_area_other` is required when `base_area == \"Other\"`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "/join",
+      "evidence": "When based-in is Other / Another Queens neighborhood, other-location is required (TYPED_LOCATIONS). schema.test.ts. | verified 2026-11-09"
     },
     {
       "id": "OPS-113",
@@ -2724,8 +2765,9 @@
       "source": "backoffice.md:When `whatsapp_interest = yes`, both `whatsapp_phone` and `whatsapp_agreement = yes` are required",
       "acceptance": "When `whatsapp_interest = yes`, both `whatsapp_phone` and `whatsapp_agreement = yes` are required: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "/join",
+      "evidence": "whatsapp=yes requires number + visibility + conduct consents; else {join:false}. schema.ts / schema.test.ts. | verified 2026-11-09"
     },
     {
       "id": "OPS-115",
@@ -2749,8 +2791,9 @@
       "source": "backoffice.md:`sponsor_details` is required when `sponsor_interest` is `yes` or `maybe`",
       "acceptance": "`sponsor_details` is required when `sponsor_interest` is `yes` or `maybe`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "/join",
+      "evidence": "partner yes|maybe requires partner-interest; else {choice:no}. schema.ts. | verified 2026-11-09"
     },
     {
       "id": "OPS-118",
@@ -2767,7 +2810,8 @@
       "acceptance": "`referrer_name` is required when `heard_about = \"A current member\"`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "/about"
+      "target": "/about",
+      "evidence": "Product gap (referrer required when heard=A current member): referrer is optional. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-120",
@@ -2775,7 +2819,8 @@
       "acceptance": "`signature_date` must be an ISO date and not later than today in UTC: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (signature date ISO + not future UTC): date is required string only. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-121",
@@ -2783,7 +2828,8 @@
       "acceptance": "Enumerated value checks: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (strict enumerated value checks for every legacy picklist): scrapbook options differ; server trusts parseApplication shape. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-122",
@@ -2791,7 +2837,8 @@
       "acceptance": "The connection picklist has these 6 options in order, with codes `connection_live … connection_other`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (exact legacy connection codes/labels): scrapbook connectionOptions differ. Leave todo (with OPS-109/116/125 picklist notes). AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-123",
@@ -2799,7 +2846,8 @@
       "acceptance": "The \"Where are you based?\" picklist has 6 options in order: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (exact legacy Greenpoint/Williamsburg/… based picklist): scrapbook uses neighborhood list + Other. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-124",
@@ -2807,7 +2855,8 @@
       "acceptance": "The industry picklist has 15 options; goal 11; support 9; contact 5; event 7: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "/contact"
+      "target": "/contact",
+      "evidence": "Product gap (exact legacy industry/goal/support/contact/event counts): scrapbook lists differ. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-125",
@@ -2823,7 +2872,8 @@
       "acceptance": "The \"How did you hear\" dropdown has 9 options plus a blank \"Choose one\" placeholder: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (exact legacy heard-about 9 options): scrapbook heardOptions differ (7 + blank). Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-127",
@@ -2839,7 +2889,8 @@
       "acceptance": "The privacy disclaimer notice links \"[privacy notice]: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "/privacy"
+      "target": "/privacy",
+      "evidence": "Product gap (privacy disclaimer notice link on /join): scrapbook application has no privacy-notice notice link yet. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-129",
@@ -2854,16 +2905,18 @@
       "source": "backoffice.md:Blank optional permissions are stored as absent",
       "acceptance": "Blank optional permissions are stored as absent: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "/join",
+      "evidence": "Blank optionals omitted (compact), never stored as no/yes. schema.ts. | verified 2026-11-09"
     },
     {
       "id": "OPS-131",
       "source": "backoffice.md:Each consent answer has its own POST name and its own stored key",
       "acceptance": "Each consent answer has its own POST name and its own stored key: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "/join",
+      "evidence": "Each consent is its own field (guidelines[], newsletter-consent, directory/headshot/whatsapp consents). schema.ts. | verified 2026-11-09"
     },
     {
       "id": "OPS-132",
@@ -2879,7 +2932,8 @@
       "acceptance": "Derived fields (IX:458-464):: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (intake derived answer fields): scrapbook stores its own shape. Leave todo if import still needs them. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-134",
@@ -2887,7 +2941,8 @@
       "acceptance": "Business logo upload rules: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (business logo upload on apply): not on scrapbook /join. Leave todo or account logo later. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-135",
@@ -2895,7 +2950,8 @@
       "acceptance": "When a form is returned with errors, the logo has to be chosen again, and the hint text says so: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (logo re-choose hint on error): N/A until logo upload exists. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-136",
@@ -2911,7 +2967,8 @@
       "acceptance": "Share source rules: `?src=` / `form-src` is kept only when it matches `[a-z0-9](?:[a-z0-9-]{0,28}[a-z0-9])?`. It is stor: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (tracked ?src=/form-src on join): leave todo with OPS-023. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-138",
@@ -2936,7 +2993,8 @@
       "acceptance": "Forms closed in the CRM: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Open/close for custom forms is built (CRM-100); this intake FORMS_STATE join close switch still open with members-links OPS-081. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-141",
@@ -3042,7 +3100,8 @@
       "acceptance": "The Coffee-with opt-in stores the literal text \"Yes\" or \"No\": behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (Coffee-with literal Yes/No + reel URL): scrapbook coffee radio uses longer labels; no reel field. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-153",
@@ -3085,8 +3144,9 @@
       "source": "backoffice.md:Issuing a new link expires every earlier live link of the same purpose, so each person has one live link per purpose",
       "acceptance": "Issuing a new link expires every earlier live link of the same purpose, so each person has one live link per purpose: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "/admin#members",
+      "evidence": "Minting a new review/spotlight link expires earlier live links of that purpose (one live per purpose). OPS-158 verified; member-links.server.ts. | verified 2026-11-09"
     },
     {
       "id": "OPS-158",
@@ -3111,8 +3171,10 @@
       "source": "backoffice.md:The live definition comes from `${MEMBERSHIP_PUBLISHED_DIR}/membership-<kind>",
       "acceptance": "The live definition comes from `${MEMBERSHIP_PUBLISHED_DIR}/membership-<kind>: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-membership-form-editor",
+      "evidence": "Retired: published membership-*.json live definition. Classic membership form editor retired (members-links remainders CRM-110–116); live forms are scrapbook /join, /review?t=, /spotlight?t=. AUDIT admin-inbox remainders. | verified 2026-11-09: no-membership-form-editor"
     },
     {
       "id": "OPS-161",
@@ -3127,8 +3189,10 @@
       "source": "backoffice.md:A published `consent_version` of null means the intake's `CONSENT_VERSION` is used",
       "acceptance": "A published `consent_version` of null means the intake's `CONSENT_VERSION` is used: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-membership-form-editor",
+      "evidence": "Retired: published consent_version + Hermes stamp. Classic membership form editor retired (members-links remainders CRM-110–116); live forms are scrapbook /join, /review?t=, /spotlight?t=. AUDIT admin-inbox remainders. | verified 2026-11-09: no-membership-form-editor"
     },
     {
       "id": "OPS-163",
@@ -3143,8 +3207,10 @@
       "source": "backoffice.md:Non-CORE v1 checkbox lists",
       "acceptance": "Non-CORE v1 checkbox lists: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-membership-form-editor",
+      "evidence": "Retired: non-CORE v1 checkbox rewrite limits. Classic membership form editor retired (members-links remainders CRM-110–116); live forms are scrapbook /join, /review?t=, /spotlight?t=. AUDIT admin-inbox remainders. | verified 2026-11-09: no-membership-form-editor"
     },
     {
       "id": "OPS-165",
@@ -3159,40 +3225,50 @@
       "source": "backoffice.md:Answer names must match `^[a-z][a-z0-9_]{0,39}$`",
       "acceptance": "Answer names must match `^[a-z][a-z0-9_]{0,39}$`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-membership-form-editor",
+      "evidence": "Retired: CRM definition answer-name / choice regexes. Classic membership form editor retired (members-links remainders CRM-110–116); live forms are scrapbook /join, /review?t=, /spotlight?t=. AUDIT admin-inbox remainders. | verified 2026-11-09: no-membership-form-editor"
     },
     {
       "id": "OPS-167",
       "source": "backoffice.md:A definition must start with a section and have a non-empty submit label",
       "acceptance": "A definition must start with a section and have a non-empty submit label: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-membership-form-editor",
+      "evidence": "Retired: definition must start with section; only business_logo upload. Classic membership form editor retired (members-links remainders CRM-110–116); live forms are scrapbook /join, /review?t=, /spotlight?t=. AUDIT admin-inbox remainders. | verified 2026-11-09: no-membership-form-editor"
     },
     {
       "id": "OPS-168",
       "source": "backoffice.md:Questions added in the CRM are validated by type",
       "acceptance": "Questions added in the CRM are validated by type: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-membership-form-editor",
+      "evidence": "Retired: CRM-added question type validation. Classic membership form editor retired (members-links remainders CRM-110–116); live forms are scrapbook /join, /review?t=, /spotlight?t=. AUDIT admin-inbox remainders. | verified 2026-11-09: no-membership-form-editor"
     },
     {
       "id": "OPS-169",
       "source": "backoffice.md:The engine reuses the old cleaners and validators unchanged, so v1 output",
       "acceptance": "The engine reuses the old cleaners and validators unchanged, so v1 output: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-membership-form-editor",
+      "evidence": "Retired: engine byte-identical v1 cleaners. Classic membership form editor retired (members-links remainders CRM-110–116); live forms are scrapbook /join, /review?t=, /spotlight?t=. AUDIT admin-inbox remainders. | verified 2026-11-09: no-membership-form-editor"
     },
     {
       "id": "OPS-170",
       "source": "backoffice.md:CRM publishing (`memberforms.ts:179-202`):",
       "acceptance": "CRM publishing (`memberforms.ts:179-202`):: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-membership-form-editor",
+      "evidence": "Retired: CRM membership form publishing. Classic membership form editor retired (members-links remainders CRM-110–116); live forms are scrapbook /join, /review?t=, /spotlight?t=. AUDIT admin-inbox remainders. | verified 2026-11-09: no-membership-form-editor"
     },
     {
       "id": "OPS-171",
@@ -3321,8 +3397,10 @@
       "source": "backoffice.md:Ordering inside the website-form handler",
       "acceptance": "Ordering inside the website-form handler: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "native-website-forms",
+      "evidence": "Retired: Python website-form handler ordering (submissions.py). Contact/partnership/join/custom forms are Start API routes with checkSize → rateLimit → validate → store. AUDIT admin-inbox remainders. | verified 2026-11-09: native-website-forms"
     },
     {
       "id": "OPS-186",
@@ -3418,8 +3496,9 @@
       "source": "backoffice.md:Contact form",
       "acceptance": "Contact form: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "/contact",
+      "evidence": "/contact ContactForm → POST /api/contact stores inbox_messages then emails admins; consent + honeypot. SITE-145/169/170. contact.test.ts + contact-route.test.tsx. | verified 2026-11-09"
     },
     {
       "id": "OPS-197",
@@ -3462,15 +3541,17 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Partial: single-value dropdown/radio/yesno and multi-value checkboxes are native (src/features/forms/schema.ts); rating and scale are imported as radio with numeric choices (src/features/forms/import.server.ts). Composites (ranking, grid, address) are not supported: such forms are skipped by the importer and stay on the old site."
+      "evidence": "Product gap (full Classic question-type catalogue): minimal editor/engine subset only; custom-forms-owned. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-202",
       "source": "backoffice.md:Website-form parsing",
       "acceptance": "Website-form parsing: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "native-website-forms",
+      "evidence": "Retired: urlencoded website-form parsing. Rebuild posts JSON to /api/*; FormData only for uploads. AUDIT admin-inbox remainders. | verified 2026-11-09: native-website-forms"
     },
     {
       "id": "OPS-203",
@@ -3485,8 +3566,10 @@
       "source": "backoffice.md:Page metadata becomes record fields, never answers",
       "acceptance": "Page metadata becomes record fields, never answers: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "native-website-forms",
+      "evidence": "Retired: form-src/form-via page metadata → record fields. Contact/partnership store typed columns; join has no tracked ?src= product (left todo OPS-023/137). AUDIT admin-inbox remainders. | verified 2026-11-09: native-website-forms"
     },
     {
       "id": "OPS-205",
@@ -3503,7 +3586,8 @@
       "acceptance": "Server-side required-question check for website forms: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (required checks from published HTML): /f/* uses checkQuestions keys; custom-forms-owned. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-207",
@@ -3535,7 +3619,8 @@
       "acceptance": "Custom-form-only refusals:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (custom-form-only refusals): custom-forms-owned. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-211",
@@ -3551,7 +3636,8 @@
       "acceptance": "Ranking:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (ranking questions): custom-forms-owned. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-213",
@@ -3559,7 +3645,8 @@
       "acceptance": "Grid:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (grid questions): custom-forms-owned. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-214",
@@ -3567,7 +3654,8 @@
       "acceptance": "Address (US only):: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (US address questions): custom-forms-owned. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-215",
@@ -3583,7 +3671,8 @@
       "acceptance": "File uploads: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (custom-form file uploads): custom-forms-owned (CRM-095). Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-217",
@@ -3591,7 +3680,8 @@
       "acceptance": "Photo metadata is stripped with the stdlib only:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (photo metadata strip on form uploads): custom-forms-owned. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-218",
@@ -3599,7 +3689,8 @@
       "acceptance": "Upload storage:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (form upload storage layout): custom-forms-owned. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-219",
@@ -3607,7 +3698,8 @@
       "acceptance": "Disk guards:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (form upload disk guards): custom-forms-owned. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-220",
@@ -3615,7 +3707,8 @@
       "acceptance": "Concurrency cap on large bodies:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (multipart concurrency semaphore): JSON body routes; file product gap custom-forms-owned. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-221",
@@ -3623,7 +3716,8 @@
       "acceptance": "Body size limits:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (website-form body size matrix beyond checkSize caps): leave todo if multi-size matrix still desired. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-222",
@@ -3640,7 +3734,8 @@
       "acceptance": "Each `files[]` entry:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (files[] answer shape): custom-forms-owned. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-224",
@@ -3664,8 +3759,10 @@
       "source": "backoffice.md:`${FORMS_STATE}` = `/data/crm/forms_state.json`.",
       "acceptance": "`${FORMS_STATE}` = `/data/crm/forms_state.json`.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "native-website-forms",
+      "evidence": "Retired: forms_state.json open/schedule file. custom_forms.open + setFormOpen in SQLite (CRM-100 / OPS-240). AUDIT admin-inbox remainders. | verified 2026-11-09: native-website-forms"
     },
     {
       "id": "OPS-227",
@@ -3689,16 +3786,19 @@
       "source": "backoffice.md:Slug resolution:",
       "acceptance": "Slug resolution:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "/f/*",
+      "evidence": "Slug resolution: current slug or old_names 301 to current (forms routes). custom-forms OPS-191/195 verified. | verified 2026-11-09"
     },
     {
       "id": "OPS-230",
       "source": "backoffice.md:Private folder `${FORMS_PRIVATE_DIR}` = `/data/forms-private`",
       "acceptance": "Private folder `${FORMS_PRIVATE_DIR}` = `/data/forms-private`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "native-website-forms",
+      "evidence": "Retired: forms-private folder mode 0700 state files. Answers in custom_form_responses; uploads under DATA_DIR/uploads via /media. AUDIT admin-inbox remainders. | verified 2026-11-09: native-website-forms"
     },
     {
       "id": "OPS-231",
@@ -3722,8 +3822,10 @@
       "source": "backoffice.md:CRM-written files the service reads:",
       "acceptance": "CRM-written files the service reads:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "native-website-forms",
+      "evidence": "Retired: CRM-written files the Python service reads. No file handoff; SQLite is source of truth. AUDIT admin-inbox remainders. | verified 2026-11-09: native-website-forms"
     },
     {
       "id": "OPS-234",
@@ -3747,7 +3849,8 @@
       "acceptance": "Condition operators:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (condition operators): custom-forms show/hide (CRM-107). Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-237",
@@ -3755,7 +3858,8 @@
       "acceptance": "Jumps and totals.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (jumps and totals): custom-forms-owned. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-238",
@@ -3763,7 +3867,8 @@
       "acceptance": "Which rules a post gets.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (which logic rules a post gets): custom-forms-owned. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-239",
@@ -3825,8 +3930,10 @@
       "source": "backoffice.md:Cloudflare Turnstile.",
       "acceptance": "Cloudflare Turnstile.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-turnstile",
+      "evidence": "Retired: Cloudflare Turnstile on website forms. Retired with CRM-126 / SITE-060. AUDIT admin-inbox remainders. | verified 2026-11-09: no-turnstile"
     },
     {
       "id": "OPS-246",
@@ -3897,7 +4004,8 @@
       "acceptance": "Last-place race.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (last-place / capacity race): custom-forms places/funnel. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-254",
@@ -4077,7 +4185,8 @@
       "acceptance": "Redirects:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Redirects map / cutover: vps-cutover-owned. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-275",
@@ -4103,7 +4212,8 @@
       "acceptance": "Routing map on the apex:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Apex routing map: vps-cutover-owned. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-278",
@@ -4147,8 +4257,10 @@
       "source": "backoffice.md:CRM routes, core",
       "acceptance": "CRM routes, core: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "admin-server-fns",
+      "evidence": "Retired: Classic CRM core routes (/login, /api/me, /api/items, prefs/theme, …). Rebuild: Better Auth + requireAdmin server functions + AppShell /admin (CRM-010/049/162). AUDIT admin-inbox remainders. | verified 2026-11-09: admin-server-fns"
     },
     {
       "id": "OPS-283",
@@ -4208,16 +4320,20 @@
       "source": "backoffice.md:The closed-form page is a 200.",
       "acceptance": "The closed-form page is a 200.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "native-website-forms",
+      "evidence": "Retired: Closed form answered 200 to hide state. Rebuild /f/* closed returns 410 (OPS-241); deliberate honest close. AUDIT admin-inbox remainders. | verified 2026-11-09: native-website-forms"
     },
     {
       "id": "OPS-290",
       "source": "backoffice.md:The client-side `data-max` is not enforced on the server.",
       "acceptance": "The client-side `data-max` is not enforced on the server.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "server-enforced-limits",
+      "evidence": "Retired: Client data-max not enforced server-side (silent truncate 4000). Rebuild checkContact/checkPartnership enforce LIMITS.message (5000) with errors. AUDIT admin-inbox remainders. | verified 2026-11-09: server-enforced-limits"
     },
     {
       "id": "OPS-291",
@@ -4249,8 +4365,9 @@
       "source": "backoffice.md:The stored `ip` and the global limiter use the Cloudflare edge address.",
       "acceptance": "The stored `ip` and the global limiter use the Cloudflare edge address.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "parity",
+      "evidence": "clientIp: cf-connecting-ip first, else first x-forwarded-for (fixes intake last-XFF edge bug). request.ts; auth.test.ts. | verified 2026-11-09"
     },
     {
       "id": "OPS-295",
@@ -4282,8 +4399,9 @@
       "source": "backoffice.md:A non-numeric `Content-Length` on website forms raises an unhandled exception.",
       "acceptance": "A non-numeric `Content-Length` on website forms raises an unhandled exception.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "parity",
+      "evidence": "Non-numeric Content-Length → 411 via checkSize (no unhandled exception). request.ts. | verified 2026-11-09"
     },
     {
       "id": "OPS-299",
@@ -4415,8 +4533,10 @@
       "source": "backoffice.md:Accepted consent versions.",
       "acceptance": "Accepted consent versions.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-hermes",
+      "evidence": "Retired: Hermes accepted consent versions. Hermes auto-approve out of cutover scope (notifications retire-external); approve/decline stay human /admin. AUDIT admin-inbox remainders. | verified 2026-11-09: no-hermes"
     },
     {
       "id": "OPS-315",
@@ -4449,8 +4569,10 @@
       "source": "backoffice.md:Prompt gist (lines 111-136).",
       "acceptance": "Prompt gist (lines 111-136).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-hermes",
+      "evidence": "Retired: Hermes prompt gist. Hermes auto-approve out of cutover scope (notifications retire-external); approve/decline stay human /admin. AUDIT admin-inbox remainders. | verified 2026-11-09: no-hermes"
     },
     {
       "id": "OPS-319",
@@ -4465,16 +4587,20 @@
       "source": "backoffice.md:Parsing the model's answer (lines 139-156).",
       "acceptance": "Parsing the model's answer (lines 139-156).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-hermes",
+      "evidence": "Retired: Hermes answer JSON parse. Hermes auto-approve out of cutover scope (notifications retire-external); approve/decline stay human /admin. AUDIT admin-inbox remainders. | verified 2026-11-09: no-hermes"
     },
     {
       "id": "OPS-321",
       "source": "backoffice.md:Decision rule (lines 238-243).",
       "acceptance": "Decision rule (lines 238-243).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-hermes",
+      "evidence": "Retired: Hermes reject decision rule. Hermes auto-approve out of cutover scope (notifications retire-external); approve/decline stay human /admin. AUDIT admin-inbox remainders. | verified 2026-11-09: no-hermes"
     },
     {
       "id": "OPS-322",
@@ -4517,16 +4643,20 @@
       "source": "backoffice.md:Flags.",
       "acceptance": "Flags.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-hermes",
+      "evidence": "Retired: Hermes CLI flags. Hermes auto-approve out of cutover scope (notifications retire-external); approve/decline stay human /admin. AUDIT admin-inbox remainders. | verified 2026-11-09: no-hermes"
     },
     {
       "id": "OPS-327",
       "source": "backoffice.md:Tests to port",
       "acceptance": "Tests to port: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-hermes",
+      "evidence": "Retired: Hermes tests to port. Hermes auto-approve out of cutover scope (notifications retire-external); approve/decline stay human /admin. AUDIT admin-inbox remainders. | verified 2026-11-09: no-hermes"
     },
     {
       "id": "OPS-328",
@@ -4589,8 +4719,10 @@
       "source": "backoffice.md:Legacy question-label normalisation",
       "acceptance": "Legacy question-label normalisation: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-hermes",
+      "evidence": "Retired: Hermes legacy question-label normalisation. Hermes auto-approve out of cutover scope (notifications retire-external); approve/decline stay human /admin. AUDIT admin-inbox remainders. | verified 2026-11-09: no-hermes"
     },
     {
       "id": "OPS-335",
@@ -4644,7 +4776,8 @@
       "acceptance": "Validation reported to the client as one list (build.mjs:153-182).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (published events client validation list): admin events exist; full build.mjs rule list not claimed. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-341",
@@ -4921,8 +5054,10 @@
       "source": "backoffice.md:Off-box copy (config read from `/opt/nbwc/.env`, not the process env; lines 45-57).",
       "acceptance": "Off-box copy (config read from `/opt/nbwc/.env`, not the process env; lines 45-57).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-hermes",
+      "evidence": "Retired: Hermes/off-box copy reading /opt/nbwc/.env. No Hermes in the Node app; config is process env / .env.local. AUDIT admin-inbox remainders. | verified 2026-11-09: no-hermes"
     },
     {
       "id": "OPS-373",
@@ -5241,8 +5376,10 @@
       "source": "ops-part-d.md:Logic attributes.",
       "acceptance": "Logic attributes.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "classic-form-builder",
+      "evidence": "Retired: Published HTML logic attributes (show-if/jump/total). Minimal /f/* has no Classic logic attrs; show/hide product gap stays custom-forms (CRM-107). AUDIT admin-inbox remainders. | verified 2026-11-09: classic-form-builder"
     },
     {
       "id": "OPS-410",
@@ -5417,8 +5554,10 @@
       "source": "ops-part-d.md:Turnstile block.",
       "acceptance": "Turnstile block.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-turnstile",
+      "evidence": "Retired: Turnstile block in published form HTML. No Turnstile in /f/* or scrapbook forms. AUDIT admin-inbox remainders. | verified 2026-11-09: no-turnstile"
     },
     {
       "id": "OPS-430",
@@ -5491,16 +5630,20 @@
       "source": "ops-part-d.md:State files.",
       "acceptance": "State files.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-webhooks",
+      "evidence": "Retired: forms-connections state files. Out of cutover scope with notifications retire-external; no connections.json / Notion client in the Node app. AUDIT admin-inbox remainders. | verified 2026-11-09: no-webhooks"
     },
     {
       "id": "OPS-438",
       "source": "ops-part-d.md:Status file `data/forms-connections/status.json` (0644).",
       "acceptance": "Status file `data/forms-connections/status.json` (0644).: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-webhooks",
+      "evidence": "Retired: forms-connections status.json. Out of cutover scope with notifications retire-external; no connections.json / Notion client in the Node app. AUDIT admin-inbox remainders. | verified 2026-11-09: no-webhooks"
     },
     {
       "id": "OPS-439",
@@ -5579,7 +5722,8 @@
       "acceptance": "Repeat suppression.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (Beehiiv repeat-suppression SHA window): subscribeIfConsented is consent + not-already-in-table; notifications-owned polish. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-448",
@@ -5594,8 +5738,10 @@
       "source": "ops-part-d.md:Status per form.",
       "acceptance": "Status per form.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-webhooks",
+      "evidence": "Retired: webhook status per form. Out of cutover scope with notifications retire-external; no connections.json / Notion client in the Node app. AUDIT admin-inbox remainders. | verified 2026-11-09: no-webhooks"
     },
     {
       "id": "OPS-450",
@@ -5619,8 +5765,10 @@
       "source": "ops-part-d.md:The request.",
       "acceptance": "The request.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-webhooks",
+      "evidence": "Retired: signed webhook delivery request. Out of cutover scope with notifications retire-external; no connections.json / Notion client in the Node app. AUDIT admin-inbox remainders. | verified 2026-11-09: no-webhooks"
     },
     {
       "id": "OPS-453",
@@ -5645,8 +5793,10 @@
       "source": "ops-part-d.md:Settings changes.",
       "acceptance": "Settings changes.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-webhooks",
+      "evidence": "Retired: webhook settings changes. Out of cutover scope with notifications retire-external; no connections.json / Notion client in the Node app. AUDIT admin-inbox remainders. | verified 2026-11-09: no-webhooks"
     },
     {
       "id": "OPS-456",
@@ -5661,8 +5811,10 @@
       "source": "ops-part-d.md:Tests.",
       "acceptance": "Tests.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-webhooks",
+      "evidence": "Retired: webhook test events. Out of cutover scope with notifications retire-external; no connections.json / Notion client in the Node app. AUDIT admin-inbox remainders. | verified 2026-11-09: no-webhooks"
     },
     {
       "id": "OPS-458",
@@ -5685,8 +5837,10 @@
       "source": "ops-part-d.md:Database discovery.",
       "acceptance": "Database discovery.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-notion-mirror",
+      "evidence": "Retired: Notion database discovery. Out of cutover scope with notifications retire-external; no connections.json / Notion client in the Node app. AUDIT admin-inbox remainders. | verified 2026-11-09: no-notion-mirror"
     },
     {
       "id": "OPS-461",
@@ -5727,8 +5881,10 @@
       "source": "ops-part-d.md:Settings changes.",
       "acceptance": "Settings changes.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-notion-mirror",
+      "evidence": "Retired: Notion settings changes. Out of cutover scope with notifications retire-external; no connections.json / Notion client in the Node app. AUDIT admin-inbox remainders. | verified 2026-11-09: no-notion-mirror"
     },
     {
       "id": "OPS-466",
@@ -5753,8 +5909,10 @@
       "source": "ops-part-d.md:Latest labels only.",
       "acceptance": "Latest labels only.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-notion-mirror",
+      "evidence": "Retired: Notion latest labels only. Out of cutover scope with notifications retire-external; no connections.json / Notion client in the Node app. AUDIT admin-inbox remainders. | verified 2026-11-09: no-notion-mirror"
     },
     {
       "id": "OPS-469",
@@ -5781,8 +5939,10 @@
       "source": "ops-part-d.md:Crash safety.",
       "acceptance": "Crash safety.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-notion-mirror",
+      "evidence": "Retired: Notion queue crash safety. Out of cutover scope with notifications retire-external; no connections.json / Notion client in the Node app. AUDIT admin-inbox remainders. | verified 2026-11-09: no-notion-mirror"
     },
     {
       "id": "OPS-472",
@@ -5825,8 +5985,10 @@
       "source": "ops-part-d.md:Files removed with the answer.",
       "acceptance": "Files removed with the answer.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-webhooks",
+      "evidence": "Retired: files removed with answer (connections deletions-pending). Out of cutover scope with notifications retire-external; no connections.json / Notion client in the Node app. AUDIT admin-inbox remainders. | verified 2026-11-09: no-webhooks"
     },
     {
       "id": "OPS-477",
@@ -5940,8 +6102,10 @@
       "source": "ops-part-d.md:Write path.",
       "acceptance": "Write path.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "native-website-forms",
+      "evidence": "Retired: forms stats daemon flush to per-form files. No forms-stats writers; admin reads SQLite counts on cards. AUDIT admin-inbox remainders. | verified 2026-11-09: native-website-forms"
     },
     {
       "id": "OPS-491",
@@ -5958,7 +6122,8 @@
       "acceptance": "\"Sent\" and privacy.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "/privacy"
+      "target": "/privacy",
+      "evidence": "Product gap (funnel sent counts + DNT): custom-forms/notifications. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-493",
@@ -6114,7 +6279,8 @@
       "acceptance": "Run flow and flags.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (finish-later / confirmation job flags): notifications-owned. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-511",
@@ -6122,7 +6288,8 @@
       "acceptance": "Limits are shared.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (shared confirmation send caps): notifications-owned. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-512",
@@ -6154,7 +6321,8 @@
       "acceptance": "At most once.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (finish-later at-most-once): notifications-owned. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "OPS-516",
@@ -6252,8 +6420,10 @@
       "source": "ops-part-d.md:The form-started stamp is unsigned, and omitting it means no penalty.",
       "acceptance": "The form-started stamp is unsigned, and omitting it means no penalty.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "archive-only-inbox",
+      "evidence": "Retired: Unsigned form-started spam stamp. Spam/verdicts retired (CRM-047/048/OPS-061); honeypot + rateLimit only. AUDIT admin-inbox remainders. | verified 2026-11-09: archive-only-inbox"
     },
     {
       "id": "OPS-527",
@@ -6577,7 +6747,8 @@
       "acceptance": "Contact sidebar: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "/contact"
+      "target": "/contact",
+      "evidence": "Product gap (exact Classic contact sidebar copy / What happens next): /contact has reporting + FAQ asides, different words. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "SITE-028",
@@ -6768,8 +6939,9 @@
       "source": "site.md:code-of-conduct.html",
       "acceptance": "code-of-conduct.html: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/code-of-conduct"
+      "status": "verified",
+      "target": "/code-of-conduct",
+      "evidence": "src/routes/code-of-conduct.tsx; INDEXED (SITE-150); legal-route.test.tsx. | verified 2026-11-09"
     },
     {
       "id": "SITE-049",
@@ -6810,16 +6982,18 @@
       "source": "site.md:Contact form",
       "acceptance": "Contact form: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "/contact",
+      "evidence": "/contact scrapbook page + ContactForm posts JSON to /api/contact (stores then notifies). SITE-145/169. | verified 2026-11-09"
     },
     {
       "id": "SITE-054",
       "source": "site.md:Contact fields",
       "acceptance": "Contact fields: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "/contact",
+      "evidence": "Contact fields: name, email, topic (TOPICS incl. Accessibility/Reporting conduct), message, consent. schema.ts + contact-route.test.tsx. | verified 2026-11-09"
     },
     {
       "id": "SITE-055",
@@ -6861,16 +7035,19 @@
       "source": "site.md:Honeypot",
       "acceptance": "Honeypot: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "/contact",
+      "evidence": "Honeypot on contact/partnership/join/forms; filled → same success, nothing stored. SITE-170; contact.test.ts. | verified 2026-11-09"
     },
     {
       "id": "SITE-060",
       "source": "site.md:Cloudflare Turnstile",
       "acceptance": "Cloudflare Turnstile: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-turnstile",
+      "evidence": "Retired: Cloudflare Turnstile on contact/partnership. Rebuild uses honeypot + IP rateLimit; same-origin CSP (OPS-519). AUDIT admin-inbox remainders. | verified 2026-11-09: no-turnstile"
     },
     {
       "id": "SITE-061",
@@ -6886,15 +7063,17 @@
       "acceptance": "Length rules and counters: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "/contact"
+      "target": "/contact",
+      "evidence": "Product gap (live n/max counters + old min lengths 10/20 and max 1200/600): server max is LIMITS.message 5000; no live counters. Leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "SITE-063",
       "source": "site.md:Client-side validation",
       "acceptance": "Client-side validation: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/404"
+      "status": "verified",
+      "target": "/contact",
+      "evidence": "Client validation via checkContact/checkPartnership before POST; inline field errors. ContactForm.tsx; contact.test.ts. | verified 2026-11-09"
     },
     {
       "id": "SITE-064",
@@ -6910,7 +7089,8 @@
       "acceptance": "Prefill from a shared link: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "public-site"
+      "target": "public-site",
+      "evidence": "Product gap (prefill from ?src= / query keys on contact): leave todo. AUDIT admin-inbox remainders."
     },
     {
       "id": "SITE-066",
@@ -6960,7 +7140,8 @@
       "acceptance": "No-JavaScript behaviour: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "/404"
+      "target": "/404",
+      "evidence": "Product gap (no-JS POST degrade for contact): SPA needs JS; native required still on controls. Leave todo or accept SPA. AUDIT admin-inbox remainders."
     },
     {
       "id": "SITE-072",
@@ -7049,8 +7230,10 @@
       "source": "site.md:site.js: Theme toggle",
       "acceptance": "site.js: Theme toggle: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/404"
+      "status": "verified",
+      "target": "retired",
+      "retired": "legacy-site-js",
+      "evidence": "Retired: Old site.js nbwc-theme toggle. Public scrapbook has no nbwc-theme localStorage toggle; showcase dark is separate. AUDIT admin-inbox remainders. | verified 2026-11-09: legacy-site-js"
     },
     {
       "id": "SITE-082",
@@ -7213,8 +7396,10 @@
       "source": "site.md:Pre-paint theme script",
       "acceptance": "Pre-paint theme script: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/404"
+      "status": "verified",
+      "target": "retired",
+      "retired": "legacy-site-js",
+      "evidence": "Retired: Pre-paint nbwc-theme script. Not ported; public pages use scrapbook tokens without flash script. AUDIT admin-inbox remainders. | verified 2026-11-09: legacy-site-js"
     },
     {
       "id": "SITE-099",
@@ -7667,9 +7852,9 @@
       "source": "site.md:/partnerships, MISSING",
       "acceptance": "/partnerships, MISSING: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "/partnerships",
-      "evidence": "src/features/contact/contact.test.ts + admin Inbox"
+      "evidence": "Partnership form → /api/partnerships → inbox_messages kind=partnership + admin Inbox. contact.test.ts + partnership.test.ts. Was built; already true. | verified 2026-11-09"
     },
     {
       "id": "SITE-150",
@@ -7927,8 +8112,9 @@
       "source": "site.md:Accessibility details worth keeping in the rebuild",
       "acceptance": "Accessibility details worth keeping in the rebuild: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/account"
+      "status": "verified",
+      "target": "/account",
+      "evidence": "Skip link + one main (AppPage), route focus h1, labelled forms/aria-invalid, reduced-motion tokens, portrait alt/initials. AGENTS.md; contrast.test.tsx. | verified 2026-11-09"
     },
     {
       "id": "SITE-179",
