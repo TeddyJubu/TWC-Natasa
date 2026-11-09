@@ -127,7 +127,7 @@ describe("/admin", () => {
       // Forms are their own page now: router links, never cards here.
       expect(screen.queryByRole("region", { name: "Your forms" })).toBeNull();
       expect(link("Your forms").getAttribute("href")).toBe("/admin/forms#forms");
-      expect(link("Join & review").getAttribute("href")).toBe("/admin/forms#membership-forms");
+      expect(link("Built-in forms").getAttribute("href")).toBe("/admin/forms#built-in-forms");
     });
 
     it("/admin/forms is its own page: Forms h1, both form cards anchored, and Your forms marked here", () => {
@@ -135,7 +135,14 @@ describe("/admin", () => {
       expect(screen.getAllByRole("main")).toHaveLength(1);
       expect(screen.getAllByRole("heading", { level: 1 }).map((h) => h.textContent)).toEqual(["Forms"]);
       expect(card("Your forms").id).toBe("forms");
-      expect(card("Join & review").id).toBe("membership-forms");
+      expect(card("Built-in forms").id).toBe("built-in-forms");
+      // All five of the old CRM's fixed forms, each saying where its answers land.
+      const builtIn = within(card("Built-in forms"));
+      for (const [name, answers] of [["Membership application", "/admin#applications"], ["Member review", "/admin#reviews"], ["Contact", "/admin#inbox"], ["Partnership", "/admin#inbox"], ["Newsletter", "/admin#newsletter"]]) {
+        const row = builtIn.getByRole("article", { name });
+        expect(within(row).getAllByRole("link").map((a) => a.getAttribute("href"))).toContain(answers);
+      }
+      expect(builtIn.getByRole("article", { name: "Newsletter" }).textContent).toMatch(/No public signup page yet/);
       expect(screen.queryByRole("region", { name: "Inbox" })).toBeNull();
       const nav = screen.getAllByRole("navigation", { name: "Main" })[0];
       const link = (name: string) => within(nav).getByRole("link", { name });
@@ -568,10 +575,10 @@ describe("/admin", () => {
       { kind: "application", open: true, message: "", updated_at: "2026-11-10T00:00:00Z", updated_by: null },
       { kind: "review", open: false, message: "Reviews paused.", updated_at: "2026-11-10T00:00:00Z", updated_by: "admin1" },
     ] });
-    const join = within(card("Join & review")).getByRole("article", { name: "Membership application" });
+    const join = within(card("Built-in forms")).getByRole("article", { name: "Membership application" });
     expect(within(join).getByRole("link", { name: "/join" }).getAttribute("href")).toBe("/join");
     expect(join.textContent).toMatch(/Open/);
-    const review = within(card("Join & review")).getByRole("article", { name: "Member review" });
+    const review = within(card("Built-in forms")).getByRole("article", { name: "Member review" });
     expect(review.textContent).toMatch(/Closed/);
     expect(within(review).getByRole("button", { name: "Open Member review" })).toBeTruthy();
     fireEvent.change(within(join).getByLabelText("Closed message"), { target: { value: "Paused until spring." } });

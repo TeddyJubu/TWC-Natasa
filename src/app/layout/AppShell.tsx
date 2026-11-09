@@ -39,7 +39,7 @@ const ADMIN: NavItem[] = [
 ];
 const FORMS: NavItem[] = [
   { label: "Your forms", icon: "notebook-pen", to: "/admin/forms", hash: "forms" },
-  { label: "Join & review", icon: "notebook-pen", to: "/admin/forms", hash: "membership-forms" },
+  { label: "Built-in forms", icon: "notebook-pen", to: "/admin/forms", hash: "built-in-forms" },
 ];
 
 /** The Admin and Forms groups only for admins; UX only, since /admin's guard and every admin server function check again. */

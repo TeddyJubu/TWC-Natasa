@@ -87,7 +87,7 @@ function EmailNotice({ notice }: { notice: ApprovalNotice | null | undefined }) 
 }
 
 /** Waiting on an admin (pending, requested) in sun; approved/confirmed in mint; declined in danger. */
-const STATUS_TONE: Record<string, ChipTone> = { pending: "pending", requested: "pending", approved: "ok", confirmed: "ok", open: "ok", declined: "no" };
+const STATUS_TONE: Record<string, ChipTone> = { pending: "pending", requested: "pending", approved: "ok", confirmed: "ok", open: "ok", always_on: "ok", declined: "no" };
 function StatusChip({ status }: { status: string }) {
   return <Chip tone={STATUS_TONE[status] ?? "muted"}>{humanizeKey(status)}</Chip>;
 }
@@ -845,14 +845,45 @@ function SpotlightRow({ spotlight: s }: { spotlight: AdminSpotlight }) {
   );
 }
 
-// ---------- Join & review open/close (OPS-081 / OPS-140) ----------
+// ---------- Built-in forms: join & review open/close (OPS-081 / OPS-140) + the three fixed forms ----------
+
+/** Where each built-in form's answers land: a card on /admin. */
+const ANSWERS_IN: Record<string, [label: string, href: string]> = {
+  application: ["Applications", "/admin#applications"],
+  review: ["Member reviews", "/admin#reviews"],
+  inbox: ["Inbox", "/admin#inbox"],
+  newsletter: ["Newsletter", "/admin#newsletter"],
+};
+
+/**
+ * The old CRM's five fixed forms (not /f/… rows). Only join and review can close (forms_state); contact and
+ * partnership are always on, and the newsletter has no public page yet (SITE-160) — sign-ups come from /join.
+ */
+const FIXED_FORMS: { title: string; href?: string; answers: string; status: string; note?: string }[] = [
+  { title: "Contact", href: "/contact", answers: "inbox", status: "always_on" },
+  { title: "Partnership", href: "/partnerships", answers: "inbox", status: "always_on" },
+  { title: "Newsletter", answers: "newsletter", status: "no_page", note: "No public signup page yet; sign-ups come from the membership application’s opt-in." },
+];
+
+function AnswersLink({ to }: { to: string }) {
+  const [label, href] = ANSWERS_IN[to];
+  return <>answers in <a className={cn("underline", ring)} href={href}>{label}</a></>;
+}
 
 export function MembershipFormsPanel() {
   const states = useQuery(adminFormsStateQuery);
   return (
-    <Card id="membership-forms" title="Join & review" subtitle="Open or close /join and /review. Spotlight stays always on.">
-      <QueryGate query={states} what="membership form switches">
+    <Card id="built-in-forms" title="Built-in forms" subtitle="The site’s five fixed forms. Join and review can be closed; Spotlight stays always on.">
+      <QueryGate query={states} what="built-in forms">
         {(states.data ?? []).map((s) => <MembershipFormRow key={s.kind} state={s} />)}
+        {FIXED_FORMS.map((f) => (
+          <Item key={f.title} headingId={`built-in-${f.title.toLowerCase()}`} title={f.title} status={f.status}
+            details={<p className={meta}>
+              {f.href && <><a className={cn("underline", ring)} href={f.href}>{f.href}</a> · </>}
+              <AnswersLink to={f.answers} />
+              {f.note && <><br />{f.note}</>}
+            </p>}>{null}</Item>
+        ))}
       </QueryGate>
     </Card>
   );
@@ -872,7 +903,7 @@ function MembershipFormRow({ state: s }: { state: AdminFormState }) {
   return (
     <Item headingId={`membership-form-${s.kind}`} title={label} status={s.open ? "open" : "closed"}
       details={<p className={meta}>
-        <a className={cn("underline", ring)} href={href}>{href}</a>
+        <a className={cn("underline", ring)} href={href}>{href}</a> · <AnswersLink to={s.kind} />
         {s.updated_at ? ` · updated ${formatDate(s.updated_at)}` : ""}
       </p>}>
       <div className="flex flex-col gap-3 rounded-md bg-app-sunken p-3.5">
