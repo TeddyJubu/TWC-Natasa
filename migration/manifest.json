@@ -368,20 +368,20 @@
       "source": "crm.md:People table",
       "acceptance": "People table: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "retired",
       "retired": "member-summary-chips",
-      "evidence": "Retired: Classic people table (one row per email across all item kinds, with newsletter/itemCount/lastSeen and member overlay). Day-to-day /admin covers members via All members Details chips (newsletter, linked application count, member since — phase 3) plus Applications and Inbox cards; a non-member people index is not a product goal. AUDIT-TASKS.md phase 3 member summary + phase 7."
+      "evidence": "Retired: Classic people table (one row per email across all item kinds, with newsletter/itemCount/lastSeen and member overlay). Day-to-day /admin covers members via All members Details chips (newsletter, linked application count, member since — phase 3) plus Applications and Inbox cards; a non-member people index is not a product goal. AUDIT-TASKS.md phase 3 member summary + phase 7. | verified 2026-11-09: no people table; All members Details chips (newsletter/applications/member_since) in admin.server.ts AdminMember + admin-route.test.tsx › CRM-038; AUDIT phase 7"
     },
     {
       "id": "CRM-039",
       "source": "crm.md:\"Same person\" aliases applied at mirror time",
       "acceptance": "\"Same person\" aliases applied at mirror time: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "retired",
       "retired": "no-alias-graph",
-      "evidence": "Retired: same-person aliases applied at mirror time. Merge/aliases (CRM-074–079) stay out of scope; no aliases table; import and inbox keep the email as submitted. Duplicate detection is email-only on pending applications (CRM-072/073)."
+      "evidence": "Retired: same-person aliases applied at mirror time. Merge/aliases (CRM-074–079) stay out of scope; no aliases table; import and inbox keep the email as submitted. Duplicate detection is email-only on pending applications (CRM-072/073). | verified 2026-11-09: no aliases table in db/; applications.user_id only via verified email claim; duplicate chips email-only (CRM-072/073 verified); AUDIT phase 3+6+7"
     },
     {
       "id": "CRM-040",
@@ -538,10 +538,10 @@
       "source": "crm.md:Timeline",
       "acceptance": "Timeline: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "retired",
       "retired": "card-row-history",
-      "evidence": "Retired: Classic GET /api/items/:id/timeline (unified status/comment/spam/hold/merge stream). Rebuild keeps history on the card rows instead of an ItemView timeline: admin notes (CRM-055, 0006), logged actions (CRM-057/058, 0009) on application rows and member Details, and the Admin activity card (0007) for in-app decisions. No spam/hold/merge events and no cross-email person stream — do not claim Classic ItemView. AUDIT-TASKS.md phase 7."
+      "evidence": "Retired: Classic GET /api/items/:id/timeline (unified status/comment/spam/hold/merge stream). Rebuild keeps history on the card rows instead of an ItemView timeline: admin notes (CRM-055, 0006), logged actions (CRM-057/058, 0009) on application rows and member Details, and the Admin activity card (0007) for in-app decisions. No spam/hold/merge events and no cross-email person stream — do not claim Classic ItemView. AUDIT-TASKS.md phase 7. | verified 2026-11-09: no /api/items/:id/timeline or ItemView in src/; history on card rows via admin_notes 0006, logged_actions 0009, admin_actions 0007 (CRM-055/057 verified); AUDIT phase 7"
     },
     {
       "id": "CRM-057",
@@ -700,80 +700,80 @@
       "source": "crm.md:Refusals",
       "acceptance": "Refusals: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "retired",
       "retired": "no-merge-graph",
-      "evidence": "Retired: merge refusals for pairs the CRM can't combine. Phase 3 decision (AUDIT-TASKS.md): no alias/merge table; applications.user_id is set only by a verified email claim; decline the extra application and leave an admin note. Duplicate chips stay email-only (CRM-072/073); no merge UI. Phase 7."
+      "evidence": "Retired: merge refusals for pairs the CRM can't combine. Phase 3 decision (AUDIT-TASKS.md): no alias/merge table; applications.user_id is set only by a verified email claim; decline the extra application and leave an admin note. Duplicate chips stay email-only (CRM-072/073); no merge UI. Phase 7. | verified 2026-11-09: no merge/alias tables or /api/merge in src|db/; decline+note workflow (AUDIT phase 3); duplicate chips stay (CRM-072/073); AUDIT phase 7"
     },
     {
       "id": "CRM-075",
       "source": "crm.md:\"Not the same person\" / bring back",
       "acceptance": "\"Not the same person\" / bring back: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "retired",
       "retired": "no-merge-graph",
-      "evidence": "Retired: duplicates dismiss/restore (Not the same person / bring back). Those keys fed the merge graph; phase 3 retired name/phone cases and dismiss/restore with them. Workflow: decline the extra application + admin note. AUDIT-TASKS.md phase 3 + phase 7."
+      "evidence": "Retired: duplicates dismiss/restore (Not the same person / bring back). Those keys fed the merge graph; phase 3 retired name/phone cases and dismiss/restore with them. Workflow: decline the extra application + admin note. AUDIT-TASKS.md phase 3 + phase 7. | verified 2026-11-09: no dismiss/restore duplicate keys; duplicatesOf is read-time email only (admin.server.ts); AUDIT phase 3+7"
     },
     {
       "id": "CRM-076",
       "source": "crm.md:Preview",
       "acceptance": "Preview: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "retired",
       "retired": "no-merge-graph",
-      "evidence": "Retired: POST /api/merge/preview (intake + local case-d preview). No merge UI or version hash; phase 3: decline the extra application + admin note; applications.user_id only via verified email claim. AUDIT-TASKS.md phase 3 + phase 7."
+      "evidence": "Retired: POST /api/merge/preview (intake + local case-d preview). No merge UI or version hash; phase 3: decline the extra application + admin note; applications.user_id only via verified email claim. AUDIT-TASKS.md phase 3 + phase 7. | verified 2026-11-09: no POST /api/merge/preview route or handler in src/; AUDIT phase 3+7"
     },
     {
       "id": "CRM-077",
       "source": "crm.md:Apply",
       "acceptance": "Apply: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "retired",
       "retired": "no-merge-graph",
-      "evidence": "Retired: POST /api/merge apply (intake apply + alias write). Rebuild has no merge apply path and no person_link events; linking would attach answers across accounts. Phase 3: decline + note. AUDIT-TASKS.md phase 3 + phase 7."
+      "evidence": "Retired: POST /api/merge apply (intake apply + alias write). Rebuild has no merge apply path and no person_link events; linking would attach answers across accounts. Phase 3: decline + note. AUDIT-TASKS.md phase 3 + phase 7. | verified 2026-11-09: no merge apply path or person_link events in src|db/; AUDIT phase 3+7"
     },
     {
       "id": "CRM-078",
       "source": "crm.md:Undo",
       "acceptance": "Undo: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "retired",
       "retired": "no-merge-graph",
-      "evidence": "Retired: POST /api/merge/undo. No mergeId / person_unlink surface exists; merges were never built (CRM-074–079). AUDIT-TASKS.md phase 3 + phase 7."
+      "evidence": "Retired: POST /api/merge/undo. No mergeId / person_unlink surface exists; merges were never built (CRM-074–079). AUDIT-TASKS.md phase 3 + phase 7. | verified 2026-11-09: no POST /api/merge/undo or mergeId surface in src/; AUDIT phase 3+7"
     },
     {
       "id": "CRM-079",
       "source": "crm.md:Case d (CRM-only link)",
       "acceptance": "Case d (CRM-only link): behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "retired",
       "retired": "no-merge-graph",
-      "evidence": "Retired: case-d CRM-only person_link / person_aliases chain. No aliases table (CRM-039 also retired at mirror); applications.user_id only via verified email claim. AUDIT-TASKS.md phase 3 + phase 6 CRM-039 + phase 7."
+      "evidence": "Retired: case-d CRM-only person_link / person_aliases chain. No aliases table (CRM-039 also retired at mirror); applications.user_id only via verified email claim. AUDIT-TASKS.md phase 3 + phase 6 CRM-039 + phase 7. | verified 2026-11-09: no person_aliases/person_link chain in db/; CRM-039 retired; AUDIT phase 3+6+7"
     },
     {
       "id": "CRM-080",
       "source": "crm.md:Alias guards",
       "acceptance": "Alias guards: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "retired",
       "retired": "no-merge-graph",
-      "evidence": "Retired: alias guards (member / awaiting-decision / already-linked). Guards only matter with an alias graph; rebuild has none. Phase 3 merge decision stands. AUDIT-TASKS.md phase 3 + phase 7."
+      "evidence": "Retired: alias guards (member / awaiting-decision / already-linked). Guards only matter with an alias graph; rebuild has none. Phase 3 merge decision stands. AUDIT-TASKS.md phase 3 + phase 7. | verified 2026-11-09: alias guards moot — no alias graph in schema; AUDIT phase 3+7"
     },
     {
       "id": "CRM-081",
       "source": "crm.md:Possible-duplicates UI",
       "acceptance": "Possible-duplicates UI: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "retired",
       "retired": "no-merge-graph",
-      "evidence": "Retired: Classic /duplicates page, merge-preview dialog and per-item Undo. /admin Applications shows Possible duplicate chips + a status-filter option (CRM-072/073) and admins decline extras with a note — no separate duplicates route or merge dialog. AUDIT-TASKS.md phase 3 + phase 7."
+      "evidence": "Retired: Classic /duplicates page, merge-preview dialog and per-item Undo. /admin Applications shows Possible duplicate chips + a status-filter option (CRM-072/073) and admins decline extras with a note — no separate duplicates route or merge dialog. AUDIT-TASKS.md phase 3 + phase 7. | verified 2026-11-09: no /duplicates route; Possible duplicate chips + status filter on Applications (admin-route.test.tsx › CRM-072/073); AUDIT phase 3+7"
     },
     {
       "id": "CRM-082",
@@ -1400,40 +1400,40 @@
       "source": "crm.md:Read / triage tools",
       "acceptance": "Read / triage tools: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "retired",
       "retired": "no-webmcp",
-      "evidence": "Retired: Classic WebMCP read/triage tools (get_crm_overview, list_items, …). Rebuild has no WebMCP agent surface; day-to-day /admin is the admin UI (CRM-090 already retired no-agent-feature). AUDIT-TASKS.md phase 7."
+      "evidence": "Retired: Classic WebMCP read/triage tools (get_crm_overview, list_items, …). Rebuild has no WebMCP agent surface; day-to-day /admin is the admin UI (CRM-090 already retired no-agent-feature). AUDIT-TASKS.md phase 7. | verified 2026-11-09: no WebMCP/navigator.modelContext/webmcp in src/; CRM-090 no-agent-feature; AUDIT phase 7"
     },
     {
       "id": "CRM-157",
       "source": "crm.md:Consequential tools ask the person first",
       "acceptance": "Consequential tools ask the person first: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "retired",
       "retired": "no-webmcp",
-      "evidence": "Retired: consequential WebMCP tools that asked the person first (decide_application, merge, spam, form-publish). No agent dialog layer; approve/decline confirmations are the human /admin buttons (CRM-071). AUDIT-TASKS.md phase 7."
+      "evidence": "Retired: consequential WebMCP tools that asked the person first (decide_application, merge, spam, form-publish). No agent dialog layer; approve/decline confirmations are the human /admin buttons (CRM-071). AUDIT-TASKS.md phase 7. | verified 2026-11-09: no agent dialog layer; human confirm on Decisions (CRM-071 verified); no webmcp in src/; AUDIT phase 7"
     },
     {
       "id": "CRM-158",
       "source": "crm.md:Form tools",
       "acceptance": "Form tools: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "built",
+      "status": "verified",
       "target": "retired",
       "retired": "no-webmcp",
-      "evidence": "Retired: Classic WebMCP form tools (list_forms, publish_website_form, …). Rebuild has no WebMCP; form open/close and the minimal editor are human /admin Form responses actions (custom-forms follow-up). AUDIT-TASKS.md phase 7."
+      "evidence": "Retired: Classic WebMCP form tools (list_forms, publish_website_form, …). Rebuild has no WebMCP; form open/close and the minimal editor are human /admin Form responses actions (custom-forms follow-up). AUDIT-TASKS.md phase 7. | verified 2026-11-09: no WebMCP form tools; form open/close is human /admin Form responses; no webmcp in src/; AUDIT phase 7"
     },
     {
       "id": "CRM-159",
       "source": "crm.md:Deliberately absent from agent tools",
       "acceptance": "Deliberately absent from agent tools: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "retired",
       "retired": "no-webmcp",
-      "evidence": "Retired as moot: Classic's deliberate agent-tool ban list (secrets, delete-for-good, minting personal links, …). Rebuild has no WebMCP agent surface to ban from (CRM-090). AUDIT-TASKS.md phase 7."
+      "evidence": "Retired as moot: Classic's deliberate agent-tool ban list (secrets, delete-for-good, minting personal links, …). Rebuild has no WebMCP agent surface to ban from (CRM-090). AUDIT-TASKS.md phase 7. | verified 2026-11-09: agent ban-list moot — no WebMCP surface to ban from (grep src/ empty); AUDIT phase 7"
     },
     {
       "id": "CRM-160",
@@ -1458,40 +1458,40 @@
       "source": "crm.md:Sidebar",
       "acceptance": "Sidebar: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "retired",
       "retired": "one-admin-shell",
-      "evidence": "Retired: Classic CRM sidebar (Everything, Possible duplicates nav, nested Forms, design switch, agent-tools note, CRM-own person chip). /admin uses AppShell + TopBar (src/app/layout/AppShell.tsx): Admin group links page#card (Inbox, Applications, All members, Newsletter, Admin activity, …). No Classic/Bento chrome. AUDIT-TASKS.md phase 5 one-admin-shell + phase 7."
+      "evidence": "Retired: Classic CRM sidebar (Everything, Possible duplicates nav, nested Forms, design switch, agent-tools note, CRM-own person chip). /admin uses AppShell + TopBar (src/app/layout/AppShell.tsx): Admin group links page#card (Inbox, Applications, All members, Newsletter, Admin activity, …). No Classic/Bento chrome. AUDIT-TASKS.md phase 5 one-admin-shell + phase 7. | verified 2026-11-09: AppShell Admin #card nav (AppShell.tsx All members/Newsletter/Admin activity; admin-route.test.tsx sidebar anchors); no Classic sidebar; AUDIT phase 5+7"
     },
     {
       "id": "CRM-163",
       "source": "crm.md:Classic is the default design",
       "acceptance": "Classic is the default design: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "retired",
       "retired": "one-admin-shell",
-      "evidence": "Retired: Classic-default redirect to /v2. Rebuild has no second design."
+      "evidence": "Retired: Classic-default redirect to /v2. Rebuild has no second design. | verified 2026-11-09: no /v2 Classic-default redirect or second design in src/routes; single /admin AppShell; AUDIT phase 5"
     },
     {
       "id": "CRM-164",
       "source": "crm.md:Classic and Bento are one capability",
       "acceptance": "Classic and Bento are one capability: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "retired",
       "retired": "one-admin-shell",
-      "evidence": "Retired as a dual-UI capability: Classic and Bento were one API with two skins; rebuild is a single /admin app shell."
+      "evidence": "Retired as a dual-UI capability: Classic and Bento were one API with two skins; rebuild is a single /admin app shell. | verified 2026-11-09: single /admin app shell (AppShell.tsx); no Classic/Bento dual-UI routes; AUDIT phase 5"
     },
     {
       "id": "CRM-165",
       "source": "crm.md:Design switch",
       "acceptance": "Design switch: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "retired": "one-admin-shell",
       "target": "retired",
-      "evidence": "Retired: Classic · Bento design switch (inventory already marked retired). No theme preference in the rebuild."
+      "evidence": "Retired: Classic · Bento design switch (inventory already marked retired). No theme preference in the rebuild. | verified 2026-11-09: no Classic·Bento design switch in _authenticated routes; AUDIT phase 5"
     },
     {
       "id": "CRM-166",
@@ -1518,10 +1518,10 @@
       "source": "crm.md:Light and dark themes",
       "acceptance": "Light and dark themes: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "retired",
       "retired": "one-admin-shell",
-      "evidence": "Retired: Classic Notion-style light/dark CRM tokens and login-page theme CSS. Internal pages use app-* tokens on the AppShell (AGENTS.md); design-system light/dark is the shared .dark class, not a CRM theme switch (CRM-163–165 already retired). AUDIT-TASKS.md phase 5 + phase 7."
+      "evidence": "Retired: Classic Notion-style light/dark CRM tokens and login-page theme CSS. Internal pages use app-* tokens on the AppShell (AGENTS.md); design-system light/dark is the shared .dark class, not a CRM theme switch (CRM-163–165 already retired). AUDIT-TASKS.md phase 5 + phase 7. | verified 2026-11-09: internal pages use app-* tokens on AppShell; no CRM Notion theme switch (CRM-163–165); AUDIT phase 5+7"
     },
     {
       "id": "CRM-169",
@@ -1536,10 +1536,10 @@
       "source": "crm.md:Item page",
       "acceptance": "Item page: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "retired",
       "retired": "one-admin-shell",
-      "evidence": "Retired: Classic/Bento /items/$id ItemView (full detail page with timeline, spam, merges, hold). /admin keeps work on card rows: Applications answers + notes + logged actions; All members Details (summary chips, neighborhood, newest application); no separate item route and no claim of Classic ItemView. AUDIT-TASKS.md phase 2/5 + phase 7."
+      "evidence": "Retired: Classic/Bento /items/$id ItemView (full detail page with timeline, spam, merges, hold). /admin keeps work on card rows: Applications answers + notes + logged actions; All members Details (summary chips, neighborhood, newest application); no separate item route and no claim of Classic ItemView. AUDIT-TASKS.md phase 2/5 + phase 7. | verified 2026-11-09: no /items/$id ItemView route in src/; work stays on /admin card rows (admin-route.test.tsx); AUDIT phase 2/5+7"
     },
     {
       "id": "CRM-171",
