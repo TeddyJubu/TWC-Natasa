@@ -138,7 +138,7 @@ export const privacy: LegalDoc = {
         { ul: [
           [b("Hostinger"), " — rents The Women's Collective the server the site runs on. Your application, your account and your member profile are stored on that server, in a database only The Women's Collective can read. They are not passed to any form-handling service."],
           [b("Cloudflare"), " — all traffic to the site passes through Cloudflare's network on its way to that server, so Cloudflare sees your IP address."],
-          [b("Cloudflare Email Sending"), " — sends the account emails: the link to confirm your email address, password-reset links, and the welcome email when your application is approved. It receives your email address and the message. Nothing is emailed when an application is submitted."],
+          [b("Cloudflare Email Sending"), " — sends the account emails: the link to confirm your email address, password-reset links, a short thank-you when you submit an application or a contact or partnership form, and the welcome email when your application is approved. It receives your email address and the message."],
           "No newsletter platform is connected to this site. A newsletter sign-up is an answer on your application, and nothing is sent to you from here.",
           [b("No analytics."), " No analytics service runs on this site — no cookies are set, no profile is built, and nothing about your visit is sent to an advertising network."],
           "Fonts and photographs are self-hosted: they're served by this site's own server, so no font or image service sees your visit.",

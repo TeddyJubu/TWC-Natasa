@@ -3,7 +3,7 @@
 // for a reply. A filled honeypot gets the same success with nothing stored or sent.
 import type { Ctx } from "@/server/context.server";
 import { AccessError } from "@/server/guard";
-import { notifyAdmins, oneLine } from "@/server/notify";
+import { confirmFooter, confirmSubmitter, firstName, notifyAdmins, oneLine } from "@/server/notify";
 import { bad, isObject } from "@/server/validate";
 import { checkSize, clientIp, HttpError, rateLimit, respond } from "@/server/request";
 import { checkContact, checkPartnership, type ContactInput, type PartnershipInput } from "./schema";
@@ -31,32 +31,53 @@ export function partnershipEmail(input: PartnershipInput): { subject: string; te
   };
 }
 
+/** Confirmation to the contact submitter (OPS-501 subject). No admin links; never throws. */
+export async function confirmContact(input: ContactInput): Promise<void> {
+  const text = [
+    `Hi ${firstName(input.name)},`, "",
+    "Thanks for writing to The Women's Collective. We've got your message and will reply when we can.", "",
+    confirmFooter("contact form"),
+  ].join("\n");
+  await confirmSubmitter({ to: input.email, subject: "We got your message", text }, "[inbox] contact");
+}
+
+/** Confirmation to the partnership submitter (OPS-501 subject). No admin links; never throws. */
+export async function confirmPartnership(input: PartnershipInput): Promise<void> {
+  const text = [
+    `Hi ${firstName(input.name)},`, "",
+    "Thanks for writing about a partnership with The Women's Collective. We've got your inquiry and will be in touch.", "",
+    confirmFooter("partnerships form"),
+  ].join("\n");
+  await confirmSubmitter({ to: input.email, subject: "Thanks for reaching out about a partnership", text }, "[inbox] partnership");
+}
+
 /** True when the hidden honeypot field has anything in it: a bot, so pretend it worked. */
 const isBot = (input: Record<string, unknown>) => input.honeypot !== undefined && input.honeypot !== "" && input.honeypot !== null;
 
 /**
- * Checks, stores, then emails every admin. Stored is success: a failed or unconfigured email never loses the
- * message, which waits in the /admin inbox. A honeypot hit returns before anything is stored or sent.
+ * Checks, stores, then emails every admin and a short confirmation to the sender. Stored is success: a failed or
+ * unconfigured email never loses the message, which waits in the /admin inbox. A honeypot hit returns before
+ * anything is stored or sent.
  */
 export async function receiveMessage({ db }: Ctx, kind: InboxKind, input: unknown): Promise<void> {
   if (!isObject(input)) throw bad("message");
   if (isBot(input)) return;
-  let email: { subject: string; text: string };
   if (kind === "contact") {
     const checked = checkContact(input);
     if ("errors" in checked) throw new AccessError(Object.values(checked.errors)[0]!, 400);
     const v = checked.value;
     db.prepare("insert into inbox_messages (kind, name, email, topic, message) values ('contact', ?, ?, ?, ?)").run(v.name, v.email, v.topic, v.message);
-    email = contactEmail(v);
-  } else {
-    const checked = checkPartnership(input);
-    if ("errors" in checked) throw new AccessError(Object.values(checked.errors)[0]!, 400);
-    const v = checked.value;
-    db.prepare("insert into inbox_messages (kind, name, email, business, collaboration_type, message) values ('partnership', ?, ?, ?, ?, ?)")
-      .run(v.name, v.email, v.business || null, v.collaboration_type, v.message);
-    email = partnershipEmail(v);
+    if (!(await notifyAdmins(db, contactEmail(v)))) console.warn(`[inbox] ${kind} message stored, but no admin email went out`);
+    await confirmContact(v);
+    return;
   }
-  if (!(await notifyAdmins(db, email))) console.warn(`[inbox] ${kind} message stored, but no admin email went out`);
+  const checked = checkPartnership(input);
+  if ("errors" in checked) throw new AccessError(Object.values(checked.errors)[0]!, 400);
+  const v = checked.value;
+  db.prepare("insert into inbox_messages (kind, name, email, business, collaboration_type, message) values ('partnership', ?, ?, ?, ?, ?)")
+    .run(v.name, v.email, v.business || null, v.collaboration_type, v.message);
+  if (!(await notifyAdmins(db, partnershipEmail(v)))) console.warn(`[inbox] ${kind} message stored, but no admin email went out`);
+  await confirmPartnership(v);
 }
 
 /** 5 per client IP per 10 minutes, counted separately for each form (as the old forms service did). */

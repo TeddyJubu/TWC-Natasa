@@ -1203,8 +1203,9 @@
       "source": "crm.md:Confirmation emails to the sender",
       "acceptance": "Confirmation emails to the sender: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "Sync confirmation after store via sendEmail(): contact \"We got your message\", partnership \"Thanks for reaching out about a partnership\" (confirmContact/confirmPartnership in contact.server.ts), plus application \"We got your application\" (confirmApplication in applications.server.ts — brief phase 3; inventory listed contact/partnership only). No admin links; failure logs only (confirmSubmitter). On/off + since + editable words (notify_settings) not built — CRM-138/139/142 stay todo. Tests: contact.test.ts, application-alert.test.ts, notify.test.ts."
     },
     {
       "id": "CRM-138",
@@ -3742,8 +3743,9 @@
       "source": "backoffice.md:Confirmation emails to the submitter",
       "acceptance": "Confirmation emails to the submitter: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "built",
+      "target": "notifications",
+      "evidence": "Submitter confirmations sent in-request after store (not a 5-min timer job): contact + partnership + membership application via confirmSubmitter → sendEmail(). Fixed short thank-you copy (testdata subjects for contact/partnership); no answer dump, no admin links. Custom-form confirmations (OPS-503/CRM-141) and finish-later (OPS-512+) stay todo. Tests: contact.test.ts, application-alert.test.ts."
     },
     {
       "id": "OPS-259",
@@ -5697,16 +5699,18 @@
       "source": "ops-part-d.md:Rules, in order (a row gets at most one email, ever).",
       "acceptance": "Rules, in order (a row gets at most one email, ever).: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "built",
+      "target": "notifications",
+      "retired": "sync-confirm",
+      "evidence": "Retired watermark/timer rules for website-form confirmations: one confirmation fires once per successful store in the request (receiveMessage / submitApplicationRequest). No 48h window, spam skip, or per-address 24h state file — honeypot already drops bots before store; IP rate limits cover abuse. Custom-form confirm rules (OPS-503) stay todo."
     },
     {
       "id": "OPS-501",
       "source": "ops-part-d.md:Website forms (`contact`, `partnership`).",
       "acceptance": "Website forms (`contact`, `partnership`).: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "verified",
-      "evidence": "Website contact + partnership forms store then alert via receiveMessage (contact.server.ts); covered by contact.test.ts | verified 2026-11-09: contact+partnership store-then-alert (contact.test.ts)",
+      "status": "built",
+      "evidence": "Contact + partnership: store then admin alert (receiveMessage) + submitter confirmation (confirmContact/confirmPartnership) with OPS-501 subjects \"We got your message\" / \"Thanks for reaching out about a partnership\". Fixed copy (no publishable confirmation JSON yet). Newsletter still has no confirmation (Beehiiv). Tests: contact.test.ts. | prior verify 2026-11-09 covered admin alert only; phase 3 adds submitter confirmation.",
       "target": "/contact"
     },
     {
@@ -5746,16 +5750,20 @@
       "source": "ops-part-d.md:State file `data/notify_confirm_state.json` (0600).",
       "acceptance": "State file `data/notify_confirm_state.json` (0600).: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "built",
+      "target": "retired",
+      "retired": "sync-confirm",
+      "evidence": "Retired: confirmations send in-request; no notify_confirm_state.json watermark. A failed send is logged and not retried automatically (same as old failed status), without burning the address (OPS-524)."
     },
     {
       "id": "OPS-507",
       "source": "ops-part-d.md:Status file `data/notify-confirmations-status.json` (0644, for the CRM).",
       "acceptance": "Status file `data/notify-confirmations-status.json` (0644, for the CRM).: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "built",
+      "target": "retired",
+      "retired": "sync-confirm",
+      "evidence": "Retired: no CRM status JSON for the host confirmations job. Admin inbox + application rows are the source of truth; mail failures go to server logs only."
     },
     {
       "id": "OPS-508",
@@ -5894,8 +5902,9 @@
       "source": "ops-part-d.md:A failed confirmation burns the address for a day.",
       "acceptance": "A failed confirmation burns the address for a day.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "built",
+      "target": "notifications",
+      "evidence": "FIX-IN-REBUILD: confirmSubmitter does not record a per-address burn. A failed or unconfigured send is logged only; the stored row stands and a later submit can try again. No notify_confirm_state addresses map. Tests: application-alert.test.ts + contact.test.ts (mailer fail → 204 + stored)."
     },
     {
       "id": "OPS-525",
