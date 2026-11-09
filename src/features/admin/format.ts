@@ -11,14 +11,20 @@ export function sortApplications<T extends { status: Status; created_at: string 
   );
 }
 
-// Labels that a plain split would get wrong; any other key (including ones the form adds later) is humanised.
-const LABELS: Partial<Record<keyof ApplicationAnswers, string>> = {
+// Labels that a plain split would get wrong, plus the CRM's own words for imported answers (CRM-032); any other key
+// (including ones the form adds later) is humanised.
+// ponytail: only the four CRM labels the inventory names; add the rest of its ~30 when crm/server/ingest.ts is to hand.
+const LABELS: Record<string, string> = {
   whatsapp: "WhatsApp",
   linkedin: "LinkedIn",
+  full_name: "Name",
+  base_area: "Based in",
+  goal_labels: "Hoping to find",
+  coffee_chat: "Open to coffee chats",
 };
 
 export function humanizeKey(key: string): string {
-  const known = (LABELS as Record<string, string | undefined>)[key];
+  const known = LABELS[key];
   if (known) return known;
   const words = key.replace(/([a-z0-9])([A-Z])/g, "$1 $2").replace(/[_-]+/g, " ").trim().toLowerCase();
   return words.charAt(0).toUpperCase() + words.slice(1);
@@ -35,15 +41,20 @@ const scalar = (v: unknown): string | undefined => {
   return undefined;
 };
 
+/** CRM-032: never shown — `_…`, `…_codes`, anything with token or signature, and ip. */
+const hiddenKey = (k: string) => k.startsWith("_") || k.endsWith("_codes") || /token|signature/i.test(k) || k === "ip";
+
 /**
  * Flattens the stored `answers` JSON into labelled rows: nested objects become "Parent · Child",
- * arrays stay lists, booleans read Yes/No, and empty values are skipped. Unknown keys are kept.
+ * arrays stay lists, booleans read Yes/No, and empty values and hidden keys are skipped. Unknown keys are kept.
+ * The import's top-level `legacy` record is bookkeeping, not an answer (its origin shows via applicationOrigin).
  */
 export function formatAnswers(answers: Partial<ApplicationAnswers> | unknown): AnswerEntry[] {
   if (!isRecord(answers)) return [];
   const out: AnswerEntry[] = [];
   const walk = (obj: Record<string, unknown>, keyPath: string[], labels: string[]) => {
     for (const [k, v] of Object.entries(obj)) {
+      if (hiddenKey(k) || (keyPath.length === 0 && k === "legacy")) continue;
       const key = [...keyPath, k];
       const label = [...labels, humanizeKey(k)];
       if (isRecord(v)) walk(v, key, label);
@@ -57,6 +68,22 @@ export function formatAnswers(answers: Partial<ApplicationAnswers> | unknown): A
     }
   };
   walk(answers, [], []);
+  return out;
+}
+
+/** CRM-031's origin label: what the import recorded (Old HeyForm, Imported list, Earlier form…), else this site's form. */
+export function applicationOrigin(answers: unknown): string {
+  const legacy = isRecord(answers) ? answers.legacy : undefined;
+  return (isRecord(legacy) && typeof legacy.origin === "string" && legacy.origin.trim()) || "Join form";
+}
+
+/** Each member's newest linked application, by user id. */
+export function newestByUser<A extends { user_id: string | null; created_at: string }>(apps: A[]): Map<string, A> {
+  const out = new Map<string, A>();
+  for (const a of apps) {
+    const seen = a.user_id ? out.get(a.user_id) : undefined;
+    if (a.user_id && (!seen || a.created_at > seen.created_at)) out.set(a.user_id, a);
+  }
   return out;
 }
 

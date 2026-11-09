@@ -86,6 +86,19 @@ export function setMemberStatus({ db, actor }: Ctx, input: unknown): string | nu
   });
 }
 
+/**
+ * CRM-059: an admin corrects a member's neighborhood — one on the list, or none (`null` / ""). Only the profile
+ * changes; her application keeps the answer she gave.
+ */
+export function setMemberNeighborhood({ db, actor }: Ctx, input: unknown): void {
+  requireAdmin(db, actor);
+  if (!isObject(input)) throw bad("member");
+  const id = str(input.id, "member", 64);
+  const name = input.neighborhood === null ? null : str(input.neighborhood, "neighborhood", 200) || null;
+  if (name && !db.prepare("select 1 from neighborhoods where name = ?").get(name)) throw bad("neighborhood");
+  if (!db.prepare("update profiles set neighborhood = ? where id = ?").run(name, id).changes) throw bad("member");
+}
+
 /** The welcome email for an approved application (after reviewApplication or setMemberStatus). */
 export function approvalEmail({ db, actor }: Ctx, applicationId: string): Promise<ApprovalEmailResult> {
   requireAdmin(db, actor);
