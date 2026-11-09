@@ -30,6 +30,7 @@ const ADMIN: NavItem[] = [
   { label: "Applications", icon: "notebook-pen", to: "/admin", hash: "applications" },
   { label: "All members", icon: "badge-check", to: "/admin", hash: "members" },
   { label: "Member reviews", icon: "notebook-pen", to: "/admin", hash: "reviews" },
+  { label: "Form responses", icon: "notebook-pen", to: "/admin", hash: "forms" },
   { label: "Neighborhoods", icon: "map-pin", to: "/admin", hash: "neighborhoods" },
   { label: "Headshot bookings", icon: "calendar", to: "/admin", hash: "bookings" },
   { label: "Gatherings", icon: "calendar-days", to: "/admin", hash: "gatherings", sr: "Admin" },

@@ -55,4 +55,4 @@ Source of truth for the `vps-cutover` workstream (SITE-100, SITE-162, SITE-164).
 ## Not redirected yet
 
 - Static assets under `/assets/*`, `/embed.js`, favicons and `robots.txt` stay with the archived site until `vps-cutover` removes them.
-- Apex `/f/*` custom forms (OPS-518) need the custom-forms workstream before those URLs move.
+- Apex `/f/*` custom forms (OPS-518): the new app now serves `/f/<slug>`, `/f/<slug>/thanks` and old names (301 to the current slug), so `/f/*` can 301 to `https://new.thewomenscollective.club{uri}`, **keeping the path and the query** (resume links carry `#resume=…` in the fragment, which the browser keeps across a 301). Wait until the live forms are imported into `custom_forms` (custom-forms follow-up). Until then an unknown slug is a 404 on the new app. Still served by the old site: `/f/<slug>/thanks-<n>`, `thanks-go`, `thanks-waitlist`, `full`, `event.ics`, `/f/media/*` and `/forms`, which have no new route yet.

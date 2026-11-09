@@ -23,6 +23,7 @@ import {
   adminReviewsQuery, reviewLinkStatesQuery, useMarkReviewDone, useMintReviewLink, useRevokeReviewLink, type AdminReview, type LinkState,
 } from "@/features/member-links/queries";
 import { reviewEntries } from "@/features/member-links/schema";
+import { adminFormResponsesQuery, type AdminForm } from "@/features/forms/queries";
 
 const errorMessage = (error: unknown) =>
   (error as { message?: string } | null)?.message || "Something went wrong. Please try again.";
@@ -73,7 +74,7 @@ function EmailNotice({ notice }: { notice: ApprovalNotice | null | undefined }) 
 }
 
 /** Waiting on an admin (pending, requested) in sun; approved/confirmed in mint; declined in danger. */
-const STATUS_TONE: Record<string, ChipTone> = { pending: "pending", requested: "pending", approved: "ok", confirmed: "ok", declined: "no" };
+const STATUS_TONE: Record<string, ChipTone> = { pending: "pending", requested: "pending", approved: "ok", confirmed: "ok", open: "ok", declined: "no" };
 function StatusChip({ status }: { status: string }) {
   return <Chip tone={STATUS_TONE[status] ?? "muted"}>{humanizeKey(status)}</Chip>;
 }
@@ -389,6 +390,39 @@ function ReviewRow({ review: r }: { review: AdminReview }) {
           Mark handled
         </button>
       </div>
+    </Item>
+  );
+}
+
+// ---------- Form responses ----------
+
+export function FormResponsesPanel() {
+  const forms = useQuery(adminFormResponsesQuery);
+  const list = forms.data ?? [];
+  const total = list.reduce((n, f) => n + f.total, 0);
+  return (
+    <Card id="forms" title="Form responses" subtitle={forms.data ? `${total} answers · ${list.length} forms at /f/…` : "Answers to the forms at /f/…"}>
+      <QueryGate query={forms} what="form responses">
+        {list.length === 0 ? <Empty>No forms yet.</Empty> : list.map((f) => <FormRow key={f.id} form={f} />)}
+      </QueryGate>
+    </Card>
+  );
+}
+
+function FormRow({ form: f }: { form: AdminForm }) {
+  const shown = f.total > f.responses.length ? ` · newest ${f.responses.length} shown` : "";
+  return (
+    <Item headingId={`form-${f.id}`} title={f.name} status={f.open ? "open" : "closed"}
+      details={<p className={meta}>/f/{f.slug} · {f.total === 1 ? "1 answer" : `${f.total} answers`}{shown}</p>}>
+      {f.responses.map((r) => (
+        <details key={r.id} className="group rounded-md bg-app-sunken">
+          <summary className={cn("flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-md px-3.5 text-sm font-medium text-ink [&::-webkit-details-marker]:hidden", ring)}>
+            <Icon name="chevron-down" className="size-3.25 -rotate-90 text-app-muted transition-transform group-open:rotate-0 motion-reduce:transition-none" />
+            {formatDate(r.created_at)} ({r.entries.length} answers)
+          </summary>
+          <AnswerList entries={r.entries} />
+        </details>
+      ))}
     </Item>
   );
 }

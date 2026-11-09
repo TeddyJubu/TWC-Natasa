@@ -39,11 +39,14 @@ import { Route as ApiImagesRouteImport } from './routes/api/images'
 import { Route as ApiNeighborhoodLogosRouteImport } from './routes/api/neighborhood-logos'
 import { Route as ApiPartnershipsRouteImport } from './routes/api/partnerships'
 import { Route as ApiReviewRouteImport } from './routes/api/review'
+import { Route as FSlugRouteImport } from './routes/f.$slug'
 import { Route as MediaSplatRouteImport } from './routes/media/$'
 import { Route as MembersSlugRouteImport } from './routes/members_.$slug'
 import { Route as NeighborhoodsSlugRouteImport } from './routes/neighborhoods_.$slug'
 import { Route as AuthenticatedAdminAdminRouteImport } from './routes/_authenticated/_admin/admin'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiFormsSlugRouteImport } from './routes/api/forms.$slug'
+import { Route as FSlugThanksRouteImport } from './routes/f.$slug_.thanks'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -193,6 +196,11 @@ const ApiReviewRoute = ApiReviewRouteImport.update({
   path: '/api/review',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FSlugRoute = FSlugRouteImport.update({
+  id: '/f/$slug',
+  path: '/f/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MediaSplatRoute = MediaSplatRouteImport.update({
   id: '/media/$',
   path: '/media/$',
@@ -216,6 +224,16 @@ const AuthenticatedAdminAdminRoute = AuthenticatedAdminAdminRouteImport.update({
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiFormsSlugRoute = ApiFormsSlugRouteImport.update({
+  id: '/api/forms/$slug',
+  path: '/api/forms/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FSlugThanksRoute = FSlugThanksRouteImport.update({
+  id: '/f/$slug_/thanks',
+  path: '/f/$slug/thanks',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -248,11 +266,14 @@ export interface FileRoutesByFullPath {
   '/api/neighborhood-logos': typeof ApiNeighborhoodLogosRoute
   '/api/partnerships': typeof ApiPartnershipsRoute
   '/api/review': typeof ApiReviewRoute
+  '/f/$slug': typeof FSlugRoute
   '/media/$': typeof MediaSplatRoute
   '/members/$slug': typeof MembersSlugRoute
   '/neighborhoods/$slug': typeof NeighborhoodsSlugRoute
   '/admin': typeof AuthenticatedAdminAdminRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/forms/$slug': typeof ApiFormsSlugRoute
+  '/f/$slug/thanks': typeof FSlugThanksRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -283,11 +304,14 @@ export interface FileRoutesByTo {
   '/api/neighborhood-logos': typeof ApiNeighborhoodLogosRoute
   '/api/partnerships': typeof ApiPartnershipsRoute
   '/api/review': typeof ApiReviewRoute
+  '/f/$slug': typeof FSlugRoute
   '/media/$': typeof MediaSplatRoute
   '/members/$slug': typeof MembersSlugRoute
   '/neighborhoods/$slug': typeof NeighborhoodsSlugRoute
   '/admin': typeof AuthenticatedAdminAdminRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/forms/$slug': typeof ApiFormsSlugRoute
+  '/f/$slug/thanks': typeof FSlugThanksRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -321,11 +345,14 @@ export interface FileRoutesById {
   '/api/neighborhood-logos': typeof ApiNeighborhoodLogosRoute
   '/api/partnerships': typeof ApiPartnershipsRoute
   '/api/review': typeof ApiReviewRoute
+  '/f/$slug': typeof FSlugRoute
   '/media/$': typeof MediaSplatRoute
   '/members_/$slug': typeof MembersSlugRoute
   '/neighborhoods_/$slug': typeof NeighborhoodsSlugRoute
   '/_authenticated/_admin/admin': typeof AuthenticatedAdminAdminRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/forms/$slug': typeof ApiFormsSlugRoute
+  '/f/$slug_/thanks': typeof FSlugThanksRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -358,11 +385,14 @@ export interface FileRouteTypes {
     | '/api/neighborhood-logos'
     | '/api/partnerships'
     | '/api/review'
+    | '/f/$slug'
     | '/media/$'
     | '/members/$slug'
     | '/neighborhoods/$slug'
     | '/admin'
     | '/api/auth/$'
+    | '/api/forms/$slug'
+    | '/f/$slug/thanks'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -393,11 +423,14 @@ export interface FileRouteTypes {
     | '/api/neighborhood-logos'
     | '/api/partnerships'
     | '/api/review'
+    | '/f/$slug'
     | '/media/$'
     | '/members/$slug'
     | '/neighborhoods/$slug'
     | '/admin'
     | '/api/auth/$'
+    | '/api/forms/$slug'
+    | '/f/$slug/thanks'
   id:
     | '__root__'
     | '/'
@@ -430,11 +463,14 @@ export interface FileRouteTypes {
     | '/api/neighborhood-logos'
     | '/api/partnerships'
     | '/api/review'
+    | '/f/$slug'
     | '/media/$'
     | '/members_/$slug'
     | '/neighborhoods_/$slug'
     | '/_authenticated/_admin/admin'
     | '/api/auth/$'
+    | '/api/forms/$slug'
+    | '/f/$slug_/thanks'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -466,10 +502,13 @@ export interface RootRouteChildren {
   ApiNeighborhoodLogosRoute: typeof ApiNeighborhoodLogosRoute
   ApiPartnershipsRoute: typeof ApiPartnershipsRoute
   ApiReviewRoute: typeof ApiReviewRoute
+  FSlugRoute: typeof FSlugRoute
   MediaSplatRoute: typeof MediaSplatRoute
   MembersSlugRoute: typeof MembersSlugRoute
   NeighborhoodsSlugRoute: typeof NeighborhoodsSlugRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiFormsSlugRoute: typeof ApiFormsSlugRoute
+  FSlugThanksRoute: typeof FSlugThanksRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -684,6 +723,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiReviewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/f/$slug': {
+      id: '/f/$slug'
+      path: '/f/$slug'
+      fullPath: '/f/$slug'
+      preLoaderRoute: typeof FSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/media/$': {
       id: '/media/$'
       path: '/media/$'
@@ -717,6 +763,20 @@ declare module '@tanstack/react-router' {
       path: '/api/auth/$'
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/forms/$slug': {
+      id: '/api/forms/$slug'
+      path: '/api/forms/$slug'
+      fullPath: '/api/forms/$slug'
+      preLoaderRoute: typeof ApiFormsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/f/$slug_/thanks': {
+      id: '/f/$slug_/thanks'
+      path: '/f/$slug/thanks'
+      fullPath: '/f/$slug/thanks'
+      preLoaderRoute: typeof FSlugThanksRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -778,10 +838,13 @@ const rootRouteChildren: RootRouteChildren = {
   ApiNeighborhoodLogosRoute: ApiNeighborhoodLogosRoute,
   ApiPartnershipsRoute: ApiPartnershipsRoute,
   ApiReviewRoute: ApiReviewRoute,
+  FSlugRoute: FSlugRoute,
   MediaSplatRoute: MediaSplatRoute,
   MembersSlugRoute: MembersSlugRoute,
   NeighborhoodsSlugRoute: NeighborhoodsSlugRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiFormsSlugRoute: ApiFormsSlugRoute,
+  FSlugThanksRoute: FSlugThanksRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
