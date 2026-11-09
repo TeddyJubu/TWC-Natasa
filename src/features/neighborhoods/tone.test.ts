@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { constellationLogoSources } from "@/index";
-import { toneFor } from "./tone";
+import { contrastRatio, hasColor, textOn, toneFor } from "./tone";
 import { NEIGHBORHOOD_SEED, type Neighborhood } from "./queries";
 
 describe("toneFor", () => {
@@ -31,5 +31,32 @@ describe("toneFor", () => {
 
   it("returns undefined when no neighborhood is set", () => {
     expect(toneFor(null, NEIGHBORHOOD_SEED)).toBeUndefined();
+  });
+});
+
+describe("textOn", () => {
+  it("reaches AA (4.5:1) for small text on every seed color but Sunnyside, whose small text goes on paper", () => {
+    expect(NEIGHBORHOOD_SEED.filter((n) => textOn(n.color).ratio < 4.5).map((n) => n.name)).toEqual(["Sunnyside"]);
+  });
+
+  it("reaches 3:1 (large text) on any color, choosing paper on dark ones", () => {
+    for (let v = 0; v < 0x1000000; v += 0x0f0f0f) {
+      const color = `#${v.toString(16).padStart(6, "0")}`;
+      expect(textOn(color).ratio, color).toBeGreaterThanOrEqual(3);
+    }
+    expect(textOn("#1d3b6e").text).toBe("paper");
+    expect(textOn("#ff9a1f").text).toBe("ink");
+  });
+
+  it("computes WCAG ratios", () => {
+    expect(contrastRatio("#000000", "#ffffff")).toBeCloseTo(21);
+    expect(contrastRatio("#777777", "#777777")).toBe(1);
+  });
+});
+
+describe("hasColor", () => {
+  it("accepts #rrggbb only", () => {
+    expect(hasColor("#2f9dff")).toBe(true);
+    for (const bad of ["", null, undefined, "red", "#fff", "#12345g"]) expect(hasColor(bad)).toBe(false);
   });
 });
