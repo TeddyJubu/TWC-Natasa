@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { openDb, type DB } from "@/server/db";
 import { mediaFile } from "@/server/media";
-import { addNote, adminCsv, adminNeighborhoods, adminNotes, deleteNote, saveNeighborhoodLogo } from "./admin.server";
+import { addNote, adminCsv, adminNeighborhoods, adminNotes, deleteNote, saveNeighborhoodLogo, setMemberNeighborhood } from "./admin.server";
 import { TINY } from "@/test/images";
 
 const ADMIN = "00000000-0000-4000-8000-00000000000a";
@@ -74,5 +74,26 @@ describe("CSV export", () => {
     expect(adminCsv(admin(), { kind: "members" }).csv.split("\r\n")[0]).toBe(
       "\uFEFF\"Name\",\"Status\",\"Listed\",\"Public\",\"Catalogue\",\"Email\",\"Business\",\"Neighborhood\",\"Member since\"");
     expect(() => adminCsv(admin(), { kind: "inbox" })).toThrow(/Invalid export/);
+  });
+});
+
+describe("member neighborhood (CRM-059)", () => {
+  it("sets a listed one or clears it, and never touches her application's answer", () => {
+    const appId = (db.prepare("insert into applications (user_id, email, full_name, neighborhood, answers) values (?, 'a@x.test', 'Ada', 'Ridgewood', '{}') returning id").get(ADMIN) as { id: string }).id;
+    const hood = () => (db.prepare("select neighborhood from profiles where id = ?").get(ADMIN) as { neighborhood: string | null }).neighborhood;
+    setMemberNeighborhood(admin(), { id: ADMIN, neighborhood: "Astoria" });
+    expect(hood()).toBe("Astoria");
+    setMemberNeighborhood(admin(), { id: ADMIN, neighborhood: "" });
+    expect(hood()).toBeNull();
+    setMemberNeighborhood(admin(), { id: ADMIN, neighborhood: "Sunnyside" });
+    setMemberNeighborhood(admin(), { id: ADMIN, neighborhood: null });
+    expect(hood()).toBeNull();
+    expect((db.prepare("select neighborhood from applications where id = ?").get(appId) as { neighborhood: string }).neighborhood).toBe("Ridgewood");
+    db.prepare("delete from applications where id = ?").run(appId);
+  });
+
+  it("refuses an unlisted neighborhood and an unknown member", () => {
+    expect(() => setMemberNeighborhood(admin(), { id: ADMIN, neighborhood: "Atlantis" })).toThrow(/Invalid neighborhood/);
+    expect(() => setMemberNeighborhood(admin(), { id: "nobody", neighborhood: "Astoria" })).toThrow(/Invalid member/);
   });
 });

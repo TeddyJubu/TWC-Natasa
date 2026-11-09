@@ -6,7 +6,7 @@ import { checkLogo, validateNeighborhood } from "./format";
 import { emailApproval, type ApprovalNotice } from "./approval-email";
 import { postApi } from "@/app/api";
 import {
-  addNoteFn, adminCsvFn, archiveMessageFn, createEventFn, deleteNoteFn, createNeighborhoodFn, deleteEventFn, reviewApplicationFn, setBookingStatusFn, setMemberStatusFn, updateEventFn,
+  addNoteFn, adminCsvFn, archiveMessageFn, createEventFn, deleteNoteFn, createNeighborhoodFn, deleteEventFn, reviewApplicationFn, setBookingStatusFn, setMemberNeighborhoodFn, setMemberStatusFn, updateEventFn,
   updateNeighborhoodFn,
 } from "./fns";
 
@@ -111,6 +111,12 @@ export const setMemberStatusMutation = (qc: QueryClient) => ({
   onSuccess: () => invalidate(qc, [["admin", "members"], ["admin", "applications"], ["directory"], ["public-profiles"], ["intros"]]),
 });
 
+// Her neighborhood shows on the directory, her public page and in intros.
+export const setMemberNeighborhoodMutation = (qc: QueryClient) => ({
+  mutationFn: (data: { id: string; neighborhood: string | null }) => setMemberNeighborhoodFn({ data }),
+  onSuccess: () => invalidate(qc, [["admin", "members"], ["directory"], ["public-profiles"], ["intros"], ["profile"]]),
+});
+
 export const setBookingStatusMutation = (qc: QueryClient) => ({
   mutationFn: setBookingStatus,
   onSuccess: () => invalidate(qc, [["admin", "bookings"]]),
@@ -181,6 +187,7 @@ export async function downloadCsv(kind: "applications" | "members"): Promise<voi
 
 export const useReviewApplication = () => useMutation(reviewApplicationMutation(useQueryClient()));
 export const useSetMemberStatus = () => useMutation(setMemberStatusMutation(useQueryClient()));
+export const useSetMemberNeighborhood = () => useMutation(setMemberNeighborhoodMutation(useQueryClient()));
 export const useSetBookingStatus = () => useMutation(setBookingStatusMutation(useQueryClient()));
 export const useCreateNeighborhood = () => useMutation(createNeighborhoodMutation(useQueryClient()));
 export const useUpdateNeighborhood = () => useMutation(updateNeighborhoodMutation(useQueryClient()));

@@ -188,6 +188,48 @@ describe("/admin", () => {
     });
   });
 
+  describe("filters, member detail and neighborhood (CRM-062, CRM-060, CRM-059)", () => {
+    it("status filters compose with the search box", () => {
+      renderAdmin({
+        applications: [application("a1", "Pia Baker"), application("a2", "Pia Stone", { status: "approved" }), application("a3", "Lu Smith", { status: "approved" })],
+        members: [...members, member("u2", "Ida Moss", { status: "pending", neighborhood: null })],
+      });
+      const apps = card("Applications");
+      fireEvent.change(within(apps).getByLabelText("Status"), { target: { value: "approved" } });
+      fireEvent.change(screen.getByRole("searchbox"), { target: { value: "pia" } });
+      expect(within(apps).getAllByRole("article").map((a) => a.querySelector("h3")!.textContent)).toEqual(["Pia Stone"]);
+      expect(within(apps).getByText(/1 of 3 shown/)).toBeTruthy();
+      fireEvent.change(screen.getByRole("searchbox"), { target: { value: "" } });
+      const all = card("All members");
+      fireEvent.change(within(all).getByLabelText("Neighborhood"), { target: { value: " none" } });
+      expect(within(all).getAllByRole("rowheader").map((h) => h.textContent)).toEqual(["Ida Moss"]);
+      fireEvent.change(within(all).getByLabelText("Neighborhood"), { target: { value: "" } });
+      fireEvent.change(within(all).getByLabelText("Status"), { target: { value: "approved" } });
+      expect(within(all).getAllByRole("rowheader").map((h) => h.textContent)).toEqual(["Natasa Admin", "Rosa Diaz"]);
+    });
+
+    it("a member's Details show her newest application with its origin, and save a corrected neighborhood", async () => {
+      renderAdmin({ applications: [
+        application("old", "Rosa Diaz", { user_id: "u1", created_at: "2025-01-01T00:00:00Z", answers: { story: "Old story" } }),
+        application("new", "Rosa Diaz", { user_id: "u1", status: "approved", neighborhood: "Ridgewood", answers: { base_area: "Other", goal_codes: ["x"], legacy: { origin: "Old HeyForm" } } }),
+      ] }, [[["neighborhoods"], [{ slug: "astoria", name: "Astoria", color: "#ff9a1f", logoUrl: null, active: true }, { slug: "sunnyside", name: "Sunnyside", color: "#9b64ff", logoUrl: null, active: true }]]]);
+      const row = within(card("All members")).getByRole("rowheader", { name: "Rosa Diaz" }).closest("tr")!;
+      const details = within(row).getByText("Details").closest("details")!;
+      expect(details.textContent).toContain("Old HeyForm");
+      expect(details.textContent).toContain("Neighborhood given: Ridgewood");
+      expect(details.textContent).toContain("Based in");
+      expect(details.textContent).not.toContain("Old story");
+      expect(details.textContent).not.toContain("Goal codes");
+      const save = within(details).getByRole("button", { name: "Save" }) as HTMLButtonElement;
+      expect(save.disabled).toBe(true);
+      fake.results = [undefined, members];
+      fireEvent.change(within(details).getByLabelText("Neighborhood for Rosa Diaz"), { target: { value: "Sunnyside" } });
+      fireEvent.click(save);
+      await settle();
+      expect(fake.calls[0]).toEqual(["setMemberNeighborhoodFn", { id: "u1", neighborhood: "Sunnyside" }]);
+    });
+  });
+
   it("arriving at /admin#bookings marks Headshot bookings as here and focuses its heading (route focus skips hash URLs)", () => {
     window.history.replaceState(null, "", "/admin#bookings");
     try {

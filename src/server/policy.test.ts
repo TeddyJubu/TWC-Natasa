@@ -16,7 +16,7 @@ import { listNeighborhoods } from "@/features/neighborhoods/neighborhoods.server
 import { receiveMessage } from "@/features/contact/contact.server";
 import {
   addNote, adminApplications, adminCsv, adminEvents, adminInbox, adminMembers, adminNotes, archiveMessage, deleteNote, createEvent, createNeighborhood, deleteEvent, reviewApplication, setBookingStatus,
-  setMemberStatus, updateEvent,
+  setMemberNeighborhood, setMemberStatus, updateEvent,
 } from "@/features/admin/admin.server";
 import { adminReviews, markReviewDone, mintReviewLink, openReview, reviewLinkStates, revokeReviewLink, submitReview } from "@/features/member-links/member-links.server";
 import { adminFormResponses, openForm, submitResponse } from "@/features/forms/forms.server";
@@ -596,8 +596,9 @@ describe("custom forms", () => {
   });
 });
 
-// Admin notes (0006) and CSV export: admins only; a member or visitor can neither read, add, delete nor download.
-describe("admin notes and CSV export", () => {
+// Admin notes (0006), CSV export and neighborhood correction: admins only; a member or visitor can neither read, add,
+// delete, download nor set anyone's neighborhood (not even her own through this door).
+describe("admin notes, CSV export and neighborhood correction", () => {
   it("are admin-only", () => {
     const note = addNote(as(A), { memberId: A, body: "Met at the salon" });
     for (const who of [anon(), as(B), as(C)]) {
@@ -605,6 +606,7 @@ describe("admin notes and CSV export", () => {
       throwsAccess(() => addNote(who, { memberId: B, body: "x" }));
       throwsAccess(() => deleteNote(who, { id: note }));
       throwsAccess(() => adminCsv(who, { kind: "members" }));
+      throwsAccess(() => setMemberNeighborhood(who, { id: B, neighborhood: "Astoria" }));
     }
     expect(adminNotes(as(A)).map((n) => n.id)).toContain(note);
     deleteNote(as(A), { id: note });

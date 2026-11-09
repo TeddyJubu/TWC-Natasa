@@ -273,8 +273,9 @@
       "source": "crm.md:Answer field display",
       "acceptance": "Answer field display: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "formatAnswers (src/features/admin/format.ts) hides what the CRM hid \u2014 keys starting `_`, ending `_codes`, containing token or signature, and `ip` \u2014 plus the import's own `legacy` bookkeeping record; known CRM labels full_name\u2192Name, base_area\u2192Based in, goal_labels\u2192Hoping to find, coffee_chat\u2192Open to coffee chats, every other key humanised; empty values dropped (format.test.ts, src/app/admin-route.test.tsx). Improvised: only the four labels the inventory names (the CRM's other ~26 are humanised from the key); arrays show as a list instead of comma-joined."
     },
     {
       "id": "CRM-033",
@@ -358,8 +359,9 @@
       "source": "crm.md:Neighbourhood tags",
       "acceptance": "Neighbourhood tags: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "Neighbourhood tags are the neighborhoods table: profiles.neighborhood references neighborhoods(name), shown in a Neighborhood column on All members and filterable there (Any / each neighborhood members have / No neighborhood), set by an admin from the row's Details (CRM-059). Retired: the CRM's Brooklyn substring folding (Greenpoint/Williamsburg/Bushwick/Ridgewood, else Other) \u2014 the new list is the admin-managed Queens neighborhoods, so no geography is guessed from free text; an applicant's typed area stays visible as 'Neighborhood given' (admin-route.test.tsx)."
     },
     {
       "id": "CRM-043",
@@ -495,16 +497,18 @@
       "source": "crm.md:Neighbourhood correction",
       "acceptance": "Neighbourhood correction: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "Details \u2192 Neighborhood on each All members row: setMemberNeighborhood (requireAdmin; src/features/admin/admin.server.ts, fns.ts) sets a listed neighborhood or none on the profile; the application's answer is never changed and stays shown as 'Neighborhood given' (admin.server.test.ts, src/server/policy.test.ts, admin-route.test.tsx). Improvised: a picker of listed neighborhoods (FK) instead of \u2264120 free-text chars; 'none' clears it rather than reverting to the form answer (profile and answer are separate fields); same value is a disabled Save rather than a 409; no history event (no events table, CRM-043)."
     },
     {
       "id": "CRM-060",
       "source": "crm.md:Item detail",
       "acceptance": "Item detail: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "Detail without leaving the card: application rows show origin (CRM-031 label), account link, every readable answer (CRM-032) and Notes; each All members row has Details with her neighborhood (editable, CRM-059), her newest linked application (date, status, origin, neighborhood given, every answer) and Notes (newestByUser/applicationOrigin in format.ts; format.test.ts, admin-route.test.tsx). Not ported: upload hrefs, newsletter/item-count/last-seen person summary and logged actions (CRM-057 still todo)."
     },
     {
       "id": "CRM-061",
@@ -519,8 +523,9 @@
       "source": "crm.md:Client-side filters",
       "acceptance": "Client-side filters: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "Status filter (Any/Pending/Approved/Declined) on Applications and All members, plus a Neighborhood filter on All members, applied together with the page search box; the subtitle says 'N of M shown' whenever rows are hidden (panels.tsx; admin-route.test.tsx). Improvised: kept in component state, not the URL; no form-kind, origin, received-window or logged-action filters (no logged actions yet, and kinds already have their own cards)."
     },
     {
       "id": "CRM-063",

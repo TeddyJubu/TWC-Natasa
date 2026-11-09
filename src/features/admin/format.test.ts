@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  LOGO_MAX_BYTES, attachEmails, checkLogo, formatAnswers, humanizeKey, logoPath, matchesSearch, reviewerName, sortApplications, toCsv,
+  LOGO_MAX_BYTES, applicationOrigin, attachEmails, checkLogo, formatAnswers, humanizeKey, logoPath, matchesSearch, newestByUser, reviewerName, sortApplications, toCsv,
   validateNeighborhood,
 } from "./format";
 
@@ -38,6 +38,20 @@ describe("humanizeKey", () => {
 });
 
 describe("formatAnswers", () => {
+  it("shows imported answers in the CRM's words and hides what the CRM hid (CRM-032)", () => {
+    expect(formatAnswers({
+      full_name: "Rosa", base_area: "Astoria", goal_labels: ["Friends", "Clients"], goal_codes: ["f", "c"], coffee_chat: "either",
+      _ua: "x", ip: "1.2.3.4", review_token: "t", electronic_signature: "Rosa", signature_date: "2025-01-02", zip: "11103",
+      legacy: { id: "app-1", origin: "Old HeyForm" },
+    })).toEqual([
+      { key: "full_name", label: "Name", value: "Rosa" },
+      { key: "base_area", label: "Based in", value: "Astoria" },
+      { key: "goal_labels", label: "Hoping to find", value: ["Friends", "Clients"] },
+      { key: "coffee_chat", label: "Open to coffee chats", value: "either" },
+      { key: "zip", label: "Zip", value: "11103" },
+    ]);
+  });
+
   it("humanises keys, lists arrays, says Yes/No for booleans and skips empty values", () => {
     expect(
       formatAnswers({
@@ -165,5 +179,28 @@ describe("toCsv", () => {
     expect(toCsv(["a", "b"], [['say "hi"', null], ["=1+1", 3], ["-2", "line\nbreak"]])).toBe(
       '\uFEFF"a","b"\r\n"say ""hi""",""\r\n"\'=1+1","3"\r\n"\'-2","line\nbreak"\r\n',
     );
+  });
+});
+
+describe("applicationOrigin", () => {
+  it("is the import's origin label, else Join form", () => {
+    expect(applicationOrigin({ legacy: { origin: "Imported list" } })).toBe("Imported list");
+    expect(applicationOrigin({ legacy: { origin: " " } })).toBe("Join form");
+    expect(applicationOrigin({ phone: "1" })).toBe("Join form");
+    expect(applicationOrigin(null)).toBe("Join form");
+  });
+});
+
+describe("newestByUser", () => {
+  it("keeps each member's newest linked application and ignores unlinked ones", () => {
+    const apps = [
+      { id: "old", user_id: "u1", created_at: "2025-01-01" },
+      { id: "new", user_id: "u1", created_at: "2025-03-01" },
+      { id: "mid", user_id: "u1", created_at: "2025-02-01" },
+      { id: "free", user_id: null, created_at: "2025-04-01" },
+      { id: "u2", user_id: "u2", created_at: "2024-01-01" },
+    ];
+    const byUser = newestByUser(apps);
+    expect([...byUser].map(([u, a]) => [u, a.id])).toEqual([["u1", "new"], ["u2", "u2"]]);
   });
 });

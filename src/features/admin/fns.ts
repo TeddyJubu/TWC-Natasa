@@ -38,6 +38,13 @@ export const setMemberStatusFn = createServerFn({ method: "POST" })
     return serve((c) => m.setMemberStatus(c, data));
   });
 
+export const setMemberNeighborhoodFn = createServerFn({ method: "POST" })
+  .validator(pass<{ id: string; neighborhood: string | null }>)
+  .handler(async ({ data }) => {
+    const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./admin.server")]);
+    return serve((c) => m.setMemberNeighborhood(c, data));
+  });
+
 export const setBookingStatusFn = createServerFn({ method: "POST" })
   .validator(pass<{ id: string; status: "confirmed" | "declined" }>)
   .handler(async ({ data }) => {
