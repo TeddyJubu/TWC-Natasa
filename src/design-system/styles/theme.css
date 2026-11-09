@@ -233,13 +233,13 @@
 .image-trail-item {
   position: absolute;
   inset: 0 auto auto 0;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 1.35rem;
+  height: 1.35rem;
   object-fit: contain;
   opacity: 0;
   will-change: transform, opacity;
   /* A warm glow for the glitter, plus a hairline of ink so pale stars still read on paper. */
-  filter: drop-shadow(0 0 0.3rem rgb(237 210 46 / 0.6)) drop-shadow(0 1px 1px rgb(31 31 28 / 0.2));
+  filter: drop-shadow(0 0 0.18rem rgb(237 210 46 / 0.6)) drop-shadow(0 1px 1px rgb(31 31 28 / 0.2));
 }
 .image-trail[data-size="small"] .image-trail-item { width: 3rem; height: 3rem; }
 
