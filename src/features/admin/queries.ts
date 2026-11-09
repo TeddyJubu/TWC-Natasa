@@ -1,8 +1,8 @@
 // Admin reads (§2.7): server functions that start with requireAdmin.
 import { queryOptions } from "@tanstack/react-query";
-import { adminApplicationsFn, adminBookingsFn, adminEventsFn, adminInboxFn, adminMembersFn, adminNeighborhoodsFn } from "./fns";
+import { adminApplicationsFn, adminBookingsFn, adminEventsFn, adminInboxFn, adminMembersFn, adminNeighborhoodsFn, adminNotesFn } from "./fns";
 
-export type { AdminApplication, AdminBooking, AdminEvent, AdminGuest, AdminMember, AdminNeighborhood, InboxMessage } from "./admin.server";
+export type { AdminApplication, AdminBooking, AdminEvent, AdminGuest, AdminMember, AdminNeighborhood, AdminNote, InboxMessage } from "./admin.server";
 
 /** Pending first, then newest. */
 export const adminApplicationsQuery = queryOptions({
@@ -38,4 +38,10 @@ export const adminEventsQuery = queryOptions({
 export const adminInboxQuery = queryOptions({
   queryKey: ["admin", "inbox"],
   queryFn: () => adminInboxFn(),
+});
+
+/** Every admin note (0006), oldest first; rows pick their own by application_id / member_id. */
+export const adminNotesQuery = queryOptions({
+  queryKey: ["admin", "notes"],
+  queryFn: () => adminNotesFn(),
 });

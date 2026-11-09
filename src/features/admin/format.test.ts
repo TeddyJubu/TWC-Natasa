@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  LOGO_MAX_BYTES, attachEmails, checkLogo, formatAnswers, humanizeKey, logoPath, reviewerName, sortApplications,
+  LOGO_MAX_BYTES, attachEmails, checkLogo, formatAnswers, humanizeKey, logoPath, matchesSearch, reviewerName, sortApplications, toCsv,
   validateNeighborhood,
 } from "./format";
 
@@ -146,5 +146,24 @@ describe("checkLogo", () => {
   it("rejects a file over 2 MB", () => {
     const big = new File([new Uint8Array(LOGO_MAX_BYTES + 1)], "logo.png", { type: "image/png" });
     expect(() => checkLogo(big)).toThrow(/2 MB/);
+  });
+});
+
+describe("matchesSearch", () => {
+  const fields = ["Zoë Álvarez", "zoe@bakery.test", "Sourdough & Co"];
+  it("matches every word, case- and accent-insensitively, across name, email and business", () => {
+    expect(matchesSearch("", fields)).toBe(true);
+    expect(matchesSearch("  ZOE  alvarez ", fields)).toBe(true);
+    expect(matchesSearch("bakery.test sourdough", fields)).toBe(true);
+    expect(matchesSearch("zoe greenpoint", fields)).toBe(false);
+    expect(matchesSearch("co", [null, undefined, "Co-op"])).toBe(true);
+  });
+});
+
+describe("toCsv", () => {
+  it("quotes every cell, doubles quotes, defuses formulas, BOM + CRLF", () => {
+    expect(toCsv(["a", "b"], [['say "hi"', null], ["=1+1", 3], ["-2", "line\nbreak"]])).toBe(
+      '\uFEFF"a","b"\r\n"say ""hi""",""\r\n"\'=1+1","3"\r\n"\'-2","line\nbreak"\r\n',
+    );
   });
 });

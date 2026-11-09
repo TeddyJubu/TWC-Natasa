@@ -10,15 +10,15 @@ import { useNeighborhoods } from "@/features/neighborhoods/queries";
 import { pickerNames } from "@/features/neighborhoods/options";
 import { EVENT_KINDS, eventWhen, isoToNyLocal, kindLabel, nyLocalToISO } from "@/features/events/format";
 import {
-  adminApplicationsQuery, adminBookingsQuery, adminEventsQuery, adminInboxQuery, adminMembersQuery, adminNeighborhoodsQuery,
-  type AdminApplication, type AdminBooking, type AdminEvent, type AdminMember, type AdminNeighborhood, type InboxMessage,
+  adminApplicationsQuery, adminBookingsQuery, adminEventsQuery, adminInboxQuery, adminMembersQuery, adminNeighborhoodsQuery, adminNotesQuery,
+  type AdminApplication, type AdminBooking, type AdminEvent, type AdminMember, type AdminNeighborhood, type AdminNote, type InboxMessage,
 } from "./queries";
 import {
-  LogoNotSavedError, useArchiveMessage, useCreateNeighborhood, useDeleteEvent, useReviewApplication, useSaveEvent, useSetBookingStatus, useSetMemberStatus,
-  useUpdateNeighborhood,
+  LogoNotSavedError, useAddNote, useArchiveMessage, useCreateNeighborhood, useDeleteEvent, useDeleteNote, useDownloadCsv, useReviewApplication, useSaveEvent,
+  useSetBookingStatus, useSetMemberStatus, useUpdateNeighborhood, type NoteInput,
 } from "./mutations";
 import type { ApprovalNotice } from "./approval-email";
-import { checkLogo, formatAnswers, formatDate, formatDay, humanizeKey, reviewerName, type AnswerEntry } from "./format";
+import { checkLogo, formatAnswers, formatDate, formatDay, humanizeKey, matchesSearch, reviewerName, type AnswerEntry } from "./format";
 import {
   adminReviewsQuery, reviewLinkStatesQuery, useMarkReviewDone, useMintReviewLink, useRevokeReviewLink, type AdminReview, type LinkState,
 } from "@/features/member-links/queries";
@@ -123,15 +123,88 @@ function Item({ headingId, title, status, details, children }: {
   );
 }
 
+/** The page's search box (CRM-041): filters the Inbox, Applications and Members cards as she types. */
+export function AdminSearch({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  return (
+    <div role="search" className="flex flex-col gap-1.5">
+      <label htmlFor="admin-search" className="text-sm font-medium text-ink">Search messages, applications and members</label>
+      <input id="admin-search" type="search" value={value} onChange={(e) => onChange(e.currentTarget.value)} autoComplete="off"
+        aria-describedby="admin-search-hint" className={cn(fieldClass, "max-w-120")} />
+      <p id="admin-search-hint" className="twc-hint">Name, email or business</p>
+    </div>
+  );
+}
+
+/** "3 of 12" while a search is on. */
+const shownOf = (shown: number, total: number, query: string) => (query.trim() ? `${shown} of ${total} shown · ` : "");
+
+/** Downloads the card's rows as CSV (admins only, checked on the server). */
+function CsvButton({ kind }: { kind: "applications" | "members" }) {
+  const csv = useDownloadCsv();
+  return (
+    <div className="flex flex-col items-end gap-1">
+      <button type="button" className={cn(secondaryButton, "shrink-0")} disabled={csv.isPending} onClick={() => csv.mutate(kind)}>
+        Download CSV<span className="sr-only"> of {kind}</span>
+      </button>
+      <MutationError mutation={csv} />
+    </div>
+  );
+}
+
+/** Private admin notes (0006) on one application or member: oldest first, add one, delete one. No editing. */
+function Notes({ subject, name, notes }: { subject: { applicationId: string } | { memberId: string }; name: string; notes: AdminNote[] }) {
+  const add = useAddNote();
+  const remove = useDeleteNote();
+  const [body, setBody] = React.useState("");
+  const id = `note-${"applicationId" in subject ? subject.applicationId : subject.memberId}`;
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!body.trim()) return;
+    add.mutate({ ...subject, body } as NoteInput, { onSuccess: () => setBody("") });
+  };
+  return (
+    <details className="group rounded-md bg-app-sunken">
+      <summary className={cn("flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-md px-3.5 text-sm font-medium text-ink [&::-webkit-details-marker]:hidden", ring)}>
+        <Icon name="chevron-down" className="size-3.25 -rotate-90 text-app-muted transition-transform group-open:rotate-0 motion-reduce:transition-none" />
+        Notes ({notes.length})
+      </summary>
+      <div className="flex flex-col gap-3 border-t border-app-rule px-3.5 py-3.5">
+        {notes.map((n) => (
+          <div key={n.id} className="flex flex-col gap-1">
+            <p className="text-sm break-words whitespace-pre-line text-ink">{n.body}</p>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <p className={meta}>{n.author_name ?? "An admin"} · {formatDate(n.created_at)}</p>
+              <button type="button" className={cn("text-[13px] text-app-muted underline", ring)} disabled={remove.isPending}
+                aria-label={`Delete this note on ${name}`} onClick={() => { if (window.confirm("Delete this note?")) remove.mutate(n.id); }}>
+                Delete
+              </button>
+            </div>
+          </div>
+        ))}
+        <form onSubmit={submit} className="flex flex-col gap-2">
+          <label htmlFor={id} className={meta}>Add a note about {name} (only admins see it)</label>
+          <textarea id={id} rows={2} maxLength={5000} value={body} onChange={(e) => setBody(e.currentTarget.value)} className={fieldClass} />
+          <div><button type="submit" className={secondaryButton} disabled={add.isPending || !body.trim()}>Add note</button></div>
+        </form>
+        <MutationError mutation={add} />
+        <MutationError mutation={remove} />
+      </div>
+    </details>
+  );
+}
+
+const notesFor = (notes: AdminNote[] | undefined, key: "application_id" | "member_id", id: string) => (notes ?? []).filter((n) => n[key] === id);
+
 // ---------- Inbox ----------
 
-export function InboxPanel() {
+export function InboxPanel({ query = "" }: { query?: string }) {
   const inbox = useQuery(adminInboxQuery);
-  const list = inbox.data ?? [];
+  const all = inbox.data ?? [];
+  const list = all.filter((m) => matchesSearch(query, [m.name, m.email, m.business]));
   return (
-    <Card id="inbox" title="Inbox" subtitle={inbox.data ? `${list.length} waiting · contact messages and partnership inquiries` : "Contact messages and partnership inquiries"}>
+    <Card id="inbox" title="Inbox" subtitle={inbox.data ? `${shownOf(list.length, all.length, query)}${all.length} waiting · contact messages and partnership inquiries` : "Contact messages and partnership inquiries"}>
       <QueryGate query={inbox} what="messages">
-        {list.length === 0 ? <Empty>Nothing waiting.</Empty> : list.map((m) => <InboxRow key={m.id} message={m} />)}
+        {list.length === 0 ? <Empty>{all.length ? "No messages match." : "Nothing waiting."}</Empty> : list.map((m) => <InboxRow key={m.id} message={m} />)}
       </QueryGate>
     </Card>
   );
@@ -171,24 +244,28 @@ const REVIEW_OPTIONS = [{ status: "approved" as const, label: "Approve" }, { sta
 
 // ---------- Applications ----------
 
-export function ApplicationsPanel() {
+export function ApplicationsPanel({ query = "" }: { query?: string }) {
   const apps = useQuery(adminApplicationsQuery);
   const members = useQuery(adminMembersQuery);
-  const list = apps.data ?? [];
-  const pending = list.filter((a) => a.status === "pending").length;
+  const notes = useQuery(adminNotesQuery);
+  const all = apps.data ?? [];
+  const list = all.filter((a) => matchesSearch(query, [a.full_name, a.email, typeof a.answers.business === "string" ? a.answers.business : null]));
+  const pending = all.filter((a) => a.status === "pending").length;
   return (
-    <Card id="applications" title="Applications" subtitle={apps.data ? `${pending} pending · ${list.length} in total` : "Who has asked to join"}>
+    <Card id="applications" title="Applications" action={<CsvButton kind="applications" />}
+      subtitle={apps.data ? `${shownOf(list.length, all.length, query)}${pending} pending · ${all.length} in total` : "Who has asked to join"}>
       <QueryGate query={apps} what="applications">
         <NamesError members={members} />
+        {notes.isError && <InlineError message="We couldn’t load notes right now." onRetry={() => void notes.refetch()} />}
         {list.length === 0
-          ? <Empty>No applications yet.</Empty>
-          : list.map((app) => <ApplicationRow key={app.id} app={app} members={members.data ?? []} />)}
+          ? <Empty>{all.length ? "No applications match." : "No applications yet."}</Empty>
+          : list.map((app) => <ApplicationRow key={app.id} app={app} members={members.data ?? []} notes={notesFor(notes.data, "application_id", app.id)} />)}
       </QueryGate>
     </Card>
   );
 }
 
-function ApplicationRow({ app, members }: { app: AdminApplication; members: AdminMember[] }) {
+function ApplicationRow({ app, members, notes }: { app: AdminApplication; members: AdminMember[]; notes: AdminNote[] }) {
   const review = useReviewApplication();
   const by = reviewerName(app.reviewed_by, members);
   const answers = formatAnswers(app.answers);
@@ -212,6 +289,7 @@ function ApplicationRow({ app, members }: { app: AdminApplication; members: Admi
           <AnswerList entries={answers} />
         </details>
       )}
+      <Notes subject={{ applicationId: app.id }} name={app.full_name} notes={notes} />
       <MutationError mutation={review} />
       <EmailNotice notice={review.data} />
       <Decisions
@@ -248,15 +326,19 @@ const cell = "py-4 pr-5 first:pl-5 last:pr-5 sm:first:pl-7 sm:last:pr-7";
 /** Table header cells: the kit's eyebrow. */
 const headCell = cn(cell, "twc-eyebrow py-3.5 whitespace-nowrap");
 
-export function MembersPanel() {
+export function MembersPanel({ query = "" }: { query?: string }) {
   const members = useQuery(adminMembersQuery);
   const links = useQuery(reviewLinkStatesQuery);
-  const list = members.data ?? [];
+  const notes = useQuery(adminNotesQuery);
+  const all = members.data ?? [];
+  const list = all.filter((m) => matchesSearch(query, [m.full_name, m.email, m.business]));
   return (
-    <Card id="members" title="All members" subtitle={members.data ? `${list.length} profiles · approve or decline directly` : "Every member profile"}>
+    <Card id="members" title="All members" action={<CsvButton kind="members" />}
+      subtitle={members.data ? `${shownOf(list.length, all.length, query)}${all.length} profiles · approve or decline directly` : "Every member profile"}>
       <QueryGate query={members} what="members">
         {links.isError && <InlineError message="We couldn’t load review links right now." onRetry={() => void links.refetch()} />}
-        {list.length === 0 ? <Empty>No member profiles yet.</Empty> : (
+        {notes.isError && <InlineError message="We couldn’t load notes right now." onRetry={() => void notes.refetch()} />}
+        {list.length === 0 ? <Empty>{all.length ? "No members match." : "No member profiles yet."}</Empty> : (
           // `relative` contains the sr-only (absolute) caption and header, or they escape the scroll clip and widen the page.
           <div role="region" aria-label="Members" tabIndex={0} className="relative overflow-x-auto focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-app-accent">
             <table className="w-full min-w-[52rem] text-left text-[15px]">
@@ -267,7 +349,7 @@ export function MembersPanel() {
                   <th scope="col" className={headCell}><span className="sr-only">Actions</span></th>
                 </tr>
               </thead>
-              <tbody>{list.map((m) => <MemberRow key={m.id} member={m} link={links.data?.[m.id] ?? null} />)}</tbody>
+              <tbody>{list.map((m) => <MemberRow key={m.id} member={m} link={links.data?.[m.id] ?? null} notes={notesFor(notes.data, "member_id", m.id)} />)}</tbody>
             </table>
           </div>
         )}
@@ -276,7 +358,7 @@ export function MembersPanel() {
   );
 }
 
-function MemberRow({ member, link }: { member: AdminMember; link: LinkState | null }) {
+function MemberRow({ member, link, notes }: { member: AdminMember; link: LinkState | null; notes: AdminNote[] }) {
   const setStatus = useSetMemberStatus();
   const name = member.full_name || "Unnamed member";
   return (
@@ -299,6 +381,7 @@ function MemberRow({ member, link }: { member: AdminMember; link: LinkState | nu
           <MutationError mutation={setStatus} />
           <EmailNotice notice={setStatus.data} />
           {member.status === "approved" && <ReviewLink memberId={member.id} name={name} link={link} />}
+          <Notes subject={{ memberId: member.id }} name={name} notes={notes} />
         </div>
       </td>
     </tr>

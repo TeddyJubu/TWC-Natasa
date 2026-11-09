@@ -98,3 +98,30 @@ export const archiveMessageFn = createServerFn({ method: "POST" })
     const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./admin.server")]);
     return serve((c) => m.archiveMessage(c, data));
   });
+
+export const adminNotesFn = createServerFn().handler(async () => {
+  const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./admin.server")]);
+  return serve(m.adminNotes);
+});
+
+export const addNoteFn = createServerFn({ method: "POST" })
+  .validator(pass<{ applicationId: string; body: string } | { memberId: string; body: string }>)
+  .handler(async ({ data }) => {
+    const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./admin.server")]);
+    return serve((c) => m.addNote(c, data));
+  });
+
+export const deleteNoteFn = createServerFn({ method: "POST" })
+  .validator(pass<{ id: string }>)
+  .handler(async ({ data }) => {
+    const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./admin.server")]);
+    return serve((c) => m.deleteNote(c, data));
+  });
+
+/** A POST so the export never sits in a GET cache or history; the browser saves the returned text as a file. */
+export const adminCsvFn = createServerFn({ method: "POST" })
+  .validator(pass<{ kind: "applications" | "members" }>)
+  .handler(async ({ data }) => {
+    const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./admin.server")]);
+    return serve((c) => m.adminCsv(c, data));
+  });
