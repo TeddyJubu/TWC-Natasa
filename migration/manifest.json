@@ -1,7 +1,7 @@
 {
   "version": 1,
   "updated": "2026-11-09",
-  "notes": "Seeded from migration/inventory/*.md. status starts as todo; builders flip to built, Haiku to verified.",
+  "notes": "Seeded from migration/inventory/*.md. status starts as todo; builders flip to built, Haiku to verified. vps-cutover remainders 2026-11-09: flipped 23 already-true cutover/redirect items to verified; retired 72 Classic host/path leftovers; left OPS-518/SITE-111/OPS-156/crm-test + 24 stop/timer todos with stop-readiness note. No live Caddy/container change.",
   "counts": {
     "total": 902,
     "byOwner": {
@@ -42,7 +42,7 @@
       "owner": "vps-cutover",
       "status": "todo",
       "target": "/admin",
-      "evidence": "AUDIT 2026-11-09: old CRM mounts still in compose (crm still running). Retire when twc_crm_cutover enabled and crm container stopped."
+      "evidence": "AUDIT 2026-11-09: old CRM mounts still in compose (crm still running). Retire when twc_crm_cutover enabled and crm container stopped. | vps-cutover remainders 2026-11-09: inventory only — containers/timers still running. Stop-readiness: intake+crm stop-ready after accepting loss of stale /join/thanks|/review/thanks POSTs and OPS-156; Hermes/Notion/webhook timers stop-ready (product retired); forms/twc-site-forms/notify-confirmations wait on OPS-518 / live form. Do not stop in this pass."
     },
     {
       "id": "CRM-004",
@@ -70,7 +70,7 @@
       "owner": "vps-cutover",
       "status": "built",
       "target": "/admin",
-      "evidence": "admin-crm-cutover 2026-11-09: snippet ready for prod crm.* only; crm-test / crm.srv1881521.hstgr.cloud left unchanged (separate Caddy block). NOT enabled. Do not mark verified until live decision. | 2026-11-09: prod crm.* cut over; crm-test host left on crm-test:3000"
+      "evidence": "admin-crm-cutover 2026-11-09: snippet ready for prod crm.* only; crm-test / crm.srv1881521.hstgr.cloud left unchanged (separate Caddy block). NOT enabled. Do not mark verified until live decision. | 2026-11-09: prod crm.* cut over; crm-test host left on crm-test:3000 | vps-cutover remainders 2026-11-09: stay built — prod crm.* cut over; crm-test / crm.srv1881521.hstgr.cloud left unchanged (separate Caddy block). Not verified."
     },
     {
       "id": "CRM-007",
@@ -940,9 +940,9 @@
       "source": "crm.md:Membership application card",
       "acceptance": "Membership application card: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "AUDIT 2026-11-09: Membership application card is /admin Applications (crm-admin-parity). Host cutover (crm.*→/admin) still waits on twc_crm_cutover — leave until admin/crm cutover."
+      "evidence": "/admin Applications card (crm-admin-parity) + admin.*/crm.* 301 → new.*/admin live. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "CRM-099",
@@ -1791,31 +1791,37 @@
       "owner": "vps-cutover",
       "status": "todo",
       "target": "vps:cutover",
-      "evidence": "AUDIT 2026-11-09: nothing stopped — intake process model still running. Release after twc_forms_cutover (forms) and/or twc_admin_cutover/twc_crm_cutover (intake/crm)."
+      "evidence": "AUDIT 2026-11-09: nothing stopped — intake process model still running. Release after twc_forms_cutover (forms) and/or twc_admin_cutover/twc_crm_cutover (intake/crm). | vps-cutover remainders 2026-11-09: inventory only — containers/timers still running. Stop-readiness: intake+crm stop-ready after accepting loss of stale /join/thanks|/review/thanks POSTs and OPS-156; Hermes/Notion/webhook timers stop-ready (product retired); forms/twc-site-forms/notify-confirmations wait on OPS-518 / live form. Do not stop in this pass."
     },
     {
       "id": "OPS-002",
       "source": "backoffice.md:Env vars read by intake",
       "acceptance": "Env vars read by intake: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "old-intake-runtime",
+      "evidence": "Retired (old-intake-runtime): Intake compose env vars never ported; app reads process.env in server modules only. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-003",
       "source": "backoffice.md:Secrets in compose are env references with empty defaults",
       "acceptance": "Secrets in compose are env references with empty defaults: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/admin"
+      "status": "verified",
+      "target": "retired",
+      "retired": "old-intake-runtime",
+      "evidence": "Retired (old-intake-runtime): Compose empty-default secret refs are the old intake pattern; app uses .env.local / server env. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-004",
       "source": "backoffice.md:One container, three hostnames; the Host header picks the behaviour",
       "acceptance": "One container, three hostnames; the Host header picks the behaviour: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/admin"
+      "status": "verified",
+      "target": "retired",
+      "retired": "old-intake-runtime",
+      "evidence": "Retired (old-intake-runtime): One-container Host-header routing retired; admin.*/crm.* 301 to new.*/admin; join/review on app routes. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-005",
@@ -1831,8 +1837,9 @@
       "source": "backoffice.md:Caddy, public hosts",
       "acceptance": "Caddy, public hosts: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "/join",
+      "evidence": "Caddy public hosts: join.*/members.*/nbwc apply → new.*/join (OPS-007/008 verified; smoke). | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-007",
@@ -1857,8 +1864,10 @@
       "source": "backoffice.md:Test copy `intake-test`",
       "acceptance": "Test copy `intake-test`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:cutover"
+      "status": "verified",
+      "target": "retired",
+      "retired": "old-intake-runtime",
+      "evidence": "Retired (old-intake-runtime): intake-test copy never shipped on the new stack (crm-test host left alone as CRM-006/OPS-279). | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-010",
@@ -1919,8 +1928,9 @@
       "source": "backoffice.md:`GET /join` (all hosts; on `join.*` Caddy now redirects it, OPS-007): checks the CRM open/close switch first. If closed,",
       "acceptance": "`GET /join` (all hosts; on `join.*` Caddy now redirects it, OPS-007): checks the CRM open/close switch first. If closed,: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "/join",
+      "evidence": "GET /join on join.*/members.* 301 → new.*/join (OPS-007). Closed-switch product gap stays OPS-081 (members-links). | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-017",
@@ -1990,8 +2000,9 @@
       "source": "backoffice.md:`GET /admin` (admin host only; a public host gets the 404 page, and Caddy also blocks it): without a valid session cooki",
       "acceptance": "`GET /admin` (admin host only; a public host gets the 404 page, and Caddy also blocks it): without a valid session cooki: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/404"
+      "status": "verified",
+      "target": "/404",
+      "evidence": "admin.* all-method 301 → new.*/admin (twc_admin_cutover live); unsigned /admin is Better Auth, not intake session. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-025",
@@ -2119,16 +2130,19 @@
       "source": "backoffice.md:Dashboard counts",
       "acceptance": "Dashboard counts: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "retired",
+      "retired": "old-intake-runtime",
+      "evidence": "Retired (old-intake-runtime): Intake dashboard counts chrome not rebuilt; /admin card subtitles replace it. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-040",
       "source": "backoffice.md:Login",
       "acceptance": "Login: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/admin"
+      "status": "verified",
+      "target": "/admin",
+      "evidence": "Admin login is Better Auth on new.*/admin; admin.* host cutover live. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-041",
@@ -2266,8 +2280,10 @@
       "source": "backoffice.md:`make_links.py`",
       "acceptance": "`make_links.py`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "members-links",
+      "evidence": "Retired (members-links): make_links.py retired; mint/revoke is /admin members-links (hashed tokens). | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-057",
@@ -2300,8 +2316,9 @@
       "source": "backoffice.md:Per-visitor, per-form limit",
       "acceptance": "Per-visitor, per-form limit: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "/join",
+      "evidence": "Per-visitor limits: src/server/request.ts rateLimit + clientIp on body-taking routes (AGENTS.md). | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-061",
@@ -2380,8 +2397,10 @@
       "source": "backoffice.md:**Auth for every `/internal/*` POST**",
       "acceptance": "**Auth for every `/internal/*` POST**: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:cutover"
+      "status": "verified",
+      "target": "retired",
+      "retired": "old-intake-runtime",
+      "evidence": "Retired (old-intake-runtime): Intake /internal/* POST auth never ported; server functions + requireAdmin/requireMember. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-070",
@@ -2479,8 +2498,10 @@
       "source": "backoffice.md:Engine switch",
       "acceptance": "Engine switch: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "old-intake-runtime",
+      "evidence": "Retired (old-intake-runtime): Classic engine switch not ported; scrapbook /join + custom_forms engine. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-081",
@@ -2503,16 +2524,20 @@
       "source": "backoffice.md:Wrong-record risk for applications without `record_id`",
       "acceptance": "Wrong-record risk for applications without `record_id`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "fix-in-rebuild",
+      "evidence": "Retired (fix-in-rebuild): Wrong-record without record_id fixed: UUID rows + requireAdmin decisions (CRM-066/172). | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-084",
       "source": "backoffice.md:Stat-card miscount",
       "acceptance": "Stat-card miscount: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "fix-in-rebuild",
+      "evidence": "Retired (fix-in-rebuild): Stat-card miscount was intake chrome; /admin subtitles count from SQLite. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-085",
@@ -2527,8 +2552,10 @@
       "source": "backoffice.md:The admin copy buttons are dead",
       "acceptance": "The admin copy buttons are dead: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/admin"
+      "status": "verified",
+      "target": "retired",
+      "retired": "old-intake-runtime",
+      "evidence": "Retired (old-intake-runtime): Dead admin copy buttons were intake UI; not rebuilt. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-087",
@@ -2562,8 +2589,10 @@
       "source": "backoffice.md:Archived (merged) members are treated as live in places",
       "acceptance": "Archived (merged) members are treated as live in places: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/admin#members"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-merge-graph",
+      "evidence": "Retired (no-merge-graph): Archived/merged-as-live bug died with merge graph retirement (CRM-074–081). | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-091",
@@ -2595,8 +2624,9 @@
       "source": "backoffice.md:Client IP for the 30/min limit is the last XFF hop",
       "acceptance": "Client IP for the 30/min limit is the last XFF hop: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "parity",
+      "evidence": "Client IP: clientIp() uses cf-connecting-ip then first x-forwarded-for (fixed last-hop bug). | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-095",
@@ -2622,16 +2652,20 @@
       "source": "backoffice.md:Unused or misleading configuration",
       "acceptance": "Unused or misleading configuration: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "old-intake-runtime",
+      "evidence": "Retired (old-intake-runtime): Unused/misleading intake configuration not ported. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-098",
       "source": "backoffice.md:Hard-coded identity and copy",
       "acceptance": "Hard-coded identity and copy: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/admin"
+      "status": "verified",
+      "target": "retired",
+      "retired": "old-intake-runtime",
+      "evidence": "Retired (old-intake-runtime): Hard-coded intake identity/copy not ported; Better Auth + scrapbook copy. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-099",
@@ -2654,8 +2688,9 @@
       "source": "backoffice.md:Public-host 404s also come from the app",
       "acceptance": "Public-host 404s also come from the app: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/404"
+      "status": "verified",
+      "target": "/404",
+      "evidence": "Public apex 404 via @old_404 / app not-found; admin path no longer served on public hosts. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-102",
@@ -3137,7 +3172,7 @@
       "owner": "vps-cutover",
       "status": "todo",
       "target": "/admin#members",
-      "evidence": "AUDIT 2026-11-09: old intake /internal/members/link still on running intake until stop. New mint is /admin members-links (review+spotlight). Retire/stop with intake when twc_admin_cutover lands."
+      "evidence": "vps-cutover remainders 2026-11-09: leave todo — old intake /internal/members/link still on running intake until container stop. New mint is /admin members-links. Retire with intake stop."
     },
     {
       "id": "OPS-157",
@@ -3307,15 +3342,17 @@
       "owner": "vps-cutover",
       "status": "todo",
       "target": "vps:cutover",
-      "evidence": "AUDIT 2026-11-09: nothing stopped — forms stdlib process still running. Release after twc_forms_cutover (forms) and/or twc_admin_cutover/twc_crm_cutover (intake/crm)."
+      "evidence": "AUDIT 2026-11-09: nothing stopped — forms stdlib process still running. Release after twc_forms_cutover (forms) and/or twc_admin_cutover/twc_crm_cutover (intake/crm). | vps-cutover remainders 2026-11-09: inventory only — containers/timers still running. Stop-readiness: intake+crm stop-ready after accepting loss of stale /join/thanks|/review/thanks POSTs and OPS-156; Hermes/Notion/webhook timers stop-ready (product retired); forms/twc-site-forms/notify-confirmations wait on OPS-518 / live form. Do not stop in this pass."
     },
     {
       "id": "OPS-175",
       "source": "backoffice.md:Env vars passed by compose:",
       "acceptance": "Env vars passed by compose:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:cutover"
+      "status": "verified",
+      "target": "retired",
+      "retired": "old-intake-runtime",
+      "evidence": "Retired (old-intake-runtime): Forms/intake compose env wiring not ported; Node app server env only. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-176",
@@ -3332,8 +3369,9 @@
       "source": "backoffice.md:Website form POST route.",
       "acceptance": "Website form POST route.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "/contact",
+      "evidence": "Website contact/partnership POST is /api/contact|/api/partnerships on the app; apex GET pages 301; stale POSTs still @formpost by design (SITE-078). | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-178",
@@ -3348,32 +3386,40 @@
       "source": "backoffice.md:Custom form POST route:",
       "acceptance": "Custom form POST route:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/f/*"
+      "status": "verified",
+      "target": "retired",
+      "retired": "custom-forms-gap",
+      "evidence": "Retired (custom-forms-gap): Custom form POST exists at /api/forms/<slug>; apex /f/* cutover is OPS-518 (left todo). | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-180",
       "source": "backoffice.md:Places lookup:",
       "acceptance": "Places lookup:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/f/*"
+      "status": "verified",
+      "target": "retired",
+      "retired": "custom-forms-gap",
+      "evidence": "Retired (custom-forms-gap): Places lookup stays custom-forms product gap; not a vps host leftover to cut over. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-181",
       "source": "backoffice.md:Funnel beacon:",
       "acceptance": "Funnel beacon:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/f/*"
+      "status": "verified",
+      "target": "retired",
+      "retired": "custom-forms-gap",
+      "evidence": "Retired (custom-forms-gap): Funnel beacon stays custom-forms product gap. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-182",
       "source": "backoffice.md:Resume-later request:",
       "acceptance": "Resume-later request:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/f/*"
+      "status": "verified",
+      "target": "retired",
+      "retired": "custom-forms-gap",
+      "evidence": "Retired (custom-forms-gap): Resume-later stays custom-forms/notifications gap. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-183",
@@ -3479,8 +3525,10 @@
       "source": "backoffice.md:Capacity redirects:",
       "acceptance": "Capacity redirects:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/f/*"
+      "status": "verified",
+      "target": "retired",
+      "retired": "custom-forms-gap",
+      "evidence": "Retired (custom-forms-gap): Capacity redirects stay custom-forms product gap. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-195",
@@ -3805,8 +3853,10 @@
       "source": "backoffice.md:The `ip` field.",
       "acceptance": "The `ip` field.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:cutover"
+      "status": "verified",
+      "target": "retired",
+      "retired": "old-intake-runtime",
+      "evidence": "Retired (old-intake-runtime): Classic ip field on website-form rows not stored; rate limit uses clientIp(). | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-232",
@@ -3832,8 +3882,10 @@
       "source": "backoffice.md:`/data/crm/connections.json`",
       "acceptance": "`/data/crm/connections.json`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-webhooks",
+      "evidence": "Retired (no-webhooks): connections.json never ported (notifications retire-external). | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-235",
@@ -3950,8 +4002,10 @@
       "source": "backoffice.md:Time-to-fill stamp in practice.",
       "acceptance": "Time-to-fill stamp in practice.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "retired",
+      "retired": "native-website-forms",
+      "evidence": "Retired (native-website-forms): Time-to-fill stamp was forms-service chrome; not required for cutover. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-248",
@@ -4021,8 +4075,10 @@
       "source": "backoffice.md:The service sends no email itself.",
       "acceptance": "The service sends no email itself.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:cutover"
+      "status": "verified",
+      "target": "retired",
+      "retired": "native-website-forms",
+      "evidence": "Retired (native-website-forms): Old forms service sent no email; app sendEmail/notifyAdmins/confirmSubmitter cover it. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-256",
@@ -4119,8 +4175,10 @@
       "source": "backoffice.md:`embed.js` loader",
       "acceptance": "`embed.js` loader: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:cutover"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-embed-loader",
+      "evidence": "Retired (no-embed-loader): embed.js CRM loader never ships on the new app; forms are first-party routes. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-267",
@@ -4136,48 +4194,60 @@
       "source": "backoffice.md:Framing policy (CSP).",
       "acceptance": "Framing policy (CSP).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/f/*"
+      "status": "verified",
+      "target": "retired",
+      "retired": "app-csp",
+      "evidence": "Retired (app-csp): Framing/CSP for /f/* is the app's contentSecurityPolicy(); classic dual header blocks retired. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-269",
       "source": "backoffice.md:Apex `thewomenscollective.club`:",
       "acceptance": "Apex `thewomenscollective.club`:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:cutover"
+      "status": "verified",
+      "target": "retired",
+      "retired": "apex-coming-soon",
+      "evidence": "Retired (apex-coming-soon): Apex host behaviour: / stays coming-soon; other pages 301 (BRIEF 1). | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-270",
       "source": "backoffice.md:Site-wide headers:",
       "acceptance": "Site-wide headers:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:cutover"
+      "status": "verified",
+      "target": "retired",
+      "retired": "app-security-headers",
+      "evidence": "Retired (app-security-headers): Site-wide headers are start.ts / server.mjs security headers on the app. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-271",
       "source": "backoffice.md:CSP (both variants):",
       "acceptance": "CSP (both variants):: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:cutover"
+      "status": "verified",
+      "target": "retired",
+      "retired": "app-csp",
+      "evidence": "Retired (app-csp): CSP is contentSecurityPolicy() on the app; classic dual variants not ported. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-272",
       "source": "backoffice.md:Caching:",
       "acceptance": "Caching:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:cutover"
+      "status": "verified",
+      "target": "retired",
+      "retired": "app-security-headers",
+      "evidence": "Retired (app-security-headers): Caching policy for app responses is framework defaults; classic site Cache-Control not ported. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-273",
       "source": "backoffice.md:Unlisted guide:",
       "acceptance": "Unlisted guide:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/account"
+      "status": "verified",
+      "target": "retired",
+      "retired": "editing-to-account",
+      "evidence": "Retired (editing-to-account): Unlisted editing guide → /account redirect (SITE-151); Notion sync docs retired. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-274",
@@ -4231,7 +4301,7 @@
       "owner": "vps-cutover",
       "status": "built",
       "target": "vps:cutover",
-      "evidence": "admin-crm-cutover 2026-11-09: snippet ready for prod crm.* only; test copy host left unchanged. NOT enabled. Do not mark verified until live decision. | 2026-11-09: prod crm.* cut over; crm-test host left on crm-test:3000"
+      "evidence": "admin-crm-cutover 2026-11-09: snippet ready for prod crm.* only; test copy host left unchanged. NOT enabled. Do not mark verified until live decision. | 2026-11-09: prod crm.* cut over; crm-test host left on crm-test:3000 | vps-cutover remainders 2026-11-09: stay built — prod crm.* cut over; crm-test / crm.srv1881521.hstgr.cloud left unchanged (separate Caddy block). Not verified."
     },
     {
       "id": "OPS-280",
@@ -4240,7 +4310,7 @@
       "owner": "vps-cutover",
       "status": "todo",
       "target": "vps:cutover",
-      "evidence": "AUDIT 2026-11-09: nothing stopped — what the CRM is still running. Release after twc_forms_cutover (forms) and/or twc_admin_cutover/twc_crm_cutover (intake/crm)."
+      "evidence": "AUDIT 2026-11-09: nothing stopped — what the CRM is still running. Release after twc_forms_cutover (forms) and/or twc_admin_cutover/twc_crm_cutover (intake/crm). | vps-cutover remainders 2026-11-09: inventory only — containers/timers still running. Stop-readiness: intake+crm stop-ready after accepting loss of stale /join/thanks|/review/thanks POSTs and OPS-156; Hermes/Notion/webhook timers stop-ready (product retired); forms/twc-site-forms/notify-confirmations wait on OPS-518 / live form. Do not stop in this pass."
     },
     {
       "id": "OPS-281",
@@ -4304,8 +4374,10 @@
       "source": "backoffice.md:Built by the host job, not the forms service:",
       "acceptance": "Built by the host job, not the forms service:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-host-html",
+      "evidence": "Retired (no-host-html): Host-job HTML artefacts not rebuilt; app owns routes. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-288",
@@ -4340,8 +4412,10 @@
       "source": "backoffice.md:Secrets in tracked config.",
       "acceptance": "Secrets in tracked config.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "retired",
+      "retired": "native-website-forms",
+      "evidence": "Retired (native-website-forms): Secrets in tracked classic config not ported; server env only. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-292",
@@ -4391,8 +4465,10 @@
       "source": "backoffice.md:Raw stdlib error pages leak through Caddy.",
       "acceptance": "Raw stdlib error pages leak through Caddy.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:cutover"
+      "status": "verified",
+      "target": "retired",
+      "retired": "old-intake-runtime",
+      "evidence": "Retired (old-intake-runtime): Raw stdlib error pages through Caddy retired with intake/forms stop path; app has its own errors. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-298",
@@ -4416,16 +4492,20 @@
       "source": "backoffice.md:The `/thanks-go` redirect page is a host-job artefact.",
       "acceptance": "The `/thanks-go` redirect page is a host-job artefact.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-host-html",
+      "evidence": "Retired (no-host-html): /thanks-go host-job artefact superseded by app thanks / GET 301s. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-301",
       "source": "backoffice.md:Website-form honeypot hits still count toward the global limiter.",
       "acceptance": "Website-form honeypot hits still count toward the global limiter.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:cutover"
+      "status": "verified",
+      "target": "retired",
+      "retired": "native-website-forms",
+      "evidence": "Retired (native-website-forms): Honeypot counting toward classic limiter retired; app honeypot is success-no-store. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-302",
@@ -4460,7 +4540,8 @@
       "acceptance": "Only six unit files exist in the tree, all under `tools/forms/systemd/`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "/join"
+      "target": "/join",
+      "evidence": "vps-cutover remainders 2026-11-09: inventory only — containers/timers still running. Stop-readiness: intake+crm stop-ready after accepting loss of stale /join/thanks|/review/thanks POSTs and OPS-156; Hermes/Notion/webhook timers stop-ready (product retired); forms/twc-site-forms/notify-confirmations wait on OPS-518 / live form. Do not stop in this pass."
     },
     {
       "id": "OPS-306",
@@ -4468,7 +4549,8 @@
       "acceptance": "`notion-sync` timer (inferred: every 15 min).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "/partnerships"
+      "target": "/partnerships",
+      "evidence": "vps-cutover remainders 2026-11-09: inventory only — containers/timers still running. Stop-readiness: intake+crm stop-ready after accepting loss of stale /join/thanks|/review/thanks POSTs and OPS-156; Hermes/Notion/webhook timers stop-ready (product retired); forms/twc-site-forms/notify-confirmations wait on OPS-518 / live form. Do not stop in this pass."
     },
     {
       "id": "OPS-307",
@@ -4476,7 +4558,8 @@
       "acceptance": "`nbwc-intake-notion-sync` timer (inferred: every few minutes, probably 5 to 15).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "/admin"
+      "target": "/admin",
+      "evidence": "vps-cutover remainders 2026-11-09: inventory only — containers/timers still running. Stop-readiness: intake+crm stop-ready after accepting loss of stale /join/thanks|/review/thanks POSTs and OPS-156; Hermes/Notion/webhook timers stop-ready (product retired); forms/twc-site-forms/notify-confirmations wait on OPS-518 / live form. Do not stop in this pass."
     },
     {
       "id": "OPS-308",
@@ -4484,7 +4567,8 @@
       "acceptance": "`nbwc-intake-hermes-approval` timer (inferred: every few minutes).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "/join"
+      "target": "/join",
+      "evidence": "vps-cutover remainders 2026-11-09: inventory only — containers/timers still running. Stop-readiness: intake+crm stop-ready after accepting loss of stale /join/thanks|/review/thanks POSTs and OPS-156; Hermes/Notion/webhook timers stop-ready (product retired); forms/twc-site-forms/notify-confirmations wait on OPS-518 / live form. Do not stop in this pass."
     },
     {
       "id": "OPS-309",
@@ -4492,7 +4576,8 @@
       "acceptance": "`notify-applications` and `notify-messages` timers (inferred: about every 5 min).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "/about"
+      "target": "/about",
+      "evidence": "vps-cutover remainders 2026-11-09: inventory only — containers/timers still running. Stop-readiness: intake+crm stop-ready after accepting loss of stale /join/thanks|/review/thanks POSTs and OPS-156; Hermes/Notion/webhook timers stop-ready (product retired); forms/twc-site-forms/notify-confirmations wait on OPS-518 / live form. Do not stop in this pass."
     },
     {
       "id": "OPS-310",
@@ -4500,7 +4585,8 @@
       "acceptance": "`intake-newsletter-sync` timer (inferred: every few minutes).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "vps:cutover"
+      "target": "vps:cutover",
+      "evidence": "vps-cutover remainders 2026-11-09: inventory only — containers/timers still running. Stop-readiness: intake+crm stop-ready after accepting loss of stale /join/thanks|/review/thanks POSTs and OPS-156; Hermes/Notion/webhook timers stop-ready (product retired); forms/twc-site-forms/notify-confirmations wait on OPS-518 / live form. Do not stop in this pass."
     },
     {
       "id": "OPS-311",
@@ -4508,7 +4594,8 @@
       "acceptance": "Backup job (inferred: nightly).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "vps:cutover"
+      "target": "vps:cutover",
+      "evidence": "vps-cutover remainders 2026-11-09: inventory only — containers/timers still running. Stop-readiness: intake+crm stop-ready after accepting loss of stale /join/thanks|/review/thanks POSTs and OPS-156; Hermes/Notion/webhook timers stop-ready (product retired); forms/twc-site-forms/notify-confirmations wait on OPS-518 / live form. Do not stop in this pass."
     },
     {
       "id": "OPS-312",
@@ -4516,7 +4603,8 @@
       "acceptance": "Hermes WhatsApp alert job (external cron).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "vps:cutover"
+      "target": "vps:cutover",
+      "evidence": "vps-cutover remainders 2026-11-09: inventory only — containers/timers still running. Stop-readiness: intake+crm stop-ready after accepting loss of stale /join/thanks|/review/thanks POSTs and OPS-156; Hermes/Notion/webhook timers stop-ready (product retired); forms/twc-site-forms/notify-confirmations wait on OPS-518 / live form. Do not stop in this pass."
     },
     {
       "id": "OPS-313",
@@ -4579,8 +4667,10 @@
       "source": "backoffice.md:Model and endpoint.",
       "acceptance": "Model and endpoint.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/admin"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-hermes",
+      "evidence": "Retired (no-hermes): Hermes model/endpoint never ported (notifications retire-external). | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-320",
@@ -4617,8 +4707,10 @@
       "source": "backoffice.md:Reject path (lines 180-198, 219-225).",
       "acceptance": "Reject path (lines 180-198, 219-225).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-hermes",
+      "evidence": "Retired (no-hermes): Hermes reject path never ported. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-324",
@@ -4663,8 +4755,10 @@
       "source": "backoffice.md:Target database.",
       "acceptance": "Target database.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-notion-mirror",
+      "evidence": "Retired (no-notion-mirror): Notion target database never ported. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-329",
@@ -4739,8 +4833,10 @@
       "source": "backoffice.md:Archived pages.",
       "acceptance": "Archived pages.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-notion-mirror",
+      "evidence": "Retired (no-notion-mirror): Notion archived pages never ported. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-337",
@@ -4860,8 +4956,10 @@
       "source": "backoffice.md:Step by step.",
       "acceptance": "Step by step.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "old-intake-runtime",
+      "evidence": "Retired (old-intake-runtime): Classic step-by-step intake job never ported. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-350",
@@ -4886,8 +4984,10 @@
       "source": "backoffice.md:Master import matching and merge rules.",
       "acceptance": "Master import matching and merge rules.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "typed-imports-sqlite",
+      "evidence": "Retired (typed-imports-sqlite): Master import matching is scripts/import-legacy.ts (data-import); not intake scripts. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-353",
@@ -4911,8 +5011,10 @@
       "source": "backoffice.md:`fix_2026_10_28.py` (one-off data fixes approved by the owner on 2026-10-28; `--dry-run`).",
       "acceptance": "`fix_2026_10_28.py` (one-off data fixes approved by the owner on 2026-10-28; `--dry-run`).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "old-intake-runtime",
+      "evidence": "Retired (old-intake-runtime): One-off fix_2026_10_28.py never ported. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-356",
@@ -4927,8 +5029,10 @@
       "source": "backoffice.md:Consent rule.",
       "acceptance": "Consent rule.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "beehiiv-consent-gate",
+      "evidence": "Retired (beehiiv-consent-gate): Consent rule is subscribeIfConsented(); classic job retired. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-358",
@@ -4960,8 +5064,10 @@
       "source": "backoffice.md:`tools/add-beehiiv-env.py` (one-off).",
       "acceptance": "`tools/add-beehiiv-env.py` (one-off).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:cutover"
+      "status": "verified",
+      "target": "retired",
+      "retired": "old-intake-runtime",
+      "evidence": "Retired (old-intake-runtime): tools/add-beehiiv-env.py one-off never ported. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-362",
@@ -5038,16 +5144,20 @@
       "source": "backoffice.md:What and where.",
       "acceptance": "What and where.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "old-intake-runtime",
+      "evidence": "Retired (old-intake-runtime): Classic backup what/where inventory; VPS backups remain ops, not app features. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-371",
       "source": "backoffice.md:Retention.",
       "acceptance": "Retention.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "old-intake-runtime",
+      "evidence": "Retired (old-intake-runtime): Classic retention notes; not an app feature. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-372",
@@ -5072,24 +5182,30 @@
       "source": "backoffice.md:`tools/cleanup-e2e.py`.",
       "acceptance": "`tools/cleanup-e2e.py`.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "old-intake-runtime",
+      "evidence": "Retired (old-intake-runtime): tools/cleanup-e2e.py never ported. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-375",
       "source": "backoffice.md:`tools/cleanup-nlconsent.py`.",
       "acceptance": "`tools/cleanup-nlconsent.py`.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "old-intake-runtime",
+      "evidence": "Retired (old-intake-runtime): tools/cleanup-nlconsent.py never ported. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-376",
       "source": "backoffice.md:`tools/cleanup-notion.py`.",
       "acceptance": "`tools/cleanup-notion.py`.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-notion-mirror",
+      "evidence": "Retired (no-notion-mirror): tools/cleanup-notion.py never ported (Notion retired). | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-377",
@@ -5112,8 +5228,10 @@
       "source": "backoffice.md:`tools/qa/membership-rollback.sh`.",
       "acceptance": "`tools/qa/membership-rollback.sh`.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:cutover"
+      "status": "verified",
+      "target": "retired",
+      "retired": "old-intake-runtime",
+      "evidence": "Retired (old-intake-runtime): membership-rollback.sh classic QA never ported. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-380",
@@ -5129,7 +5247,8 @@
       "acceptance": "No unit files for any of the six jobs.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "/join"
+      "target": "/join",
+      "evidence": "vps-cutover remainders 2026-11-09: inventory only — containers/timers still running. Stop-readiness: intake+crm stop-ready after accepting loss of stale /join/thanks|/review/thanks POSTs and OPS-156; Hermes/Notion/webhook timers stop-ready (product retired); forms/twc-site-forms/notify-confirmations wait on OPS-518 / live form. Do not stop in this pass."
     },
     {
       "id": "OPS-382",
@@ -5172,8 +5291,10 @@
       "source": "backoffice.md:The consent version is read from the host environment.",
       "acceptance": "The consent version is read from the host environment.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "old-intake-runtime",
+      "evidence": "Retired (old-intake-runtime): Consent version from host env never ported. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-387",
@@ -5209,8 +5330,10 @@
       "source": "backoffice.md:Backup gaps.",
       "acceptance": "Backup gaps.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "old-intake-runtime",
+      "evidence": "Retired (old-intake-runtime): Classic backup gaps are VPS ops notes, not app inventory to ship. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-391",
@@ -5225,8 +5348,10 @@
       "source": "backoffice.md:Secrets on disk outside env.",
       "acceptance": "Secrets on disk outside env.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:cutover"
+      "status": "verified",
+      "target": "retired",
+      "retired": "old-intake-runtime",
+      "evidence": "Retired (old-intake-runtime): Secrets on disk outside env were classic; app forbids that pattern. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-393",
@@ -5235,7 +5360,7 @@
       "owner": "vps-cutover",
       "status": "todo",
       "target": "vps:cutover",
-      "evidence": "AUDIT 2026-11-09: nothing stopped — twc-site-forms.path still running. Release after twc_forms_cutover (forms) and/or twc_admin_cutover/twc_crm_cutover (intake/crm)."
+      "evidence": "AUDIT 2026-11-09: nothing stopped — twc-site-forms.path still running. Release after twc_forms_cutover (forms) and/or twc_admin_cutover/twc_crm_cutover (intake/crm). | vps-cutover remainders 2026-11-09: inventory only — containers/timers still running. Stop-readiness: intake+crm stop-ready after accepting loss of stale /join/thanks|/review/thanks POSTs and OPS-156; Hermes/Notion/webhook timers stop-ready (product retired); forms/twc-site-forms/notify-confirmations wait on OPS-518 / live form. Do not stop in this pass."
     },
     {
       "id": "OPS-394",
@@ -5244,7 +5369,7 @@
       "owner": "vps-cutover",
       "status": "todo",
       "target": "vps:cutover",
-      "evidence": "AUDIT 2026-11-09: nothing stopped — twc-site-forms.timer still running. Release after twc_forms_cutover (forms) and/or twc_admin_cutover/twc_crm_cutover (intake/crm)."
+      "evidence": "AUDIT 2026-11-09: nothing stopped — twc-site-forms.timer still running. Release after twc_forms_cutover (forms) and/or twc_admin_cutover/twc_crm_cutover (intake/crm). | vps-cutover remainders 2026-11-09: inventory only — containers/timers still running. Stop-readiness: intake+crm stop-ready after accepting loss of stale /join/thanks|/review/thanks POSTs and OPS-156; Hermes/Notion/webhook timers stop-ready (product retired); forms/twc-site-forms/notify-confirmations wait on OPS-518 / live form. Do not stop in this pass."
     },
     {
       "id": "OPS-395",
@@ -5253,7 +5378,7 @@
       "owner": "vps-cutover",
       "status": "todo",
       "target": "vps:cutover",
-      "evidence": "AUDIT 2026-11-09: nothing stopped — twc-site-forms.service still running. Release after twc_forms_cutover (forms) and/or twc_admin_cutover/twc_crm_cutover (intake/crm)."
+      "evidence": "AUDIT 2026-11-09: nothing stopped — twc-site-forms.service still running. Release after twc_forms_cutover (forms) and/or twc_admin_cutover/twc_crm_cutover (intake/crm). | vps-cutover remainders 2026-11-09: inventory only — containers/timers still running. Stop-readiness: intake+crm stop-ready after accepting loss of stale /join/thanks|/review/thanks POSTs and OPS-156; Hermes/Notion/webhook timers stop-ready (product retired); forms/twc-site-forms/notify-confirmations wait on OPS-518 / live form. Do not stop in this pass."
     },
     {
       "id": "OPS-396",
@@ -5261,7 +5386,8 @@
       "acceptance": "Site lock shared with the Notion events job.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "/gatherings"
+      "target": "/gatherings",
+      "evidence": "vps-cutover remainders 2026-11-09: inventory only — containers/timers still running. Stop-readiness: intake+crm stop-ready after accepting loss of stale /join/thanks|/review/thanks POSTs and OPS-156; Hermes/Notion/webhook timers stop-ready (product retired); forms/twc-site-forms/notify-confirmations wait on OPS-518 / live form. Do not stop in this pass."
     },
     {
       "id": "OPS-397",
@@ -5270,7 +5396,7 @@
       "owner": "vps-cutover",
       "status": "todo",
       "target": "vps:cutover",
-      "evidence": "AUDIT 2026-11-09: nothing stopped — twc-form-connections.timer still running. Release after twc_forms_cutover (forms) and/or twc_admin_cutover/twc_crm_cutover (intake/crm)."
+      "evidence": "AUDIT 2026-11-09: nothing stopped — twc-form-connections.timer still running. Release after twc_forms_cutover (forms) and/or twc_admin_cutover/twc_crm_cutover (intake/crm). | vps-cutover remainders 2026-11-09: inventory only — containers/timers still running. Stop-readiness: intake+crm stop-ready after accepting loss of stale /join/thanks|/review/thanks POSTs and OPS-156; Hermes/Notion/webhook timers stop-ready (product retired); forms/twc-site-forms/notify-confirmations wait on OPS-518 / live form. Do not stop in this pass."
     },
     {
       "id": "OPS-398",
@@ -5279,7 +5405,7 @@
       "owner": "vps-cutover",
       "status": "todo",
       "target": "vps:cutover",
-      "evidence": "AUDIT 2026-11-09: nothing stopped — twc-form-connections.service still running. Release after twc_forms_cutover (forms) and/or twc_admin_cutover/twc_crm_cutover (intake/crm)."
+      "evidence": "AUDIT 2026-11-09: nothing stopped — twc-form-connections.service still running. Release after twc_forms_cutover (forms) and/or twc_admin_cutover/twc_crm_cutover (intake/crm). | vps-cutover remainders 2026-11-09: inventory only — containers/timers still running. Stop-readiness: intake+crm stop-ready after accepting loss of stale /join/thanks|/review/thanks POSTs and OPS-156; Hermes/Notion/webhook timers stop-ready (product retired); forms/twc-site-forms/notify-confirmations wait on OPS-518 / live form. Do not stop in this pass."
     },
     {
       "id": "OPS-399",
@@ -5297,7 +5423,8 @@
       "acceptance": "`notify-confirmations.timer`.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "vps:cutover"
+      "target": "vps:cutover",
+      "evidence": "vps-cutover remainders 2026-11-09: inventory only — containers/timers still running. Stop-readiness: intake+crm stop-ready after accepting loss of stale /join/thanks|/review/thanks POSTs and OPS-156; Hermes/Notion/webhook timers stop-ready (product retired); forms/twc-site-forms/notify-confirmations wait on OPS-518 / live form. Do not stop in this pass."
     },
     {
       "id": "OPS-401",
@@ -5305,7 +5432,8 @@
       "acceptance": "`notify-confirmations.service`.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "vps:cutover"
+      "target": "vps:cutover",
+      "evidence": "vps-cutover remainders 2026-11-09: inventory only — containers/timers still running. Stop-readiness: intake+crm stop-ready after accepting loss of stale /join/thanks|/review/thanks POSTs and OPS-156; Hermes/Notion/webhook timers stop-ready (product retired); forms/twc-site-forms/notify-confirmations wait on OPS-518 / live form. Do not stop in this pass."
     },
     {
       "id": "OPS-402",
@@ -5313,15 +5441,17 @@
       "acceptance": "Container side of the same code.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "vps:cutover"
+      "target": "vps:cutover",
+      "evidence": "vps-cutover remainders 2026-11-09: inventory only — containers/timers still running. Stop-readiness: intake+crm stop-ready after accepting loss of stale /join/thanks|/review/thanks POSTs and OPS-156; Hermes/Notion/webhook timers stop-ready (product retired); forms/twc-site-forms/notify-confirmations wait on OPS-518 / live form. Do not stop in this pass."
     },
     {
       "id": "OPS-403",
       "source": "ops-part-d.md:Caddy routes that carry these flows (apex block).",
       "acceptance": "Caddy routes that carry these flows (apex block).: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "/contact",
+      "evidence": "Apex Caddy contact/partnership/thank-you routes in twc_apex_cutover live (smoke). | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-404",
@@ -5329,7 +5459,8 @@
       "acceptance": "VERIFY-VPS: which units are installed and enabled.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "vps:cutover"
+      "target": "vps:cutover",
+      "evidence": "vps-cutover remainders 2026-11-09: inventory only — containers/timers still running. Stop-readiness: intake+crm stop-ready after accepting loss of stale /join/thanks|/review/thanks POSTs and OPS-156; Hermes/Notion/webhook timers stop-ready (product retired); forms/twc-site-forms/notify-confirmations wait on OPS-518 / live form. Do not stop in this pass."
     },
     {
       "id": "OPS-405",
@@ -5406,7 +5537,8 @@
       "acceptance": "Failures are silent to systemd.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "vps:cutover"
+      "target": "vps:cutover",
+      "evidence": "vps-cutover remainders 2026-11-09: inventory only — containers/timers still running. Stop-readiness: intake+crm stop-ready after accepting loss of stale /join/thanks|/review/thanks POSTs and OPS-156; Hermes/Notion/webhook timers stop-ready (product retired); forms/twc-site-forms/notify-confirmations wait on OPS-518 / live form. Do not stop in this pass."
     },
     {
       "id": "OPS-413",
@@ -5803,8 +5935,10 @@
       "source": "ops-part-d.md:Address safety (runs as root beside private services).",
       "acceptance": "Address safety (runs as root beside private services).: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "old-intake-runtime",
+      "evidence": "Retired (old-intake-runtime): Root-beside-private address safety was classic host layout; not ported. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-457",
@@ -6004,8 +6138,10 @@
       "source": "ops-part-d.md:Who sent it.",
       "acceptance": "Who sent it.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:cutover"
+      "status": "verified",
+      "target": "retired",
+      "retired": "native-website-forms",
+      "evidence": "Retired (native-website-forms): Who-sent-it classic stamp not required. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-479",
@@ -6037,8 +6173,10 @@
       "source": "ops-part-d.md:Rollout steps in the docstring (still the model).",
       "acceptance": "Rollout steps in the docstring (still the model).: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:cutover"
+      "status": "verified",
+      "target": "retired",
+      "retired": "old-intake-runtime",
+      "evidence": "Retired (old-intake-runtime): Classic rollout docstring model superseded by migration runbooks. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-483",
@@ -6077,8 +6215,10 @@
       "source": "ops-part-d.md:\"Filled too fast\" stamp.",
       "acceptance": "\"Filled too fast\" stamp.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:cutover"
+      "status": "verified",
+      "target": "retired",
+      "retired": "native-website-forms",
+      "evidence": "Retired (native-website-forms): Filled-too-fast stamp not ported. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "OPS-488",
@@ -6348,7 +6488,7 @@
       "owner": "vps-cutover",
       "status": "todo",
       "target": "/f/*",
-      "evidence": "AUDIT 2026-11-09: twc_forms_cutover held. Live CRM custom_forms=0; forms-import ready 0/0. Keep apex /f/* on old stack until a real form is published+imported."
+      "evidence": "vps-cutover remainders 2026-11-09: leave todo — twc_forms_cutover held until a live form exists (forms-import 0/0). Same gate as OPS-518."
     },
     {
       "id": "OPS-519",
@@ -6803,8 +6943,10 @@
       "source": "site.md:Events FAQ (6 questions)",
       "acceptance": "Events FAQ (6 questions): behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/gatherings"
+      "status": "verified",
+      "target": "retired",
+      "retired": "moved-to-faq",
+      "evidence": "Retired (moved-to-faq): Events FAQ lives on /faq Gatherings section; /events 301 → /gatherings (no FAQ block on gatherings page). | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "SITE-034",
@@ -6948,24 +7090,29 @@
       "source": "site.md:The editing guide documents the Notion sync",
       "acceptance": "The editing guide documents the Notion sync: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/account"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-notion-mirror",
+      "evidence": "Retired (no-notion-mirror): Editing guide Notion sync docs never ship; /editing → /account. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "SITE-050",
       "source": "site.md:All three legal pages are templates with open owner decisions",
       "acceptance": "All three legal pages are templates with open owner decisions: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:caddy-redirects"
+      "status": "verified",
+      "target": "vps:caddy-redirects",
+      "evidence": "Legal pages: /privacy|/terms|/code-of-conduct (+.html) 301 → new.* (twc_apex_cutover; SITE-009/010 public-pages). | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "SITE-051",
       "source": "site.md:Newsletter form exists only on index.html and is HIDDEN",
       "acceptance": "Newsletter form exists only on index.html and is HIDDEN: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "retired",
+      "retired": "apex-coming-soon",
+      "evidence": "Retired (apex-coming-soon): Hidden newsletter form on classic index is apex-coming-soon leftover; not rebuilt. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "SITE-052",
@@ -7080,8 +7227,10 @@
       "source": "site.md:WebMCP (AI assistants filling forms)",
       "acceptance": "WebMCP (AI assistants filling forms): behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-webmcp",
+      "evidence": "Retired (no-webmcp): WebMCP form filling never ships. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "SITE-065",
@@ -7097,16 +7246,18 @@
       "source": "site.md:POST targets and routing",
       "acceptance": "POST targets and routing: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "/contact",
+      "evidence": "POST targets: new scrapbook forms post to app APIs; old page GETs 301; stale POSTs keep @formpost (SITE-078). | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "SITE-067",
       "source": "site.md:Success redirect",
       "acceptance": "Success redirect: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "/contact",
+      "evidence": "Success: new contact/partnership confirm in place; old thanks-* GET 301 → /contact|/partnerships. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "SITE-068",
@@ -7148,8 +7299,10 @@
       "source": "site.md:form-logic.js is a generated asset",
       "acceptance": "form-logic.js is a generated asset: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "retired",
+      "retired": "legacy-site-js",
+      "evidence": "Retired (legacy-site-js): form-logic.js generated asset never ships; scrapbook forms. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "SITE-073",
@@ -7360,8 +7513,10 @@
       "source": "site.md:Cursor/pointer polish is progressive",
       "acceptance": "Cursor/pointer polish is progressive: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:caddy-redirects"
+      "status": "verified",
+      "target": "retired",
+      "retired": "scrapbook-kit",
+      "evidence": "Retired (scrapbook-kit): Classic cursor/pointer polish not ported. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "SITE-095",
@@ -7388,8 +7543,10 @@
       "source": "site.md:embed.js: the embed loader for CRM forms on any website",
       "acceptance": "embed.js: the embed loader for CRM forms on any website: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:caddy-redirects"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-embed-loader",
+      "evidence": "Retired (no-embed-loader): embed.js loader never ships on the new app. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "SITE-098",
@@ -7406,8 +7563,9 @@
       "source": "site.md:Static serving",
       "acceptance": "Static serving: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:caddy-redirects"
+      "status": "verified",
+      "target": "vps:caddy-redirects",
+      "evidence": "Static pages redirected; remaining apex static (/, assets, embed, robots) still served from /opt/nbwc/site archive tree. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "SITE-100",
@@ -7433,32 +7591,37 @@
       "source": "site.md:Other response headers",
       "acceptance": "Other response headers: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:caddy-redirects"
+      "status": "verified",
+      "target": "vps:caddy-redirects",
+      "evidence": "App responses use start.ts security headers; apex Caddy headers remain for non-redirected assets. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "SITE-103",
       "source": "site.md:Unlisted editing guide",
       "acceptance": "Unlisted editing guide: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/account"
+      "status": "verified",
+      "target": "retired",
+      "retired": "editing-to-account",
+      "evidence": "Retired (editing-to-account): Unlisted editing guide → /account (SITE-151). | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "SITE-104",
       "source": "site.md:Framing and CSP, two header blocks",
       "acceptance": "Framing and CSP, two header blocks: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:caddy-redirects"
+      "status": "verified",
+      "target": "vps:caddy-redirects",
+      "evidence": "App CSP from contentSecurityPolicy() (enforced, same-origin); apex framing/CSP blocks stay for leftover static. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "SITE-105",
       "source": "site.md:Cache policy",
       "acceptance": "Cache policy: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:caddy-redirects"
+      "status": "verified",
+      "target": "vps:caddy-redirects",
+      "evidence": "App cache via framework defaults; apex Cache-Control on leftover static unchanged. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "SITE-106",
@@ -7492,8 +7655,9 @@
       "source": "site.md:Form POST proxy",
       "acceptance": "Form POST proxy: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "/contact",
+      "evidence": "Form POST proxy: GET/HEAD page redirects live; @formpost retained for stale bodies (CRM-175). | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "SITE-110",
@@ -7512,7 +7676,7 @@
       "owner": "vps-cutover",
       "status": "todo",
       "target": "vps:caddy-redirects",
-      "evidence": "AUDIT 2026-11-09: /f/* unchanged on purpose (forms-import gate); twc_forms_cutover prepared, not enabled. Same as OPS-518."
+      "evidence": "vps-cutover remainders 2026-11-09: leave todo — twc_forms_cutover held until a live form exists (forms-import 0/0). Same gate as OPS-518."
     },
     {
       "id": "SITE-112",
@@ -7592,8 +7756,10 @@
       "source": "site.md:Fonts",
       "acceptance": "Fonts: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/404"
+      "status": "verified",
+      "target": "retired",
+      "retired": "scrapbook-kit",
+      "evidence": "Retired (scrapbook-kit): Classic fonts replaced by self-hosted scrapbook fonts. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "SITE-121",
@@ -7627,8 +7793,10 @@
       "source": "site.md:Only decorative SVG data URIs, inside the inline CSS",
       "acceptance": "Only decorative SVG data URIs, inside the inline CSS: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/about"
+      "status": "verified",
+      "target": "retired",
+      "retired": "scrapbook-kit",
+      "evidence": "Retired (scrapbook-kit): Classic decorative SVG data URIs not ported. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "SITE-125",
@@ -7644,16 +7812,18 @@
       "source": "site.md:`robots.txt`",
       "acceptance": "`robots.txt`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "/contact",
+      "evidence": "App public/robots.txt (showcase disallowed; /review Disallow); apex robots still on coming-soon tree. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "SITE-127",
       "source": "site.md:`sitemap.xml` is stale",
       "acceptance": "`sitemap.xml` is stale: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "/contact",
+      "evidence": "App /sitemap.xml server route (src/server/sitemap.ts) lists INDEXED + neighborhoods + public members. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "SITE-128",
@@ -7669,8 +7839,9 @@
       "source": "site.md:Titles and descriptions (to reuse as redirect-page labels or compare)",
       "acceptance": "Titles and descriptions (to reuse as redirect-page labels or compare): behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "/contact",
+      "evidence": "Titles/descriptions live on scrapbook routes; old meta only via archive/redirect labels. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "SITE-130",
@@ -7799,8 +7970,9 @@
       "source": "site.md:Events and partners data now live in SQLite",
       "acceptance": "Events and partners data now live in SQLite: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/gatherings"
+      "status": "verified",
+      "target": "/gatherings",
+      "evidence": "Gatherings/partners data in SQLite; /events → /gatherings redirect live. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "SITE-144",
@@ -7907,8 +8079,10 @@
       "source": "site.md:Newsletter signup, MISSING",
       "acceptance": "Newsletter signup, MISSING: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:caddy-redirects"
+      "status": "verified",
+      "target": "retired",
+      "retired": "apex-coming-soon",
+      "evidence": "Retired (apex-coming-soon): Missing newsletter signup page: thanks-newsletter → /contact; no separate page. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "SITE-156",
@@ -7953,7 +8127,8 @@
       "acceptance": "The newsletter form on the kept apex page is invisible but live: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "public-site"
+      "target": "public-site",
+      "evidence": "vps-cutover remainders 2026-11-09: leave todo — hidden apex newsletter form on coming-soon index (SITE-160); public-pages left alone; not a redirect flip."
     },
     {
       "id": "SITE-161",
@@ -8061,8 +8236,9 @@
       "source": "site.md:`editing.html` → `/account` is a semantic oddity",
       "acceptance": "`editing.html` → `/account` is a semantic oddity: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/account"
+      "status": "verified",
+      "target": "/account",
+      "evidence": "editing(.html) → /account deliberately (SITE-151 verified); semantic oddity accepted. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "SITE-173",
@@ -8078,8 +8254,10 @@
       "source": "site.md:Snapshot provenance",
       "acceptance": "Snapshot provenance: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "retired",
+      "retired": "scrapbook-kit",
+      "evidence": "Retired (scrapbook-kit): Snapshot provenance notes are inventory-only; not a shippable page. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "SITE-175",
@@ -8104,8 +8282,10 @@
       "source": "site.md:Relative internal links break under any base path",
       "acceptance": "Relative internal links break under any base path: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/about"
+      "status": "verified",
+      "target": "retired",
+      "retired": "scrapbook-kit",
+      "evidence": "Retired (scrapbook-kit): Relative-link classic-site bug dies with redirects to absolute new.* paths. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {
       "id": "SITE-178",
@@ -8121,8 +8301,10 @@
       "source": "site.md:Unlisted but public content",
       "acceptance": "Unlisted but public content: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/account"
+      "status": "verified",
+      "target": "retired",
+      "retired": "editing-to-account",
+      "evidence": "Retired (editing-to-account): Unlisted public editing content → /account behind sign-in. | vps-cutover remainders 2026-11-09: already live — AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     }
   ]
 }
