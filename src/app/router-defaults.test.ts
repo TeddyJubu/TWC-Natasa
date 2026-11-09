@@ -28,8 +28,9 @@ describe("getRouter", () => {
 
   it("a real 404 gets no canonical or og:url, while a real page does", async () => {
     vi.stubEnv("VITE_SITE_URL", "https://example.com");
-    const page = await rootHeadAt("/join");
-    expect(page.links.find((l) => l.rel === "canonical")?.href).toBe("https://example.com/join");
+    // Prefer a page without a DB-backed loader (/join now loads forms_state).
+    const page = await rootHeadAt("/about");
+    expect(page.links.find((l) => l.rel === "canonical")?.href).toBe("https://example.com/about");
     const missing = await rootHeadAt("/no-such-page");
     expect(missing.links.find((l) => l.rel === "canonical")).toBeUndefined();
     expect(missing.meta.find((m) => m.property === "og:url")).toBeUndefined();

@@ -28,10 +28,10 @@ import { Route as Components } from "@/routes/components";
 
 vi.spyOn(Account, "useRouteContext").mockReturnValue({ user: { id: "u1" } } as never);
 vi.spyOn(Admin, "useRouteContext").mockReturnValue({ user: { id: "u1", email: "rosa@x.test", name: "Rosa Diaz" } } as never);
+vi.spyOn(Join, "useLoaderData").mockReturnValue({ kind: "application", open: true, closed: null } as never);
 afterEach(() => {
   cleanup();
 });
-
 type AnyRoute = { options: { component?: unknown; head?: unknown } };
 const component = (route: AnyRoute) => route.options.component as React.ComponentType;
 const meta = (route: AnyRoute) => ((route.options.head as () => { meta: Record<string, string>[] })().meta);
