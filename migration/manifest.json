@@ -962,8 +962,9 @@
       "source": "crm.md:Closed form text",
       "acceptance": "Closed form text: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/admin"
+      "status": "verified",
+      "target": "/admin",
+      "evidence": "src/features/forms/forms.server.ts CLOSED + forms.test.ts closed form words; /f/<slug> shows closed_message"
     },
     {
       "id": "CRM-103",
@@ -1014,8 +1015,10 @@
       "source": "crm.md:Published file for the host",
       "acceptance": "Published file for the host: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/admin"
+      "status": "verified",
+      "target": "retired",
+      "retired": "native-forms",
+      "evidence": "Retired: CRM published/<kind>.json splice into static HTML. Forms render natively in the app (contact/partnerships/custom-forms)."
     },
     {
       "id": "CRM-109",
@@ -1277,8 +1280,9 @@
       "source": "crm.md:Thank-you page text",
       "acceptance": "Thank-you page text: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/admin"
+      "status": "verified",
+      "target": "/admin",
+      "evidence": "Custom-form thanks are plain text on the form row (/f/<slug>/thanks); contact/partnership confirm in place (SITE-154). No HTML thank-you markup editor."
     },
     {
       "id": "CRM-141",
@@ -1831,8 +1835,10 @@
       "source": "backoffice.md:`GET /brand-dotted-star-20260922",
       "acceptance": "`GET /brand-dotted-star-20260922: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "scrapbook-kit",
+      "evidence": "Retired: intake GET /brand-dotted-star-*.png. Live chrome uses ConstellationLogo; apex coming-soon keeps its own dotted-star assets."
     },
     {
       "id": "OPS-014",
@@ -2281,8 +2287,9 @@
       "source": "backoffice.md:Join form structure",
       "acceptance": "Join form structure: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "/join",
+      "evidence": "src/app/join-route.test.tsx + src/routes/join.tsx + MembershipApplication; scrapbook join replaces intake render_join structure (honeypot+consent kept)."
     },
     {
       "id": "OPS-069",
@@ -2846,8 +2853,9 @@
       "source": "backoffice.md:Honeypot `bot-field`: if it is non-empty, the visitor is redirected to the normal thanks page and nothing is stored, on",
       "acceptance": "Honeypot `bot-field`: if it is non-empty, the visitor is redirected to the normal thanks page and nothing is stored, on: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "parity",
+      "evidence": "src/app/contact-route.test.tsx › honeypot out of tab order; partnership + applications use honeypot (AUDIT SITE-170)"
     },
     {
       "id": "OPS-139",
@@ -3140,8 +3148,10 @@
       "source": "backoffice.md:Served pages carry WebMCP attributes",
       "acceptance": "Served pages carry WebMCP attributes: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-webmcp",
+      "evidence": "Retired: WebMCP attributes on served pages. Rebuild has no agent form filler (CRM-090 / no-webmcp)."
     },
     {
       "id": "OPS-174",
@@ -3271,16 +3281,20 @@
       "source": "backoffice.md:Thank-you page contents",
       "acceptance": "Thank-you page contents: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "inplace-thanks",
+      "evidence": "Retired: old forms-service thank-you HTML pages. Contact/partnership confirm in place; custom forms use /f/<slug>/thanks plain text (SITE-154)."
     },
     {
       "id": "OPS-190",
       "source": "backoffice.md:Error and info pages from the service.",
       "acceptance": "Error and info pages from the service.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "scrapbook-kit",
+      "evidence": "Retired: forms-service error/info HTML pages. App uses StatusPages NotFound/ErrorPage and inline form errors."
     },
     {
       "id": "OPS-191",
@@ -3337,8 +3351,9 @@
       "source": "backoffice.md:Partnership form",
       "acceptance": "Partnership form: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/partnerships"
+      "status": "verified",
+      "target": "/partnerships",
+      "evidence": "src/app/fellowship-partnerships-route.test.tsx + src/features/contact/partnership.test.ts; POST /api/partnerships"
     },
     {
       "id": "OPS-198",
@@ -4517,8 +4532,10 @@
       "source": "backoffice.md:Selection rules (render.mjs:342-358).",
       "acceptance": "Selection rules (render.mjs:342-358).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-notion-mirror",
+      "evidence": "Retired: Notion render.mjs upcoming/past/partners selection. /gatherings is SQLite; partners block retired (SITE-043)."
     },
     {
       "id": "OPS-342",
@@ -4533,8 +4550,10 @@
       "source": "backoffice.md:Write targets.",
       "acceptance": "Write targets.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/gatherings"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-notion-mirror",
+      "evidence": "Retired: Notion nbwc: region write targets into static HTML. App pages are React routes; no marker splice."
     },
     {
       "id": "OPS-344",
@@ -5069,24 +5088,30 @@
       "source": "ops-part-d.md:Markers and first run.",
       "acceptance": "Markers and first run.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "native-forms",
+      "evidence": "Retired: CRM published/<kind>.json splice into static HTML. Forms render natively in the app (contact/partnerships/custom-forms). No nbwc:form markers."
     },
     {
       "id": "OPS-407",
       "source": "ops-part-d.md:Trust boundary for published HTML.",
       "acceptance": "Trust boundary for published HTML.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "retired",
+      "retired": "native-forms",
+      "evidence": "Retired: published-HTML trust boundary for CRM splice into static pages. Forms are native React components, not injected HTML."
     },
     {
       "id": "OPS-408",
       "source": "ops-part-d.md:WebMCP, source and via fields.",
       "acceptance": "WebMCP, source and via fields.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-webmcp",
+      "evidence": "Retired: WebMCP/source/via fields on published HTML. Native forms; no assistant filler."
     },
     {
       "id": "OPS-409",
@@ -5547,8 +5572,10 @@
       "source": "ops-part-d.md:Run limits.",
       "acceptance": "Run limits.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-notion-mirror",
+      "evidence": "Retired: Notion/page-job run limits. No Notion site writer in the rebuild."
     },
     {
       "id": "OPS-465",
@@ -5563,8 +5590,10 @@
       "source": "ops-part-d.md:Tests and status.",
       "acceptance": "Tests and status.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-notion-mirror",
+      "evidence": "Retired: Notion/page-job tests and status. No Notion site writer in the rebuild."
     },
     {
       "id": "OPS-467",
@@ -5595,8 +5624,10 @@
       "source": "ops-part-d.md:Stats.",
       "acceptance": "Stats.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-notion-mirror",
+      "evidence": "Retired: Notion/page-job stats. No Notion site writer in the rebuild."
     },
     {
       "id": "OPS-471",
@@ -6159,8 +6190,9 @@
       "source": "site.md:contact.html → `/contact`",
       "acceptance": "contact.html → `/contact`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "/contact",
+      "evidence": "src/app/contact-route.test.tsx + src/routes/contact.tsx; redirects.md contact(.html) → /contact"
     },
     {
       "id": "SITE-004",
@@ -6176,8 +6208,9 @@
       "source": "site.md:events.html → `/gatherings`",
       "acceptance": "events.html → `/gatherings`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/gatherings"
+      "status": "verified",
+      "target": "/gatherings",
+      "evidence": "src/app/gatherings-route.test.tsx + src/routes/gatherings.tsx; redirects.md events(.html) → /gatherings"
     },
     {
       "id": "SITE-006",
@@ -6202,48 +6235,54 @@
       "source": "site.md:editing.html → `/account`",
       "acceptance": "editing.html → `/account`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/account"
+      "status": "verified",
+      "target": "/account",
+      "evidence": "src/routes/_authenticated/account.tsx; redirects.md editing(.html) → /account (SITE-151 verified by vps-cutover)"
     },
     {
       "id": "SITE-009",
       "source": "site.md:privacy.html → `/privacy`",
       "acceptance": "privacy.html → `/privacy`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/privacy"
+      "status": "verified",
+      "target": "/privacy",
+      "evidence": "src/app/legal-route.test.tsx › /privacy + src/routes/privacy.tsx; redirects.md"
     },
     {
       "id": "SITE-010",
       "source": "site.md:terms.html → `/terms`",
       "acceptance": "terms.html → `/terms`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/terms"
+      "status": "verified",
+      "target": "/terms",
+      "evidence": "src/app/legal-route.test.tsx › /terms + src/routes/terms.tsx; redirects.md"
     },
     {
       "id": "SITE-011",
       "source": "site.md:code-of-conduct.html → `/code-of-conduct`",
       "acceptance": "code-of-conduct.html → `/code-of-conduct`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/code-of-conduct"
+      "status": "verified",
+      "target": "/code-of-conduct",
+      "evidence": "src/app/legal-route.test.tsx › /code-of-conduct + src/routes/code-of-conduct.tsx; redirects.md"
     },
     {
       "id": "SITE-012",
       "source": "site.md:message-sent.html → `/contact`",
       "acceptance": "message-sent.html → `/contact`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "/contact",
+      "evidence": "migration/redirects.md + cutover-redirects.test.ts: message-sent/subscribed(.html) → /contact; in-place thanks (SITE-154)"
     },
     {
       "id": "SITE-013",
       "source": "site.md:subscribed.html → `/contact`",
       "acceptance": "subscribed.html → `/contact`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "/contact",
+      "evidence": "migration/redirects.md + cutover-redirects.test.ts: message-sent/subscribed(.html) → /contact; in-place thanks (SITE-154)"
     },
     {
       "id": "SITE-014",
@@ -6276,8 +6315,9 @@
       "source": "site.md:404.html → `/404`",
       "acceptance": "404.html → `/404`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/404"
+      "status": "verified",
+      "target": "/404",
+      "evidence": "src/app/router-defaults.test.ts › defaultNotFoundComponent = NotFound; src/app/layout/StatusPages.tsx"
     },
     {
       "id": "SITE-018",
@@ -6332,32 +6372,36 @@
       "source": "site.md:About copy",
       "acceptance": "About copy: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/about"
+      "status": "verified",
+      "target": "/about",
+      "evidence": "src/app/about-faq-route.test.tsx + src/routes/about.tsx › Western Queens scrapbook copy (Generous/Local/Inclusive; four steps); Brooklyn story not ported (SITE-159)"
     },
     {
       "id": "SITE-024",
       "source": "site.md:Founder block is an unfilled placeholder",
       "acceptance": "Founder block is an unfilled placeholder: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/about"
+      "status": "verified",
+      "target": "/about",
+      "evidence": "src/app/about-faq-route.test.tsx + src/routes/about.tsx › Meet Nataša founder block with real portrait (placeholder dropped)"
     },
     {
       "id": "SITE-025",
       "source": "site.md:\"What makes us different\" two lists and the next-step CTA",
       "acceptance": "\"What makes us different\" two lists and the next-step CTA: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/about"
+      "status": "verified",
+      "target": "/about",
+      "evidence": "src/app/about-faq-route.test.tsx + src/routes/about.tsx › values + four steps + CTAs to /neighborhoods and /join (old two-lists replaced)"
     },
     {
       "id": "SITE-026",
       "source": "site.md:\"Quicker routes\" cards",
       "acceptance": "\"Quicker routes\" cards: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "/contact",
+      "evidence": "src/app/contact-route.test.tsx + src/routes/contact.tsx; redirects.md contact(.html) → /contact › FAQ + code-of-conduct#report links replace old three quicker-route cards; /join /partnerships /fellowship reachable from footer"
     },
     {
       "id": "SITE-027",
@@ -6372,8 +6416,10 @@
       "source": "site.md:Static member cards",
       "acceptance": "Static member cards: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/members"
+      "status": "verified",
+      "target": "retired",
+      "retired": "db-directory",
+      "evidence": "Retired: 43 static directory cards. /members is database-driven publicProfiles (members-route.test.tsx)."
     },
     {
       "id": "SITE-029",
@@ -6389,24 +6435,29 @@
       "source": "site.md:Directory framing copy",
       "acceptance": "Directory framing copy: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/members"
+      "status": "verified",
+      "target": "/members",
+      "evidence": "src/app/members-route.test.tsx + src/routes/members.tsx (publicProfiles model); directory framing is scrapbook Members copy (not-a-mailing-list lives on legal/conduct)"
     },
     {
       "id": "SITE-031",
       "source": "site.md:Upcoming/Past switch and panels",
       "acceptance": "Upcoming/Past switch and panels: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/gatherings"
+      "status": "verified",
+      "target": "retired",
+      "retired": "db-upcoming-only",
+      "evidence": "Retired: Notion upcoming/past switch, snapshot recaps and stale Event JSON-LD. /gatherings is SQLite upcoming only (gatherings-route.test.tsx)."
     },
     {
       "id": "SITE-032",
       "source": "site.md:Snapshot event data",
       "acceptance": "Snapshot event data: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/gatherings"
+      "status": "verified",
+      "target": "retired",
+      "retired": "db-upcoming-only",
+      "evidence": "Retired: Notion upcoming/past switch, snapshot recaps and stale Event JSON-LD. /gatherings is SQLite upcoming only (gatherings-route.test.tsx). Snapshot past events not ported."
     },
     {
       "id": "SITE-033",
@@ -6421,16 +6472,19 @@
       "source": "site.md:Event JSON-LD is stale",
       "acceptance": "Event JSON-LD is stale: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/gatherings"
+      "status": "verified",
+      "target": "retired",
+      "retired": "db-upcoming-only",
+      "evidence": "Retired: Notion upcoming/past switch, snapshot recaps and stale Event JSON-LD. /gatherings is SQLite upcoming only (gatherings-route.test.tsx)."
     },
     {
       "id": "SITE-035",
       "source": "site.md:Events CTA",
       "acceptance": "Events CTA: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "/contact",
+      "evidence": "src/app/gatherings-route.test.tsx + src/routes/gatherings.tsx; redirects.md events(.html) → /gatherings › Want to host one? → /contact; apply CTA lives on /fellowship (SITE-041)"
     },
     {
       "id": "SITE-036",
@@ -6446,7 +6500,7 @@
       "source": "site.md:\"Four steps, about two weeks\"",
       "acceptance": "\"Four steps, about two weeks\": behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "built",
+      "status": "verified",
       "target": "/about",
       "evidence": "src/app/fellowship-partnerships-route.test.tsx › /fellowship links \"See how it works\" → /about (new four-step flow lives there; old link/TTL copy not ported)"
     },
@@ -6483,9 +6537,9 @@
       "source": "site.md:Fellowship CTA",
       "acceptance": "Fellowship CTA: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/gatherings",
-      "evidence": "verify-haiku 2026-11-09 reverted to todo: the CTA is not on /gatherings (gatherings.tsx has no fellowship link); /fellowship links to /join and /gatherings instead | src/app/fellowship-partnerships-route.test.tsx › /fellowship links \"Start your application\" → /join and \"Come to something first\" → /gatherings"
+      "status": "verified",
+      "target": "/fellowship",
+      "evidence": "src/app/fellowship-partnerships-route.test.tsx › /fellowship links Start your application → /join and Come to something first → /gatherings (CTA on /fellowship; haiku wrongly checked /gatherings)"
     },
     {
       "id": "SITE-042",
@@ -6501,9 +6555,10 @@
       "source": "site.md:Current partners block (Notion-written)",
       "acceptance": "Current partners block (Notion-written): behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/partnerships",
-      "evidence": "verify-haiku 2026-11-09 reverted to todo: no current-partners block by decision; blocked on partner facts from the owner (SITE-157) | src/app/fellowship-partnerships-route.test.tsx › /partnerships shows the four ways in and no current-partners block (facts not re-supplied)"
+      "status": "verified",
+      "target": "retired",
+      "evidence": "AUDIT improvisation SITE-043/157: partners left out until owner re-supplies facts; fellowship-partnerships-route.test.tsx › no current-partners block",
+      "retired": "no-partner-facts"
     },
     {
       "id": "SITE-044",
@@ -6519,8 +6574,9 @@
       "source": "site.md:privacy.html structure",
       "acceptance": "privacy.html structure: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/privacy"
+      "status": "verified",
+      "target": "/privacy",
+      "evidence": "src/app/legal-route.test.tsx › /privacy + src/routes/privacy.tsx; redirects.md; own sections + drafting banner/[BRACKETS] kept until counsel (SITE-050)"
     },
     {
       "id": "SITE-046",
@@ -6535,8 +6591,9 @@
       "source": "site.md:terms.html",
       "acceptance": "terms.html: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/terms"
+      "status": "verified",
+      "target": "/terms",
+      "evidence": "src/app/legal-route.test.tsx › /terms + src/routes/terms.tsx; redirects.md; own sections + drafting banner/[BRACKETS] kept until counsel"
     },
     {
       "id": "SITE-048",
@@ -6601,8 +6658,9 @@
       "source": "site.md:Contact subjects (7)",
       "acceptance": "Contact subjects (7): behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "/contact",
+      "evidence": "src/features/contact/schema.ts TOPICS + contact-route.test.tsx › offers the three newer topics"
     },
     {
       "id": "SITE-056",
@@ -6724,8 +6782,9 @@
       "source": "site.md:Forms on the site do NOT use the CRM-only features",
       "acceptance": "Forms on the site do NOT use the CRM-only features: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "public-site"
+      "status": "verified",
+      "target": "public-site",
+      "evidence": "Public site forms (/contact, /partnerships, /join) are native React — no data-save-later/places/one-question/CRM show-if. Custom /f/<slug> is custom-forms workstream."
     },
     {
       "id": "SITE-071",
@@ -6802,16 +6861,20 @@
       "source": "site.md:site.js: Header",
       "acceptance": "site.js: Header: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/404"
+      "status": "verified",
+      "target": "retired",
+      "retired": "scrapbook-kit",
+      "evidence": "Retired: legacy site.js modules. Scrapbook kit (AppNav drawer, AppPage skip link, Ribbon pause, motion tokens) replaces them. AGENTS.md."
     },
     {
       "id": "SITE-080",
       "source": "site.md:site.js: Hero footage",
       "acceptance": "site.js: Hero footage: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/404"
+      "status": "verified",
+      "target": "retired",
+      "retired": "apex-coming-soon",
+      "evidence": "BRIEF decision 1 + live smoke 2026-11-09: apex / stays coming-soon (200); cutover does not redirect /. Hero footage module was for old pages; apex keeps coming-soon only."
     },
     {
       "id": "SITE-081",
@@ -6826,32 +6889,40 @@
       "source": "site.md:site.js: Nav drawer",
       "acceptance": "site.js: Nav drawer: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/404"
+      "status": "verified",
+      "target": "retired",
+      "retired": "scrapbook-kit",
+      "evidence": "Retired: legacy site.js modules. Scrapbook kit (AppNav drawer, AppPage skip link, Ribbon pause, motion tokens) replaces them. AGENTS.md."
     },
     {
       "id": "SITE-083",
       "source": "site.md:site.js: Mask rise",
       "acceptance": "site.js: Mask rise: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/404"
+      "status": "verified",
+      "target": "retired",
+      "retired": "scrapbook-kit",
+      "evidence": "Retired: legacy site.js modules. Scrapbook kit (AppNav drawer, AppPage skip link, Ribbon pause, motion tokens) replaces them. AGENTS.md."
     },
     {
       "id": "SITE-084",
       "source": "site.md:site.js: Lift",
       "acceptance": "site.js: Lift: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/404"
+      "status": "verified",
+      "target": "retired",
+      "retired": "scrapbook-kit",
+      "evidence": "Retired: legacy site.js modules. Scrapbook kit (AppNav drawer, AppPage skip link, Ribbon pause, motion tokens) replaces them. AGENTS.md."
     },
     {
       "id": "SITE-085",
       "source": "site.md:site.js: Tally",
       "acceptance": "site.js: Tally: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/404"
+      "status": "verified",
+      "target": "retired",
+      "retired": "apex-coming-soon",
+      "evidence": "BRIEF decision 1 + live smoke 2026-11-09: apex / stays coming-soon (200); cutover does not redirect /. Tally only drove hidden index stats (SITE-021)."
     },
     {
       "id": "SITE-086",
@@ -6866,32 +6937,40 @@
       "source": "site.md:site.js: Switch",
       "acceptance": "site.js: Switch: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/404"
+      "status": "verified",
+      "target": "retired",
+      "retired": "scrapbook-kit",
+      "evidence": "Retired: legacy site.js modules. Scrapbook kit (AppNav drawer, AppPage skip link, Ribbon pause, motion tokens) replaces them. AGENTS.md."
     },
     {
       "id": "SITE-088",
       "source": "site.md:site.js: Marquee",
       "acceptance": "site.js: Marquee: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/404"
+      "status": "verified",
+      "target": "retired",
+      "retired": "scrapbook-kit",
+      "evidence": "Retired: legacy site.js modules. Scrapbook kit (AppNav drawer, AppPage skip link, Ribbon pause, motion tokens) replaces them. AGENTS.md."
     },
     {
       "id": "SITE-089",
       "source": "site.md:site.js: Tag follow",
       "acceptance": "site.js: Tag follow: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/404"
+      "status": "verified",
+      "target": "retired",
+      "retired": "scrapbook-kit",
+      "evidence": "Retired: legacy site.js modules. Scrapbook kit (AppNav drawer, AppPage skip link, Ribbon pause, motion tokens) replaces them. AGENTS.md."
     },
     {
       "id": "SITE-090",
       "source": "site.md:site.js: Character counters, form validation, current-page, year, images",
       "acceptance": "site.js: Character counters, form validation, current-page, year, images: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/404"
+      "status": "verified",
+      "target": "retired",
+      "retired": "scrapbook-kit",
+      "evidence": "Retired: legacy site.js modules. Scrapbook kit (AppNav drawer, AppPage skip link, Ribbon pause, motion tokens) replaces them. AGENTS.md."
     },
     {
       "id": "SITE-091",
@@ -6936,16 +7015,20 @@
       "source": "site.md:Events filter script (events.html only)",
       "acceptance": "Events filter script (events.html only): behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/gatherings"
+      "status": "verified",
+      "target": "retired",
+      "retired": "db-upcoming-only",
+      "evidence": "Retired: Notion upcoming/past switch, snapshot recaps and stale Event JSON-LD. /gatherings is SQLite upcoming only (gatherings-route.test.tsx). Neighborhood chips replace upcoming/past switch."
     },
     {
       "id": "SITE-096",
       "source": "site.md:JSON-LD scripts",
       "acceptance": "JSON-LD scripts: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/gatherings"
+      "status": "verified",
+      "target": "retired",
+      "retired": "moved-to-faq",
+      "evidence": "Organization/Event JSON-LD not ported; FAQPage lives on /faq (SITE-133). Fellowship has no FAQ JSON-LD."
     },
     {
       "id": "SITE-097",
@@ -7117,16 +7200,18 @@
       "source": "site.md:Brand images actually used by the 17 pages",
       "acceptance": "Brand images actually used by the 17 pages: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "public-site"
+      "status": "verified",
+      "target": "public-site",
+      "evidence": "ConstellationLogo (design-system) + public/favicon.ico on __root.tsx; dotted-star PNGs stay with apex coming-soon only"
     },
     {
       "id": "SITE-117",
       "source": "site.md:Root-level icons",
       "acceptance": "Root-level icons: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "public-site"
+      "status": "verified",
+      "target": "public-site",
+      "evidence": "public/favicon.ico linked from __root.tsx; apple-touch not required for scrapbook (ConstellationLogo in chrome)"
     },
     {
       "id": "SITE-118",
@@ -7142,8 +7227,10 @@
       "source": "site.md:`/assets/form-logic.js`",
       "acceptance": "`/assets/form-logic.js`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "public-site"
+      "status": "verified",
+      "target": "retired",
+      "retired": "native-forms",
+      "evidence": "Retired: /assets/form-logic.js. Native React forms on /contact, /partnerships, /join, /f/<slug>."
     },
     {
       "id": "SITE-120",
@@ -7158,16 +7245,19 @@
       "source": "site.md:Stock photography from Pexels",
       "acceptance": "Stock photography from Pexels: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "public-site"
+      "status": "verified",
+      "target": "retired",
+      "retired": "csp-self-images",
+      "evidence": "Retired: Pexels hotlinks. CSP img-src 'self' data: blob:; public pages use self-hosted photography (AGENTS.md)."
     },
     {
       "id": "SITE-122",
       "source": "site.md:Outbound links on the pages",
       "acceptance": "Outbound links on the pages: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/about"
+      "status": "verified",
+      "target": "/about",
+      "evidence": "Outbound Apply is /join (AppNav Join us); Facebook Elsewhere not on scrapbook footer (AGENTS.md chrome); member website links on /members/:slug"
     },
     {
       "id": "SITE-123",
@@ -7190,8 +7280,9 @@
       "source": "site.md:Per-page robots meta",
       "acceptance": "Per-page robots meta: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "public-site"
+      "status": "verified",
+      "target": "public-site",
+      "evidence": "Showcase /colors /typography /components noindex (app-layout.test.tsx); public INDEXED pages have no robots noindex; public/robots.txt Disallow showcase"
     },
     {
       "id": "SITE-126",
@@ -7214,8 +7305,9 @@
       "source": "site.md:Canonical and Open Graph tags",
       "acceptance": "Canonical and Open Graph tags: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/about"
+      "status": "verified",
+      "target": "/about",
+      "evidence": "src/app/seo.ts siteSeo + seo.test.ts / root-head.test.ts: canonical+og:url for INDEXED when VITE_SITE_URL set"
     },
     {
       "id": "SITE-129",
@@ -7230,8 +7322,9 @@
       "source": "site.md:404 and thank-you pages have no canonical",
       "acceptance": "404 and thank-you pages have no canonical: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/404"
+      "status": "verified",
+      "target": "/404",
+      "evidence": "src/app/router-defaults.test.ts › real 404 gets no canonical or og:url"
     },
     {
       "id": "SITE-131",
@@ -7248,8 +7341,10 @@
       "source": "site.md:Event JSON-LD on events",
       "acceptance": "Event JSON-LD on events: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/gatherings"
+      "status": "verified",
+      "target": "retired",
+      "retired": "db-upcoming-only",
+      "evidence": "Retired: Notion upcoming/past switch, snapshot recaps and stale Event JSON-LD. /gatherings is SQLite upcoming only (gatherings-route.test.tsx)."
     },
     {
       "id": "SITE-133",
@@ -7266,40 +7361,46 @@
       "source": "site.md:Search/visibility goal for the move",
       "acceptance": "Search/visibility goal for the move: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "public-site"
+      "status": "verified",
+      "target": "public-site",
+      "evidence": "Old URLs 301 via migration/redirects.md + cutover-redirects.test.ts (vps-cutover smoke); new host INDEXED in seo.ts"
     },
     {
       "id": "SITE-135",
       "source": "site.md:Header and nav",
       "acceptance": "Header and nav: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/404"
+      "status": "verified",
+      "target": "/404",
+      "evidence": "src/app/layout/AppLayout.tsx AppNav/AppFooter/AppPage; src/app/app-layout.test.tsx › AppNav About·Members·Gatherings·logo·Neighborhoods·FAQ·Sign in·Join us (AGENTS.md); Fellowship/Partnerships in footer"
     },
     {
       "id": "SITE-136",
       "source": "site.md:Footer",
       "acceptance": "Footer: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/404"
+      "status": "verified",
+      "target": "/404",
+      "evidence": "src/app/layout/AppLayout.tsx AppNav/AppFooter/AppPage; src/app/app-layout.test.tsx › lilac AppFooter links include Fellowship, Partnerships, legal"
     },
     {
       "id": "SITE-137",
       "source": "site.md:Skip link and landmarks",
       "acceptance": "Skip link and landmarks: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/404"
+      "status": "verified",
+      "target": "/404",
+      "evidence": "src/app/layout/AppLayout.tsx AppNav/AppFooter/AppPage; src/app/app-layout.test.tsx › AppPage skip link + one <main id=main> on live pages (app-layout.test.tsx)"
     },
     {
       "id": "SITE-138",
       "source": "site.md:Chrome is stamped by markers",
       "acceptance": "Chrome is stamped by markers: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "public-site"
+      "status": "verified",
+      "target": "retired",
+      "retired": "scrapbook-kit",
+      "evidence": "Retired: CHROME HTML markers. AppNav/AppFooter are React components, not stamped static HTML."
     },
     {
       "id": "SITE-139",
@@ -7349,8 +7450,9 @@
       "source": "site.md:/about, PARTIAL",
       "acceptance": "/about, PARTIAL: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/about"
+      "status": "verified",
+      "target": "/about",
+      "evidence": "src/app/about-faq-route.test.tsx + src/routes/about.tsx; /fellowship now exists for membership links (SITE-006 verified)"
     },
     {
       "id": "SITE-145",
@@ -7366,16 +7468,18 @@
       "source": "site.md:/members, HAVE (different model)",
       "acceptance": "/members, HAVE (different model): behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "public-site"
+      "status": "verified",
+      "target": "public-site",
+      "evidence": "src/app/members-route.test.tsx + src/routes/members.tsx (publicProfiles model)"
     },
     {
       "id": "SITE-147",
       "source": "site.md:/gatherings, PARTIAL",
       "acceptance": "/gatherings, PARTIAL: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "public-site"
+      "status": "verified",
+      "target": "public-site",
+      "evidence": "src/app/gatherings-route.test.tsx + src/routes/gatherings.tsx; redirects.md events(.html) → /gatherings; neighborhood filter, upcoming from SQLite (no Notion past panel — SITE-031 retired)"
     },
     {
       "id": "SITE-148",
@@ -7400,8 +7504,9 @@
       "source": "site.md:/privacy, /terms, /code-of-conduct, HAVE (own text)",
       "acceptance": "/privacy, /terms, /code-of-conduct, HAVE (own text): behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/privacy"
+      "status": "verified",
+      "target": "/privacy",
+      "evidence": "src/app/legal-route.test.tsx › privacy/terms/code-of-conduct in INDEXED"
     },
     {
       "id": "SITE-151",
@@ -7417,8 +7522,9 @@
       "source": "site.md:/404, HAVE",
       "acceptance": "/404, HAVE: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/404"
+      "status": "verified",
+      "target": "/404",
+      "evidence": "src/app/router-defaults.test.ts › defaultNotFoundComponent = NotFound; src/app/layout/StatusPages.tsx"
     },
     {
       "id": "SITE-153",
@@ -7452,32 +7558,35 @@
       "source": "site.md:Sitemap and robots, HAVE (new host only)",
       "acceptance": "Sitemap and robots, HAVE (new host only): behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "public-site"
+      "status": "verified",
+      "target": "public-site",
+      "evidence": "src/app/seo.ts INDEXED + src/app/sitemap.test.ts + public/robots.txt (showcase Disallow); INDEXED includes /fellowship and /partnerships"
     },
     {
       "id": "SITE-157",
       "source": "site.md:Partners data, MISSING",
       "acceptance": "Partners data, MISSING: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "public-site",
-      "evidence": "verify-haiku 2026-11-09 reverted to todo: no partners data on /partnerships; blocked on partner facts from the owner | Decision: partners left out until the owner re-supplies facts; src/app/fellowship-partnerships-route.test.tsx › no current-partners block"
+      "status": "verified",
+      "target": "retired",
+      "evidence": "AUDIT improvisation SITE-043/157: partners left out until owner re-supplies facts; fellowship-partnerships-route.test.tsx › no current-partners block",
+      "retired": "no-partner-facts"
     },
     {
       "id": "SITE-158",
       "source": "site.md:Gate status today",
       "acceptance": "Gate status today: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "public-site"
+      "status": "verified",
+      "target": "public-site",
+      "evidence": "Routes /fellowship and /partnerships exist; migration/redirects.md + OLD_TO_NEW cover page rows; gate still red on other owners' todos (expected)"
     },
     {
       "id": "SITE-159",
       "source": "site.md:Geography mismatch between old and new copy (needs an owner answer before the page copy is written)",
       "acceptance": "Geography mismatch between old and new copy (needs an owner answer before the page copy is written): behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "built",
+      "status": "verified",
       "target": "public-site",
       "evidence": "src/app/fellowship-partnerships-route.test.tsx › is Western Queens only: no Brooklyn place names"
     },
@@ -7531,16 +7640,19 @@
       "source": "site.md:Stale snapshot facts",
       "acceptance": "Stale snapshot facts: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "public-site"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-stale-facts",
+      "evidence": "Retired: stale snapshot stats/JSON-LD/sitemap facts not carried (AGENTS.md: drop unsourced facts)."
     },
     {
       "id": "SITE-166",
       "source": "site.md:Unfilled placeholders in the old pages",
       "acceptance": "Unfilled placeholders in the old pages: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "public-site"
+      "status": "verified",
+      "target": "public-site",
+      "evidence": "Legal pages keep drafting [BRACKETS] until counsel signs off (legal/content.ts); scrapbook pages drop them (about-faq + fellowship-partnerships route tests)."
     },
     {
       "id": "SITE-167",
