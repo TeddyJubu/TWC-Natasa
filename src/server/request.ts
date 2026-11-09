@@ -1,4 +1,4 @@
-// Helpers for the server routes that take a request body (src/routes/api/{images,neighborhood-logos,applications}.ts).
+// Helpers for the server routes that take a request body (src/routes/api/{images,neighborhood-logos,applications,contact}.ts).
 import { AccessError } from "./guard";
 
 /**
@@ -7,6 +7,25 @@ import { AccessError } from "./guard";
  */
 export function clientIp(headers: Headers): string {
   return headers.get("cf-connecting-ip")?.trim() || headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+}
+
+/**
+ * A per-client-IP limit: the returned `allow(ip)` is true while `ip` has made fewer than `limit` requests in the
+ * last `windowMs` (and counts this one). Each endpoint makes its own, so the counts are separate.
+ */
+export function rateLimit(limit: number, windowMs: number): (ip: string, now?: number) => boolean {
+  // ponytail: in-memory, per process — the server is one process. Restarting it resets the counts; move this to
+  // SQLite (or Caddy) if it ever runs as several processes.
+  const recent = new Map<string, number[]>();
+  return (ip, now = Date.now()) => {
+    const kept = (recent.get(ip) ?? []).filter((t) => now - t < windowMs);
+    if (kept.length >= limit) {
+      recent.set(ip, kept);
+      return false;
+    }
+    recent.set(ip, [...kept, now]);
+    return true;
+  };
 }
 
 /** Refuses a body over `max` bytes, or of unknown size, from its Content-Length alone (nothing is read). */
