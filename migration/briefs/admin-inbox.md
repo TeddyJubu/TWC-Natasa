@@ -12,9 +12,10 @@ Read `migration/BRIEF.md` and items with `owner: "admin-inbox"` in `migration/ma
 2. **Admin inbox card** on `/admin` (app shell vocabulary — `Card`, `Row`, `Chip`): list new messages, archive, open detail. Guard with `requireAdmin`. Policy tests.
 3. List applications/members already exist — do not regress approve/decline.
 
-## Partnership form contract (for public-pages)
+## Partnership form contract (public-pages already shipped)
 
-Accept JSON:
+`/partnerships` UI + `/api/partnerships` are on `main` with a **501 stub** in
+`src/features/contact/partnership.server.ts`. Client posts:
 ```json
 {
   "kind": "partnership",
@@ -27,8 +28,8 @@ Accept JSON:
   "honeypot": ""
 }
 ```
-
-Add body route to `API_ROUTES` in `src/start.ts` with a test.
+Schema: `src/features/contact/partnership.ts`. **Replace the stub body** (keep the route
+file and `API_ROUTES` entry). Do not invent a second partnerships endpoint.
 
 ## Done when
 
