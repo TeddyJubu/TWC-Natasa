@@ -1,5 +1,6 @@
 // Server-only: membership applications. Anyone may apply (0001 "Anyone applies"): anonymously (unlinked) or
 // signed in (linked to herself). Applicants can't arrive pre-reviewed or link to someone else.
+import { assertFormOpen } from "@/features/forms-state/forms-state.server";
 import { subscribeIfConsented } from "@/server/beehiiv";
 import type { Ctx } from "@/server/context.server";
 import type { DB } from "@/server/db";
@@ -14,6 +15,7 @@ export type Stored = Applicant & { answers: Record<string, unknown> };
 
 /** Stores the application; returns what was stored so the caller can act on it (the newsletter opt-in and admin alert). */
 export function submitApplication({ db, actor }: Ctx, input: unknown): Stored {
+  assertFormOpen(db, "application");
   if (!isObject(input) || !isObject(input.answers)) throw bad("application");
   const stored = { email: str(input.email, "email", 254), fullName: str(input.fullName, "name", 120), answers: input.answers };
   db.prepare("insert into applications (email, full_name, neighborhood, answers, user_id) values (?, ?, ?, ?, ?)").run(

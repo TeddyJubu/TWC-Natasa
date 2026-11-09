@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { renderWithQueries } from "@/test/dom";
 import { expectNoSkippedHeadings } from "@/test/headings";
@@ -13,6 +13,10 @@ import { Route } from "@/routes/join";
 import { GUIDELINES } from "@/features/applications/schema";
 
 const Page = Route.options.component as React.ComponentType;
+const openState = { kind: "application" as const, open: true, closed: null as string | null };
+beforeEach(() => {
+  vi.spyOn(Route, "useLoaderData").mockReturnValue(openState as never);
+});
 afterEach(() => {
   cleanup();
   fake.reset();
@@ -227,5 +231,15 @@ describe("/join structure", () => {
     expect(screen.getByRole("heading", { level: 1 })).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Start with you.", level: 2 })).toBeTruthy();
     expect(screen.getByRole("group", { name: "Start with you." })).toBeTruthy();
+  });
+
+  it("shows closed words instead of the form when applications are closed", () => {
+    vi.spyOn(Route, "useLoaderData").mockReturnValue({
+      kind: "application", open: false, closed: "Paused until spring.",
+    } as never);
+    renderSignedOut();
+    expect(screen.getByRole("heading", { name: "Applications are closed" })).toBeTruthy();
+    expect(screen.getByText("Paused until spring.")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /submit application/i })).toBeNull();
   });
 });

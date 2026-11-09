@@ -35,6 +35,8 @@ import { spotlightEntries } from "@/features/member-links/spotlight";
 import { FormEditor } from "@/features/forms/FormEditor";
 import { draftFromQuestions, questionsFromDraft, starterQuestions, type FormEditorValues } from "@/features/forms/form-draft";
 import { adminFormResponsesQuery, useDownloadFormCsv, useSaveAdminForm, useSetFormOpen, type AdminForm } from "@/features/forms/queries";
+import { KIND_LABEL } from "@/features/forms-state/constants";
+import { adminFormsStateQuery, useSetMembershipFormOpen, type AdminFormState } from "@/features/forms-state/queries";
 
 const errorMessage = (error: unknown) =>
   (error as { message?: string } | null)?.message || "Something went wrong. Please try again.";
@@ -839,6 +841,59 @@ function SpotlightRow({ spotlight: s }: { spotlight: AdminSpotlight }) {
         </summary>
         <AnswerList entries={entries} />
       </details>
+    </Item>
+  );
+}
+
+// ---------- Join & review open/close (OPS-081 / OPS-140) ----------
+
+export function MembershipFormsPanel() {
+  const states = useQuery(adminFormsStateQuery);
+  return (
+    <Card id="membership-forms" title="Join & review" subtitle="Open or close /join and /review. Spotlight stays always on.">
+      <QueryGate query={states} what="membership form switches">
+        {(states.data ?? []).map((s) => <MembershipFormRow key={s.kind} state={s} />)}
+      </QueryGate>
+    </Card>
+  );
+}
+
+function MembershipFormRow({ state: s }: { state: AdminFormState }) {
+  const setOpen = useSetMembershipFormOpen();
+  const [message, setMessage] = React.useState(s.message);
+  React.useEffect(() => { setMessage(s.message); }, [s.message]);
+  const busy = setOpen.isPending;
+  const label = KIND_LABEL[s.kind];
+  const href = s.kind === "application" ? "/join" : "/review";
+  const closeForm = () => {
+    if (!window.confirm(`Close “${label}”? Visitors will see the closed message instead of the form.`)) return;
+    setOpen.mutate({ kind: s.kind, open: false, message });
+  };
+  return (
+    <Item headingId={`membership-form-${s.kind}`} title={label} status={s.open ? "open" : "closed"}
+      details={<p className={meta}>
+        <a className={cn("underline", ring)} href={href}>{href}</a>
+        {s.updated_at ? ` · updated ${formatDate(s.updated_at)}` : ""}
+      </p>}>
+      <div className="flex flex-col gap-3 rounded-md bg-app-sunken p-3.5">
+        <Field id={`membership-closed-${s.kind}`} label="Closed message" hint="Shown on the public page when closed (up to 1,000 characters). Blank uses the default.">
+          <input id={`membership-closed-${s.kind}`} value={message} maxLength={1000} disabled={busy}
+            aria-describedby={`membership-closed-${s.kind}-hint`}
+            onChange={(e) => setMessage(e.currentTarget.value)} className={fieldClass} />
+        </Field>
+        <div className="flex flex-wrap gap-2.5">
+          {s.open
+            ? <button type="button" className={secondaryButton} disabled={busy} aria-label={`Close ${label}`} onClick={closeForm}>Close form</button>
+            : <>
+                <button type="button" className={primaryButton} disabled={busy} aria-label={`Open ${label}`}
+                  onClick={() => setOpen.mutate({ kind: s.kind, open: true })}>Open form</button>
+                <button type="button" className={secondaryButton} disabled={busy || message === s.message}
+                  aria-label={`Update closed message for ${label}`}
+                  onClick={() => setOpen.mutate({ kind: s.kind, open: false, message })}>Update closed message</button>
+              </>}
+        </div>
+        <MutationError mutation={setOpen} />
+      </div>
     </Item>
   );
 }

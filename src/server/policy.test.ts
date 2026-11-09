@@ -25,6 +25,7 @@ import { adminSpotlights, openSpotlight, submitSpotlight } from "@/features/memb
 import { adminFormResponses, formResponsesCsv, openForm, saveAdminForm, setFormOpen, submitResponse } from "@/features/forms/forms.server";
 import { saveForm } from "@/features/forms/store";
 import { DEMO_FORMS } from "@/features/forms/fixtures";
+import { adminFormsState, publicFormState, setMembershipFormOpen } from "@/features/forms-state/forms-state.server";
 import { TINY } from "@/test/images";
 
 const id = (n: string) => `00000000-0000-4000-8000-${n.padStart(12, "0")}`;
@@ -591,6 +592,19 @@ describe("member review links", () => {
     expect(openReview(anon(), { token })).toBeNull();
     expect(status(M)).toBe("approved");
     expect(status(C)).toBe("pending");
+  });
+});
+
+// ---------- Join / review open-close (migration 0010): anyone reads; only admins toggle ----------
+describe("membership form switches", () => {
+  it("anon reads open state; only admins close", () => {
+    expect(publicFormState(anon(), { kind: "application" }).open).toBe(true);
+    throwsAccess(() => adminFormsState(anon()));
+    throwsAccess(() => setMembershipFormOpen(as(B), { kind: "application", open: false }));
+    setMembershipFormOpen(as(A), { kind: "application", open: false, message: "Closed by admin." });
+    expect(publicFormState(anon(), { kind: "application" }).closed).toBe("Closed by admin.");
+    expect(() => submitApplication(anon(), { email: "closed@x.test", fullName: "X", neighborhood: "", answers: {} })).toThrow(/Closed by admin/);
+    setMembershipFormOpen(as(A), { kind: "application", open: true });
   });
 });
 
