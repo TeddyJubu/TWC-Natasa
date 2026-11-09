@@ -53,8 +53,8 @@ Source of truth for the `vps-cutover` workstream (SITE-100, SITE-162, SITE-164).
 |---|---|---|
 | `members.thewomenscollective.club/review?t=…` | `https://new.thewomenscollective.club/review?t=…` | **Keep the query string.** Built by members-links (`/review` + hashed tokens). |
 | `members.nbwc.site/review?t=…` | same | Same as above. |
-| `admin.thewomenscollective.club/*` | `https://new.thewomenscollective.club/admin` | After parity; session is the new app's. |
-| `crm.thewomenscollective.club/*` | `https://new.thewomenscollective.club/admin` | After CRM parity. |
+| `admin.thewomenscollective.club/*` | `https://new.thewomenscollective.club/admin` | After parity; session is the new app's. **All-method** 301 (snippet `twc_admin_cutover`); path/query dropped. Repo-ready, not enabled. |
+| `crm.thewomenscollective.club/*` | `https://new.thewomenscollective.club/admin` | After CRM parity. **All-method** 301 (snippet `twc_crm_cutover`); keep `tls internal`. Repo-ready, not enabled. |
 | `join.thewomenscollective.club/join` | `https://new.thewomenscollective.club/join` | Already in place. |
 
 ## Live on the VPS (2026-11-09)
@@ -67,4 +67,8 @@ Smoke: `bun scripts/smoke-cutover.ts` → ok. Apex `/` still coming-soon.
 
 - Static assets under `/assets/*`, `/embed.js`, favicons and `robots.txt` stay with the archived site files in `/opt/nbwc/site`.
 - Apex `/f/*` custom forms (OPS-518): **held** — live CRM currently has 0 `custom_forms`; `twc_forms_cutover` is prepared but not enabled. After a real form is published and `scripts/import-forms.ts` reports `imported`/`updated` slugs, paste that snippet (or a slug list). Still on the old stack: `/f/<slug>/thanks-<n>`, `thanks-go`, `thanks-waitlist`, `full`, `event.ics`, `/f/media/*`, `/forms`.
-- `admin.*` / `crm.*` → new `/admin` after CRM parity (`twc_admin_cutover` / `twc_crm_cutover`).
+- `admin.*` / `crm.*` → new `/admin` (`twc_admin_cutover` / `twc_crm_cutover`): snippets ready in
+  `migration/caddy-twc-redirects.caddy`, **not enabled** on the VPS. All-method 301 (unlike
+  GET/HEAD-only page/join/review redirects — these hosts are dashboards, not public forms). Smoke
+  rows are commented in `scripts/smoke-cutover.ts` until the integrator pastes; see AUDIT-TASKS
+  "admin-crm-cutover — repo ready". Do not stop intake/crm in that paste step.

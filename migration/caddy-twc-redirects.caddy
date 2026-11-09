@@ -8,7 +8,8 @@
 # Runbook: migration/briefs/vps-cutover.md. Smoke: bun scripts/smoke-cutover.ts.
 #
 # ENABLED:   twc_apex_cutover, twc_members_cutover, twc_nbwc_cutover
-# NOT YET:   twc_forms_cutover (waits for forms-import), twc_admin_cutover / twc_crm_cutover (CRM parity)
+# NOT YET:   twc_forms_cutover (waits for forms-import), twc_admin_cutover / twc_crm_cutover
+#            (repo ready — integrator pastes; see AUDIT-TASKS "admin-crm-cutover — repo ready")
 
 # thewomenscollective.club { … } — replaces the `@nologin`/`redir @nologin` and `@apply`/`redir @apply`
 # lines. Everything else in the block (try_files, @formpost, /f/* proxying, handle_errors) stays.
@@ -177,12 +178,17 @@
 
 # NOT ENABLED — after CRM parity (BRIEF 8): admin.thewomenscollective.club { … } becomes only this
 # (plus its header block), and intake can stop once members.* review/spotlight also have nowhere left to go.
+# All-method 301 (no `method GET HEAD`): the whole host is the old dashboard, not a public form — there
+# is no stale POST body to preserve (unlike apex/join/review/forms cutovers). Every path collapses to
+# /admin (path and query dropped). Do not stop intake/crm containers in the same paste step.
 (twc_admin_cutover) {
 	redir https://new.thewomenscollective.club/admin 301
 }
 
 # NOT ENABLED — after CRM parity: crm.thewomenscollective.club { … } keeps `tls internal` (Cloudflare
 # "Full" to origin) and replaces `request_header`/`reverse_proxy crm:3000` with this.
+# Same all-method 301 as twc_admin_cutover (dashboard host, not a form POST path). crm-test /
+# crm.srv1881521.hstgr.cloud is a separate block — leave it alone until the integrator decides.
 (twc_crm_cutover) {
 	redir https://new.thewomenscollective.club/admin 301
 }

@@ -66,4 +66,13 @@ describe("vps-cutover Caddy snippet", () => {
       expect(r?.block, name).toContain("method GET HEAD");
     }
   });
+
+  // All-method (no GET/HEAD matcher): whole admin/crm hosts become /admin; no form POST to keep.
+  it("admin and crm snippets 301 every method to /admin", () => {
+    for (const name of ["twc_admin_cutover", "twc_crm_cutover"]) {
+      const body = snippet(name);
+      expect(body, name).toContain(`redir ${NEW}/admin 301`);
+      expect(body, name).not.toContain("method GET HEAD");
+    }
+  });
 });

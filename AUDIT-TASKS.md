@@ -374,6 +374,12 @@ Owner-authorized cutover of the old static site (`/opt/nbwc/site`), CRM (`crm.th
 - **crm-admin-parity phase 7 — Classic chrome retired (CRM-162, CRM-168):** AppShell Admin `#card` nav and `app-*` tokens replace Classic sidebar / Notion-style CRM themes (with CRM-163–165 from phase 5).
 - **crm-admin-parity phase 7 — spam left todo (CRM-047/048/188):** archive-only inbox is not enough to retire spam while AUDIT still says verdicts wait on a notifications source (phase 1 deferral). Prefer todo over half-retiring.
 - **crm-admin-parity phase 7 — no cutover:** `twc_admin_cutover` / `twc_crm_cutover` still off (integrator). No new migration.
+- **admin-crm-cutover — repo ready (2026-11-09):** `twc_admin_cutover` / `twc_crm_cutover` snippets confirmed in `migration/caddy-twc-redirects.caddy` — all-method 301 to `https://new.thewomenscollective.club/admin` (path/query dropped; intentional: dashboard hosts, not GET/HEAD form-preserving redirects). CRM-005/006/007 + OPS-005/278/279 → `built` with evidence "snippet ready, not enabled" (do **not** mark `verified` until live). Smoke: four admin/crm expectation rows commented in `scripts/smoke-cutover.ts` — uncomment after enable. **Integrator steps (VPS only; do not stop intake/crm containers in this phase):**
+  1. `TS=$(date +%Y%m%d-%H%M%S)`; `cp -p /opt/nbwc/Caddyfile /opt/nbwc/backups/Caddyfile.before-admin-crm-cutover-$TS`.
+  2. Edit a copy: in `admin.thewomenscollective.club { … }` replace the reverse_proxy (and related matchers) with the **body** of `twc_admin_cutover` (keep the site's header block); in `crm.thewomenscollective.club { … }` keep `tls internal`, replace `request_header`/`reverse_proxy crm:3000` with the body of `twc_crm_cutover`. Touch **only** those two TWC blocks — leave `crm.srv1881521.hstgr.cloud` / crm-test alone.
+  3. `caddy validate` then `caddy reload` (same in-place overwrite pattern as vps-cutover runbook).
+  4. Uncomment the four admin/crm rows in `scripts/smoke-cutover.ts`, run `bun scripts/smoke-cutover.ts`, mark CRM-005/007 + OPS-005/278 `verified` with smoke evidence; decide CRM-006/OPS-279 separately.
+  5. **Rollback:** `cat` the timestamped Caddyfile backup over `/opt/nbwc/Caddyfile` then reload. Note: browsers cache 301s.
 
 ### Progress
 
@@ -406,5 +412,6 @@ Owner-authorized cutover of the old static site (`/opt/nbwc/site`), CRM (`crm.th
 - [x] crm-admin-parity phase 5: logged actions (`0009_logged_actions.sql`, CRM-057/058), Newsletter card (CRM-093), mark CRM-066/067/172/176 built, retire Classic/Bento/auth/SSE/eight-status/old-process items; merge/people/spam/CRM-063 still later; cutover flags still off
 - [x] crm-admin-parity phase 6: Inbox Archived filter (CRM-063), CRM-064 built naming spam gap, retire CRM-010/027/035/039/043–045/049/050; CRM-047/048 spam + merge/people still later; cutover flags still off
 - [x] crm-admin-parity phase 7: retire merge/aliases (CRM-074–081), people table (CRM-038), timeline/item page (CRM-056/170), WebMCP (CRM-156–159), Classic sidebar/theme (CRM-162/168); spam CRM-047/048/188 left todo; cutover flags still off; no migration
-- [ ] Workstreams remaining: notifications (Hermes / Notion / webhooks / notify_settings / custom-form + finish-later confirmations / pitch / Beehiiv list sync), CRM spam (CRM-047/048/188) + any remaining CRM todos → `twc_admin_cutover`/`twc_crm_cutover`, custom-forms follow-up, `migration:check`
+- [x] admin-crm-cutover (repo side, 2026-11-09): snippets + docs + commented smoke + CRM-005/006/007 + OPS-005/278/279 `built` (not verified); integrator paste still open — do not stop intake/crm
+- [ ] Workstreams remaining: notifications (Hermes / Notion / webhooks / notify_settings / custom-form + finish-later confirmations / pitch / Beehiiv list sync), enable `twc_admin_cutover`/`twc_crm_cutover` on VPS (integrator), CRM spam (CRM-047/048/188) if still gating stop, custom-forms follow-up, `migration:check`
 - [ ] `migration:check` passes; old services stopped when release conditions met

@@ -59,27 +59,27 @@
       "source": "crm.md:Production host `crm.thewomenscollective.club`",
       "acceptance": "Production host `crm.thewomenscollective.club`: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
+      "status": "built",
       "target": "/admin",
-      "evidence": "AUDIT 2026-11-09: twc_crm_cutover prepared in migration/caddy-twc-redirects.caddy, NOT enabled. Blocks: CRM spam (CRM-047/048/188) + remaining CRM todos; integrator enables after parity."
+      "evidence": "admin-crm-cutover 2026-11-09: twc_crm_cutover snippet ready in migration/caddy-twc-redirects.caddy (all-method 301 → new.*/admin), NOT enabled on VPS. Do not mark verified until integrator pastes + smoke."
     },
     {
       "id": "CRM-006",
       "source": "crm.md:Test copy",
       "acceptance": "Test copy: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
+      "status": "built",
       "target": "/admin",
-      "evidence": "AUDIT 2026-11-09: CRM test copy host unchanged; twc_crm_cutover not enabled (same gate as CRM-005)."
+      "evidence": "admin-crm-cutover 2026-11-09: snippet ready for prod crm.* only; crm-test / crm.srv1881521.hstgr.cloud left unchanged (separate Caddy block). NOT enabled. Do not mark verified until live decision."
     },
     {
       "id": "CRM-007",
       "source": "crm.md:Health",
       "acceptance": "Health: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
+      "status": "built",
       "target": "/admin",
-      "evidence": "AUDIT 2026-11-09: old CRM /health still on crm.*; cutover to new /admin waits on twc_crm_cutover (CRM-005)."
+      "evidence": "admin-crm-cutover 2026-11-09: snippet ready, not enabled — old CRM /health still on crm.* until twc_crm_cutover is pasted; then host 301s to /admin. Do not mark verified until live."
     },
     {
       "id": "CRM-008",
@@ -1742,9 +1742,9 @@
       "source": "backoffice.md:Caddy, admin host",
       "acceptance": "Caddy, admin host: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
+      "status": "built",
       "target": "/admin",
-      "evidence": "AUDIT 2026-11-09: twc_admin_cutover prepared, NOT enabled. admin.* still proxies intake/CRM admin. Gate: CRM parity leftovers + spam."
+      "evidence": "admin-crm-cutover 2026-11-09: twc_admin_cutover snippet ready (all-method 301 → new.*/admin), NOT enabled. admin.* still proxies intake. Do not mark verified until integrator pastes + smoke."
     },
     {
       "id": "OPS-006",
@@ -3976,18 +3976,18 @@
       "source": "backoffice.md:CRM host `crm.thewomenscollective.club`:",
       "acceptance": "CRM host `crm.thewomenscollective.club`:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
+      "status": "built",
       "target": "vps:cutover",
-      "evidence": "AUDIT 2026-11-09: crm.thewomenscollective.club still reverse-proxies crm:3000; twc_crm_cutover not enabled."
+      "evidence": "admin-crm-cutover 2026-11-09: twc_crm_cutover snippet ready, not enabled — crm.* still reverse-proxies crm:3000. Do not mark verified until live."
     },
     {
       "id": "OPS-279",
       "source": "backoffice.md:CRM test copy `crm.srv1881521.hstgr.cloud`:",
       "acceptance": "CRM test copy `crm.srv1881521.hstgr.cloud`:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
+      "status": "built",
       "target": "vps:cutover",
-      "evidence": "AUDIT 2026-11-09: CRM test copy host unchanged; twc_crm_cutover not enabled."
+      "evidence": "admin-crm-cutover 2026-11-09: snippet ready for prod crm.* only; test copy host left unchanged. NOT enabled. Do not mark verified until live decision."
     },
     {
       "id": "OPS-280",
