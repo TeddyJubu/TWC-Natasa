@@ -62,7 +62,7 @@ describe("admin mutations", () => {
     expect(fake.calls).toEqual([["reviewApplicationFn", { id: "a1", status: "approved" }]]);
     expect(emailApproval).toHaveBeenCalledWith("a1");
     expect(notice).toEqual({ sent: true });
-    expect(keys(spy)).toEqual([["admin", "applications"], ["admin", "members"], ["directory"], ["public-profiles"], ["intros"]]);
+    expect(keys(spy)).toEqual([["admin", "applications"], ["admin", "members"], ["admin", "actions"], ["directory"], ["public-profiles"], ["intros"]]);
   });
 
   it("a decline sends no email", async () => {
@@ -77,7 +77,7 @@ describe("admin mutations", () => {
     fake.results = [null];
     await new MutationObserver(qc, setMemberStatusMutation(qc)).mutate({ id: "u1", status: "declined" });
     expect(fake.calls).toEqual([["setMemberStatusFn", { id: "u1", status: "declined" }]]);
-    expect(keys(spy)).toEqual([["admin", "members"], ["admin", "applications"], ["directory"], ["public-profiles"], ["intros"]]);
+    expect(keys(spy)).toEqual([["admin", "members"], ["admin", "applications"], ["admin", "actions"], ["directory"], ["public-profiles"], ["intros"]]);
   });
 
   it("approving a member emails her newest application, or says there's none on file", async () => {

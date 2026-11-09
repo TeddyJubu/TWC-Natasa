@@ -162,3 +162,56 @@ export function toCsv(header: string[], rows: (string | number | null)[][]): str
   };
   return `\uFEFF${[header, ...rows].map((r) => r.map(cell).join(",")).join("\r\n")}\r\n`;
 }
+
+// ---------- Phase 3: duplicates (CRM-072/073), person summary (CRM-038/060), admin activity ----------
+
+export type Duplicate = "member" | "applications";
+
+/**
+ * CRM-072/073 by email only: a pending application whose email (or linked account) already belongs to an approved
+ * member is "member" (case a); otherwise one of two or more pending applications from the same email is
+ * "applications" (case b). Same name / phone across emails (cases c, d) isn't flagged.
+ */
+export function duplicatesOf<A extends { id: string; email: string; user_id: string | null; status: Status }>(
+  apps: A[], memberEmails: Set<string>, memberIds: Set<string>,
+): Map<string, Duplicate> {
+  const pending = apps.filter((a) => a.status === "pending");
+  const perEmail = new Map<string, number>();
+  for (const a of pending) perEmail.set(a.email.toLowerCase(), (perEmail.get(a.email.toLowerCase()) ?? 0) + 1);
+  const out = new Map<string, Duplicate>();
+  for (const a of pending) {
+    const email = a.email.toLowerCase();
+    if (memberEmails.has(email) || (a.user_id && memberIds.has(a.user_id))) out.set(a.id, "member");
+    else if ((perEmail.get(email) ?? 0) > 1) out.set(a.id, "applications");
+  }
+  return out;
+}
+
+export const DUPLICATE_TEXT: Record<Duplicate, string> = {
+  member: "This email already belongs to a member",
+  applications: "Another pending application uses this email",
+};
+
+/** Her `newsletter_subscribers` row: null = not on the list; consent null = the imported Beehiiv list (never recorded). */
+export function newsletterLabel(row: { consent: 0 | 1 | null } | null): string {
+  if (!row) return "Not on the newsletter";
+  if (row.consent === null) return "Newsletter (imported, consent not recorded)";
+  return row.consent ? "Newsletter (consented)" : "Newsletter (no consent)";
+}
+
+export type ActionKind = "approved" | "declined" | "pending" | "note_added" | "note_deleted" | "neighborhood";
+
+/** One line of the activity card, after the admin's name: "approved Nia's application". */
+export function describeAction(a: { action: ActionKind; application_id: string | null; detail: string; subject_name: string | null }): string {
+  const name = a.subject_name?.trim();
+  const target = name ? (a.application_id ? `${name}’s application` : name) : (a.application_id ? "a removed application" : "a removed member");
+  const whose = `${name || "a removed member"}’s`;
+  switch (a.action) {
+    case "approved": return `approved ${target}`;
+    case "declined": return `declined ${target}`;
+    case "pending": return `put ${target} back to pending`;
+    case "note_added": return `added a note on ${target}`;
+    case "note_deleted": return `deleted a note on ${target}`;
+    case "neighborhood": return a.detail ? `set ${whose} neighborhood to ${a.detail}` : `cleared ${whose} neighborhood`;
+  }
+}

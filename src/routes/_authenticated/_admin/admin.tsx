@@ -2,7 +2,7 @@ import * as React from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppPage } from "@/app/layout/AppLayout";
 import { AppShell, TopBar } from "@/app/layout/AppShell";
-import { AdminSearch, ApplicationsPanel, BookingsPanel, FormResponsesPanel, InboxPanel, GatheringsPanel, MemberReviewsPanel, MembersPanel, NeighborhoodsPanel } from "@/features/admin/panels";
+import { ActivityPanel, AdminSearch, ApplicationsPanel, BookingsPanel, FormResponsesPanel, InboxPanel, GatheringsPanel, MemberReviewsPanel, MembersPanel, NeighborhoodsPanel } from "@/features/admin/panels";
 
 export const Route = createFileRoute("/_authenticated/_admin/admin")({
   head: () => ({
@@ -29,6 +29,7 @@ function AdminPage() {
             <InboxPanel query={query} />
             <ApplicationsPanel query={query} />
             <MembersPanel query={query} />
+            <ActivityPanel />
             <MemberReviewsPanel />
             <FormResponsesPanel />
             <NeighborhoodsPanel />

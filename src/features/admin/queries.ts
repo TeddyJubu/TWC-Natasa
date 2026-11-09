@@ -1,8 +1,8 @@
 // Admin reads (§2.7): server functions that start with requireAdmin.
 import { queryOptions } from "@tanstack/react-query";
-import { adminApplicationsFn, adminBookingsFn, adminEventsFn, adminInboxFn, adminMembersFn, adminNeighborhoodsFn, adminNotesFn } from "./fns";
+import { adminActionsFn, adminApplicationsFn, adminBookingsFn, adminEventsFn, adminInboxFn, adminMembersFn, adminNeighborhoodsFn, adminNotesFn } from "./fns";
 
-export type { AdminApplication, AdminBooking, AdminEvent, AdminGuest, AdminMember, AdminNeighborhood, AdminNote, InboxMessage } from "./admin.server";
+export type { AdminAction, AdminApplication, AdminBooking, AdminEvent, AdminGuest, AdminMember, AdminNeighborhood, AdminNote, InboxMessage } from "./admin.server";
 
 /** Pending first, then newest. */
 export const adminApplicationsQuery = queryOptions({
@@ -44,4 +44,10 @@ export const adminInboxQuery = queryOptions({
 export const adminNotesQuery = queryOptions({
   queryKey: ["admin", "notes"],
   queryFn: () => adminNotesFn(),
+});
+
+/** The newest 100 admin actions (0007): approvals, declines, notes and neighborhood changes, newest first. */
+export const adminActionsQuery = queryOptions({
+  queryKey: ["admin", "actions"],
+  queryFn: () => adminActionsFn(),
 });

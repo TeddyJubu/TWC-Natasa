@@ -30,13 +30,13 @@ const settle = () => act(() => new Promise((r) => setTimeout(r, 20)));
 const member = (id: string, full_name: string, over: Record<string, unknown> = {}) => ({
   id, full_name, status: "approved", directory_visible: true, public_profile: false, catalogue_number: 3,
   role_title: "", business: "", neighborhood: "Astoria", specialty: "", bio: "", looking_for: "", website: "",
-  avatar_path: null, member_since: null, created_at: "", updated_at: "", email: null, ...over,
+  avatar_path: null, member_since: null, created_at: "", updated_at: "", email: null, newsletter: null, applications: 0, ...over,
 });
 const members = [member("admin-1", "Natasa Admin"), member("u1", "Rosa Diaz", { email: "rosa@x.test" })];
 
 const application = (id: string, full_name: string, over: Record<string, unknown> = {}) => ({
   id, full_name, email: `${id}@x.test`, neighborhood: "Astoria", status: "pending", user_id: null,
-  created_at: "2026-11-01T15:00:00Z", reviewed_at: null, reviewed_by: null, answers: { industry: ["Food"] }, ...over,
+  created_at: "2026-11-01T15:00:00Z", reviewed_at: null, reviewed_by: null, answers: { industry: ["Food"] }, duplicate: null, ...over,
 });
 
 describe("_admin guard", () => {
@@ -70,10 +70,10 @@ describe("_admin guard", () => {
 });
 
 const FETCH = Symbol("fetch");
-type AdminKey = "inbox" | "applications" | "members" | "neighborhoods" | "bookings" | "events" | "review-links" | "reviews" | "form-responses" | "notes";
+type AdminKey = "inbox" | "applications" | "members" | "neighborhoods" | "bookings" | "events" | "review-links" | "reviews" | "form-responses" | "notes" | "actions";
 /** Seeds every admin read (empty lists, plus `members`) unless overridden; FETCH leaves that read to the queued fake results. */
 function renderAdmin(over: Partial<Record<AdminKey, unknown>> = {}, extra: [unknown[], unknown][] = []) {
-  const data: Record<AdminKey, unknown> = { inbox: [], applications: [], members, neighborhoods: [], bookings: [], events: [], "review-links": {}, reviews: [], "form-responses": [], notes: [], ...over };
+  const data: Record<AdminKey, unknown> = { inbox: [], applications: [], members, neighborhoods: [], bookings: [], events: [], "review-links": {}, reviews: [], "form-responses": [], notes: [], actions: [], ...over };
   const seed = Object.entries(data).filter(([, v]) => v !== FETCH).map(([k, v]) => [["admin", k], v] as [unknown[], unknown]);
   return renderWithQueries(<Page />, [...seed, ...extra]);
 }
@@ -94,7 +94,7 @@ describe("/admin", () => {
 
     it("renders all six cards as anchored regions, and the sidebar marks the top one as here", () => {
       renderAdmin();
-      for (const [name, id] of [["Inbox", "inbox"], ["Applications", "applications"], ["All members", "members"], ["Member reviews", "reviews"], ["Form responses", "forms"], ["Neighborhoods", "neighborhoods"], ["Headshot bookings", "bookings"], ["Gatherings", "gatherings"]]) {
+      for (const [name, id] of [["Inbox", "inbox"], ["Applications", "applications"], ["All members", "members"], ["Admin activity", "activity"], ["Member reviews", "reviews"], ["Form responses", "forms"], ["Neighborhoods", "neighborhoods"], ["Headshot bookings", "bookings"], ["Gatherings", "gatherings"]]) {
         expect(card(name).id).toBe(id);
       }
       const nav = screen.getAllByRole("navigation", { name: "Main" })[0];
@@ -167,11 +167,11 @@ describe("/admin", () => {
       const apps = card("Applications");
       expect(within(apps).getByText("Notes (1)")).toBeTruthy();
       expect(within(apps).getByText("First call done")).toBeTruthy();
-      fake.results = ["n1", []];
+      fake.results = ["n1", [], []];
       fireEvent.change(within(apps).getByLabelText(/Add a note about Pia Baker/), { target: { value: "Wants May salon" } });
       fireEvent.click(within(apps).getByRole("button", { name: "Add note" }));
       await settle();
-      expect(fake.calls).toEqual([["addNoteFn", { applicationId: "a1", body: "Wants May salon" }], ["adminNotesFn"]]);
+      expect(fake.calls).toEqual([["addNoteFn", { applicationId: "a1", body: "Wants May salon" }], ["adminNotesFn"], ["adminActionsFn"]]);
     });
 
     it("Download CSV asks the server for that card's export", async () => {
@@ -227,6 +227,37 @@ describe("/admin", () => {
       fireEvent.click(save);
       await settle();
       expect(fake.calls[0]).toEqual(["setMemberNeighborhoodFn", { id: "u1", neighborhood: "Sunnyside" }]);
+    });
+  });
+
+  describe("duplicates, member summary and admin activity (CRM-072/073, CRM-038, 0007)", () => {
+    it("flags a possible duplicate on its row, counts it, and filters to just those", () => {
+      renderAdmin({ applications: [application("a1", "Pia Baker", { duplicate: "member" }), application("a2", "Lu Smith")] });
+      const apps = card("Applications");
+      expect(within(apps).getByText(/1 possible duplicate ·/)).toBeTruthy();
+      const pia = within(apps).getByRole("article", { name: "Pia Baker" });
+      expect(within(pia).getByText("Possible duplicate")).toBeTruthy();
+      expect(pia.textContent).toContain("This email already belongs to a member");
+      expect(within(apps).getByRole("article", { name: "Lu Smith" }).textContent).not.toContain("Possible duplicate");
+      fireEvent.change(within(apps).getByLabelText("Status"), { target: { value: "duplicate" } });
+      expect(within(apps).getAllByRole("article").map((a) => a.querySelector("h3")!.textContent)).toEqual(["Pia Baker"]);
+    });
+
+    it("a member's Details open on her newsletter state, application count and member-since", () => {
+      renderAdmin({ members: [member("u1", "Rosa Diaz", { newsletter: { consent: 1 }, applications: 2, member_since: "2025-03-04T12:00:00Z" })] });
+      const summary = within(card("All members")).getByRole("list", { name: "Summary for Rosa Diaz" });
+      expect(within(summary).getAllByRole("listitem").map((li) => li.textContent)).toEqual(["Newsletter (consented)", "2 applications", "Member since Mar 4, 2025"]);
+    });
+
+    it("lists who did what, newest first, and names removed people plainly", () => {
+      renderAdmin({ actions: [
+        { id: 2, action: "neighborhood", application_id: null, member_id: "u1", detail: "Astoria", created_at: "2026-11-02T10:00:00Z", actor_name: "Natasa", subject_name: "Rosa Diaz" },
+        { id: 1, action: "approved", application_id: "gone", member_id: null, detail: "", created_at: "2026-11-01T10:00:00Z", actor_name: null, subject_name: null },
+      ] });
+      expect(within(card("Admin activity")).getAllByRole("listitem").map((li) => li.textContent)).toEqual([
+        "Natasa set Rosa Diaz’s neighborhood to Astoria · Nov 2, 2026",
+        "A removed admin approved a removed application · Nov 1, 2026",
+      ]);
     });
   });
 

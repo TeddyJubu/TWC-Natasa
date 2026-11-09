@@ -10,7 +10,7 @@ import { useNeighborhoods } from "@/features/neighborhoods/queries";
 import { pickerNames } from "@/features/neighborhoods/options";
 import { EVENT_KINDS, eventWhen, isoToNyLocal, kindLabel, nyLocalToISO } from "@/features/events/format";
 import {
-  adminApplicationsQuery, adminBookingsQuery, adminEventsQuery, adminInboxQuery, adminMembersQuery, adminNeighborhoodsQuery, adminNotesQuery,
+  adminActionsQuery, adminApplicationsQuery, adminBookingsQuery, adminEventsQuery, adminInboxQuery, adminMembersQuery, adminNeighborhoodsQuery, adminNotesQuery,
   type AdminApplication, type AdminBooking, type AdminEvent, type AdminMember, type AdminNeighborhood, type AdminNote, type InboxMessage,
 } from "./queries";
 import {
@@ -19,7 +19,8 @@ import {
 } from "./mutations";
 import type { ApprovalNotice } from "./approval-email";
 import {
-  applicationOrigin, checkLogo, formatAnswers, formatDate, formatDay, humanizeKey, matchesSearch, newestByUser, reviewerName, type AnswerEntry,
+  applicationOrigin, checkLogo, describeAction, DUPLICATE_TEXT, formatAnswers, formatDate, formatDay, humanizeKey, matchesSearch, newestByUser,
+  newsletterLabel, reviewerName, type AnswerEntry,
 } from "./format";
 import {
   adminReviewsQuery, reviewLinkStatesQuery, useMarkReviewDone, useMintReviewLink, useRevokeReviewLink, type AdminReview, type LinkState,
@@ -142,6 +143,8 @@ type Option = { value: string; label: string };
 const STATUS_FILTER: Option[] = [
   { value: "", label: "Any status" }, { value: "pending", label: "Pending" }, { value: "approved", label: "Approved" }, { value: "declined", label: "Declined" },
 ];
+const DUPLICATES = "duplicate";
+const APPLICATION_FILTER: Option[] = [...STATUS_FILTER, { value: DUPLICATES, label: "Possible duplicates" }];
 
 /** A card's filter (CRM-062): narrows its rows together with the page's search box. */
 function FilterSelect({ id, label, value, options, onChange }: { id: string; label: string; value: string; options: Option[]; onChange: (value: string) => void }) {
@@ -274,15 +277,16 @@ export function ApplicationsPanel({ query = "" }: { query?: string }) {
   const notes = useQuery(adminNotesQuery);
   const [status, setStatus] = React.useState("");
   const all = apps.data ?? [];
-  const list = all.filter((a) => (!status || a.status === status)
+  const list = all.filter((a) => (!status || (status === DUPLICATES ? a.duplicate !== null : a.status === status))
     && matchesSearch(query, [a.full_name, a.email, typeof a.answers.business === "string" ? a.answers.business : null]));
   const pending = all.filter((a) => a.status === "pending").length;
+  const duplicates = all.filter((a) => a.duplicate).length;
   return (
     <Card id="applications" title="Applications" action={<CsvButton kind="applications" />}
-      subtitle={apps.data ? `${shownOf(list.length, all.length)}${pending} pending · ${all.length} in total` : "Who has asked to join"}>
+      subtitle={apps.data ? `${shownOf(list.length, all.length)}${pending} pending${duplicates ? ` · ${duplicates} possible ${duplicates === 1 ? "duplicate" : "duplicates"}` : ""} · ${all.length} in total` : "Who has asked to join"}>
       <QueryGate query={apps} what="applications">
         <div className={cn(pad, "py-4")}>
-          <FilterSelect id="applications-status" label="Status" value={status} options={STATUS_FILTER} onChange={setStatus} />
+          <FilterSelect id="applications-status" label="Status" value={status} options={APPLICATION_FILTER} onChange={setStatus} />
         </div>
         <NamesError members={members} />
         {notes.isError && <InlineError message="We couldn’t load notes right now." onRetry={() => void notes.refetch()} />}
@@ -306,6 +310,12 @@ function ApplicationRow({ app, members, notes }: { app: AdminApplication; member
         <p className={meta}>{applicationOrigin(app.answers)} · {app.user_id ? "Linked to an account" : "No account yet"}</p>
       </>}
     >
+      {app.duplicate && (
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Chip tone="pending">Possible duplicate</Chip>
+          <p className={meta}>{DUPLICATE_TEXT[app.duplicate]}. Check before approving.</p>
+        </div>
+      )}
       {app.status !== "pending" && (
         <p className={meta}>{humanizeKey(app.status)} {formatDate(app.reviewed_at)}{by && ` by ${by}`}</p>
       )}
@@ -449,6 +459,11 @@ function MemberDetails({ member, name, app }: { member: AdminMember; name: strin
   };
   return (
     <Disclosure label="Details">
+      <ul aria-label={`Summary for ${name}`} className="flex flex-wrap gap-2 border-t border-app-rule px-3.5 py-3.5">
+        <li><Chip>{newsletterLabel(member.newsletter)}</Chip></li>
+        <li><Chip>{member.applications === 1 ? "1 application" : `${member.applications} applications`}</Chip></li>
+        <li><Chip>{member.member_since ? `Member since ${formatDate(member.member_since)}` : "Not a member yet"}</Chip></li>
+      </ul>
       <form onSubmit={submit} className="flex flex-col gap-2 border-t border-app-rule px-3.5 py-3.5">
         <label htmlFor={id} className={meta}>Neighborhood for {name}</label>
         <div className="flex flex-wrap gap-2">
@@ -468,6 +483,30 @@ function MemberDetails({ member, name, app }: { member: AdminMember; name: strin
       </p>
       {answers.length > 0 && <AnswerList entries={answers} />}
     </Disclosure>
+  );
+}
+
+// ---------- Admin activity (0007) ----------
+
+/** Who approved, declined, noted or moved whom: the newest 100, newest first. Read-only, like the table. */
+export function ActivityPanel() {
+  const actions = useQuery(adminActionsQuery);
+  const list = actions.data ?? [];
+  return (
+    <Card id="activity" title="Admin activity" subtitle="The newest approvals, declines, notes and neighborhood changes">
+      <QueryGate query={actions} what="admin activity">
+        {list.length === 0 ? <Empty>Nothing recorded yet.</Empty> : (
+          <ol className="flex flex-col">
+            {list.map((a) => (
+              <li key={a.id} className={cn(pad, "border-b border-app-rule py-3 text-sm break-words text-ink last:border-0")}>
+                <span className="font-medium">{a.actor_name ?? "A removed admin"}</span> {describeAction(a)}
+                <span className={meta}> · {formatDate(a.created_at)}</span>
+              </li>
+            ))}
+          </ol>
+        )}
+      </QueryGate>
+    </Card>
   );
 }
 

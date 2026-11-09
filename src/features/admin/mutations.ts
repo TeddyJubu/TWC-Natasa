@@ -103,18 +103,18 @@ const NEIGHBORHOOD_KEYS: QueryKey[] = [
 
 export const reviewApplicationMutation = (qc: QueryClient) => ({
   mutationFn: reviewApplication,
-  onSuccess: () => invalidate(qc, [["admin", "applications"], ["admin", "members"], ["directory"], ["public-profiles"], ["intros"]]),
+  onSuccess: () => invalidate(qc, [["admin", "applications"], ["admin", "members"], ["admin", "actions"], ["directory"], ["public-profiles"], ["intros"]]),
 });
 
 export const setMemberStatusMutation = (qc: QueryClient) => ({
   mutationFn: setMemberStatus,
-  onSuccess: () => invalidate(qc, [["admin", "members"], ["admin", "applications"], ["directory"], ["public-profiles"], ["intros"]]),
+  onSuccess: () => invalidate(qc, [["admin", "members"], ["admin", "applications"], ["admin", "actions"], ["directory"], ["public-profiles"], ["intros"]]),
 });
 
 // Her neighborhood shows on the directory, her public page and in intros.
 export const setMemberNeighborhoodMutation = (qc: QueryClient) => ({
   mutationFn: (data: { id: string; neighborhood: string | null }) => setMemberNeighborhoodFn({ data }),
-  onSuccess: () => invalidate(qc, [["admin", "members"], ["directory"], ["public-profiles"], ["intros"], ["profile"]]),
+  onSuccess: () => invalidate(qc, [["admin", "members"], ["admin", "actions"], ["directory"], ["public-profiles"], ["intros"], ["profile"]]),
 });
 
 export const setBookingStatusMutation = (qc: QueryClient) => ({
@@ -168,12 +168,12 @@ export type NoteInput = { applicationId: string; body: string } | { memberId: st
 
 export const addNoteMutation = (qc: QueryClient) => ({
   mutationFn: (data: NoteInput) => addNoteFn({ data }),
-  onSuccess: () => invalidate(qc, [["admin", "notes"]]),
+  onSuccess: () => invalidate(qc, [["admin", "notes"], ["admin", "actions"]]),
 });
 
 export const deleteNoteMutation = (qc: QueryClient) => ({
   mutationFn: (id: string) => deleteNoteFn({ data: { id } }),
-  onSuccess: () => invalidate(qc, [["admin", "notes"]]),
+  onSuccess: () => invalidate(qc, [["admin", "notes"], ["admin", "actions"]]),
 });
 
 /** Fetches the CSV (requireAdmin on the server) and saves it through a temporary blob link; nothing is cached. */

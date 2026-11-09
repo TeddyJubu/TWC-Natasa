@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  LOGO_MAX_BYTES, applicationOrigin, attachEmails, checkLogo, formatAnswers, humanizeKey, logoPath, matchesSearch, newestByUser, reviewerName, sortApplications, toCsv,
+  LOGO_MAX_BYTES, applicationOrigin, attachEmails, checkLogo, describeAction, duplicatesOf, formatAnswers, newsletterLabel, humanizeKey, logoPath, matchesSearch, newestByUser, reviewerName, sortApplications, toCsv,
   validateNeighborhood,
 } from "./format";
 
@@ -202,5 +202,41 @@ describe("newestByUser", () => {
     ];
     const byUser = newestByUser(apps);
     expect([...byUser].map(([u, a]) => [u, a.id])).toEqual([["u1", "new"], ["u2", "u2"]]);
+  });
+});
+
+describe("duplicatesOf (CRM-072/073, by email)", () => {
+  const a = (id: string, email: string, status: "pending" | "approved" | "declined" = "pending", user_id: string | null = null) => ({ id, email, status, user_id });
+  it("flags a pending application from a member's email or account, else repeats among pending ones; never a reviewed one", () => {
+    const flags = duplicatesOf([
+      a("member-email", "Ada@X.test"), a("member-account", "other@x.test", "pending", "u-ada"),
+      a("twice-1", "bo@x.test"), a("twice-2", "BO@x.test"), a("reviewed", "bo@x.test", "declined"),
+      a("alone", "cy@x.test"), a("approved", "ada@x.test", "approved"),
+    ], new Set(["ada@x.test"]), new Set(["u-ada"]));
+    expect(Object.fromEntries(flags)).toEqual({ "member-email": "member", "member-account": "member", "twice-1": "applications", "twice-2": "applications" });
+  });
+});
+
+describe("newsletterLabel", () => {
+  it("tells consented, refused, imported (unrecorded) and absent apart", () => {
+    expect([{ consent: 1 as const }, { consent: 0 as const }, { consent: null }, null].map(newsletterLabel)).toEqual([
+      "Newsletter (consented)", "Newsletter (no consent)", "Newsletter (imported, consent not recorded)", "Not on the newsletter",
+    ]);
+  });
+});
+
+describe("describeAction", () => {
+  const d = (action: Parameters<typeof describeAction>[0]["action"], over: Partial<Parameters<typeof describeAction>[0]> = {}) =>
+    describeAction({ action, application_id: null, detail: "", subject_name: "Nia", ...over });
+  it("says what happened to whom, and survives a removed subject", () => {
+    expect(d("approved", { application_id: "x" })).toBe("approved Nia’s application");
+    expect(d("declined")).toBe("declined Nia");
+    expect(d("pending")).toBe("put Nia back to pending");
+    expect(d("note_added", { application_id: "x" })).toBe("added a note on Nia’s application");
+    expect(d("note_deleted")).toBe("deleted a note on Nia");
+    expect(d("neighborhood", { detail: "Astoria" })).toBe("set Nia’s neighborhood to Astoria");
+    expect(d("neighborhood")).toBe("cleared Nia’s neighborhood");
+    expect(d("approved", { application_id: "x", subject_name: null })).toBe("approved a removed application");
+    expect(d("neighborhood", { subject_name: null, detail: "Astoria" })).toBe("set a removed member’s neighborhood to Astoria");
   });
 });

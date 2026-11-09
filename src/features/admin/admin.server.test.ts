@@ -4,7 +4,10 @@ import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { openDb, type DB } from "@/server/db";
 import { mediaFile } from "@/server/media";
-import { addNote, adminCsv, adminNeighborhoods, adminNotes, deleteNote, saveNeighborhoodLogo, setMemberNeighborhood } from "./admin.server";
+import {
+  addNote, adminActions, adminApplications, adminCsv, adminMembers, adminNeighborhoods, adminNotes, deleteNote, reviewApplication, saveNeighborhoodLogo,
+  setMemberNeighborhood, setMemberStatus,
+} from "./admin.server";
 import { TINY } from "@/test/images";
 
 const ADMIN = "00000000-0000-4000-8000-00000000000a";
@@ -95,5 +98,55 @@ describe("member neighborhood (CRM-059)", () => {
   it("refuses an unlisted neighborhood and an unknown member", () => {
     expect(() => setMemberNeighborhood(admin(), { id: ADMIN, neighborhood: "Atlantis" })).toThrow(/Invalid neighborhood/);
     expect(() => setMemberNeighborhood(admin(), { id: "nobody", neighborhood: "Astoria" })).toThrow(/Invalid member/);
+  });
+});
+
+describe("admin activity (0007)", () => {
+  it("records approvals, declines, notes and neighborhood changes, newest first, once per real change", () => {
+    const before = adminActions(admin()).length;
+    const appId = (db.prepare("insert into applications (email, full_name, neighborhood, answers) values ('log@x.test', 'Lou', '', '{}') returning id").get() as { id: string }).id;
+    reviewApplication(admin(), { id: appId, status: "declined" });
+    reviewApplication(admin(), { id: appId, status: "declined" }); // no change, no row
+    const note = addNote(admin(), { applicationId: appId, body: "Private words" });
+    deleteNote(admin(), { id: note });
+    setMemberNeighborhood(admin(), { id: ADMIN, neighborhood: "Astoria" });
+    setMemberNeighborhood(admin(), { id: ADMIN, neighborhood: "Astoria" }); // same value, no row
+    setMemberNeighborhood(admin(), { id: ADMIN, neighborhood: null });
+    setMemberStatus(admin(), { id: ADMIN, status: "declined" });
+    setMemberStatus(admin(), { id: ADMIN, status: "approved" });
+    const rows = adminActions(admin()).slice(0, adminActions(admin()).length - before);
+    expect(rows.map(({ action, detail, subject_name, actor_name }) => ({ action, detail, subject_name, actor_name }))).toEqual([
+      { action: "approved", detail: "", subject_name: "Ada Admin", actor_name: "Ada Admin" },
+      { action: "declined", detail: "", subject_name: "Ada Admin", actor_name: "Ada Admin" },
+      { action: "neighborhood", detail: "", subject_name: "Ada Admin", actor_name: "Ada Admin" },
+      { action: "neighborhood", detail: "Astoria", subject_name: "Ada Admin", actor_name: "Ada Admin" },
+      { action: "note_deleted", detail: "", subject_name: "Lou", actor_name: "Ada Admin" },
+      { action: "note_added", detail: "", subject_name: "Lou", actor_name: "Ada Admin" },
+      { action: "declined", detail: "", subject_name: "Lou", actor_name: "Ada Admin" },
+    ]);
+    expect(JSON.stringify(rows)).not.toContain("Private words");
+    // A removed application keeps its history; nothing can rewrite or delete it.
+    db.prepare("delete from applications where id = ?").run(appId);
+    expect(adminActions(admin()).find((a) => a.application_id === appId)!.subject_name).toBeNull();
+    expect(() => db.prepare("update admin_actions set detail = 'x'").run()).toThrow(/append-only/);
+    expect(() => db.prepare("delete from admin_actions").run()).toThrow(/append-only/);
+  });
+});
+
+describe("duplicates and member summary (CRM-072/073, CRM-038/060)", () => {
+  it("flag pending applications by a member's or an imported member's email, and repeats; members get newsletter + application count", () => {
+    db.prepare("update profiles set status = 'approved' where id = ?").run(ADMIN);
+    db.prepare("insert into legacy_members (legacy_id, email, full_name) values ('m-old', 'old@x.test', 'Olive')").run();
+    const ins = (email: string, user: string | null = null) =>
+      (db.prepare("insert into applications (user_id, email, full_name, neighborhood, answers) values (?, ?, 'Dup', '', '{}') returning id").get(user, email) as { id: string }).id;
+    const [mine, imported, twiceA, twiceB, alone] = [ins("A@x.test"), ins("old@x.test"), ins("two@x.test"), ins("two@x.test"), ins("one@x.test")];
+    const flags = new Map(adminApplications(admin()).map((a) => [a.id, a.duplicate]));
+    expect([mine, imported, twiceA, twiceB, alone].map((id) => flags.get(id))).toEqual(["member", "member", "applications", "applications", null]);
+
+    db.prepare("insert into newsletter_subscribers (email, source, consent) values ('a@x.test', 'beehiiv', null)").run();
+    const me = adminMembers(admin()).find((m) => m.id === ADMIN)!;
+    expect(me.newsletter).toEqual({ consent: null });
+    expect(me.applications).toBe(1); // her account email; the others are someone else's
+    for (const id of [mine, imported, twiceA, twiceB, alone]) db.prepare("delete from applications where id = ?").run(id);
   });
 });
