@@ -865,9 +865,10 @@
       "source": "crm.md:Agent can open the dialog but never sees the link",
       "acceptance": "Agent can open the dialog but never sees the link: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
-      "evidence": "AUDIT-TASKS.md: CRM-090 retired — no WebMCP in rebuild",
-      "retired": "no-agent-feature"
+      "status": "verified",
+      "evidence": "AUDIT-TASKS.md: CRM-090 retired — no WebMCP in rebuild | verified 2026-11-09: no WebMCP/navigator.modelContext in src; mint URL shown once in /admin only (CRM-082–086); retired no-agent-feature (AUDIT members-links)",
+      "retired": "no-agent-feature",
+      "target": "retired"
     },
     {
       "id": "CRM-091",
@@ -1044,9 +1045,9 @@
       "source": "crm.md:Two membership forms on the engine",
       "acceptance": "Two membership forms on the engine: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "retired",
-      "evidence": "Retired: CRM /api/member-forms/:kind editor (draft/publish/restore) for application+review. Rebuild uses fixed scrapbook /join + personal /review?t= + Spotlight — no membership form builder. Custom-forms editor is /admin Form responses only (CRM-104–119 light).",
+      "evidence": "Retired: CRM /api/member-forms/:kind editor (draft/publish/restore) for application+review. Rebuild uses fixed scrapbook /join + personal /review?t= + Spotlight — no membership form builder. Custom-forms editor is /admin Form responses only (CRM-104–119 light). | verified 2026-11-09: no-membership-form-editor — scrapbook src/routes/{join,review,spotlight}.tsx + /api/review|/api/spotlight; mintReviewLink/revokeReviewLink/reviewLinkStates requireAdmin (member-links.server.ts, policy.test.ts); custom-forms checkQuestions/saveAdminForm only (forms.test.ts); no /api/member-forms, /internal/membership/preview, INTAKE_MEMBERSHIP_ENGINE, or WebMCP in src; consent_version import-only (legacy-import.ts); AUDIT members-links remainders",
       "retired": "no-membership-form-editor"
     },
     {
@@ -1054,9 +1055,9 @@
       "source": "crm.md:Blocks",
       "acceptance": "Blocks: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "retired",
-      "evidence": "Retired: CRM membership-form block types (/ menu). Join/review/Spotlight are fixed React forms in the app, not block-canvas definitions.",
+      "evidence": "Retired: CRM membership-form block types (/ menu). Join/review/Spotlight are fixed React forms in the app, not block-canvas definitions. | verified 2026-11-09: no-membership-form-editor — scrapbook src/routes/{join,review,spotlight}.tsx + /api/review|/api/spotlight; mintReviewLink/revokeReviewLink/reviewLinkStates requireAdmin (member-links.server.ts, policy.test.ts); custom-forms checkQuestions/saveAdminForm only (forms.test.ts); no /api/member-forms, /internal/membership/preview, INTAKE_MEMBERSHIP_ENGINE, or WebMCP in src; consent_version import-only (legacy-import.ts); AUDIT members-links remainders",
       "retired": "no-membership-form-editor"
     },
     {
@@ -1064,9 +1065,9 @@
       "source": "crm.md:Locked \"core\" questions",
       "acceptance": "Locked \"core\" questions: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "retired",
-      "evidence": "Retired: CRM locked 'core' questions editable in the membership form editor. Rebuild keeps required keys in application/review schemas (src/features/applications + member-links); no CRM reword/move UI.",
+      "evidence": "Retired: CRM locked 'core' questions editable in the membership form editor. Rebuild keeps required keys in application/review schemas (src/features/applications + member-links); no CRM reword/move UI. | verified 2026-11-09: no-membership-form-editor — scrapbook src/routes/{join,review,spotlight}.tsx + /api/review|/api/spotlight; mintReviewLink/revokeReviewLink/reviewLinkStates requireAdmin (member-links.server.ts, policy.test.ts); custom-forms checkQuestions/saveAdminForm only (forms.test.ts); no /api/member-forms, /internal/membership/preview, INTAKE_MEMBERSHIP_ENGINE, or WebMCP in src; consent_version import-only (legacy-import.ts); AUDIT members-links remainders",
       "retired": "no-membership-form-editor"
     },
     {
@@ -1074,9 +1075,9 @@
       "source": "crm.md:Validation rules",
       "acceptance": "Validation rules: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "retired",
-      "evidence": "Retired: CRM membership check_definition / publish validation for block canvas. No membership definition publisher; custom forms use checkQuestions only.",
+      "evidence": "Retired: CRM membership check_definition / publish validation for block canvas. No membership definition publisher; custom forms use checkQuestions only. | verified 2026-11-09: no-membership-form-editor — scrapbook src/routes/{join,review,spotlight}.tsx + /api/review|/api/spotlight; mintReviewLink/revokeReviewLink/reviewLinkStates requireAdmin (member-links.server.ts, policy.test.ts); custom-forms checkQuestions/saveAdminForm only (forms.test.ts); no /api/member-forms, /internal/membership/preview, INTAKE_MEMBERSHIP_ENGINE, or WebMCP in src; consent_version import-only (legacy-import.ts); AUDIT members-links remainders",
       "retired": "no-membership-form-editor"
     },
     {
@@ -1084,9 +1085,9 @@
       "source": "crm.md:Consent versions",
       "acceptance": "Consent versions: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "retired",
-      "evidence": "Retired: CRM consent fingerprint / consent_version minting on membership form publish. No membership-<kind> publish path; legacy consent_version kept only on imported rows (legacy-import).",
+      "evidence": "Retired: CRM consent fingerprint / consent_version minting on membership form publish. No membership-<kind> publish path; legacy consent_version kept only on imported rows (legacy-import). | verified 2026-11-09: no-membership-form-editor — scrapbook src/routes/{join,review,spotlight}.tsx + /api/review|/api/spotlight; mintReviewLink/revokeReviewLink/reviewLinkStates requireAdmin (member-links.server.ts, policy.test.ts); custom-forms checkQuestions/saveAdminForm only (forms.test.ts); no /api/member-forms, /internal/membership/preview, INTAKE_MEMBERSHIP_ENGINE, or WebMCP in src; consent_version import-only (legacy-import.ts); AUDIT members-links remainders",
       "retired": "no-membership-form-editor"
     },
     {
@@ -1094,9 +1095,9 @@
       "source": "crm.md:Published file",
       "acceptance": "Published file: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "retired",
-      "evidence": "Retired: published/membership-<kind>.json (0600) read by intake when INTAKE_MEMBERSHIP_ENGINE=1. Rebuild serves scrapbook /join|/review natively; no published membership JSON.",
+      "evidence": "Retired: published/membership-<kind>.json (0600) read by intake when INTAKE_MEMBERSHIP_ENGINE=1. Rebuild serves scrapbook /join|/review natively; no published membership JSON. | verified 2026-11-09: no-membership-form-editor — scrapbook src/routes/{join,review,spotlight}.tsx + /api/review|/api/spotlight; mintReviewLink/revokeReviewLink/reviewLinkStates requireAdmin (member-links.server.ts, policy.test.ts); custom-forms checkQuestions/saveAdminForm only (forms.test.ts); no /api/member-forms, /internal/membership/preview, INTAKE_MEMBERSHIP_ENGINE, or WebMCP in src; consent_version import-only (legacy-import.ts); AUDIT members-links remainders",
       "retired": "no-membership-form-editor"
     },
     {
@@ -1104,9 +1105,9 @@
       "source": "crm.md:Preview rendered by intake",
       "acceptance": "Preview rendered by intake: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "retired",
-      "evidence": "Retired: CRM → intake /internal/membership/preview + membership-v1.ts question lists for the Classic editor. No membership form preview API; /join and /review are the live forms.",
+      "evidence": "Retired: CRM → intake /internal/membership/preview + membership-v1.ts question lists for the Classic editor. No membership form preview API; /join and /review are the live forms. | verified 2026-11-09: no-membership-form-editor — scrapbook src/routes/{join,review,spotlight}.tsx + /api/review|/api/spotlight; mintReviewLink/revokeReviewLink/reviewLinkStates requireAdmin (member-links.server.ts, policy.test.ts); custom-forms checkQuestions/saveAdminForm only (forms.test.ts); no /api/member-forms, /internal/membership/preview, INTAKE_MEMBERSHIP_ENGINE, or WebMCP in src; consent_version import-only (legacy-import.ts); AUDIT members-links remainders",
       "retired": "no-membership-form-editor"
     },
     {
@@ -1654,9 +1655,9 @@
       "source": "crm.md:FIX-IN-REBUILD — old form and old admin still live",
       "acceptance": "FIX-IN-REBUILD — old form and old admin still live: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "GET/HEAD members.*/join + /review + /spotlight 301 to new.* live 2026-11-09 (smoke-cutover ok); POSTs and /join/thanks|/review/thanks stay on intake. admin.* / crm.* still serve old dashboards — twc_admin_cutover / twc_crm_cutover NOT enabled. intake/crm/forms containers still running (AUDIT-TASKS). Full FIX (301 every host + stop old services) still open."
+      "evidence": "GET/HEAD members.*/join|/review|/spotlight 301 → new.* live 2026-11-09 (smoke-cutover + curl); POSTs and /join/thanks|/review/thanks stay on intake by design. admin.*/crm.* all-method 301 → new.*/admin (Caddyfile.before-admin-crm-cutover-20261109-172218; live curl 301; CRM-005/007 + OPS-005/278 verified). Stopping intake/crm/forms remains OPS-001/174/280. | verified 2026-11-09: live admin/crm + members join/review/spotlight host cutover (AUDIT admin-crm-cutover VPS)"
     },
     {
       "id": "CRM-176",
@@ -2379,9 +2380,9 @@
       "source": "backoffice.md:JSON internal actions registry",
       "acceptance": "JSON internal actions registry: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "retired",
-      "evidence": "Retired: intake INTERNAL_JSON_ACTIONS (/internal/merge/*, /internal/membership/preview, /internal/members/link|revoke|status). Merge retired (crm-admin-parity-7); membership preview is Classic form-editor (CRM-110–116); link mint/revoke/status are /admin server fns (mintReviewLink/revokeReviewLink/reviewLinkStates, requireAdmin).",
+      "evidence": "Retired: intake INTERNAL_JSON_ACTIONS (/internal/merge/*, /internal/membership/preview, /internal/members/link|revoke|status). Merge retired (crm-admin-parity-7); membership preview is Classic form-editor (CRM-110–116); link mint/revoke/status are /admin server fns (mintReviewLink/revokeReviewLink/reviewLinkStates, requireAdmin). | verified 2026-11-09: no-membership-form-editor — scrapbook src/routes/{join,review,spotlight}.tsx + /api/review|/api/spotlight; mintReviewLink/revokeReviewLink/reviewLinkStates requireAdmin (member-links.server.ts, policy.test.ts); custom-forms checkQuestions/saveAdminForm only (forms.test.ts); no /api/member-forms, /internal/membership/preview, INTAKE_MEMBERSHIP_ENGINE, or WebMCP in src; consent_version import-only (legacy-import.ts); AUDIT members-links remainders",
       "retired": "no-membership-form-editor"
     },
     {
@@ -2389,9 +2390,9 @@
       "source": "backoffice.md:`POST /internal/membership/preview`",
       "acceptance": "`POST /internal/membership/preview`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "retired",
-      "evidence": "Retired: POST /internal/membership/preview (draft HTML + engine flag). Classic membership form editor only — not rebuilt (CRM-116).",
+      "evidence": "Retired: POST /internal/membership/preview (draft HTML + engine flag). Classic membership form editor only — not rebuilt (CRM-116). | verified 2026-11-09: no-membership-form-editor — scrapbook src/routes/{join,review,spotlight}.tsx + /api/review|/api/spotlight; mintReviewLink/revokeReviewLink/reviewLinkStates requireAdmin (member-links.server.ts, policy.test.ts); custom-forms checkQuestions/saveAdminForm only (forms.test.ts); no /api/member-forms, /internal/membership/preview, INTAKE_MEMBERSHIP_ENGINE, or WebMCP in src; consent_version import-only (legacy-import.ts); AUDIT members-links remainders",
       "retired": "no-membership-form-editor"
     },
     {
@@ -3189,9 +3190,9 @@
       "source": "backoffice.md:The editor preview (`/internal/membership/preview`) works even with the engine off. It renders a draft with a made-up me",
       "acceptance": "The editor preview (`/internal/membership/preview`) works even with the engine off. It renders a draft with a made-up me: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "retired",
-      "evidence": "Retired: membership editor preview works with engine off. No membership form editor or preview endpoint in the rebuild.",
+      "evidence": "Retired: membership editor preview works with engine off. No membership form editor or preview endpoint in the rebuild. | verified 2026-11-09: no-membership-form-editor — scrapbook src/routes/{join,review,spotlight}.tsx + /api/review|/api/spotlight; mintReviewLink/revokeReviewLink/reviewLinkStates requireAdmin (member-links.server.ts, policy.test.ts); custom-forms checkQuestions/saveAdminForm only (forms.test.ts); no /api/member-forms, /internal/membership/preview, INTAKE_MEMBERSHIP_ENGINE, or WebMCP in src; consent_version import-only (legacy-import.ts); AUDIT members-links remainders",
       "retired": "no-membership-form-editor"
     },
     {
@@ -3199,9 +3200,9 @@
       "source": "backoffice.md:With `INTAKE_MEMBERSHIP_ENGINE` not equal to 1",
       "acceptance": "With `INTAKE_MEMBERSHIP_ENGINE` not equal to 1: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "retired",
-      "evidence": "Retired: INTAKE_MEMBERSHIP_ENGINE off-path (legacy byte-identical /join|/review, /spotlight 404, ignore published files). Rebuild has no engine flag — scrapbook /join + /review + /spotlight always; links always on (CRM-087). No membership-<kind>.json publish/read path in the Node app.",
+      "evidence": "Retired: INTAKE_MEMBERSHIP_ENGINE off-path (legacy byte-identical /join|/review, /spotlight 404, ignore published files). Rebuild has no engine flag — scrapbook /join + /review + /spotlight always; links always on (CRM-087). No membership-<kind>.json publish/read path in the Node app. | verified 2026-11-09: no-membership-form-editor — scrapbook src/routes/{join,review,spotlight}.tsx + /api/review|/api/spotlight; mintReviewLink/revokeReviewLink/reviewLinkStates requireAdmin (member-links.server.ts, policy.test.ts); custom-forms checkQuestions/saveAdminForm only (forms.test.ts); no /api/member-forms, /internal/membership/preview, INTAKE_MEMBERSHIP_ENGINE, or WebMCP in src; consent_version import-only (legacy-import.ts); AUDIT members-links remainders",
       "retired": "no-membership-form-editor"
     },
     {
@@ -4152,9 +4153,9 @@
       "source": "backoffice.md:CRM routes, membership forms:",
       "acceptance": "CRM routes, membership forms:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "retired",
-      "evidence": "Retired: CRM /api/member-forms/:kind/* editor routes. Member-link mint/revoke/status live as /admin server fns (CRM-082–086 verified); membership form editor not ported.",
+      "evidence": "Retired: CRM /api/member-forms/:kind/* editor routes. Member-link mint/revoke/status live as /admin server fns (CRM-082–086 verified); membership form editor not ported. | verified 2026-11-09: no-membership-form-editor — scrapbook src/routes/{join,review,spotlight}.tsx + /api/review|/api/spotlight; mintReviewLink/revokeReviewLink/reviewLinkStates requireAdmin (member-links.server.ts, policy.test.ts); custom-forms checkQuestions/saveAdminForm only (forms.test.ts); no /api/member-forms, /internal/membership/preview, INTAKE_MEMBERSHIP_ENGINE, or WebMCP in src; consent_version import-only (legacy-import.ts); AUDIT members-links remainders",
       "retired": "no-membership-form-editor"
     },
     {
