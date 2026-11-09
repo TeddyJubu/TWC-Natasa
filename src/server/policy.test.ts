@@ -15,7 +15,7 @@ import { submitApplication } from "@/features/applications/applications.server";
 import { listNeighborhoods } from "@/features/neighborhoods/neighborhoods.server";
 import { receiveMessage } from "@/features/contact/contact.server";
 import {
-  addNote, adminApplications, adminCsv, adminEvents, adminInbox, adminMembers, adminNotes, archiveMessage, deleteNote, createEvent, createNeighborhood, deleteEvent, reviewApplication, setBookingStatus,
+  addNote, adminActions, adminApplications, adminCsv, adminEvents, adminInbox, adminMembers, adminNotes, archiveMessage, deleteNote, createEvent, createNeighborhood, deleteEvent, reviewApplication, setBookingStatus,
   setMemberNeighborhood, setMemberStatus, updateEvent,
 } from "@/features/admin/admin.server";
 import { adminReviews, markReviewDone, mintReviewLink, openReview, reviewLinkStates, revokeReviewLink, submitReview } from "@/features/member-links/member-links.server";
@@ -607,7 +607,9 @@ describe("admin notes, CSV export and neighborhood correction", () => {
       throwsAccess(() => deleteNote(who, { id: note }));
       throwsAccess(() => adminCsv(who, { kind: "members" }));
       throwsAccess(() => setMemberNeighborhood(who, { id: B, neighborhood: "Astoria" }));
+      throwsAccess(() => adminActions(who));
     }
+    expect(adminActions(as(A)).some((a) => a.action === "note_added" && a.member_id === A)).toBe(true);
     expect(adminNotes(as(A)).map((n) => n.id)).toContain(note);
     deleteNote(as(A), { id: note });
     expect(adminNotes(as(A)).map((n) => n.id)).not.toContain(note);

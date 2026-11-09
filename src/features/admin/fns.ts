@@ -125,6 +125,11 @@ export const deleteNoteFn = createServerFn({ method: "POST" })
     return serve((c) => m.deleteNote(c, data));
   });
 
+export const adminActionsFn = createServerFn().handler(async () => {
+  const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./admin.server")]);
+  return serve(m.adminActions);
+});
+
 /** A POST so the export never sits in a GET cache or history; the browser saves the returned text as a file. */
 export const adminCsvFn = createServerFn({ method: "POST" })
   .validator(pass<{ kind: "applications" | "members" }>)

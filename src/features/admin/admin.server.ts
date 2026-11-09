@@ -10,15 +10,21 @@ import type { Booking, EventRow } from "@/features/events/events.server";
 import { EVENT_KINDS } from "@/features/events/format";
 import { neighborhoodRows, type NeighborhoodRow } from "@/features/neighborhoods/neighborhoods.server";
 import { mediaUrl } from "@/server/media";
-import { attachEmails, sortApplications, toCsv, validateNeighborhood } from "./format";
+import { attachEmails, duplicatesOf, sortApplications, toCsv, validateNeighborhood, type ActionKind, type Duplicate } from "./format";
 import { sendApprovalEmail, type ApprovalEmailResult } from "./approval-email.server";
 
 
 export type AdminApplication = {
   id: string; user_id: string | null; email: string; full_name: string; neighborhood: string; answers: { [key: string]: Json };
   status: MembershipStatus; created_at: string; reviewed_at: string | null; reviewed_by: string | null;
+  /** CRM-072/073: set on a pending application only (see duplicatesOf). */
+  duplicate: Duplicate | null;
 };
-export type AdminMember = Profile & { email: string | null };
+/**
+ * `newsletter`: the `newsletter_subscribers` row for her account (else application) email, null when she isn't on it;
+ * `applications`: how many applications are linked to her account or sent from her account email (CRM-038).
+ */
+export type AdminMember = Profile & { email: string | null; newsletter: { consent: 0 | 1 | null } | null; applications: number };
 export type AdminNeighborhood = NeighborhoodRow & { logoUrl: string | null };
 export type AdminBooking = Booking;
 /** Someone who saved a seat: admin-only (the email especially). */
@@ -30,16 +36,33 @@ const STATUSES = ["pending", "approved", "declined"] as const;
 
 export function adminApplications({ db, actor }: Ctx): AdminApplication[] {
   requireAdmin(db, actor);
-  const rows = db.prepare("select * from applications").all() as (Omit<AdminApplication, "answers"> & { answers: string })[];
-  return sortApplications(rows.map((row) => ({ ...row, answers: JSON.parse(row.answers) as { [key: string]: Json } })));
+  const rows = db.prepare("select * from applications").all() as (Omit<AdminApplication, "answers" | "duplicate"> & { answers: string })[];
+  // Approved members by account, plus imported members who haven't signed up yet (legacy_members, 0004).
+  const memberEmails = new Set((db.prepare(
+    `select lower(u.email) as email from profiles p join "user" u on u.id = p.id where p.status = 'approved'
+     union select email from legacy_members where user_id is null`,
+  ).all() as { email: string }[]).map((r) => r.email));
+  const memberIds = new Set((db.prepare("select id from profiles where status = 'approved'").all() as { id: string }[]).map((r) => r.id));
+  const duplicates = duplicatesOf(rows, memberEmails, memberIds);
+  return sortApplications(rows.map((row) => ({
+    ...row, answers: JSON.parse(row.answers) as { [key: string]: Json }, duplicate: duplicates.get(row.id) ?? null,
+  })));
 }
 
-/** Every profile, with the email from her linked application when there is one. Sorted by name. */
+/** Every profile, with the email from her linked application when there is one, and her summary. Sorted by name. */
 export function adminMembers({ db, actor }: Ctx): AdminMember[] {
   requireAdmin(db, actor);
   const profiles = (db.prepare("select * from profiles").all() as Parameters<typeof toProfile>[0][]).map(toProfile);
   const emails = db.prepare("select user_id, email from applications order by created_at desc").all() as { user_id: string | null; email: string }[];
-  return attachEmails(profiles, emails).sort((a, b) => a.full_name.localeCompare(b.full_name));
+  const accounts = new Map((db.prepare(`select id, lower(email) as email from "user"`).all() as { id: string; email: string }[]).map((u) => [u.id, u.email]));
+  const newsletter = new Map((db.prepare("select email, consent from newsletter_subscribers").all() as { email: string; consent: 0 | 1 | null }[])
+    .map((n) => [n.email, { consent: n.consent }]));
+  return attachEmails(profiles, emails).map((m) => {
+    const account = accounts.get(m.id);
+    // ponytail: one pass over every application per member (~250 × ~130); index by email if the lists grow.
+    const applications = emails.filter((a) => a.user_id === m.id || (account !== undefined && a.email.toLowerCase() === account)).length;
+    return { ...m, newsletter: newsletter.get(account ?? "") ?? newsletter.get(m.email?.toLowerCase() ?? "") ?? null, applications };
+  }).sort((a, b) => a.full_name.localeCompare(b.full_name));
 }
 
 /** All neighborhoods, inactive ones included. A per-fetch ?v= stops the browser reusing a replaced logo. */
@@ -54,6 +77,12 @@ export function adminBookings({ db, actor }: Ctx): AdminBooking[] {
   return db.prepare("select * from headshot_bookings order by preferred_date").all() as AdminBooking[];
 }
 
+/** Appends to admin_actions (0007) inside the caller's transaction, so a change and its record land together. */
+function logAction(db: Ctx["db"], actorId: string, action: ActionKind, subject: { application_id: string } | { member_id: string }, detail = ""): void {
+  db.prepare("insert into admin_actions (actor_id, action, application_id, member_id, detail) values (?, ?, ?, ?, ?)")
+    .run(actorId, action, "application_id" in subject ? subject.application_id : null, "member_id" in subject ? subject.member_id : null, detail);
+}
+
 /**
  * Reviews an application. The applications_review trigger timestamps it and gives a linked profile the same status;
  * reviewed_by records this admin, and only a real status change writes it.
@@ -63,7 +92,10 @@ export function reviewApplication({ db, actor }: Ctx, input: unknown): void {
   if (!isObject(input)) throw bad("review");
   const id = str(input.id, "application", 64);
   const status = oneOf(input.status, STATUSES, "status");
-  db.prepare("update applications set status = ?, reviewed_by = ? where id = ? and status is not ?").run(status, me.id, id, status);
+  tx(db, () => {
+    const changed = db.prepare("update applications set status = ?, reviewed_by = ? where id = ? and status is not ?").run(status, me.id, id, status).changes > 0;
+    if (changed) logAction(db, me.id, status, { application_id: id });
+  });
 }
 
 /**
@@ -78,6 +110,7 @@ export function setMemberStatus({ db, actor }: Ctx, input: unknown): string | nu
   const status = oneOf(input.status, STATUSES, "status");
   return tx(db, () => {
     const changed = db.prepare("update profiles set status = ? where id = ? and status is not ?").run(status, id, status).changes > 0;
+    if (changed) logAction(db, me.id, status, { member_id: id });
     const app = db.prepare("select id from applications where user_id = ? order by created_at desc, id desc limit 1").get(id) as { id: string } | undefined;
     if (changed && status !== "pending" && app) {
       db.prepare("update applications set status = ?, reviewed_by = ? where id = ? and status is not ?").run(status, me.id, app.id, status);
@@ -91,12 +124,18 @@ export function setMemberStatus({ db, actor }: Ctx, input: unknown): string | nu
  * changes; her application keeps the answer she gave.
  */
 export function setMemberNeighborhood({ db, actor }: Ctx, input: unknown): void {
-  requireAdmin(db, actor);
+  const me = requireAdmin(db, actor);
   if (!isObject(input)) throw bad("member");
   const id = str(input.id, "member", 64);
   const name = input.neighborhood === null ? null : str(input.neighborhood, "neighborhood", 200) || null;
   if (name && !db.prepare("select 1 from neighborhoods where name = ?").get(name)) throw bad("neighborhood");
-  if (!db.prepare("update profiles set neighborhood = ? where id = ?").run(name, id).changes) throw bad("member");
+  tx(db, () => {
+    const before = db.prepare("select neighborhood from profiles where id = ?").get(id) as { neighborhood: string | null } | undefined;
+    if (!before) throw bad("member");
+    if (before.neighborhood === name) return;
+    db.prepare("update profiles set neighborhood = ? where id = ?").run(name, id);
+    logAction(db, me.id, "neighborhood", { member_id: id }, name ?? "");
+  });
 }
 
 /** The welcome email for an approved application (after reviewApplication or setMemberStatus). */
@@ -264,13 +303,44 @@ export function addNote({ db, actor }: Ctx, input: unknown): string {
   const [column, table] = input.applicationId !== undefined ? ["application_id", "applications"] : ["member_id", "profiles"];
   const subject = str(input.applicationId ?? input.memberId, "note", 64);
   if (!db.prepare(`select 1 from ${table} where id = ?`).get(subject)) throw bad("note");
-  return (db.prepare(`insert into admin_notes (${column}, author_id, body) values (?, ?, ?) returning id`).get(subject, me.id, body) as { id: string }).id;
+  return tx(db, () => {
+    const id = (db.prepare(`insert into admin_notes (${column}, author_id, body) values (?, ?, ?) returning id`).get(subject, me.id, body) as { id: string }).id;
+    logAction(db, me.id, "note_added", column === "application_id" ? { application_id: subject } : { member_id: subject });
+    return id;
+  });
 }
 
 export function deleteNote({ db, actor }: Ctx, input: unknown): void {
-  requireAdmin(db, actor);
+  const me = requireAdmin(db, actor);
   if (!isObject(input)) throw bad("note");
-  db.prepare("delete from admin_notes where id = ?").run(str(input.id, "note", 64));
+  const id = str(input.id, "note", 64);
+  tx(db, () => {
+    const note = db.prepare("delete from admin_notes where id = ? returning application_id, member_id").get(id) as { application_id: string | null; member_id: string | null } | undefined;
+    if (note) logAction(db, me.id, "note_deleted", note.application_id ? { application_id: note.application_id } : { member_id: note.member_id! });
+  });
+}
+
+// ---------- Admin activity (migration 0007): append-only, newest first ----------
+
+export type AdminAction = {
+  id: number; action: ActionKind; application_id: string | null; member_id: string | null; detail: string; created_at: string;
+  actor_name: string | null; subject_name: string | null;
+};
+
+// ponytail: newest 100 only; add paging (or a date filter) when admins need older history on screen.
+export function adminActions({ db, actor }: Ctx): AdminAction[] {
+  requireAdmin(db, actor);
+  return db.prepare(
+    `select a.id, a.action, a.application_id, a.member_id, a.detail, a.created_at,
+       coalesce(nullif(trim(ap.full_name), ''), nullif(trim(au.name), '')) as actor_name,
+       case when a.application_id is not null then app.full_name
+            when mu.id is not null then coalesce(nullif(trim(mp.full_name), ''), nullif(trim(mu.name), ''), 'Unnamed member') end as subject_name
+     from admin_actions a
+     left join "user" au on au.id = a.actor_id left join profiles ap on ap.id = a.actor_id
+     left join applications app on app.id = a.application_id
+     left join "user" mu on mu.id = a.member_id left join profiles mp on mp.id = a.member_id
+     order by a.id desc limit 100`,
+  ).all() as AdminAction[];
 }
 
 // ---------- CSV export (CRM-186): the columns /admin shows, plus every answer as JSON (OPS-037's payload_json) ----------

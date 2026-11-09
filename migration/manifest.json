@@ -456,8 +456,10 @@
       "source": "crm.md:Read marks per person",
       "acceptance": "Read marks per person: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "explicit-queues",
+      "evidence": "Retired: the CRM marked an item unread when the caller had not opened it AND it needed attention. On /admin the attention set is already the queue itself \u2014 the Inbox lists only new messages until archived, Applications sort pending first with a pending count (and possible duplicates counted) \u2014 so a per-admin opened mark would repeat that for a handful of admins at the cost of a table and a write on every disclosure. Who decided what is in the Admin activity card (0007_admin_actions.sql)."
     },
     {
       "id": "CRM-055",
@@ -508,7 +510,7 @@
       "owner": "admin-inbox",
       "status": "built",
       "target": "/admin",
-      "evidence": "Detail without leaving the card: application rows show origin (CRM-031 label), account link, every readable answer (CRM-032) and Notes; each All members row has Details with her neighborhood (editable, CRM-059), her newest linked application (date, status, origin, neighborhood given, every answer) and Notes (newestByUser/applicationOrigin in format.ts; format.test.ts, admin-route.test.tsx). Not ported: upload hrefs, newsletter/item-count/last-seen person summary and logged actions (CRM-057 still todo)."
+      "evidence": "Detail without leaving the card: application rows show origin (CRM-031 label), account link, every readable answer (CRM-032) and Notes; each All members row has Details with her neighborhood (editable, CRM-059), her newest linked application (date, status, origin, neighborhood given, every answer) and Notes (newestByUser/applicationOrigin in format.ts; format.test.ts, admin-route.test.tsx). Phase 3: Details opens on a summary strip \u2014 newsletter state from newsletter_subscribers (consented / no consent / imported, consent not recorded / not on it), linked application count (account or account email) and member since (adminMembers, newsletterLabel; admin.server.test.ts, admin-route.test.tsx). Not ported: upload hrefs, last seen, directory flag in the strip (it is the Listed column), logged actions (CRM-057 still todo)."
     },
     {
       "id": "CRM-061",
@@ -525,7 +527,7 @@
       "owner": "admin-inbox",
       "status": "built",
       "target": "/admin",
-      "evidence": "Status filter (Any/Pending/Approved/Declined) on Applications and All members, plus a Neighborhood filter on All members, applied together with the page search box; the subtitle says 'N of M shown' whenever rows are hidden (panels.tsx; admin-route.test.tsx). Improvised: kept in component state, not the URL; no form-kind, origin, received-window or logged-action filters (no logged actions yet, and kinds already have their own cards)."
+      "evidence": "Status filter (Any/Pending/Approved/Declined) on Applications and All members, plus a Neighborhood filter on All members, applied together with the page search box; the subtitle says 'N of M shown' whenever rows are hidden (panels.tsx; admin-route.test.tsx). Improvised: kept in component state, not the URL; no form-kind, origin, received-window or logged-action filters (no logged actions yet, and kinds already have their own cards). Phase 3: the Applications status filter also offers \"Possible duplicates\" (CRM-072/073)."
     },
     {
       "id": "CRM-063",
@@ -604,16 +606,18 @@
       "source": "crm.md:Application \"possible duplicate\" flag",
       "acceptance": "Application \"possible duplicate\" flag: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "A pending application whose email (case-insensitive) or linked account belongs to an approved member, or to an imported member not yet signed up (legacy_members), carries duplicate \"member\" and shows a Possible duplicate chip with the reason on its row (adminApplications + duplicatesOf in src/features/admin; format.test.ts, admin.server.test.ts, admin-route.test.tsx). The flag is computed on read, never stored as a status: applications keep pending/approved/declined (no hand-set check_duplicate, CRM-053/070)."
     },
     {
       "id": "CRM-073",
       "source": "crm.md:Detection",
       "acceptance": "Detection: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "Detection by email on /admin: case a (member email/account + pending application) and case b (two or more pending applications from one email, no member) via duplicatesOf; the Applications subtitle counts them and the Status filter has \"Possible duplicates\" (panels.tsx; format.test.ts, admin.server.test.ts, admin-route.test.tsx). Retired: name/phone cases c and d and the separate duplicates list/dismiss keys \u2014 they exist to feed the CRM merge (CRM-076\u2013079), which this schema has no alias/merge table for; same-name rows are found with the page search. No merge or link UI (applications.user_id is set only by a verified email claim)."
     },
     {
       "id": "CRM-074",
