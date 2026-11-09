@@ -87,5 +87,24 @@ describe("/reset-password", () => {
     renderWithQueries(<Page />);
     await save("short");
     expect(await screen.findByText("Password too short")).toBeTruthy();
+    expect(form()!.getAttribute("aria-invalid")).toBe("true");
+    expect(form()!.getAttribute("aria-describedby")).toBe("password-hint password-error");
+  });
+
+  it("says one safe line when the save fails for any other reason", async () => {
+    withToken();
+    auth.resetPassword.mockResolvedValue({ data: null, error: { code: "INTERNAL", message: "db is locked", status: 500 } });
+    renderWithQueries(<Page />);
+    await save();
+    expect((await screen.findByRole("alert")).textContent).toBe("We couldn’t save your password. Please try again.");
+    expect(screen.queryByText(/db is locked/)).toBeNull();
+  });
+
+  it("shows the checking state before the link is read, inside the site chrome with one h1", () => {
+    const { container } = renderWithQueries(<Page />);
+    expect(screen.getByRole("heading", { level: 1, name: "Choose a new password." })).toBeTruthy();
+    expect(container.querySelectorAll("h1")).toHaveLength(1);
+    expect(screen.getByRole("banner")).toBeTruthy();
+    expect(screen.getByRole("contentinfo")).toBeTruthy();
   });
 });

@@ -77,6 +77,18 @@ describe("email + password", () => {
   });
 
 
+  it("lands every confirmation link on /verified, and a bad one there with ?error=", async () => {
+    await signUp("rosa@x.test");
+    await signIn("rosa@x.test", "correct horse"); // unverified: a second link, sent by sign-in
+    expect(sent.map((m) => new URL(linkIn(m.text)).searchParams.get("callbackURL"))).toEqual(["/verified", "/verified"]);
+    const bad = await auth.handler(new Request(`${APP}/api/auth/verify-email?token=nope&callbackURL=%2Fverified`));
+    expect(bad.status).toBe(302);
+    expect(bad.headers.get("location")).toBe("/verified?error=INVALID_TOKEN");
+    const good = await auth.handler(new Request(linkIn(sent[1].text)));
+    expect(good.headers.get("location")).toBe("/verified");
+    expect(good.headers.get("set-cookie")).toMatch(/session_token=/);
+  });
+
   it("resets a password through an emailed link at APP_URL", async () => {
     await signUp("rosa@x.test");
     await auth.api.verifyEmail({ query: { token: tokenIn(linkIn(sent[0].text)) } });

@@ -126,30 +126,73 @@ describe("/auth", () => {
     expect(alert.textContent).not.toContain("network down");
   });
 
-  it("switches sign-in / create-account with a pressed-button group, not tabs, and labels main", () => {
+  it("switches sign-in / create-account with ARIA tabs: arrows move and select, one tab stop, inside the site chrome", () => {
     renderWithQueries(<Page />);
-    expect(screen.queryByRole("tablist")).toBeNull();
-    expect(screen.queryByRole("tab")).toBeNull();
-    const group = screen.getByRole("group", { name: /sign in or create an account/i });
-    const [signIn, create] = within(group).getAllByRole("button");
-    expect(signIn.getAttribute("aria-pressed")).toBe("true");
-    expect(create.getAttribute("aria-pressed")).toBe("false");
+    const list = screen.getByRole("tablist", { name: /sign in or create an account/i });
+    const [signIn, create] = within(list).getAllByRole("tab");
+    const panel = screen.getByRole("tabpanel");
+    expect([signIn.getAttribute("aria-selected"), create.getAttribute("aria-selected")]).toEqual(["true", "false"]);
+    expect([signIn.tabIndex, create.tabIndex]).toEqual([0, -1]);
+    expect(signIn.getAttribute("aria-controls")).toBe(panel.id);
+    expect(panel.getAttribute("aria-labelledby")).toBe(signIn.id);
+
+    signIn.focus();
+    fireEvent.keyDown(signIn, { key: "ArrowRight" });
+    expect(document.activeElement).toBe(create);
+    expect([signIn.getAttribute("aria-selected"), create.getAttribute("aria-selected")]).toEqual(["false", "true"]);
+    expect([signIn.tabIndex, create.tabIndex]).toEqual([-1, 0]);
+    expect(screen.getByRole("heading", { level: 1, name: "Open your member account" })).toBeTruthy();
+    expect(screen.getByRole("tabpanel").getAttribute("aria-labelledby")).toBe(create.id);
+    fireEvent.keyDown(create, { key: "ArrowRight" }); // wraps
+    expect(document.activeElement).toBe(signIn);
+    fireEvent.keyDown(signIn, { key: "End" });
+    expect(document.activeElement).toBe(create);
+    fireEvent.keyDown(create, { key: "Home" });
+    expect(screen.getByRole("heading", { level: 1, name: "Welcome back, neighbor." })).toBeTruthy();
     fireEvent.click(create);
-    expect(signIn.getAttribute("aria-pressed")).toBe("false");
-    expect(create.getAttribute("aria-pressed")).toBe("true");
-    expect(screen.getByRole("heading", { level: 1, name: "Open Your Member Account" })).toBeTruthy();
-    expect(screen.getByRole("main").id).toBe("main");
+    expect(create.getAttribute("aria-selected")).toBe("true");
+
+    const mains = screen.getAllByRole("main");
+    expect(mains.map((m) => m.id)).toEqual(["main"]);
+    expect(screen.getByRole("banner")).toBeTruthy();
+    expect(screen.getByRole("contentinfo")).toBeTruthy();
+    expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
   });
 
-  it("opens in the mode named in the URL", () => {
+  it("opens in the mode named in the URL: ?mode=forgot (no tabs) and ?mode=signup", () => {
     search.mockReturnValue({ mode: "forgot" });
     renderWithQueries(<Page />);
-    expect(screen.getByRole("heading", { name: "Reset Your Password" })).toBeTruthy();
+    expect(screen.getByRole("heading", { level: 1, name: "Reset your password" })).toBeTruthy();
+    expect(screen.queryByRole("tablist")).toBeNull();
+    expect(screen.queryByRole("tabpanel")).toBeNull();
+    cleanup();
+    search.mockReturnValue({ mode: "signup" });
+    renderWithQueries(<Page />);
+    expect(screen.getByRole("heading", { level: 1, name: "Open your member account" })).toBeTruthy();
+    expect(screen.getByRole("tab", { name: "Create account" }).getAttribute("aria-selected")).toBe("true");
+    expect(screen.getByLabelText(/full name/i)).toBeTruthy();
+  });
+
+  it("validates the mode search param", () => {
+    const validate = Route.options.validateSearch as (s: Record<string, unknown>) => unknown;
+    expect(validate({ mode: "signup" })).toEqual({ mode: "signup" });
+    expect(validate({ mode: "admin" })).toEqual({});
+  });
+
+  it("ties a sign-in error to the fields it is about", async () => {
+    auth.signIn.email.mockResolvedValue({ data: null, error: { message: "Invalid email or password", status: 401 } });
+    renderWithQueries(<Page />);
+    fill(/email/i, "a@x.test");
+    fill(/password/i, "wrongpass");
+    submit(/^sign in$/i);
+    const alert = await screen.findByRole("alert");
+    expect(screen.getByLabelText(/email/i).getAttribute("aria-describedby")).toBe(alert.id);
+    expect(screen.getByLabelText(/password/i).getAttribute("aria-invalid")).toBe("true");
   });
 
   describe("sign-up", () => {
     const signUp = async () => {
-      fireEvent.click(screen.getByRole("button", { name: /02 — create account/i }));
+      fireEvent.click(screen.getByRole("tab", { name: "Create account" }));
       fill(/full name/i, "Rosa");
       fill(/email/i, "rosa@x.test");
       fill(/password/i, "longenough");
@@ -167,7 +210,7 @@ describe("/auth", () => {
       auth.signUp.email.mockResolvedValue(result);
       renderWithQueries(<Page />);
       await signUp();
-      expect(auth.signUp.email).toHaveBeenCalledWith({ email: "rosa@x.test", password: "longenough", name: "Rosa", callbackURL: "/account" });
+      expect(auth.signUp.email).toHaveBeenCalledWith({ email: "rosa@x.test", password: "longenough", name: "Rosa", callbackURL: "/verified" });
       expect(await neutral()).toMatch(/check your inbox.*already have an account/i);
       expect(screen.queryByRole("alert")).toBeNull();
     });
