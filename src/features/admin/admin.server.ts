@@ -10,7 +10,7 @@ import type { Booking, EventRow } from "@/features/events/events.server";
 import { EVENT_KINDS } from "@/features/events/format";
 import { neighborhoodRows, type NeighborhoodRow } from "@/features/neighborhoods/neighborhoods.server";
 import { mediaUrl } from "@/server/media";
-import { attachEmails, sortApplications, validateNeighborhood } from "./format";
+import { attachEmails, sortApplications, toCsv, validateNeighborhood } from "./format";
 import { sendApprovalEmail, type ApprovalEmailResult } from "./approval-email.server";
 
 
@@ -225,4 +225,58 @@ export function archiveMessage({ db, actor }: Ctx, input: unknown): void {
   requireAdmin(db, actor);
   if (!isObject(input)) throw bad("message");
   db.prepare("update inbox_messages set status = 'archived' where id = ?").run(str(input.id, "message", 64));
+}
+
+// ---------- Notes (migration 0006, CRM-055) ----------
+
+export type AdminNote = {
+  id: string; application_id: string | null; member_id: string | null; author_name: string | null; body: string; created_at: string;
+};
+
+/** Every note, oldest first; the page groups them by application or member. */
+export function adminNotes({ db, actor }: Ctx): AdminNote[] {
+  requireAdmin(db, actor);
+  return db.prepare(
+    `select n.id, n.application_id, n.member_id, nullif(trim(coalesce(p.full_name, u.name, '')), '') as author_name, n.body, n.created_at
+     from admin_notes n left join "user" u on u.id = n.author_id left join profiles p on p.id = n.author_id order by n.created_at, n.rowid`,
+  ).all() as AdminNote[];
+}
+
+/** `{ applicationId | memberId, body }`: 1–5,000 characters after trimming, on a row that exists. Returns the new note's id. */
+export function addNote({ db, actor }: Ctx, input: unknown): string {
+  const me = requireAdmin(db, actor);
+  if (!isObject(input)) throw bad("note");
+  const body = str(input.body, "note", 5000).trim();
+  if (!body) throw bad("note");
+  const [column, table] = input.applicationId !== undefined ? ["application_id", "applications"] : ["member_id", "profiles"];
+  const subject = str(input.applicationId ?? input.memberId, "note", 64);
+  if (!db.prepare(`select 1 from ${table} where id = ?`).get(subject)) throw bad("note");
+  return (db.prepare(`insert into admin_notes (${column}, author_id, body) values (?, ?, ?) returning id`).get(subject, me.id, body) as { id: string }).id;
+}
+
+export function deleteNote({ db, actor }: Ctx, input: unknown): void {
+  requireAdmin(db, actor);
+  if (!isObject(input)) throw bad("note");
+  db.prepare("delete from admin_notes where id = ?").run(str(input.id, "note", 64));
+}
+
+// ---------- CSV export (CRM-186): the columns /admin shows, plus every answer as JSON (OPS-037's payload_json) ----------
+
+export type CsvExport = { filename: string; csv: string };
+const yesNo = (b: boolean) => (b ? "Yes" : "No");
+
+export function adminCsv(c: Ctx, input: unknown): CsvExport {
+  const kind = oneOf(isObject(input) ? input.kind : undefined, ["applications", "members"] as const, "export");
+  const filename = `twc-${kind}-${new Date().toISOString().slice(0, 10)}.csv`;
+  if (kind === "applications") {
+    const rows = adminApplications(c).map((a) => [
+      a.created_at, a.full_name, a.email, a.neighborhood, typeof a.answers.business === "string" ? a.answers.business : "",
+      a.status, a.reviewed_at, yesNo(a.user_id !== null), JSON.stringify(a.answers),
+    ]);
+    return { filename, csv: toCsv(["Submitted (UTC)", "Name", "Email", "Neighborhood", "Business", "Status", "Reviewed (UTC)", "Account", "Answers (JSON)"], rows) };
+  }
+  const rows = adminMembers(c).map((m) => [
+    m.full_name, m.status, yesNo(m.directory_visible), yesNo(m.public_profile), m.catalogue_number, m.email, m.business, m.neighborhood, m.member_since,
+  ]);
+  return { filename, csv: toCsv(["Name", "Status", "Listed", "Public", "Catalogue", "Email", "Business", "Neighborhood", "Member since"], rows) };
 }

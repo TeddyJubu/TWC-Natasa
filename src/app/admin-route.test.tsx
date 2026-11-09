@@ -70,10 +70,10 @@ describe("_admin guard", () => {
 });
 
 const FETCH = Symbol("fetch");
-type AdminKey = "inbox" | "applications" | "members" | "neighborhoods" | "bookings" | "events" | "review-links" | "reviews" | "form-responses";
+type AdminKey = "inbox" | "applications" | "members" | "neighborhoods" | "bookings" | "events" | "review-links" | "reviews" | "form-responses" | "notes";
 /** Seeds every admin read (empty lists, plus `members`) unless overridden; FETCH leaves that read to the queued fake results. */
 function renderAdmin(over: Partial<Record<AdminKey, unknown>> = {}, extra: [unknown[], unknown][] = []) {
-  const data: Record<AdminKey, unknown> = { inbox: [], applications: [], members, neighborhoods: [], bookings: [], events: [], "review-links": {}, reviews: [], "form-responses": [], ...over };
+  const data: Record<AdminKey, unknown> = { inbox: [], applications: [], members, neighborhoods: [], bookings: [], events: [], "review-links": {}, reviews: [], "form-responses": [], notes: [], ...over };
   const seed = Object.entries(data).filter(([, v]) => v !== FETCH).map(([k, v]) => [["admin", k], v] as [unknown[], unknown]);
   return renderWithQueries(<Page />, [...seed, ...extra]);
 }
@@ -146,6 +146,45 @@ describe("/admin", () => {
       await settle();
       expect(fake.calls).toEqual([["archiveMessageFn", { id: "m1" }], ["adminInboxFn"]]);
       await waitFor(() => expect(within(card("Inbox")).getByText("Nothing waiting.")).toBeTruthy());
+    });
+  });
+
+  describe("search, notes and CSV (CRM-041, CRM-055, CRM-186)", () => {
+    it("one search box filters applications and members by name, email or business", async () => {
+      renderAdmin({ applications: [application("a1", "Pia Baker", { answers: { business: "Crumb Co" } }), application("a2", "Lu Smith")] });
+      const search = screen.getByRole("searchbox", { name: "Search messages, applications and members" });
+      fireEvent.change(search, { target: { value: "crumb" } });
+      expect(within(card("Applications")).getByRole("heading", { name: "Pia Baker" })).toBeTruthy();
+      expect(within(card("Applications")).queryByRole("heading", { name: "Lu Smith" })).toBeNull();
+      expect(within(card("All members")).getByText("No members match.")).toBeTruthy();
+      fireEvent.change(search, { target: { value: "rosa@x" } });
+      expect(within(card("All members")).getByRole("rowheader", { name: "Rosa Diaz" })).toBeTruthy();
+      expect(within(card("All members")).queryByRole("rowheader", { name: "Natasa Admin" })).toBeNull();
+    });
+
+    it("adds a note to an application and refetches notes", async () => {
+      renderAdmin({ applications: [application("a1", "Pia Baker")], notes: [{ id: "n0", application_id: "a1", member_id: null, author_name: "Natasa", body: "First call done", created_at: "2026-11-02T10:00:00Z" }] });
+      const apps = card("Applications");
+      expect(within(apps).getByText("Notes (1)")).toBeTruthy();
+      expect(within(apps).getByText("First call done")).toBeTruthy();
+      fake.results = ["n1", []];
+      fireEvent.change(within(apps).getByLabelText(/Add a note about Pia Baker/), { target: { value: "Wants May salon" } });
+      fireEvent.click(within(apps).getByRole("button", { name: "Add note" }));
+      await settle();
+      expect(fake.calls).toEqual([["addNoteFn", { applicationId: "a1", body: "Wants May salon" }], ["adminNotesFn"]]);
+    });
+
+    it("Download CSV asks the server for that card's export", async () => {
+      renderAdmin();
+      const createObjectURL = vi.fn(() => "blob:x");
+      Object.assign(URL, { createObjectURL, revokeObjectURL: vi.fn() });
+      const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+      fake.results = [{ filename: "twc-members-2026-11-09.csv", csv: "\uFEFF\"Name\"\r\n" }];
+      fireEvent.click(within(card("All members")).getByRole("button", { name: "Download CSV of members" }));
+      await settle();
+      expect(fake.calls).toEqual([["adminCsvFn", { kind: "members" }]]);
+      expect(click).toHaveBeenCalledOnce();
+      click.mockRestore();
     });
   });
 

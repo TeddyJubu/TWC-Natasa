@@ -6,7 +6,7 @@ import { checkLogo, validateNeighborhood } from "./format";
 import { emailApproval, type ApprovalNotice } from "./approval-email";
 import { postApi } from "@/app/api";
 import {
-  archiveMessageFn, createEventFn, createNeighborhoodFn, deleteEventFn, reviewApplicationFn, setBookingStatusFn, setMemberStatusFn, updateEventFn,
+  addNoteFn, adminCsvFn, archiveMessageFn, createEventFn, deleteNoteFn, createNeighborhoodFn, deleteEventFn, reviewApplicationFn, setBookingStatusFn, setMemberStatusFn, updateEventFn,
   updateNeighborhoodFn,
 } from "./fns";
 
@@ -158,6 +158,27 @@ export const archiveMessageMutation = (qc: QueryClient) => ({
   onSuccess: () => invalidate(qc, [["admin", "inbox"]]),
 });
 
+export type NoteInput = { applicationId: string; body: string } | { memberId: string; body: string };
+
+export const addNoteMutation = (qc: QueryClient) => ({
+  mutationFn: (data: NoteInput) => addNoteFn({ data }),
+  onSuccess: () => invalidate(qc, [["admin", "notes"]]),
+});
+
+export const deleteNoteMutation = (qc: QueryClient) => ({
+  mutationFn: (id: string) => deleteNoteFn({ data: { id } }),
+  onSuccess: () => invalidate(qc, [["admin", "notes"]]),
+});
+
+/** Fetches the CSV (requireAdmin on the server) and saves it through a temporary blob link; nothing is cached. */
+export async function downloadCsv(kind: "applications" | "members"): Promise<void> {
+  const { filename, csv } = await adminCsvFn({ data: { kind } });
+  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+  const a = Object.assign(document.createElement("a"), { href: url, download: filename });
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
 export const useReviewApplication = () => useMutation(reviewApplicationMutation(useQueryClient()));
 export const useSetMemberStatus = () => useMutation(setMemberStatusMutation(useQueryClient()));
 export const useSetBookingStatus = () => useMutation(setBookingStatusMutation(useQueryClient()));
@@ -166,3 +187,6 @@ export const useUpdateNeighborhood = () => useMutation(updateNeighborhoodMutatio
 export const useSaveEvent = () => useMutation(saveEventMutation(useQueryClient()));
 export const useDeleteEvent = () => useMutation(deleteEventMutation(useQueryClient()));
 export const useArchiveMessage = () => useMutation(archiveMessageMutation(useQueryClient()));
+export const useAddNote = () => useMutation(addNoteMutation(useQueryClient()));
+export const useDeleteNote = () => useMutation(deleteNoteMutation(useQueryClient()));
+export const useDownloadCsv = () => useMutation({ mutationFn: downloadCsv });

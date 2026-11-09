@@ -349,8 +349,9 @@
       "source": "crm.md:Search",
       "acceptance": "Search: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "One search box on /admin (AdminSearch in src/features/admin/panels.tsx) filters the Inbox, Applications and All members cards by name, email or business; every word must match, case- and accent-insensitive (matchesSearch in src/features/admin/format.ts; format.test.ts, src/app/admin-route.test.tsx). Improvised: client-side over the admin lists already loaded (no FTS5 index, answers other than business not searched)."
     },
     {
       "id": "CRM-042",
@@ -461,8 +462,9 @@
       "source": "crm.md:Notes (comments)",
       "acceptance": "Notes (comments): behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "Admin notes on an application or a member: db/migrations/0006_admin_notes.sql (exactly one subject FK, cascade, body 1\u20135,000 chars), adminNotes/addNote/deleteNote with requireAdmin (src/features/admin/admin.server.ts; admin.server.test.ts, src/server/policy.test.ts), a Notes (n) panel on each application row and member row. Not editable, as in the CRM; deviation: an admin may delete one (confirm first)."
     },
     {
       "id": "CRM-056",
@@ -1533,8 +1535,9 @@
       "source": "crm.md:GAP \u2014 no CSV of the inbox, applications or members in the CRM",
       "acceptance": "GAP \u2014 no CSV of the inbox, applications or members in the CRM: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "Download CSV on the Applications and All members cards: adminCsv (requireAdmin, POST server fn) returns the card's columns (applications + every answer as JSON, OPS-037's payload_json; members: name, status, listed, public, catalogue, email, business, neighborhood, member since); toCsv adds BOM, CRLF, full quoting and the ' formula guard (CRM-130 rules); saved via a blob link, nothing logged (admin.server.test.ts, format.test.ts, admin-route.test.tsx). Inbox CSV not built."
     },
     {
       "id": "CRM-187",

@@ -15,7 +15,7 @@ import { submitApplication } from "@/features/applications/applications.server";
 import { listNeighborhoods } from "@/features/neighborhoods/neighborhoods.server";
 import { receiveMessage } from "@/features/contact/contact.server";
 import {
-  adminApplications, adminEvents, adminInbox, adminMembers, archiveMessage, createEvent, createNeighborhood, deleteEvent, reviewApplication, setBookingStatus,
+  addNote, adminApplications, adminCsv, adminEvents, adminInbox, adminMembers, adminNotes, archiveMessage, deleteNote, createEvent, createNeighborhood, deleteEvent, reviewApplication, setBookingStatus,
   setMemberStatus, updateEvent,
 } from "@/features/admin/admin.server";
 import { adminReviews, markReviewDone, mintReviewLink, openReview, reviewLinkStates, revokeReviewLink, submitReview } from "@/features/member-links/member-links.server";
@@ -593,6 +593,22 @@ describe("custom forms", () => {
   });
   it("admin reads every answer", () => {
     expect(adminFormResponses(as(A)).find((f) => f.slug === "salon-rsvp")!.total).toBe(2);
+  });
+});
+
+// Admin notes (0006) and CSV export: admins only; a member or visitor can neither read, add, delete nor download.
+describe("admin notes and CSV export", () => {
+  it("are admin-only", () => {
+    const note = addNote(as(A), { memberId: A, body: "Met at the salon" });
+    for (const who of [anon(), as(B), as(C)]) {
+      throwsAccess(() => adminNotes(who));
+      throwsAccess(() => addNote(who, { memberId: B, body: "x" }));
+      throwsAccess(() => deleteNote(who, { id: note }));
+      throwsAccess(() => adminCsv(who, { kind: "members" }));
+    }
+    expect(adminNotes(as(A)).map((n) => n.id)).toContain(note);
+    deleteNote(as(A), { id: note });
+    expect(adminNotes(as(A)).map((n) => n.id)).not.toContain(note);
   });
 });
 

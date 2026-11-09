@@ -113,3 +113,25 @@ export function checkLogo(file: File): string {
 
 /** `<slug>.<ext>` inside the neighborhood-logos bucket. */
 export const logoPath = (slug: string, file: File) => `${slug}.${checkLogo(file)}`;
+
+// ---------- Search (CRM-041) and CSV (CRM-186) ----------
+
+/** Case- and accent-insensitive: every word of the query appears in one of the fields (name, email, business). */
+export function matchesSearch(query: string, fields: (string | null | undefined)[]): boolean {
+  const fold = (s: string) => s.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
+  const words = fold(query).split(/\s+/).filter(Boolean);
+  const text = fold(fields.filter(Boolean).join(" "));
+  return words.every((w) => text.includes(w));
+}
+
+/**
+ * RFC 4180 CSV with a BOM and CRLF, as the CRM's responses.csv (CRM-130): every cell quoted, and one that starts
+ * = + - @ tab or CR gets a leading ' so a spreadsheet never runs it as a formula.
+ */
+export function toCsv(header: string[], rows: (string | number | null)[][]): string {
+  const cell = (v: string | number | null) => {
+    const s = v === null ? "" : String(v);
+    return `"${(/^[=+\-@\t\r]/.test(s) ? `'${s}` : s).replace(/"/g, '""')}"`;
+  };
+  return `\uFEFF${[header, ...rows].map((r) => r.map(cell).join(",")).join("\r\n")}\r\n`;
+}
