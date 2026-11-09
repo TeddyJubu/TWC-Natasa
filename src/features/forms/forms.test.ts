@@ -3,7 +3,8 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { openDb, type DB } from "@/server/db";
 import { DEMO_FORMS } from "./fixtures";
-import { adminFormResponses, CLOSED, DUPLICATE, formRequest, openForm, responseEntries } from "./forms.server";
+import { toCsv } from "@/features/admin/format";
+import { adminFormResponses, CLOSED, CLOSED_MESSAGE_MAX, DUPLICATE, formRequest, formResponsesCsv, openForm, responseEntries, setFormOpen } from "./forms.server";
 import { checkAnswers, checkQuestions, type Question } from "./schema";
 import { saveForm } from "./store";
 
@@ -187,10 +188,13 @@ describe("adminFormResponses", () => {
     expect(() => adminFormResponses(ctx())).toThrow(/sign in/i);
   });
 
-  it("lists every form by name with its count, and answers under their labels (choices by label)", async () => {
+  it("lists every form by name with its count, newest date and answers under their labels (choices by label)", async () => {
     await send("salon-rsvp", { answers: { ...good, diet: ["vegan", "no-nuts"], plus_one: "no" } });
     const forms = adminFormResponses({ db, actor: ADMIN });
-    expect(forms.map((f) => [f.name, f.open, f.total])).toEqual([["Old survey (demo, closed)", false, 0], ["Salon RSVP (demo)", true, 1]]);
+    expect(forms.map((f) => [f.name, f.open, f.total, f.newest_at !== null, f.closed_message])).toEqual([
+      ["Old survey (demo, closed)", false, 0, false, "This survey has closed. Thank you to everyone who answered."],
+      ["Salon RSVP (demo)", true, 1, true, ""],
+    ]);
     expect(forms[1]!.responses[0]!.entries).toEqual([
       { key: "name", label: "Your name", value: "Rosa Diaz" },
       { key: "email", label: "Email", value: "Rosa@X.test" },
@@ -204,5 +208,66 @@ describe("adminFormResponses", () => {
     expect(responseEntries([{ key: "a", type: "short", label: "A" }], { a: "x", gone: "y" })).toEqual([
       { key: "a", label: "A", value: "x" }, { key: "gone", label: "gone", value: "y" },
     ]);
+  });
+});
+
+describe("setFormOpen", () => {
+  const admin = () => ({ db, actor: ADMIN });
+
+  it("is admin-only", () => {
+    expect(() => setFormOpen(ctx(), { id: "demo0001", open: false })).toThrow(/sign in/i);
+  });
+
+  it("closes a form so the public page shows the closed message and POST is refused", async () => {
+    setFormOpen(admin(), { id: "demo0001", open: false, message: "Salon is full — try next month." });
+    expect(openForm(ctx(), { slug: "salon-rsvp" })).toMatchObject({ closed: "Salon is full — try next month.", questions: [] });
+    expect((await send("salon-rsvp", { answers: good })).status).toBe(410);
+    expect(adminFormResponses(admin()).find((f) => f.id === "demo0001")).toMatchObject({ open: false, closed_message: "Salon is full — try next month." });
+  });
+
+  it("re-opens a form and keeps the last closed message when none is sent", () => {
+    setFormOpen(admin(), { id: "demo0002", open: true });
+    expect(openForm(ctx(), { slug: "old-survey" })).toMatchObject({ closed: null, questions: expect.any(Array) });
+    expect(db.prepare("select open, closed_message from custom_forms where id = 'demo0002'").get())
+      .toEqual({ open: 1, closed_message: "This survey has closed. Thank you to everyone who answered." });
+  });
+
+  it("refuses an unknown form, a bad open flag and a message over 1,000 characters", () => {
+    expect(() => setFormOpen(admin(), { id: "nope0001", open: false })).toThrow(/Invalid form/);
+    expect(() => setFormOpen(admin(), { id: "demo0001", open: "yes" })).toThrow(/Invalid open/);
+    expect(() => setFormOpen(admin(), { id: "demo0001", open: false, message: "x".repeat(CLOSED_MESSAGE_MAX + 1) })).toThrow(/Invalid message/);
+  });
+});
+
+describe("formResponsesCsv", () => {
+  const admin = () => ({ db, actor: ADMIN });
+
+  it("is admin-only", () => {
+    expect(() => formResponsesCsv(ctx(), { id: "demo0001" })).toThrow(/sign in/i);
+  });
+
+  it("exports every answer with BOM, CRLF, labelled choices and a formula guard", async () => {
+    await send("salon-rsvp", { answers: { ...good, diet: ["vegan"], note: "=1+1" } });
+    const at = (db.prepare("select created_at from custom_form_responses where form_id = 'demo0001'").get() as { created_at: string }).created_at;
+    const { filename, csv } = formResponsesCsv(admin(), { id: "demo0001" });
+    expect(filename).toMatch(/^salon-rsvp-responses-\d{4}-\d{2}-\d{2}\.csv$/);
+    expect(csv).toBe(toCsv(
+      ["Received (UTC)", "Your name", "Email", "Are you coming?", "Anything we should know?", "Bringing a guest?", "Anything else?"],
+      [[at, "Rosa Diaz", "Rosa@X.test", "Yes", "Vegan", "", "=1+1"]],
+    ));
+  });
+
+  it("disambiguates duplicate question labels with (key)", () => {
+    saveForm(db, {
+      id: "demo0003", slug: "dup-labels", name: "Dup labels",
+      questions: [
+        { key: "a", type: "short", label: "Same" },
+        { key: "b", type: "short", label: "Same" },
+      ],
+    });
+    db.prepare("insert into custom_form_responses (form_id, form_version, answers, email) values ('demo0003', 1, ?, null)")
+      .run(JSON.stringify({ a: "one", b: "two" }));
+    const { csv } = formResponsesCsv(admin(), { id: "demo0003" });
+    expect(csv.replace(/^\uFEFF/, "").split("\r\n")[0]).toBe('"Received (UTC)","Same (a)","Same (b)"');
   });
 });

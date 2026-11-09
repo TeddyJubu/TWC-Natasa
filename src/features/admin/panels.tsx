@@ -28,7 +28,7 @@ import {
 } from "@/features/member-links/queries";
 import { reviewEntries } from "@/features/member-links/schema";
 import { spotlightEntries } from "@/features/member-links/spotlight";
-import { adminFormResponsesQuery, type AdminForm } from "@/features/forms/queries";
+import { adminFormResponsesQuery, useDownloadFormCsv, useSetFormOpen, type AdminForm } from "@/features/forms/queries";
 
 const errorMessage = (error: unknown) =>
   (error as { message?: string } | null)?.message || "Something went wrong. Please try again.";
@@ -661,7 +661,7 @@ function SpotlightRow({ spotlight: s }: { spotlight: AdminSpotlight }) {
   );
 }
 
-// ---------- Form responses ----------
+// ---------- Form responses (CRM-099/100/103 light + CRM-130) ----------
 
 export function FormResponsesPanel() {
   const forms = useQuery(adminFormResponsesQuery);
@@ -677,10 +677,49 @@ export function FormResponsesPanel() {
 }
 
 function FormRow({ form: f }: { form: AdminForm }) {
+  const setOpen = useSetFormOpen();
+  const csv = useDownloadFormCsv();
+  const [message, setMessage] = React.useState(f.closed_message);
+  React.useEffect(() => { setMessage(f.closed_message); }, [f.closed_message]);
   const shown = f.total > f.responses.length ? ` · newest ${f.responses.length} shown` : "";
+  const newest = f.newest_at ? ` · newest ${formatDate(f.newest_at)}` : "";
+  const busy = setOpen.isPending || csv.isPending;
+  const closeForm = () => {
+    if (!window.confirm(`Close “${f.name}”? Visitors will see the closed message instead of the form.`)) return;
+    setOpen.mutate({ id: f.id, open: false, message });
+  };
   return (
     <Item headingId={`form-${f.id}`} title={f.name} status={f.open ? "open" : "closed"}
-      details={<p className={meta}>/f/{f.slug} · {f.total === 1 ? "1 answer" : `${f.total} answers`}{shown}</p>}>
+      details={<p className={meta}>
+        <a className={cn("underline", ring)} href={`/f/${f.slug}`}>/f/{f.slug}</a>
+        {" · "}{f.total === 1 ? "1 answer" : `${f.total} answers`}{newest}{shown}
+      </p>}>
+      <div className="flex flex-col gap-3 rounded-md bg-app-sunken p-3.5">
+        <Field id={`form-closed-${f.id}`} label="Closed message" hint="Shown on /f/… when the form is closed (up to 1,000 characters).">
+          <input id={`form-closed-${f.id}`} value={message} maxLength={1000} disabled={busy}
+            aria-describedby={`form-closed-${f.id}-hint`}
+            onChange={(e) => setMessage(e.currentTarget.value)} className={fieldClass} />
+        </Field>
+        <div className="flex flex-wrap gap-2.5">
+          {f.open
+            ? <button type="button" className={secondaryButton} disabled={busy} aria-label={`Close ${f.name}`} onClick={closeForm}>Close form</button>
+            : <>
+                <button type="button" className={primaryButton} disabled={busy} aria-label={`Open ${f.name}`}
+                  onClick={() => setOpen.mutate({ id: f.id, open: true })}>Open form</button>
+                <button type="button" className={secondaryButton} disabled={busy || message === f.closed_message}
+                  aria-label={`Update closed message for ${f.name}`}
+                  onClick={() => setOpen.mutate({ id: f.id, open: false, message })}>Update closed message</button>
+              </>}
+          {f.total > 0 && (
+            <button type="button" className={secondaryButton} disabled={busy}
+              aria-label={`Download CSV of ${f.name}`} onClick={() => csv.mutate(f.id)}>
+              Download CSV
+            </button>
+          )}
+        </div>
+        <MutationError mutation={setOpen} />
+        <MutationError mutation={csv} />
+      </div>
       {f.responses.map((r) => (
         <details key={r.id} className="group rounded-md bg-app-sunken">
           <summary className={cn("flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-md px-3.5 text-sm font-medium text-ink [&::-webkit-details-marker]:hidden", ring)}>

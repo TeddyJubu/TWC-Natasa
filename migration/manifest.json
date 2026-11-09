@@ -843,17 +843,19 @@
       "id": "CRM-099",
       "source": "crm.md:Forms overview",
       "acceptance": "Forms overview: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
-      "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "owner": "custom-forms",
+      "status": "built",
+      "target": "/admin#forms",
+      "evidence": "Light custom-forms overview on /admin \u203a Form responses (#forms): name, /f/<slug> link, open/closed chip, answer count, newest answer date (adminFormResponses in src/features/forms/forms.server.ts; FormResponsesPanel). Not the CRM's fixed website-form kinds (application/review/contact/\u2026) or last7/last30/schedule \u2014 those stay todo with CRM-101. tests: forms.test.ts, admin-route.test.tsx"
     },
     {
       "id": "CRM-100",
       "source": "crm.md:Open / close switch",
       "acceptance": "Open / close switch: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
-      "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin#members"
+      "owner": "custom-forms",
+      "status": "built",
+      "target": "/admin#forms",
+      "evidence": "Open/close switch on each Form responses row (setFormOpen, requireAdmin): closing keeps /f/<slug> reachable with closed_message (openForm); optional closed-message edit \u2264 1,000 chars; opening with no message keeps the last one. No schedule / max_responses (CRM-101). Website-form kinds (application/review/contact/\u2026) not switched here. tests: forms.test.ts, policy.test.ts, admin-route.test.tsx"
     },
     {
       "id": "CRM-101",
@@ -875,9 +877,10 @@
       "id": "CRM-103",
       "source": "crm.md:Forms page UI",
       "acceptance": "Forms page UI: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
-      "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "owner": "custom-forms",
+      "status": "built",
+      "target": "/admin#forms",
+      "evidence": "Partial/light: Form responses card is the forms overview (open/close + closed message + /f/ link + CSV). No separate /forms page, no Classic nested sidebar, no schedule settings UI, no share dialog, no editor links (builder is later). tests: admin-route.test.tsx"
     },
     {
       "id": "CRM-104",
@@ -1093,9 +1096,10 @@
       "id": "CRM-130",
       "source": "crm.md:CSV download",
       "acceptance": "CSV download: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
-      "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "owner": "custom-forms",
+      "status": "built",
+      "target": "/admin#forms",
+      "evidence": "Per-form Download CSV on Form responses (formResponsesCsv, requireAdmin, POST server fn \u2192 blob): Received (UTC) + question labels (duplicate wording gets (key)), choice labels, BOM/CRLF/quoted/formula guard via toCsv (CRM-130 rules). Filename <slug>-responses-<YYYY-MM-DD>.csv. No Came from / Newsletter / Notes / Held columns yet (hold/waitlist not built). tests: forms.test.ts, policy.test.ts, admin-route.test.tsx"
     },
     {
       "id": "CRM-131",
@@ -1137,7 +1141,7 @@
       "owner": "custom-forms",
       "status": "todo",
       "target": "/admin",
-      "evidence": "Partial: /admin \u203a Form responses lists each form (open/closed, count) and its newest 100 answers with labels. Not yet: filters, columns, Summary, Hold, delete, CSV."
+      "evidence": "Partial: /admin \u203a Form responses lists each form (open/closed, count, newest date) and its newest 100 answers with labels; open/close + closed message (CRM-100) and per-form CSV (CRM-130) are built. Not yet: filters, column picker, Summary, Hold, delete-for-good."
     },
     {
       "id": "CRM-136",

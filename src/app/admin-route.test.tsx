@@ -478,20 +478,57 @@ describe("/admin", () => {
     expect(fake.calls[0]).toEqual(["markReviewDoneFn", { id: "r1" }]);
   });
 
-  it("form responses: each form with its count, and every answer under its question's label", () => {
+  it("form responses: each form with its count, link, newest date and answers under question labels", () => {
     const entries = [{ key: "name", label: "Your name", value: "Rosa Diaz" }, { key: "diet", label: "Anything we should know?", value: ["Vegan", "No nuts"] }];
     renderAdmin({ "form-responses": [
-      { id: "demo0001", name: "Salon RSVP (demo)", slug: "salon-rsvp", open: true, total: 1, responses: [{ id: "a1", created_at: "2026-11-09T15:00:00Z", entries }] },
-      { id: "demo0002", name: "Old survey (demo, closed)", slug: "old-survey", open: false, total: 0, responses: [] },
+      { id: "demo0001", name: "Salon RSVP (demo)", slug: "salon-rsvp", open: true, closed_message: "", total: 1, newest_at: "2026-11-09T15:00:00Z", responses: [{ id: "a1", created_at: "2026-11-09T15:00:00Z", entries }] },
+      { id: "demo0002", name: "Old survey (demo, closed)", slug: "old-survey", open: false, closed_message: "This survey has closed.", total: 0, newest_at: null, responses: [] },
     ] });
     const rsvp = within(card("Form responses")).getByRole("article", { name: "Salon RSVP (demo)" });
-    expect(rsvp.textContent).toMatch(/\/f\/salon-rsvp · 1 answer/);
+    expect(within(rsvp).getByRole("link", { name: "/f/salon-rsvp" }).getAttribute("href")).toBe("/f/salon-rsvp");
+    expect(rsvp.textContent).toMatch(/1 answer/);
+    expect(rsvp.textContent).toMatch(/newest Nov 9, 2026/);
     expect(rsvp.textContent).toMatch(/Open/);
+    expect(within(rsvp).getByRole("button", { name: "Close Salon RSVP (demo)" })).toBeTruthy();
+    expect(within(rsvp).getByRole("button", { name: "Download CSV of Salon RSVP (demo)" })).toBeTruthy();
     expect(within(rsvp).getByText("Your name").nextElementSibling!.textContent).toBe("Rosa Diaz");
     expect(within(rsvp).getAllByRole("listitem").map((li) => li.textContent)).toEqual(["Vegan", "No nuts"]);
     const closed = within(card("Form responses")).getByRole("article", { name: "Old survey (demo, closed)" });
     expect(closed.textContent).toMatch(/0 answers/);
     expect(closed.textContent).toMatch(/Closed/);
+    expect(within(closed).getByRole("button", { name: "Open Old survey (demo, closed)" })).toBeTruthy();
+    expect(within(closed).queryByRole("button", { name: /Download CSV/ })).toBeNull();
+  });
+
+  it("form responses: Close form asks confirm then posts open:false with the closed message", async () => {
+    renderAdmin({ "form-responses": [
+      { id: "demo0001", name: "Salon RSVP (demo)", slug: "salon-rsvp", open: true, closed_message: "", total: 0, newest_at: null, responses: [] },
+    ] });
+    const rsvp = within(card("Form responses")).getByRole("article", { name: "Salon RSVP (demo)" });
+    fireEvent.change(within(rsvp).getByLabelText("Closed message"), { target: { value: "Full for now." } });
+    fake.results = [null, [
+      { id: "demo0001", name: "Salon RSVP (demo)", slug: "salon-rsvp", open: false, closed_message: "Full for now.", total: 0, newest_at: null, responses: [] },
+    ]];
+    fireEvent.click(within(rsvp).getByRole("button", { name: "Close Salon RSVP (demo)" }));
+    expect(confirm).toHaveBeenCalled();
+    await waitFor(() => expect(fake.calls[0]).toEqual(["setFormOpenFn", { id: "demo0001", open: false, message: "Full for now." }]));
+  });
+
+  it("form responses: Download CSV asks the server for that form's export", async () => {
+    renderAdmin({ "form-responses": [
+      { id: "demo0001", name: "Salon RSVP (demo)", slug: "salon-rsvp", open: true, closed_message: "", total: 2, newest_at: "2026-11-09T15:00:00Z", responses: [] },
+    ] });
+    fake.results = [{ filename: "salon-rsvp-responses-2026-11-09.csv", csv: "\uFEFF\"Received (UTC)\"\r\n" }];
+    const createObjectURL = vi.fn(() => "blob:csv");
+    const revokeObjectURL = vi.fn();
+    vi.stubGlobal("URL", { ...URL, createObjectURL, revokeObjectURL });
+    const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+    fireEvent.click(within(card("Form responses")).getByRole("button", { name: "Download CSV of Salon RSVP (demo)" }));
+    await waitFor(() => expect(fake.calls).toEqual([["formResponsesCsvFn", { id: "demo0001" }]]));
+    expect(createObjectURL).toHaveBeenCalled();
+    expect(click).toHaveBeenCalled();
+    click.mockRestore();
+    vi.unstubAllGlobals();
   });
 
   it("members: approve sets the profile status directly", async () => {
