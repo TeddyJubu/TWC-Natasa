@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "updated": "2026-11-09",
-  "notes": "Seeded from migration/inventory/*.md. status starts as todo; builders flip to built, Haiku to verified. vps-cutover remainders 2026-11-09: flipped 23 already-true cutover/redirect items to verified; retired 72 Classic host/path leftovers; left OPS-518/SITE-111/OPS-156/crm-test + 24 stop/timer todos with stop-readiness note. No live Caddy/container change.",
+  "updated": "2026-11-10",
+  "notes": "Seeded from migration/inventory/*.md. status starts as todo; builders flip to built, Haiku to verified. vps-cutover remainders 2026-11-09: flipped 23 already-true cutover/redirect items to verified; retired 72 Classic host/path leftovers; left OPS-518/SITE-111/OPS-156/crm-test + 24 stop/timer todos with stop-readiness note. No live Caddy/container change. admin-inbox remainders-2 2026-11-10: flipped 2 (OPS-274/447); retired 7 Classic stragglers (OPS-077/134/135/221/340/510/511); left 40 product gaps (join picklists, contact polish, custom-forms/notifications/vps-owned).",
   "counts": {
     "total": 902,
     "byOwner": {
@@ -971,7 +971,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "/admin",
-      "evidence": "Product gap (form schedule + response limit): custom-forms-owned; leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (form schedule + response limit): custom-forms-owned; leave todo. AUDIT admin-inbox remainders. | Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "CRM-102",
@@ -1225,7 +1225,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "/admin",
-      "evidence": "Product gap (Classic paginated/filtered responses API): Form responses card lists answers (CRM-094/130); full Classic filters/offset/delete-count stay custom-forms-owned. Leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (Classic paginated/filtered responses API): Form responses card lists answers (CRM-094/130); full Classic filters/offset/delete-count stay custom-forms-owned. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "CRM-129",
@@ -2014,7 +2014,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "/join",
-      "evidence": "Product gap (join ?src= share-source tag): scrapbook /join does not keep tracked source. Leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (join ?src= share-source tag): scrapbook /join does not keep tracked source. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-024",
@@ -2525,9 +2525,10 @@
       "source": "backoffice.md:Field-winning rules",
       "acceptance": "Field-winning rules: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity",
-      "evidence": "Product gap / import field-winning rules: data-import-owned if still needed. Leave todo. AUDIT admin-inbox remainders."
+      "status": "verified",
+      "target": "retired",
+      "evidence": "Retired: intake merge field-winning rules. Merge graph retired with CRM-074–081 / OPS-075/076/078/079 (no /internal/merge). Import keeps both applications per email (CRM-173); no field-win merge. | admin-inbox remainders-2 2026-11-10: Classic merge straggler.",
+      "retired": "no-merge"
     },
     {
       "id": "OPS-078",
@@ -2822,7 +2823,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (absolute http(s) URL checks on website/instagram/linkedin/other): join stores trimmed text; social type=url only on other profile. Leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (absolute http(s) URL checks on website/instagram/linkedin/other): join stores trimmed text; social type=url only on other profile. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-109",
@@ -2848,7 +2849,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (connection Other → required connection_other text): industry Other is required; connection Other is not. Leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (connection Other → required connection_other text): industry Other is required; connection Other is not. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-112",
@@ -2919,7 +2920,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "/about",
-      "evidence": "Product gap (referrer required when heard=A current member): referrer is optional. Leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (referrer required when heard=A current member): referrer is optional. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-120",
@@ -2928,7 +2929,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (signature date ISO + not future UTC): date is required string only. Leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (signature date ISO + not future UTC): date is required string only. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-121",
@@ -2937,7 +2938,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (strict enumerated value checks for every legacy picklist): scrapbook options differ; server trusts parseApplication shape. Leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (strict enumerated value checks for every legacy picklist): scrapbook options differ; server trusts parseApplication shape. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-122",
@@ -2946,7 +2947,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (exact legacy connection codes/labels): scrapbook connectionOptions differ. Leave todo (with OPS-109/116/125 picklist notes). AUDIT admin-inbox remainders."
+      "evidence": "Product gap (exact legacy connection codes/labels): scrapbook connectionOptions differ. Leave todo (with OPS-109/116/125 picklist notes). AUDIT admin-inbox remainders. | Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-123",
@@ -2955,7 +2956,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (exact legacy Greenpoint/Williamsburg/… based picklist): scrapbook uses neighborhood list + Other. Leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (exact legacy Greenpoint/Williamsburg/… based picklist): scrapbook uses neighborhood list + Other. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-124",
@@ -2964,7 +2965,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "/contact",
-      "evidence": "Product gap (exact legacy industry/goal/support/contact/event counts): scrapbook lists differ. Leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (exact legacy industry/goal/support/contact/event counts): scrapbook lists differ. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-125",
@@ -2981,7 +2982,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (exact legacy heard-about 9 options): scrapbook heardOptions differ (7 + blank). Leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (exact legacy heard-about 9 options): scrapbook heardOptions differ (7 + blank). Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-127",
@@ -3000,7 +3001,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "/privacy",
-      "evidence": "Product gap (privacy disclaimer notice link on /join): scrapbook application has no privacy-notice notice link yet. Leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (privacy disclaimer notice link on /join): scrapbook application has no privacy-notice notice link yet. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-129",
@@ -3045,25 +3046,27 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (intake derived answer fields): scrapbook stores its own shape. Leave todo if import still needs them. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (intake derived answer fields): scrapbook stores its own shape. Leave todo if import still needs them. AUDIT admin-inbox remainders. | Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-134",
       "source": "backoffice.md:Business logo upload rules",
       "acceptance": "Business logo upload rules: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity",
-      "evidence": "Product gap (business logo upload on apply): not on scrapbook /join. Leave todo or account logo later. AUDIT admin-inbox remainders."
+      "status": "verified",
+      "target": "retired",
+      "evidence": "Retired with OPS-063: scrapbook /join has no business logo upload; applications POST is JSON only. Directory/business logo stays account later. | admin-inbox remainders-2 2026-11-10: logo-upload straggler.",
+      "retired": "no-join-logo-upload"
     },
     {
       "id": "OPS-135",
       "source": "backoffice.md:When a form is returned with errors, the logo has to be chosen again, and the hint text says so",
       "acceptance": "When a form is returned with errors, the logo has to be chosen again, and the hint text says so: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity",
-      "evidence": "Product gap (logo re-choose hint on error): N/A until logo upload exists. Leave todo. AUDIT admin-inbox remainders."
+      "status": "verified",
+      "target": "retired",
+      "evidence": "Retired with OPS-063/134: no logo on /join, so no re-choose-on-error hint. Other answers still redisplay via controlled React state. | admin-inbox remainders-2 2026-11-10: logo-hint straggler.",
+      "retired": "no-join-logo-upload"
     },
     {
       "id": "OPS-136",
@@ -3082,7 +3085,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (tracked ?src=/form-src on join): leave todo with OPS-023. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (tracked ?src=/form-src on join): leave todo with OPS-023. AUDIT admin-inbox remainders. | Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-138",
@@ -3109,7 +3112,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Open/close for custom forms is built (CRM-100); this intake FORMS_STATE join close switch still open with members-links OPS-081. Leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Open/close for custom forms is built (CRM-100); this intake FORMS_STATE join close switch still open with members-links OPS-081. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-141",
@@ -3217,7 +3220,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (Coffee-with literal Yes/No + reel URL): scrapbook coffee radio uses longer labels; no reel field. Leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (Coffee-with literal Yes/No + reel URL): scrapbook coffee radio uses longer labels; no reel field. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-153",
@@ -3680,7 +3683,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (full Classic question-type catalogue): minimal editor/engine subset only; custom-forms-owned. Leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (full Classic question-type catalogue): minimal editor/engine subset only; custom-forms-owned. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-202",
@@ -3726,7 +3729,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (required checks from published HTML): /f/* uses checkQuestions keys; custom-forms-owned. Leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (required checks from published HTML): /f/* uses checkQuestions keys; custom-forms-owned. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-207",
@@ -3762,7 +3765,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (custom-form-only refusals): custom-forms-owned. Leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (custom-form-only refusals): custom-forms-owned. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-211",
@@ -3779,7 +3782,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (ranking questions): custom-forms-owned. Leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (ranking questions): custom-forms-owned. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-213",
@@ -3788,7 +3791,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (grid questions): custom-forms-owned. Leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (grid questions): custom-forms-owned. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-214",
@@ -3797,7 +3800,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (US address questions): custom-forms-owned. Leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (US address questions): custom-forms-owned. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-215",
@@ -3814,7 +3817,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (custom-form file uploads): custom-forms-owned (CRM-095). Leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (custom-form file uploads): custom-forms-owned (CRM-095). Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-217",
@@ -3823,7 +3826,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (photo metadata strip on form uploads): custom-forms-owned. Leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (photo metadata strip on form uploads): custom-forms-owned. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-218",
@@ -3832,7 +3835,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (form upload storage layout): custom-forms-owned. Leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (form upload storage layout): custom-forms-owned. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-219",
@@ -3841,7 +3844,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (form upload disk guards): custom-forms-owned. Leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (form upload disk guards): custom-forms-owned. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-220",
@@ -3850,16 +3853,17 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (multipart concurrency semaphore): JSON body routes; file product gap custom-forms-owned. Leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (multipart concurrency semaphore): JSON body routes; file product gap custom-forms-owned. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-221",
       "source": "backoffice.md:Body size limits:",
       "acceptance": "Body size limits:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity",
-      "evidence": "Product gap (website-form body size matrix beyond checkSize caps): leave todo if multi-size matrix still desired. AUDIT admin-inbox remainders."
+      "status": "verified",
+      "target": "retired",
+      "evidence": "Retired: Classic website/custom multipart body-size matrix. Rebuild uses per-route checkSize before read (contact/partnership 16 KiB OPS-062, applications/forms 64 KiB, review/spotlight 32 KiB). File multipart caps wait on custom-forms CRM-095 when uploads ship. | admin-inbox remainders-2 2026-11-10: Classic size-matrix straggler.",
+      "retired": "server-enforced-limits"
     },
     {
       "id": "OPS-222",
@@ -3877,7 +3881,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (files[] answer shape): custom-forms-owned. Leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (files[] answer shape): custom-forms-owned. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-224",
@@ -4001,7 +4005,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (condition operators): custom-forms show/hide (CRM-107). Leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (condition operators): custom-forms show/hide (CRM-107). Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-237",
@@ -4010,7 +4014,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (jumps and totals): custom-forms-owned. Leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (jumps and totals): custom-forms-owned. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-238",
@@ -4019,7 +4023,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (which logic rules a post gets): custom-forms-owned. Leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (which logic rules a post gets): custom-forms-owned. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-239",
@@ -4158,7 +4162,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (last-place / capacity race): custom-forms places/funnel. Leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (last-place / capacity race): custom-forms places/funnel. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-254",
@@ -4354,9 +4358,9 @@
       "source": "backoffice.md:Redirects:",
       "acceptance": "Redirects:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity",
-      "evidence": "Redirects map / cutover: vps-cutover-owned. Leave todo. AUDIT admin-inbox remainders."
+      "status": "verified",
+      "target": "vps:caddy-redirects",
+      "evidence": "Redirects map live via migration/redirects.md + migration/caddy-twc-redirects.caddy (twc_apex_cutover): /apply→new.*/join (SITE-164), login/forgot/set-password→/auth and /members→/members (SITE-106), thank-you GETs→/contact|/partnerships (OPS-415); smoke-cutover ok. Old Caddy members→/ and apply→join.* hops superseded. | admin-inbox remainders-2 2026-11-10: flipped after vps-cutover remainders verified the cutover map."
     },
     {
       "id": "OPS-275",
@@ -4383,7 +4387,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Apex routing map: vps-cutover-owned. Leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Apex routing map: vps-cutover-owned. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-278",
@@ -4991,9 +4995,10 @@
       "source": "backoffice.md:Validation reported to the client as one list (build.mjs:153-182).",
       "acceptance": "Validation reported to the client as one list (build.mjs:153-182).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity",
-      "evidence": "Product gap (published events client validation list): admin events exist; full build.mjs rule list not claimed. Leave todo. AUDIT admin-inbox remainders."
+      "status": "verified",
+      "target": "retired",
+      "evidence": "Retired: Notion build.mjs published-events/partners client validation list. Notion site build retired (OPS-341–348, SITE-031/032/db-upcoming-only); /gatherings is SQLite admin events, not Notion. | admin-inbox remainders-2 2026-11-10: Notion validation straggler.",
+      "retired": "no-notion-mirror"
     },
     {
       "id": "OPS-341",
@@ -6007,9 +6012,9 @@
       "source": "ops-part-d.md:Repeat suppression.",
       "acceptance": "Repeat suppression.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity",
-      "evidence": "Product gap (Beehiiv repeat-suppression SHA window): subscribeIfConsented is consent + not-already-in-table; notifications-owned polish. Leave todo. AUDIT admin-inbox remainders."
+      "status": "verified",
+      "target": "/join",
+      "evidence": "Repeat suppression rebuilt as subscribeIfConsented (src/server/beehiiv.ts): claim newsletter_subscribers before Beehiiv call (on conflict do nothing); never re-sends an address already in the table; reactivate_existing:false. Replaces Classic 24h SHA done-window (OPS-521). beehiiv.test + OPS-450/520/521 verified. | admin-inbox remainders-2 2026-11-10: flipped after notifications remainders verified the consent/table gate."
     },
     {
       "id": "OPS-448",
@@ -6447,7 +6452,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "/privacy",
-      "evidence": "Product gap (funnel sent counts + DNT): custom-forms/notifications. Leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (funnel sent counts + DNT): custom-forms/notifications. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-493",
@@ -6611,18 +6616,20 @@
       "source": "ops-part-d.md:Run flow and flags.",
       "acceptance": "Run flow and flags.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity",
-      "evidence": "Product gap (finish-later / confirmation job flags): notifications-owned. Leave todo. AUDIT admin-inbox remainders."
+      "status": "verified",
+      "target": "retired",
+      "evidence": "Retired: notify-confirmations.py --dry-run/--root job flags. Confirmations send in-request after store (OPS-506/507 sync-confirm); no host confirmation runner or state file. | admin-inbox remainders-2 2026-11-10: confirmation-job straggler after notifications remainders.",
+      "retired": "sync-confirm"
     },
     {
       "id": "OPS-511",
       "source": "ops-part-d.md:Limits are shared.",
       "acceptance": "Limits are shared.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity",
-      "evidence": "Product gap (shared confirmation send caps): notifications-owned. Leave todo. AUDIT admin-inbox remainders."
+      "status": "verified",
+      "target": "retired",
+      "evidence": "Retired: shared 10/run and 30/hour confirmation job caps. In-request confirmSubmitter has no shared host-job budget; finish-later caps stay with OPS-514/515 when resume ships. | admin-inbox remainders-2 2026-11-10: confirmation-caps straggler after notifications remainders.",
+      "retired": "sync-confirm"
     },
     {
       "id": "OPS-512",
@@ -6658,7 +6665,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity",
-      "evidence": "Product gap (finish-later at-most-once): notifications-owned. Leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (finish-later at-most-once): notifications-owned. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "OPS-516",
@@ -7094,7 +7101,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "/contact",
-      "evidence": "Product gap (exact Classic contact sidebar copy / What happens next): /contact has reporting + FAQ asides, different words. Leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (exact Classic contact sidebar copy / What happens next): /contact has reporting + FAQ asides, different words. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "SITE-028",
@@ -7421,7 +7428,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "/contact",
-      "evidence": "Product gap (live n/max counters + old min lengths 10/20 and max 1200/600): server max is LIMITS.message 5000; no live counters. Leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (live n/max counters + old min lengths 10/20 and max 1200/600): server max is LIMITS.message 5000; no live counters. Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "SITE-063",
@@ -7449,7 +7456,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "public-site",
-      "evidence": "Product gap (prefill from ?src= / query keys on contact): leave todo. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (prefill from ?src= / query keys on contact): leave todo. AUDIT admin-inbox remainders. | Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "SITE-066",
@@ -7504,7 +7511,7 @@
       "owner": "admin-inbox",
       "status": "todo",
       "target": "/404",
-      "evidence": "Product gap (no-JS POST degrade for contact): SPA needs JS; native required still on controls. Leave todo or accept SPA. AUDIT admin-inbox remainders."
+      "evidence": "Product gap (no-JS POST degrade for contact): SPA needs JS; native required still on controls. Leave todo or accept SPA. AUDIT admin-inbox remainders. | Genuine product gap — leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
     },
     {
       "id": "SITE-072",
