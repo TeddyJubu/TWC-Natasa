@@ -102,8 +102,10 @@
       "source": "crm.md:**Unknown `/api/*` is a JSON 404**, never the app page",
       "acceptance": "**Unknown `/api/*` is a JSON 404**, never the app page: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/404"
+      "status": "built",
+      "target": "retired",
+      "retired": "json-api-404",
+      "evidence": "Retired as old CRM apinotfound: unknown /api/* is JSON 404 via src/routes/api/$.ts splat calling apiNotFound() (src/server/api-notfound.ts); listed body routes and /api/auth/* win. Response.json({ error: \"Not found\" }, 404); Cache-Control no-store. Evidence: src/app/api-notfound.test.ts."
     },
     {
       "id": "CRM-011",
@@ -266,8 +268,10 @@
       "source": "crm.md:Seven item kinds",
       "acceptance": "Seven item kinds: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin#members"
+      "status": "built",
+      "target": "retired",
+      "retired": "separate-admin-cards",
+      "evidence": "Retired: seven unified item kinds. Rebuild stores applications, inbox_messages (contact/partnership), newsletter_subscribers, member_reviews, spotlight_answers, custom_form_responses in their own tables; /admin has one card per queue — no items table or kind enum."
     },
     {
       "id": "CRM-028",
@@ -336,8 +340,10 @@
       "source": "crm.md:Site-form submissions → items",
       "acceptance": "Site-form submissions → items: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin#members"
+      "status": "built",
+      "target": "retired",
+      "retired": "direct-inbox-tables",
+      "evidence": "Retired: site-form submissions mirrored into unified items. /api/contact and /api/partnerships insert inbox_messages directly (receiveMessage); newsletter goes to newsletter_subscribers via subscribeIfConsented / import — no ingest→items pipeline or definitionLookup labels."
     },
     {
       "id": "CRM-036",
@@ -370,8 +376,10 @@
       "source": "crm.md:\"Same person\" aliases applied at mirror time",
       "acceptance": "\"Same person\" aliases applied at mirror time: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "no-alias-graph",
+      "evidence": "Retired: same-person aliases applied at mirror time. Merge/aliases (CRM-074–079) stay out of scope; no aliases table; import and inbox keep the email as submitted. Duplicate detection is email-only on pending applications (CRM-072/073)."
     },
     {
       "id": "CRM-040",
@@ -405,24 +413,30 @@
       "source": "crm.md:Event types",
       "acceptance": "Event types: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "admin-action-logs",
+      "evidence": "Retired: CRM unified append-only events table (status/comment/spam/merge/…). Rebuild uses admin_actions (0007, in-app decisions) and logged_action_events (0009, outside-app logged actions); no shared events stream or spam/merge/hold event types."
     },
     {
       "id": "CRM-044",
       "source": "crm.md:DB file hygiene",
       "acceptance": "DB file hygiene: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "sqlite-data-dir",
+      "evidence": "Retired: CRM chmod-600 + temp-file+rename JSON hand-offs. App SQLite lives under DATA_DIR/twc.db (openDb); uploads under DATA_DIR/uploads; no JSONL mirror files; secrets stay in process.env server modules and are never logged."
     },
     {
       "id": "CRM-045",
       "source": "crm.md:Incoming rows are untrusted",
       "acceptance": "Incoming rows are untrusted: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "typed-imports-sqlite",
+      "evidence": "Retired: untrusted JSONL mirror hygiene. One-shot imports (scripts/import-legacy.ts readRows; forms import) skip unparseable lines; live writes are typed POST bodies with size/rate checks before read — SQLite rows are the source of truth, not a remirror."
     },
     {
       "id": "CRM-046",
@@ -453,16 +467,20 @@
       "source": "crm.md:Items list API",
       "acceptance": "Items list API: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "admin-server-fns",
+      "evidence": "Retired: GET /api/items?view=attention|all|spam. /admin loads each queue through requireAdmin server functions (adminInboxFn, adminApplicationsFn, …) and client filters; no unified items list API."
     },
     {
       "id": "CRM-050",
       "source": "crm.md:Counts API",
       "acceptance": "Counts API: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "card-subtitles",
+      "evidence": "Retired: GET /api/counts attention/spam/per-kind badges. Card subtitles count waiting/pending/duplicates from the loaded lists; no spam count (spam deferred)."
     },
     {
       "id": "CRM-051",
@@ -579,16 +597,18 @@
       "source": "crm.md:Inbox page",
       "acceptance": "Inbox page: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "Inbox card: Needs attention = status=new (default); Archived filter lists status=archived; page search (CRM-041); Archive on new rows only (adminInbox returns both; panels.tsx InboxPanel; admin-route.test.tsx, policy.test.ts). Day-to-day triage without Classic Everything/Spam/peek — those deliberately not ported (spam still deferred; no peek panel / keyboard nav)."
     },
     {
       "id": "CRM-064",
       "source": "crm.md:Person facts panel / item actions UI",
       "acceptance": "Person facts panel / item actions UI: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "Person/item actions covered on /admin: neighborhood edit (CRM-059 setMemberNeighborhood), approve/decline/undo-decline (CRM-068/069/071), private notes (CRM-055), logged actions (CRM-057/058). Still missing: spam tag UI (CRM-047/048 deferred). No Classic PersonFacts/Spam.tsx port."
     },
     {
       "id": "CRM-065",
@@ -893,7 +913,7 @@
       "owner": "custom-forms",
       "status": "built",
       "target": "/admin#forms",
-      "evidence": "Light custom-forms overview on /admin \u203a Form responses (#forms): name, /f/<slug> link, open/closed chip, answer count, newest answer date (adminFormResponses in src/features/forms/forms.server.ts; FormResponsesPanel). Not the CRM's fixed website-form kinds (application/review/contact/\u2026) or last7/last30/schedule \u2014 those stay todo with CRM-101. tests: forms.test.ts, admin-route.test.tsx"
+      "evidence": "Light custom-forms overview on /admin › Form responses (#forms): name, /f/<slug> link, open/closed chip, answer count, newest answer date (adminFormResponses in src/features/forms/forms.server.ts; FormResponsesPanel). Not the CRM's fixed website-form kinds (application/review/contact/…) or last7/last30/schedule — those stay todo with CRM-101. tests: forms.test.ts, admin-route.test.tsx"
     },
     {
       "id": "CRM-100",
@@ -902,7 +922,7 @@
       "owner": "custom-forms",
       "status": "built",
       "target": "/admin#forms",
-      "evidence": "Open/close switch on each Form responses row (setFormOpen, requireAdmin): closing keeps /f/<slug> reachable with closed_message (openForm); optional closed-message edit \u2264 1,000 chars; opening with no message keeps the last one. No schedule / max_responses (CRM-101). Website-form kinds (application/review/contact/\u2026) not switched here. tests: forms.test.ts, policy.test.ts, admin-route.test.tsx"
+      "evidence": "Open/close switch on each Form responses row (setFormOpen, requireAdmin): closing keeps /f/<slug> reachable with closed_message (openForm); optional closed-message edit ≤ 1,000 chars; opening with no message keeps the last one. No schedule / max_responses (CRM-101). Website-form kinds (application/review/contact/…) not switched here. tests: forms.test.ts, policy.test.ts, admin-route.test.tsx"
     },
     {
       "id": "CRM-101",
@@ -1146,7 +1166,7 @@
       "owner": "custom-forms",
       "status": "built",
       "target": "/admin#forms",
-      "evidence": "Per-form Download CSV on Form responses (formResponsesCsv, requireAdmin, POST server fn \u2192 blob): Received (UTC) + question labels (duplicate wording gets (key)), choice labels, BOM/CRLF/quoted/formula guard via toCsv (CRM-130 rules). Filename <slug>-responses-<YYYY-MM-DD>.csv. No Came from / Newsletter / Notes / Held columns yet (hold/waitlist not built). tests: forms.test.ts, policy.test.ts, admin-route.test.tsx"
+      "evidence": "Per-form Download CSV on Form responses (formResponsesCsv, requireAdmin, POST server fn → blob): Received (UTC) + question labels (duplicate wording gets (key)), choice labels, BOM/CRLF/quoted/formula guard via toCsv (CRM-130 rules). Filename <slug>-responses-<YYYY-MM-DD>.csv. No Came from / Newsletter / Notes / Held columns yet (hold/waitlist not built). tests: forms.test.ts, policy.test.ts, admin-route.test.tsx"
     },
     {
       "id": "CRM-131",
@@ -1188,11 +1208,7 @@
       "owner": "custom-forms",
       "status": "todo",
       "target": "/admin",
-<<<<<<< HEAD
-      "evidence": "Partial: /admin › Form responses lists each form (open/closed, count) and its newest 100 answers with labels. Not yet: filters, columns, Summary, Hold, delete, CSV."
-=======
-      "evidence": "Partial: /admin \u203a Form responses lists each form (open/closed, count, newest date) and its newest 100 answers with labels; open/close + closed message (CRM-100) and per-form CSV (CRM-130) are built. Not yet: filters, column picker, Summary, Hold, delete-for-good."
->>>>>>> t3/custom-forms-followup-phase-one
+      "evidence": "Partial: /admin › Form responses lists each form (open/closed, count, newest date) and its newest 100 answers with labels; open/close + closed message (CRM-100) and per-form CSV (CRM-130) are built. Not yet: filters, column picker, Summary, Hold, delete-for-good."
     },
     {
       "id": "CRM-136",
@@ -3738,7 +3754,7 @@
       "acceptance": "Contact and partnership alerts to the team: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "built",
-      "evidence": "src/features/contact/contact.server.ts receiveMessage \u2192 notifyAdmins for contact + partnership; contact.test.ts emails every admin, honeypot sends nothing, mail failure still 204",
+      "evidence": "src/features/contact/contact.server.ts receiveMessage → notifyAdmins for contact + partnership; contact.test.ts emails every admin, honeypot sends nothing, mail failure still 204",
       "target": "/contact"
     },
     {
@@ -4594,7 +4610,7 @@
       "acceptance": "Shared sender (`notify-applications.send`, lines 93-130).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "built",
-      "evidence": "Shared admin sender is notifyAdmins() \u2192 sendEmail() in src/server/notify.ts / email.ts; used by contact, partnership, application, review, Spotlight alerts",
+      "evidence": "Shared admin sender is notifyAdmins() → sendEmail() in src/server/notify.ts / email.ts; used by contact, partnership, application, review, Spotlight alerts",
       "target": "/join"
     },
     {
@@ -4620,7 +4636,7 @@
       "acceptance": "`notify-messages.py` (contact and partnership alerts).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "built",
-      "evidence": "Same as OPS-257: contact.server.ts receiveMessage + notifyAdmins; partnership subjects Partnership inquiry: <type> \u2014 <name>",
+      "evidence": "Same as OPS-257: contact.server.ts receiveMessage + notifyAdmins; partnership subjects Partnership inquiry: <type> — <name>",
       "target": "/contact"
     },
     {

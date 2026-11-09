@@ -40,7 +40,7 @@ export const adminEventsQuery = queryOptions({
   queryFn: () => adminEventsFn(),
 });
 
-/** Contact messages and partnership inquiries still waiting, newest first. */
+/** Contact messages and partnership inquiries (new and archived), newest first; the card filters by status. */
 export const adminInboxQuery = queryOptions({
   queryKey: ["admin", "inbox"],
   queryFn: () => adminInboxFn(),

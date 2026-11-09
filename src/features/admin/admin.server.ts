@@ -269,13 +269,13 @@ export type InboxMessage = {
   collaboration_type: string | null; message: string; status: "new" | "archived"; created_at: string;
 };
 
-/** Messages still waiting (status new), newest first. Archived ones stay in the table, out of the list. */
+/** Every contact / partnership message (new and archived), newest first. The Inbox card filters to Needs attention or Archived. */
 export function adminInbox({ db, actor }: Ctx): InboxMessage[] {
   requireAdmin(db, actor);
-  return db.prepare("select * from inbox_messages where status = 'new' order by created_at desc, rowid desc").all() as InboxMessage[];
+  return db.prepare("select * from inbox_messages order by created_at desc, rowid desc").all() as InboxMessage[];
 }
 
-// ponytail: archive only; add an "Archived" view + restore when admins ask for one.
+/** Marks a message archived (CRM-091). No restore yet — the Archived filter is read-only. */
 export function archiveMessage({ db, actor }: Ctx, input: unknown): void {
   requireAdmin(db, actor);
   if (!isObject(input)) throw bad("message");

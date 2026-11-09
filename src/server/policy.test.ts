@@ -541,11 +541,14 @@ describe("access rules (ported from the RLS checks)", () => {
     throwsAccess(() => archiveMessage(as(who), { id: msg }));
     expect(inboxed("vi@x.test")?.status).toBe("new");
   });
-  it("admin reads waiting messages newest first, and archives one out of the list", () => {
+  it("admin reads every message newest first, and archives one out of Needs attention", () => {
     expect(adminInbox(as(A)).map((m) => m.email)).toEqual(["sly@x.test", "jo@x.test", "vi@x.test"]);
     archiveMessage(as(A), { id: adminInbox(as(A)).find((m) => m.email === "vi@x.test")!.id });
     expect(inboxed("vi@x.test")?.status).toBe("archived");
-    expect(adminInbox(as(A)).map((m) => m.email)).toEqual(["sly@x.test", "jo@x.test"]);
+    const inbox = adminInbox(as(A));
+    expect(inbox.map((m) => m.email)).toEqual(["sly@x.test", "jo@x.test", "vi@x.test"]);
+    expect(inbox.filter((m) => m.status === "new").map((m) => m.email)).toEqual(["sly@x.test", "jo@x.test"]);
+    expect(inbox.find((m) => m.email === "vi@x.test")?.status).toBe("archived");
   });
   it("admin archive refuses a malformed id", () => expect(() => archiveMessage(as(A), { id: 42 })).toThrow(/Invalid message/));
 });
