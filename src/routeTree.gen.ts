@@ -31,6 +31,7 @@ import { Route as VerifiedRouteImport } from './routes/verified'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/_admin/route'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as ApiApplicationsRouteImport } from './routes/api/applications'
+import { Route as ApiContactRouteImport } from './routes/api/contact'
 import { Route as ApiImagesRouteImport } from './routes/api/images'
 import { Route as ApiNeighborhoodLogosRouteImport } from './routes/api/neighborhood-logos'
 import { Route as MediaSplatRouteImport } from './routes/media/$'
@@ -147,6 +148,11 @@ const ApiApplicationsRoute = ApiApplicationsRouteImport.update({
   path: '/api/applications',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiContactRoute = ApiContactRouteImport.update({
+  id: '/api/contact',
+  path: '/api/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiImagesRoute = ApiImagesRouteImport.update({
   id: '/api/images',
   path: '/api/images',
@@ -204,6 +210,7 @@ export interface FileRoutesByFullPath {
   '/verified': typeof VerifiedRoute
   '/account': typeof AuthenticatedAccountRoute
   '/api/applications': typeof ApiApplicationsRoute
+  '/api/contact': typeof ApiContactRoute
   '/api/images': typeof ApiImagesRoute
   '/api/neighborhood-logos': typeof ApiNeighborhoodLogosRoute
   '/media/$': typeof MediaSplatRoute
@@ -233,6 +240,7 @@ export interface FileRoutesByTo {
   '/verified': typeof VerifiedRoute
   '/account': typeof AuthenticatedAccountRoute
   '/api/applications': typeof ApiApplicationsRoute
+  '/api/contact': typeof ApiContactRoute
   '/api/images': typeof ApiImagesRoute
   '/api/neighborhood-logos': typeof ApiNeighborhoodLogosRoute
   '/media/$': typeof MediaSplatRoute
@@ -265,6 +273,7 @@ export interface FileRoutesById {
   '/_authenticated/_admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/api/applications': typeof ApiApplicationsRoute
+  '/api/contact': typeof ApiContactRoute
   '/api/images': typeof ApiImagesRoute
   '/api/neighborhood-logos': typeof ApiNeighborhoodLogosRoute
   '/media/$': typeof MediaSplatRoute
@@ -296,6 +305,7 @@ export interface FileRouteTypes {
     | '/verified'
     | '/account'
     | '/api/applications'
+    | '/api/contact'
     | '/api/images'
     | '/api/neighborhood-logos'
     | '/media/$'
@@ -325,6 +335,7 @@ export interface FileRouteTypes {
     | '/verified'
     | '/account'
     | '/api/applications'
+    | '/api/contact'
     | '/api/images'
     | '/api/neighborhood-logos'
     | '/media/$'
@@ -356,6 +367,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_admin'
     | '/_authenticated/account'
     | '/api/applications'
+    | '/api/contact'
     | '/api/images'
     | '/api/neighborhood-logos'
     | '/media/$'
@@ -386,6 +398,7 @@ export interface RootRouteChildren {
   TypographyRoute: typeof TypographyRoute
   VerifiedRoute: typeof VerifiedRoute
   ApiApplicationsRoute: typeof ApiApplicationsRoute
+  ApiContactRoute: typeof ApiContactRoute
   ApiImagesRoute: typeof ApiImagesRoute
   ApiNeighborhoodLogosRoute: typeof ApiNeighborhoodLogosRoute
   MediaSplatRoute: typeof MediaSplatRoute
@@ -550,6 +563,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiApplicationsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/contact': {
+      id: '/api/contact'
+      path: '/api/contact'
+      fullPath: '/api/contact'
+      preLoaderRoute: typeof ApiContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/images': {
       id: '/api/images'
       path: '/api/images'
@@ -650,6 +670,7 @@ const rootRouteChildren: RootRouteChildren = {
   TypographyRoute: TypographyRoute,
   VerifiedRoute: VerifiedRoute,
   ApiApplicationsRoute: ApiApplicationsRoute,
+  ApiContactRoute: ApiContactRoute,
   ApiImagesRoute: ApiImagesRoute,
   ApiNeighborhoodLogosRoute: ApiNeighborhoodLogosRoute,
   MediaSplatRoute: MediaSplatRoute,

@@ -1,5 +1,5 @@
 /**
- * POSTs to one of our body-carrying routes (/api/images, /api/neighborhood-logos, /api/applications): FormData as
+ * POSTs to one of our body-carrying routes (/api/images, /api/neighborhood-logos, /api/applications, /api/contact): FormData as
  * multipart, anything else as JSON. Resolves the JSON result (undefined for 204); throws the server's message.
  */
 export async function postApi<T>(path: string, body: FormData | object): Promise<T> {
