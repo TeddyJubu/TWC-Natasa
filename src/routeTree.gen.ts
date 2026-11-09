@@ -34,6 +34,7 @@ import { Route as ApiApplicationsRouteImport } from './routes/api/applications'
 import { Route as ApiContactRouteImport } from './routes/api/contact'
 import { Route as ApiImagesRouteImport } from './routes/api/images'
 import { Route as ApiNeighborhoodLogosRouteImport } from './routes/api/neighborhood-logos'
+import { Route as ApiPartnershipsRouteImport } from './routes/api/partnerships'
 import { Route as MediaSplatRouteImport } from './routes/media/$'
 import { Route as MembersSlugRouteImport } from './routes/members_.$slug'
 import { Route as NeighborhoodsSlugRouteImport } from './routes/neighborhoods_.$slug'
@@ -163,6 +164,11 @@ const ApiNeighborhoodLogosRoute = ApiNeighborhoodLogosRouteImport.update({
   path: '/api/neighborhood-logos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPartnershipsRoute = ApiPartnershipsRouteImport.update({
+  id: '/api/partnerships',
+  path: '/api/partnerships',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MediaSplatRoute = MediaSplatRouteImport.update({
   id: '/media/$',
   path: '/media/$',
@@ -213,6 +219,7 @@ export interface FileRoutesByFullPath {
   '/api/contact': typeof ApiContactRoute
   '/api/images': typeof ApiImagesRoute
   '/api/neighborhood-logos': typeof ApiNeighborhoodLogosRoute
+  '/api/partnerships': typeof ApiPartnershipsRoute
   '/media/$': typeof MediaSplatRoute
   '/members/$slug': typeof MembersSlugRoute
   '/neighborhoods/$slug': typeof NeighborhoodsSlugRoute
@@ -243,6 +250,7 @@ export interface FileRoutesByTo {
   '/api/contact': typeof ApiContactRoute
   '/api/images': typeof ApiImagesRoute
   '/api/neighborhood-logos': typeof ApiNeighborhoodLogosRoute
+  '/api/partnerships': typeof ApiPartnershipsRoute
   '/media/$': typeof MediaSplatRoute
   '/members/$slug': typeof MembersSlugRoute
   '/neighborhoods/$slug': typeof NeighborhoodsSlugRoute
@@ -276,6 +284,7 @@ export interface FileRoutesById {
   '/api/contact': typeof ApiContactRoute
   '/api/images': typeof ApiImagesRoute
   '/api/neighborhood-logos': typeof ApiNeighborhoodLogosRoute
+  '/api/partnerships': typeof ApiPartnershipsRoute
   '/media/$': typeof MediaSplatRoute
   '/members_/$slug': typeof MembersSlugRoute
   '/neighborhoods_/$slug': typeof NeighborhoodsSlugRoute
@@ -308,6 +317,7 @@ export interface FileRouteTypes {
     | '/api/contact'
     | '/api/images'
     | '/api/neighborhood-logos'
+    | '/api/partnerships'
     | '/media/$'
     | '/members/$slug'
     | '/neighborhoods/$slug'
@@ -338,6 +348,7 @@ export interface FileRouteTypes {
     | '/api/contact'
     | '/api/images'
     | '/api/neighborhood-logos'
+    | '/api/partnerships'
     | '/media/$'
     | '/members/$slug'
     | '/neighborhoods/$slug'
@@ -370,6 +381,7 @@ export interface FileRouteTypes {
     | '/api/contact'
     | '/api/images'
     | '/api/neighborhood-logos'
+    | '/api/partnerships'
     | '/media/$'
     | '/members_/$slug'
     | '/neighborhoods_/$slug'
@@ -401,6 +413,7 @@ export interface RootRouteChildren {
   ApiContactRoute: typeof ApiContactRoute
   ApiImagesRoute: typeof ApiImagesRoute
   ApiNeighborhoodLogosRoute: typeof ApiNeighborhoodLogosRoute
+  ApiPartnershipsRoute: typeof ApiPartnershipsRoute
   MediaSplatRoute: typeof MediaSplatRoute
   MembersSlugRoute: typeof MembersSlugRoute
   NeighborhoodsSlugRoute: typeof NeighborhoodsSlugRoute
@@ -584,6 +597,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiNeighborhoodLogosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/partnerships': {
+      id: '/api/partnerships'
+      path: '/api/partnerships'
+      fullPath: '/api/partnerships'
+      preLoaderRoute: typeof ApiPartnershipsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/media/$': {
       id: '/media/$'
       path: '/media/$'
@@ -673,6 +693,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiContactRoute: ApiContactRoute,
   ApiImagesRoute: ApiImagesRoute,
   ApiNeighborhoodLogosRoute: ApiNeighborhoodLogosRoute,
+  ApiPartnershipsRoute: ApiPartnershipsRoute,
   MediaSplatRoute: MediaSplatRoute,
   MembersSlugRoute: MembersSlugRoute,
   NeighborhoodsSlugRoute: NeighborhoodsSlugRoute,

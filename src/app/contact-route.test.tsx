@@ -24,6 +24,7 @@ function fill() {
   type(/^email$/i, "rosa@x.test");
   fireEvent.click(screen.getByLabelText("Press"));
   type(/message/i, "Hello from Astoria.");
+  fireEvent.click(screen.getByRole("checkbox", { name: /hold these details/i }));
 }
 
 describe("/contact", () => {
@@ -55,13 +56,35 @@ describe("/contact", () => {
     expect(sendContact).not.toHaveBeenCalled();
   });
 
+  it("needs the consent box, and offers the three newer topics", () => {
+    renderWithQueries(<Page />);
+    for (const t of ["Nominating someone for Member Monday", "Accessibility", "Reporting conduct"]) expect(screen.getByLabelText(t)).toBeTruthy();
+    type(/your name/i, "Rosa Diaz");
+    type(/^email$/i, "rosa@x.test");
+    type(/message/i, "Hello.");
+    submit();
+    const box = screen.getByRole("checkbox", { name: /hold these details/i });
+    expect(box.getAttribute("aria-invalid")).toBe("true");
+    expect(document.getElementById(box.getAttribute("aria-describedby")!)?.textContent).toBe("Please tick the box so we can hold your details to reply.");
+    expect(document.activeElement).toBe(box);
+    expect(sendContact).not.toHaveBeenCalled();
+  });
+
+  it("keeps the honeypot out of the tab order and the accessibility tree", () => {
+    renderWithQueries(<Page />);
+    const trap = document.querySelector<HTMLInputElement>('input[name="honeypot"]')!;
+    expect([trap.tabIndex, trap.closest("[aria-hidden]") !== null]).toEqual([-1, true]);
+  });
+
   it("sends the message, then replaces the form with a confirmation naming their email", async () => {
     sendContact.mockResolvedValue(undefined);
     renderWithQueries(<Page />);
     fill();
     submit();
     expect(await screen.findByRole("heading", { name: "Thanks for reaching out." })).toBeTruthy();
-    expect(sendContact).toHaveBeenCalledWith({ name: "Rosa Diaz", email: "rosa@x.test", topic: "Press", message: "Hello from Astoria." });
+    expect(sendContact).toHaveBeenCalledWith({
+      name: "Rosa Diaz", email: "rosa@x.test", topic: "Press", message: "Hello from Astoria.", consent: true, honeypot: "",
+    });
     expect(screen.getByRole("status").textContent).toContain("We’ll be in touch at rosa@x.test.");
     expect(screen.queryByRole("form", { name: "Contact form" })).toBeNull();
     expectNoSkippedHeadings();

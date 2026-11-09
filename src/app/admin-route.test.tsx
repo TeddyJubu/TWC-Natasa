@@ -68,10 +68,10 @@ describe("_admin guard", () => {
 });
 
 const FETCH = Symbol("fetch");
-type AdminKey = "applications" | "members" | "neighborhoods" | "bookings" | "events";
+type AdminKey = "inbox" | "applications" | "members" | "neighborhoods" | "bookings" | "events";
 /** Seeds every admin read (empty lists, plus `members`) unless overridden; FETCH leaves that read to the queued fake results. */
 function renderAdmin(over: Partial<Record<AdminKey, unknown>> = {}, extra: [unknown[], unknown][] = []) {
-  const data: Record<AdminKey, unknown> = { applications: [], members, neighborhoods: [], bookings: [], events: [], ...over };
+  const data: Record<AdminKey, unknown> = { inbox: [], applications: [], members, neighborhoods: [], bookings: [], events: [], ...over };
   const seed = Object.entries(data).filter(([, v]) => v !== FETCH).map(([k, v]) => [["admin", k], v] as [unknown[], unknown]);
   return renderWithQueries(<Page />, [...seed, ...extra]);
 }
@@ -90,15 +90,17 @@ describe("/admin", () => {
       expect(main.contains(h1[0])).toBe(true);
     });
 
-    it("renders all five cards as anchored regions, and the sidebar marks the top one as here", () => {
+    it("renders all six cards as anchored regions, and the sidebar marks the top one as here", () => {
       renderAdmin();
-      for (const [name, id] of [["Applications", "applications"], ["All members", "members"], ["Neighborhoods", "neighborhoods"], ["Headshot bookings", "bookings"], ["Gatherings", "gatherings"]]) {
+      for (const [name, id] of [["Inbox", "inbox"], ["Applications", "applications"], ["All members", "members"], ["Neighborhoods", "neighborhoods"], ["Headshot bookings", "bookings"], ["Gatherings", "gatherings"]]) {
         expect(card(name).id).toBe(id);
       }
       const nav = screen.getAllByRole("navigation", { name: "Main" })[0];
       const link = (name: string) => within(nav).getByRole("link", { name });
+      expect(link("Inbox").getAttribute("href")).toBe("#inbox");
+      expect(link("Inbox").getAttribute("aria-current")).toBe("location");
       expect(link("Applications").getAttribute("href")).toBe("#applications");
-      expect(link("Applications").getAttribute("aria-current")).toBe("location");
+      expect(link("Applications").getAttribute("aria-current")).toBeNull();
       expect(link("Headshot bookings").getAttribute("aria-current")).toBeNull();
       // Two "Gatherings": the members' list on /account, and this card (named apart for screen readers).
       expect(link("Gatherings").getAttribute("href")).toBe("/account#gatherings");
@@ -107,6 +109,41 @@ describe("/admin", () => {
       expect(link("Profile").getAttribute("href")).toBe("/account#profile");
       expect(link("Profile").getAttribute("aria-current")).toBeNull();
       expect(screen.getByRole("button", { name: /sign out/i })).toBeTruthy();
+    });
+  });
+
+  describe("inbox", () => {
+    const msg = (id: string, over: Record<string, unknown> = {}) => ({
+      id, kind: "contact", name: "Rosa Diaz", email: "rosa@x.test", topic: "Press", business: null, collaboration_type: null,
+      message: "Line one\nLine two", status: "new", created_at: "2026-11-01T15:00:00Z", ...over,
+    });
+
+    it("lists each waiting message with its sender, what it's about and the message behind a disclosure", () => {
+      renderAdmin({ inbox: [msg("m1"), msg("m2", { kind: "partnership", name: "Ana Ruiz", email: "ana@x.test", topic: null, business: "Ruiz Bakery", collaboration_type: "supply" })] });
+      const inbox = card("Inbox");
+      expect(within(inbox).getByText(/2 waiting/)).toBeTruthy();
+      const rosa = within(inbox).getByRole("article", { name: "Rosa Diaz" });
+      expect(within(rosa).getByRole("link", { name: "rosa@x.test" }).getAttribute("href")).toBe("mailto:rosa@x.test");
+      expect(rosa.textContent).toContain("Press");
+      expect(within(rosa).getByText("Contact")).toBeTruthy();
+      expect(within(rosa).getByText("Message").closest("details")?.textContent).toContain("Line one\nLine two");
+      const ana = within(inbox).getByRole("article", { name: "Ana Ruiz" });
+      expect(ana.textContent).toContain("Partnership: Supply · Ruiz Bakery");
+      expect(within(ana).getByText("Partnership")).toBeTruthy();
+    });
+
+    it("says when nothing is waiting", () => {
+      renderAdmin();
+      expect(within(card("Inbox")).getByText("Nothing waiting.")).toBeTruthy();
+    });
+
+    it("archives a message and refetches the inbox", async () => {
+      renderAdmin({ inbox: [msg("m1")] });
+      fake.results = [null, []];
+      fireEvent.click(within(card("Inbox")).getByRole("button", { name: "Archive the message from Rosa Diaz" }));
+      await settle();
+      expect(fake.calls).toEqual([["archiveMessageFn", { id: "m1" }], ["adminInboxFn"]]);
+      await waitFor(() => expect(within(card("Inbox")).getByText("Nothing waiting.")).toBeTruthy());
     });
   });
 

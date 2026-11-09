@@ -288,6 +288,11 @@ Owner-authorized cutover of the old static site (`/opt/nbwc/site`), CRM (`crm.th
 - **Partnership inquiries (SITE-171):** store in the same inbox table as contact, with `kind` (`contact` | `partnership`) and optional `business` / `collaboration_type`; one admin inbox.
 - **Contact spam (SITE-170):** restore honeypot + consent on `/contact` (and partnership); skip Turnstile for now (CSP); keep the IP rate limit.
 - **Redirects:** both `/x` and `/x.html`; collapse `/apply` to one hop to `/join`; order rules ahead of `@nologin` (SITE-162–164).
+- **Inbox delivery (admin-inbox, SITE-169):** a stored message is success; `/api/contact` no longer answers 503 when no admin email goes out (it logs a warning), since the message waits in the `/admin` Inbox.
+- **Inbox rate limits (SITE-170):** `/api/contact` and `/api/partnerships` each have their own 5-per-IP-per-10-minutes limit, as the old forms service counted per form.
+- **Consent copy (SITE-061):** the old checkbox text, reused as-is; the field is `consent` (true, or "on" from a form post). Honeypot field is `honeypot` (the brief's contract), not the old `bot-field`.
+- **New contact topics (SITE-055):** the old labels "Nominating someone for Member Monday", "Accessibility", "Reporting conduct", before "Something else"; stored as the label.
+- **Inbox scope:** archive only (no restore or archived view yet); CRM views, search, spam and notes (CRM-063/064) stay `todo`.
 
 ### Progress
 

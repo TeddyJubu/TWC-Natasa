@@ -26,6 +26,7 @@ const MY_ACCOUNT: NavItem[] = [
   { label: "Headshot session", icon: "camera", to: "/account", hash: "headshot" },
 ];
 const ADMIN: NavItem[] = [
+  { label: "Inbox", icon: "mail", to: "/admin", hash: "inbox" },
   { label: "Applications", icon: "notebook-pen", to: "/admin", hash: "applications" },
   { label: "All members", icon: "badge-check", to: "/admin", hash: "members" },
   { label: "Neighborhoods", icon: "map-pin", to: "/admin", hash: "neighborhoods" },

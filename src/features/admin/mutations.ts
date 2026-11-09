@@ -6,7 +6,7 @@ import { checkLogo, validateNeighborhood } from "./format";
 import { emailApproval, type ApprovalNotice } from "./approval-email";
 import { postApi } from "@/app/api";
 import {
-  createEventFn, createNeighborhoodFn, deleteEventFn, reviewApplicationFn, setBookingStatusFn, setMemberStatusFn, updateEventFn,
+  archiveMessageFn, createEventFn, createNeighborhoodFn, deleteEventFn, reviewApplicationFn, setBookingStatusFn, setMemberStatusFn, updateEventFn,
   updateNeighborhoodFn,
 } from "./fns";
 
@@ -153,6 +153,11 @@ export const deleteEventMutation = (qc: QueryClient) => ({
   onSuccess: () => invalidate(qc, EVENT_KEYS),
 });
 
+export const archiveMessageMutation = (qc: QueryClient) => ({
+  mutationFn: (id: string) => archiveMessageFn({ data: { id } }),
+  onSuccess: () => invalidate(qc, [["admin", "inbox"]]),
+});
+
 export const useReviewApplication = () => useMutation(reviewApplicationMutation(useQueryClient()));
 export const useSetMemberStatus = () => useMutation(setMemberStatusMutation(useQueryClient()));
 export const useSetBookingStatus = () => useMutation(setBookingStatusMutation(useQueryClient()));
@@ -160,3 +165,4 @@ export const useCreateNeighborhood = () => useMutation(createNeighborhoodMutatio
 export const useUpdateNeighborhood = () => useMutation(updateNeighborhoodMutation(useQueryClient()));
 export const useSaveEvent = () => useMutation(saveEventMutation(useQueryClient()));
 export const useDeleteEvent = () => useMutation(deleteEventMutation(useQueryClient()));
+export const useArchiveMessage = () => useMutation(archiveMessageMutation(useQueryClient()));

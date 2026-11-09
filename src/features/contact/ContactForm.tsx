@@ -1,13 +1,14 @@
 // The /contact form: inline errors from the shared check, then POST /api/contact; on success a confirmation
-// replaces the form.
+// replaces the form. A hidden honeypot field travels with the message; the server ignores anything it fills.
 import { useRef, useState, type FormEvent } from "react";
+import { Link } from "@tanstack/react-router";
 import { Icon } from "@/app/layout/twc";
-import { sendContact } from "./mutations";
-import { checkContact, LIMITS, TOPICS, type ContactErrors, type ContactField, type ContactInput } from "./schema";
+import { sendContact, type ContactMessage } from "./mutations";
+import { checkContact, LIMITS, TOPICS, type ContactErrors, type ContactField } from "./schema";
 
-const FIELDS: ContactField[] = ["name", "email", "topic", "message"];
+const FIELDS: ContactField[] = ["name", "email", "topic", "message", "consent"];
 
-export function ContactForm({ send = sendContact }: { send?: (input: ContactInput) => Promise<void> }) {
+export function ContactForm({ send = sendContact }: { send?: (input: ContactMessage) => Promise<void> }) {
   const [errors, setErrors] = useState<ContactErrors>({});
   const [failure, setFailure] = useState<string | null>(null);
   const [sentTo, setSentTo] = useState<string | null>(null);
@@ -17,7 +18,8 @@ export function ContactForm({ send = sendContact }: { send?: (input: ContactInpu
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const checked = checkContact(Object.fromEntries(new FormData(event.currentTarget)));
+    const data = new FormData(event.currentTarget);
+    const checked = checkContact(Object.fromEntries(data));
     setFailure(null);
     if ("errors" in checked) {
       setErrors(checked.errors);
@@ -28,7 +30,7 @@ export function ContactForm({ send = sendContact }: { send?: (input: ContactInpu
     setErrors({});
     setSending(true);
     try {
-      await send(checked.value);
+      await send({ ...checked.value, honeypot: String(data.get("honeypot") ?? "") });
       setSentTo(checked.value.email);
       // The form (and its focused button) is gone: move focus to the confirmation so it is announced.
       requestAnimationFrame(() => thanks.current?.focus());
@@ -58,7 +60,7 @@ export function ContactForm({ send = sendContact }: { send?: (input: ContactInpu
       onSubmit={submit}
       noValidate
       aria-label="Contact form"
-      className="flex flex-col gap-6 rounded-md bg-sb-paper p-5 shadow-[0_10px_28px_rgba(31,31,28,0.12)] sm:p-10"
+      className="relative flex flex-col gap-6 rounded-md bg-sb-paper p-5 shadow-[0_10px_28px_rgba(31,31,28,0.12)] sm:p-10"
     >
       <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-5">
         <div className="twc-field">
@@ -91,6 +93,20 @@ export function ContactForm({ send = sendContact }: { send?: (input: ContactInpu
           aria-invalid={errors.message ? true : undefined} aria-describedby={describe("message")} />
         {error("message")}
       </div>
+      <div className="twc-field">
+        <label className="twc-check">
+          <input type="checkbox" name="consent" required aria-invalid={errors.consent ? true : undefined} aria-describedby={describe("consent")} />
+          <span>
+            I’m happy for The Women’s Collective to hold these details in order to reply. Nothing is added to any mailing list.
+            See the <Link to="/privacy" className="twc-inlink">privacy policy</Link>.
+          </span>
+        </label>
+        {error("consent")}
+      </div>
+      {/* Honeypot: off-screen and out of the tab order and accessibility tree; people never fill it, bots do. */}
+      <p aria-hidden className="absolute -left-[9999px] h-px w-px overflow-hidden">
+        <label>If you can see this, leave it empty <input name="honeypot" type="text" tabIndex={-1} autoComplete="off" defaultValue="" /></label>
+      </p>
       {failure && (
         <div role="alert" className="twc-notice twc-notice--danger">
           <p className="twc-notice__title">Your message didn’t send.</p>

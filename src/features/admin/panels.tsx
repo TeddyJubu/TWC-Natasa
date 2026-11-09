@@ -1,4 +1,4 @@
-// The five /admin cards (sidebar anchors). Data and rules live in ./queries, ./mutations and ./format; these only render.
+// The six /admin cards (sidebar anchors). Data and rules live in ./queries, ./mutations and ./format; these only render.
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/index";
@@ -10,11 +10,11 @@ import { useNeighborhoods } from "@/features/neighborhoods/queries";
 import { pickerNames } from "@/features/neighborhoods/options";
 import { EVENT_KINDS, eventWhen, isoToNyLocal, kindLabel, nyLocalToISO } from "@/features/events/format";
 import {
-  adminApplicationsQuery, adminBookingsQuery, adminEventsQuery, adminMembersQuery, adminNeighborhoodsQuery,
-  type AdminApplication, type AdminBooking, type AdminEvent, type AdminMember, type AdminNeighborhood,
+  adminApplicationsQuery, adminBookingsQuery, adminEventsQuery, adminInboxQuery, adminMembersQuery, adminNeighborhoodsQuery,
+  type AdminApplication, type AdminBooking, type AdminEvent, type AdminMember, type AdminNeighborhood, type InboxMessage,
 } from "./queries";
 import {
-  LogoNotSavedError, useCreateNeighborhood, useDeleteEvent, useReviewApplication, useSaveEvent, useSetBookingStatus, useSetMemberStatus,
+  LogoNotSavedError, useArchiveMessage, useCreateNeighborhood, useDeleteEvent, useReviewApplication, useSaveEvent, useSetBookingStatus, useSetMemberStatus,
   useUpdateNeighborhood,
 } from "./mutations";
 import type { ApprovalNotice } from "./approval-email";
@@ -115,6 +115,50 @@ function Item({ headingId, title, status, details, children }: {
       </div>
       {children}
     </article>
+  );
+}
+
+// ---------- Inbox ----------
+
+export function InboxPanel() {
+  const inbox = useQuery(adminInboxQuery);
+  const list = inbox.data ?? [];
+  return (
+    <Card id="inbox" title="Inbox" subtitle={inbox.data ? `${list.length} waiting · contact messages and partnership inquiries` : "Contact messages and partnership inquiries"}>
+      <QueryGate query={inbox} what="messages">
+        {list.length === 0 ? <Empty>Nothing waiting.</Empty> : list.map((m) => <InboxRow key={m.id} message={m} />)}
+      </QueryGate>
+    </Card>
+  );
+}
+
+function InboxRow({ message: m }: { message: InboxMessage }) {
+  const archive = useArchiveMessage();
+  const about = m.kind === "contact"
+    ? m.topic
+    : [`Partnership: ${humanizeKey(m.collaboration_type ?? "other")}`, m.business].filter(Boolean).join(" · ");
+  return (
+    <Item
+      headingId={`message-${m.id}`} title={m.name} status={m.kind === "contact" ? "contact" : "partnership"}
+      details={<p className={cn(meta, "break-words")}>
+        <a className={cn("underline", ring)} href={`mailto:${m.email}`}>{m.email}</a> · {about} · Received {formatDate(m.created_at)}
+      </p>}
+    >
+      <details className="group rounded-md bg-app-sunken">
+        <summary className={cn("flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-md px-3.5 text-sm font-medium text-ink [&::-webkit-details-marker]:hidden", ring)}>
+          <Icon name="chevron-down" className="size-3.25 -rotate-90 text-app-muted transition-transform group-open:rotate-0 motion-reduce:transition-none" />
+          Message
+        </summary>
+        <p className="border-t border-app-rule px-3.5 py-3.5 text-sm break-words whitespace-pre-line text-ink">{m.message}</p>
+      </details>
+      <MutationError mutation={archive} />
+      <div>
+        <button type="button" className={secondaryButton} aria-label={`Archive the message from ${m.name}`} disabled={archive.isPending}
+          onClick={() => archive.mutate(m.id)}>
+          Archive
+        </button>
+      </div>
+    </Item>
   );
 }
 
