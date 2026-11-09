@@ -1,12 +1,14 @@
 # Redirect map — old site URLs → new app
 
 Source of truth for the `vps-cutover` workstream (SITE-100, SITE-162, SITE-164). It mirrors `OLD_TO_NEW` in
-`scripts/migration-check.ts`, which the gate reads; change both together.
+`scripts/migration-check.ts`, which the gate reads, and the Caddy rules in `migration/caddy-twc-redirects.caddy`
+(checked against this file by `src/app/cutover-redirects.test.ts`); change all three together.
 
 **Rules**
 
 - Every page is live at two URLs today because of `try_files {path} {path}.html`, so each row needs **both** the tidy path and the `.html` path. External links in emails and PDFs are more likely the `.html` form.
 - One hop, `301`, to `https://new.thewomenscollective.club{new path}`. Nothing chains through another host or another redirect.
+- Page redirects are `GET`/`HEAD` only. A `301` turns a `POST` into a `GET` and drops the body, so a form opened before the cutover (contact, newsletter, `/join`, `/review`) still posts to the old service and is stored (SITE-078/168, CRM-175).
 - Query strings are dropped (`?form=…` on the thank-you pages carried nothing the new pages use).
 - Apex `/` is **not** redirected: it stays the coming-soon page (BRIEF decision 1). `/index.html` → `/` (same page, one canonical form).
 - The legacy files are archived on the VPS, never deleted (BRIEF decision 2).
@@ -40,7 +42,10 @@ Source of truth for the `vps-cutover` workstream (SITE-100, SITE-162, SITE-164).
 | `thewomenscollective.club/apply`, `/apply.html` | `https://new.thewomenscollective.club/join` | Today it is two hops (`join.*/join` → `new.*/join`, SITE-107). Point the apex rule straight at `new.*/join`. |
 | `join.thewomenscollective.club/join` | `https://new.thewomenscollective.club/join` | Already one hop (Caddyfile `@joinform`). Keep. |
 | `join.nbwc.site`, `nbwc.site/apply`, `forms.nbwc.site` | `https://new.thewomenscollective.club/join` | Chain them straight to the new app rather than via `join.thewomenscollective.club{uri}`. |
-| `/login(.html)`, `/forgot-password(.html)`, `/set-password(.html)`, `/apply-thank-you(.html)`, `/members/*` (apex) | `/` today (`302`) | `vps-cutover` to decide: keep the `302` to `/`, or send sign-in URLs to `/auth` and `/members/*` to `/members`. Not a page decision, so left unchanged here (SITE-106). |
+| `/login(.html)`, `/forgot-password(.html)`, `/set-password(.html)` (apex) | `https://new.thewomenscollective.club/auth` (`302`) | Decided by `vps-cutover` (SITE-106): the app's sign-in has the reset link. `302` as before, so it can still change. |
+| `/members`, `/members/*` (apex) | `https://new.thewomenscollective.club/members` (`302`) | Old member pages are gone; old slugs don't match the app's `/members/:slug`, so the list page. |
+| `/apply-thank-you(.html)` (apex) | `/` (`302`, unchanged) | Sending someone who already applied to a blank form would read as "it didn't work". |
+| `members.thewomenscollective.club/join` | `https://new.thewomenscollective.club/join` | It still served the old form (BRIEF 12, OPS-007). `/join/thanks` stays on intake for stale posts. |
 
 ## Host redirects (members / admin / join / crm)
 

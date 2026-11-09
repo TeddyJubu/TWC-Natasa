@@ -1,0 +1,174 @@
+# vps-cutover — Caddy rules for /opt/nbwc/Caddyfile (TWC blocks only, BRIEF 11).
+#
+# Each (snippet) below is pasted *inline* into the named site block, at the top of that block, in
+# place of the lines it says it replaces. Don't paste the `(name) { … }` wrapper, and don't add an
+# `import` of this file: the caddy container mounts only the Caddyfile (that would mean editing a
+# non-TWC compose service). The wrappers are here so `caddy validate` and
+# src/app/cutover-redirects.test.ts can check this file against migration/redirects.md.
+# Runbook: migration/briefs/vps-cutover.md. Smoke: bun scripts/smoke-cutover.ts.
+#
+# ENABLED:   twc_apex_cutover, twc_members_cutover, twc_nbwc_cutover
+# NOT YET:   twc_forms_cutover (waits for forms-import), twc_admin_cutover / twc_crm_cutover (CRM parity)
+
+# thewomenscollective.club { … } — replaces the `@nologin`/`redir @nologin` and `@apply`/`redir @apply`
+# lines. Everything else in the block (try_files, @formpost, /f/* proxying, handle_errors) stays.
+# `redir` runs before `try_files` and `rewrite` in Caddy's directive order, so these win over the
+# old files and the @formthanks rewrite. GET/HEAD only: a stale open form that still POSTs to
+# /message-sent.html or /subscribed.html keeps reaching forms:8080 (@formpost) and is stored; its
+# 303 then comes back as a GET and lands on the new page (SITE-078/168). No `{query}` in a target,
+# so query strings are dropped (redirects.md).
+(twc_apex_cutover) {
+	@old_about {
+		method GET HEAD
+		path /about /about.html
+	}
+	redir @old_about https://new.thewomenscollective.club/about 301
+
+	@old_contact {
+		method GET HEAD
+		path /contact /contact.html /message-sent /message-sent.html /thanks-contact /thanks-contact.html /thanks-newsletter /thanks-newsletter.html /subscribed /subscribed.html
+	}
+	redir @old_contact https://new.thewomenscollective.club/contact 301
+
+	@old_directory {
+		method GET HEAD
+		path /directory /directory.html
+	}
+	redir @old_directory https://new.thewomenscollective.club/members 301
+
+	@old_events {
+		method GET HEAD
+		path /events /events.html
+	}
+	redir @old_events https://new.thewomenscollective.club/gatherings 301
+
+	@old_fellowship {
+		method GET HEAD
+		path /fellowship /fellowship.html
+	}
+	redir @old_fellowship https://new.thewomenscollective.club/fellowship 301
+
+	@old_partnerships {
+		method GET HEAD
+		path /partnerships /partnerships.html /thanks-partnership /thanks-partnership.html
+	}
+	redir @old_partnerships https://new.thewomenscollective.club/partnerships 301
+
+	@old_editing {
+		method GET HEAD
+		path /editing /editing.html
+	}
+	redir @old_editing https://new.thewomenscollective.club/account 301
+
+	@old_privacy {
+		method GET HEAD
+		path /privacy /privacy.html
+	}
+	redir @old_privacy https://new.thewomenscollective.club/privacy 301
+
+	@old_terms {
+		method GET HEAD
+		path /terms /terms.html
+	}
+	redir @old_terms https://new.thewomenscollective.club/terms 301
+
+	@old_coc {
+		method GET HEAD
+		path /code-of-conduct /code-of-conduct.html
+	}
+	redir @old_coc https://new.thewomenscollective.club/code-of-conduct 301
+
+	# Apex `/` stays the coming-soon page (BRIEF 1); /index.html is the same page, one canonical form.
+	@old_index {
+		method GET HEAD
+		path /index.html
+	}
+	redir @old_index / 301
+
+	# 404 is retired as a page: asking for it is a 404. handle_errors still renders 404.html, so the
+	# file stays in /srv (archived as a copy, like every other page).
+	@old_404 path /404 /404.html
+	error @old_404 404
+
+	# One hop to the app's form (SITE-107/164; was apex → join.* → new.*).
+	@apply path /apply /apply.html
+	redir @apply https://new.thewomenscollective.club/join 301
+
+	# SITE-106, decided here: sign-in URLs go to the app's sign-in and /members/* to the members page,
+	# instead of the coming-soon page. 302, as before, so the owner can still change her mind.
+	@signin path /login /login.html /forgot-password /forgot-password.html /set-password /set-password.html
+	redir @signin https://new.thewomenscollective.club/auth 302
+	@oldmembers path /members /members/*
+	redir @oldmembers https://new.thewomenscollective.club/members 302
+	@nologin path /apply-thank-you /apply-thank-you.html
+	redir @nologin / 302
+}
+
+# join.thewomenscollective.club, members.thewomenscollective.club { … } — replaces the `@joinform`
+# matcher and its `redir`. members.*/join also served the old form (BRIEF 12); now both hosts send
+# /join to the app. Review links keep their query (`{uri}` = path + query). GET/HEAD only (new for
+# join.* too): a 301 turns a POST into a GET and drops the answers (CRM-175), so an application or
+# review form opened before the cutover still POSTs to intake and is stored where the CRM reads it.
+# /review/thanks, /join/thanks and /spotlight stay on intake.
+(twc_members_cutover) {
+	@joinform {
+		host join.thewomenscollective.club members.thewomenscollective.club
+		method GET HEAD
+		path /join /join/
+	}
+	redir @joinform https://new.thewomenscollective.club/join 301
+
+	@review {
+		host members.thewomenscollective.club
+		method GET HEAD
+		path /review
+	}
+	redir @review https://new.thewomenscollective.club{uri} 301
+}
+
+# nbwc.site, … { … } — replaces the `@join`/`redir @join` and `@forms`/`redir @forms` lines; paste at
+# the top of the block so @review comes before `@members` (same-directive named matchers run in the
+# order written; the bare catch-all stays last). Only the join/forms/members lines change.
+(twc_nbwc_cutover) {
+	@join host join.nbwc.site forms.nbwc.site
+	redir @join https://new.thewomenscollective.club/join permanent
+
+	@review {
+		host members.nbwc.site
+		method GET HEAD
+		path /review
+	}
+	redir @review https://new.thewomenscollective.club{uri} permanent
+
+	@apply {
+		host nbwc.site www.nbwc.site
+		path /apply /apply.html
+	}
+	redir @apply https://new.thewomenscollective.club/join permanent
+}
+
+# NOT ENABLED — apex /f/* waits for forms-import (OPS-518). Only the pages the app serves:
+# /f/<slug> and /f/<slug>/thanks, path and query kept (resume links keep #resume=… across a 301).
+# GET/HEAD only, so a page opened before the switch still POSTs to forms:8080. thanks-<n>,
+# thanks-go/-waitlist, full, event.ics, places, beacon, resume, /f/media/* and /forms stay on the
+# old stack. If forms-import skipped a form, swap the regexp for `path /f/<slug> /f/<slug>/thanks …`
+# listing only the imported slugs — an unknown slug is a 404 on the app.
+(twc_forms_cutover) {
+	@forms_moved {
+		method GET HEAD
+		path_regexp ^/f/[a-z0-9-]{1,40}(/thanks)?$
+	}
+	redir @forms_moved https://new.thewomenscollective.club{uri} 301
+}
+
+# NOT ENABLED — after CRM parity (BRIEF 8): admin.thewomenscollective.club { … } becomes only this
+# (plus its header block), and intake can stop once members.* review/spotlight also have nowhere left to go.
+(twc_admin_cutover) {
+	redir https://new.thewomenscollective.club/admin 301
+}
+
+# NOT ENABLED — after CRM parity: crm.thewomenscollective.club { … } keeps `tls internal` (Cloudflare
+# "Full" to origin) and replaces `request_header`/`reverse_proxy crm:3000` with this.
+(twc_crm_cutover) {
+	redir https://new.thewomenscollective.club/admin 301
+}
