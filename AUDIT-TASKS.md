@@ -278,11 +278,22 @@ Owner-authorized cutover of the old static site (`/opt/nbwc/site`), CRM (`crm.th
 
 16. **`/f/*` custom forms keep working on the public origin** (or 301 to the new app) through cutover, including resume links already in inboxes (7-day lifetime). Not in the original archive list; required by OPS-518.
 
+### Improvisations (SITE inventory; owner said don't stop for input)
+
+- **Geography (SITE-159):** new public pages use **Western Queens** (matching the live scrapbook site). Brooklyn place names from the old HTML are dropped, not rewritten into Queens stand-ins.
+- **Partners (SITE-043/157):** no partner cards until the owner re-supplies facts; the partnerships page ships without a "current partners" block.
+- **Eligibility copy (SITE-038):** drop the placeholder eligibility lists on `/fellowship`; link to `/join` and `/faq` instead of inventing criteria.
+- **Newsletter on kept apex (SITE-160):** leave the hidden form in `index.html` as-is (decision 1); do not add a new public newsletter page until Beehiiv is wired with consent (notifications workstream). Thank-you URLs still 301 to `/contact`.
+- **`editing.html` → `/account` (SITE-172):** keep the owner's OLD_TO_NEW mapping; Notion editor content is retired.
+- **Partnership inquiries (SITE-171):** store in the same inbox table as contact, with `kind` (`contact` | `partnership`) and optional `business` / `collaboration_type`; one admin inbox.
+- **Contact spam (SITE-170):** restore honeypot + consent on `/contact` (and partnership); skip Turnstile for now (CSP); keep the IP rate limit.
+- **Redirects:** both `/x` and `/x.html`; collapse `/apply` to one hop to `/join`; order rules ahead of `@nologin` (SITE-162–164).
+
 ### Progress
 
 - [x] Inventory OPS Part D: `ops-part-d.md` OPS-393–OPS-535 (143 items); merged `fcd8af9`
 - [x] Inventory CRM: `crm.md` CRM-001–CRM-188 (188 items); Classic default; merged `ee5f5e1`
-- [ ] Inventory SITE-* (in progress)
+- [x] Inventory SITE: `site.md` SITE-001–SITE-179 (179 items); merged
 - [ ] Seed `migration/manifest.json` from all inventories
 - [ ] Workstreams built and verified (public-pages, data-import, admin-inbox, members-links, custom-forms, notifications, vps-cutover)
 - [ ] `migration:check` passes; final Haiku sweep green; live smoke; old services stopped
