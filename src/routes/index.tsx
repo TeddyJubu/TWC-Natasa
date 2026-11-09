@@ -55,7 +55,6 @@ const FAQ = [
 ];
 
 // The hero's entrance: when each piece starts, in ms after first paint.
-// TODO(human): set the order and pacing of this sequence.
 const HERO_BEATS = { headline: 250, lede: 700, cta: 850, chip: 900, polaroid: 1100, note: 1500 };
 
 /* ── shared look: one container, one rhythm, one shadow ───────────────── */
