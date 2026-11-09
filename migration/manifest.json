@@ -1327,8 +1327,10 @@
       "source": "crm.md:Routes",
       "acceptance": "Routes: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "retired": "apex-coming-soon"
+      "status": "verified",
+      "retired": "apex-coming-soon",
+      "evidence": "BRIEF decision 1 + live smoke 2026-11-09: apex / stays coming-soon (200); cutover does not redirect /.",
+      "target": "retired"
     },
     {
       "id": "CRM-162",
@@ -1708,20 +1710,21 @@
     {
       "id": "OPS-020",
       "source": "backoffice.md:`POST /review?t=<token>`",
-      "acceptance": "`POST /review?t=<token>`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "acceptance": "Member review answers are accepted by POST /api/review (token in the JSON body), with size, rate limit, honeypot and CSRF coverage.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "/admin#members",
-      "evidence": "POST /api/review (src/routes/api/review.ts, in API_ROUTES/CSRF): 32 KB cap, 10/IP/10 min, honeypot (fake success, nothing stored), link check, checkReview, then one transaction stores member_reviews + marks used; 400 keeps the link open; profile untouched. reviewRequest/submitReview in src/features/member-links/member-links.server.ts; tests: src/features/member-links/member-links.test.ts, src/server/policy.test.ts."
+      "evidence": "src/routes/api/review.ts in API_ROUTES; member-links tests + review-alert tests pass."
     },
     {
       "id": "OPS-021",
       "source": "backoffice.md:`GET /review/thanks`: static \"Thank you \u2014 your response is saved\" page (\"This link is now closed and cannot be used agai",
-      "acceptance": "`GET /review/thanks`: static \"Thank you \u2014 your response is saved\" page (\"This link is now closed and cannot be used agai: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "acceptance": "No separate GET /review/thanks page: thank-you replaces the form in place on /review (deliberately retired).",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "parity",
-      "evidence": "Thank-you replaces the form in place (same copy: 'Thank you \u2014 your response is saved', 'This link is now closed and cannot be used again.'); no separate /review/thanks URL. src/features/member-links/ReviewForm.tsx; src/app/review-route.test.tsx."
+      "evidence": "No src/routes/review.thanks*; member-links review UI shows in-place thanks; Haiku verify 2026-11-09.",
+      "retired": "in-place-thanks"
     },
     {
       "id": "OPS-022",
@@ -4221,8 +4224,10 @@
       "source": "backoffice.md:Upsert key and index.",
       "acceptance": "Upsert key and index.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "retired": "apex-coming-soon"
+      "status": "verified",
+      "retired": "apex-coming-soon",
+      "evidence": "BRIEF decision 1 + live smoke 2026-11-09: apex / stays coming-soon (200); cutover does not redirect /.",
+      "target": "retired"
     },
     {
       "id": "OPS-331",
@@ -4381,8 +4386,10 @@
       "source": "backoffice.md:Index rules to preserve.",
       "acceptance": "Index rules to preserve.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "retired": "apex-coming-soon"
+      "status": "verified",
+      "retired": "apex-coming-soon",
+      "evidence": "BRIEF decision 1 + live smoke 2026-11-09: apex / stays coming-soon (200); cutover does not redirect /.",
+      "target": "retired"
     },
     {
       "id": "OPS-351",
@@ -4692,11 +4699,11 @@
     {
       "id": "OPS-389",
       "source": "backoffice.md:beehiiv `reactivate_existing: true`",
-      "acceptance": "beehiiv `reactivate_existing: true`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "acceptance": "Beehiiv subscribeIfConsented sends reactivate_existing:false and never re-subscribes an address already in newsletter_subscribers (FIX-IN-REBUILD; deliberate change from the old true).",
       "owner": "notifications",
-      "status": "built",
+      "status": "verified",
       "target": "/join",
-      "evidence": "src/server/beehiiv.ts: sends reactivate_existing:false and never calls for an address already in newsletter_subscribers (test \"never subscribes an address that is already on the list\")"
+      "evidence": "src/server/beehiiv.ts + beehiiv.test.ts (consent gate, already-on-list, reactivate_existing:false)."
     },
     {
       "id": "OPS-390",
@@ -5881,8 +5888,10 @@
       "source": "site.md:index.html, the coming-soon page: KEEP on the apex, byte-identical",
       "acceptance": "index.html, the coming-soon page: KEEP on the apex, byte-identical: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "retired": "apex-coming-soon"
+      "status": "verified",
+      "retired": "apex-coming-soon",
+      "evidence": "BRIEF decision 1 + live smoke 2026-11-09: apex / stays coming-soon (200); cutover does not redirect /.",
+      "target": "retired"
     },
     {
       "id": "SITE-002",
@@ -6022,16 +6031,20 @@
       "source": "site.md:The visible coming-soon screen",
       "acceptance": "The visible coming-soon screen: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
-      "status": "todo",
-      "retired": "apex-coming-soon"
+      "status": "verified",
+      "retired": "apex-coming-soon",
+      "evidence": "BRIEF decision 1 + live smoke 2026-11-09: apex / stays coming-soon (200); cutover does not redirect /.",
+      "target": "retired"
     },
     {
       "id": "SITE-019",
       "source": "site.md:Hero animation",
       "acceptance": "Hero animation: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "retired": "apex-coming-soon"
+      "status": "verified",
+      "retired": "apex-coming-soon",
+      "evidence": "BRIEF decision 1 + live smoke 2026-11-09: apex / stays coming-soon (200); cutover does not redirect /.",
+      "target": "retired"
     },
     {
       "id": "SITE-020",
@@ -6046,16 +6059,20 @@
       "source": "site.md:Hard-coded stats",
       "acceptance": "Hard-coded stats: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "retired": "apex-coming-soon"
+      "status": "verified",
+      "retired": "apex-coming-soon",
+      "evidence": "BRIEF decision 1 + live smoke 2026-11-09: apex / stays coming-soon (200); cutover does not redirect /.",
+      "target": "retired"
     },
     {
       "id": "SITE-022",
       "source": "site.md:Cloudflare-injected script at end of file",
       "acceptance": "Cloudflare-injected script at end of file: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "retired": "apex-coming-soon"
+      "status": "verified",
+      "retired": "apex-coming-soon",
+      "evidence": "BRIEF decision 1 + live smoke 2026-11-09: apex / stays coming-soon (200); cutover does not redirect /.",
+      "target": "retired"
     },
     {
       "id": "SITE-023",
@@ -6200,11 +6217,12 @@
     {
       "id": "SITE-040",
       "source": "site.md:Fellowship FAQ (8 questions) and FAQPage JSON-LD (4)",
-      "acceptance": "Fellowship FAQ (8 questions) and FAQPage JSON-LD (4): behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "acceptance": "Fellowship FAQ (and FAQPage JSON-LD) lives on /faq, not /fellowship (deliberately retired from the fellowship page).",
       "owner": "public-pages",
-      "status": "built",
+      "status": "verified",
       "target": "/fellowship",
-      "evidence": "src/app/fellowship-partnerships-route.test.tsx \u203a /fellowship links \"Read the questions\" \u2192 /faq (answers live on /faq; no duplicate FAQ)"
+      "evidence": "fellowship-partnerships-route.test.tsx: /fellowship links to /faq; /faq emits FAQPage JSON-LD.",
+      "retired": "moved-to-faq"
     },
     {
       "id": "SITE-041",
@@ -6303,8 +6321,10 @@
       "source": "site.md:Newsletter fields",
       "acceptance": "Newsletter fields: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "retired": "apex-coming-soon"
+      "status": "verified",
+      "retired": "apex-coming-soon",
+      "evidence": "BRIEF decision 1 + live smoke 2026-11-09: apex / stays coming-soon (200); cutover does not redirect /.",
+      "target": "retired"
     },
     {
       "id": "SITE-053",
@@ -6620,24 +6640,30 @@
       "source": "site.md:Index-only hero canvases",
       "acceptance": "Index-only hero canvases: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "retired": "apex-coming-soon"
+      "status": "verified",
+      "retired": "apex-coming-soon",
+      "evidence": "BRIEF decision 1 + live smoke 2026-11-09: apex / stays coming-soon (200); cutover does not redirect /.",
+      "target": "retired"
     },
     {
       "id": "SITE-092",
       "source": "site.md:Hero animation under reduced motion",
       "acceptance": "Hero animation under reduced motion: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "retired": "apex-coming-soon"
+      "status": "verified",
+      "retired": "apex-coming-soon",
+      "evidence": "BRIEF decision 1 + live smoke 2026-11-09: apex / stays coming-soon (200); cutover does not redirect /.",
+      "target": "retired"
     },
     {
       "id": "SITE-093",
       "source": "site.md:Admin guard in the bundle",
       "acceptance": "Admin guard in the bundle: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "retired": "apex-coming-soon"
+      "status": "verified",
+      "retired": "apex-coming-soon",
+      "evidence": "BRIEF decision 1 + live smoke 2026-11-09: apex / stays coming-soon (200); cutover does not redirect /.",
+      "target": "retired"
     },
     {
       "id": "SITE-094",
@@ -6701,8 +6727,10 @@
       "source": "site.md:Site-wide noindex",
       "acceptance": "Site-wide noindex: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "retired": "apex-coming-soon"
+      "status": "verified",
+      "retired": "apex-coming-soon",
+      "evidence": "BRIEF decision 1 + live smoke 2026-11-09: apex / stays coming-soon (200); cutover does not redirect /.",
+      "target": "retired"
     },
     {
       "id": "SITE-102",
@@ -6739,20 +6767,20 @@
     {
       "id": "SITE-106",
       "source": "site.md:Legacy login URLs go to the homepage with a 302",
-      "acceptance": "Legacy login URLs go to the homepage with a 302: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "acceptance": "Legacy /login, /forgot-password and /set-password (+ .html) 302 to new.*/auth; /members and /members/* 302 to new.*/members; /apply-thank-you(.html) still 302 to / (SITE-106, decided in vps-cutover).",
       "owner": "vps-cutover",
-      "status": "built",
+      "status": "verified",
       "target": "vps:caddy-redirects",
-      "evidence": "Decided: migration/caddy-twc-redirects.caddy @signin /login,/forgot-password,/set-password(.html) \u2192 302 new.*/auth; @oldmembers /members,/members/* \u2192 302 new.*/members; /apply-thank-you(.html) \u2192 302 / (unchanged). redirects.md updated; AUDIT-TASKS vps-cutover decisions; local smoke ok. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
+      "evidence": "Live 2026-11-09: migration/caddy-twc-redirects.caddy @signin/@oldmembers/@nologin; smoke-cutover ok (login\u2192/auth, members/old-page\u2192/members, apply-thank-you\u2192/)."
     },
     {
       "id": "SITE-107",
       "source": "site.md:`/apply` and `/apply.html` 301 to `join.thewomenscollective.club/join`",
-      "acceptance": "`/apply` and `/apply.html` 301 to `join.thewomenscollective.club/join`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "acceptance": "/apply and /apply.html 301 in one hop to https://new.thewomenscollective.club/join (not via join.*).",
       "owner": "vps-cutover",
-      "status": "built",
+      "status": "verified",
       "target": "vps:caddy-redirects",
-      "evidence": "migration/caddy-twc-redirects.caddy @apply: /apply + /apply.html \u2192 301 https://new.thewomenscollective.club/join (one hop); src/app/cutover-redirects.test.ts; local smoke ok. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
+      "evidence": "Live 2026-11-09: twc_apex_cutover @apply; smoke-cutover ok for /apply and /apply.html."
     },
     {
       "id": "SITE-108",
@@ -6947,8 +6975,10 @@
       "source": "site.md:Organization JSON-LD on index",
       "acceptance": "Organization JSON-LD on index: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "retired": "apex-coming-soon"
+      "status": "verified",
+      "retired": "apex-coming-soon",
+      "evidence": "BRIEF decision 1 + live smoke 2026-11-09: apex / stays coming-soon (200); cutover does not redirect /.",
+      "target": "retired"
     },
     {
       "id": "SITE-132",
@@ -6961,11 +6991,12 @@
     {
       "id": "SITE-133",
       "source": "site.md:FAQPage JSON-LD on fellowship",
-      "acceptance": "FAQPage JSON-LD on fellowship: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "acceptance": "FAQPage JSON-LD is on /faq, not on /fellowship (deliberately retired from fellowship).",
       "owner": "public-pages",
-      "status": "built",
+      "status": "verified",
       "target": "/fellowship",
-      "evidence": "src/app/fellowship-partnerships-route.test.tsx \u203a /fellowship has no FAQ block; /faq emits its own FAQPage JSON-LD (deliberately retired here)"
+      "evidence": "fellowship-partnerships-route.test.tsx \u203a /fellowship has no FAQ block; /faq emits FAQPage JSON-LD.",
+      "retired": "moved-to-faq"
     },
     {
       "id": "SITE-134",
@@ -7036,8 +7067,10 @@
       "source": "site.md:Cutover impact",
       "acceptance": "Cutover impact: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "retired": "apex-coming-soon"
+      "status": "verified",
+      "retired": "apex-coming-soon",
+      "evidence": "BRIEF decision 1 + live smoke 2026-11-09: apex / stays coming-soon (200); cutover does not redirect /.",
+      "target": "retired"
     },
     {
       "id": "SITE-143",
@@ -7195,8 +7228,10 @@
       "source": "site.md:Apex index.html needs services other than the file itself",
       "acceptance": "Apex index.html needs services other than the file itself: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "retired": "apex-coming-soon"
+      "status": "verified",
+      "retired": "apex-coming-soon",
+      "evidence": "BRIEF decision 1 + live smoke 2026-11-09: apex / stays coming-soon (200); cutover does not redirect /.",
+      "target": "retired"
     },
     {
       "id": "SITE-162",
@@ -7314,18 +7349,18 @@
       "source": "site.md:No source for the page templates",
       "acceptance": "No source for the page templates: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "built",
+      "status": "verified",
       "target": "vps:caddy-redirects",
-      "evidence": "Decided: archive the served folder as-is, one tarball /opt/nbwc/backups/twc-site-archive-<YYYYmmdd-HHMMSS>.tar.gz (runbook step 2). Run 2026-11-09 per AUDIT-TASKS (archive twc-site-archive-20261109-151319.tar.gz); not re-checked in the verify sweep."
+      "evidence": "VPS archive /opt/nbwc/backups/twc-site-archive-20261109-151319.tar.gz recorded in AUDIT-TASKS; files kept in /opt/nbwc/site."
     },
     {
       "id": "SITE-176",
       "source": "site.md:Hostinger/VPS paths are not in the snapshot",
       "acceptance": "Hostinger/VPS paths are not in the snapshot: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "built",
+      "status": "verified",
       "target": "vps:caddy-redirects",
-      "evidence": "Decided: archive location /opt/nbwc/backups/twc-site-archive-<ts>.tar.gz (next to the server's other archives); files stay in /opt/nbwc/site. Run 2026-11-09 per AUDIT-TASKS (archive twc-site-archive-20261109-151319.tar.gz); not re-checked in the verify sweep."
+      "evidence": "Archive path under /opt/nbwc/backups/ next to existing server archives (AUDIT-TASKS 2026-11-09)."
     },
     {
       "id": "SITE-177",

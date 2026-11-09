@@ -6,8 +6,9 @@
  * Usage: bun run scripts/migration-check.ts
  * Exit 0 only when the gate passes.
  */
-import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 type ManifestItem = {
   id: string;
@@ -22,7 +23,7 @@ type ManifestItem = {
 
 type Manifest = { version: number; items: ManifestItem[] };
 
-const ROOT = join(import.meta.dir, "..");
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const MANIFEST_PATH = join(ROOT, "migration/manifest.json");
 const LEGACY_SITE = join(ROOT, ".migration/legacy/site");
 const ROUTES_DIR = join(ROOT, "src/routes");
@@ -31,7 +32,7 @@ const ROUTES_DIR = join(ROOT, "src/routes");
 const KEEP_ON_APEX = new Set(["index.html"]);
 
 /** Old slug → new path (or null when the page is only archived with a generic landing). */
-const OLD_TO_NEW: Record<string, string> = {
+export const OLD_TO_NEW: Record<string, string> = {
   "about.html": "/about",
   "contact.html": "/contact",
   "directory.html": "/members",
@@ -54,17 +55,48 @@ function fail(msg: string) {
   console.error(`migration-check: ${msg}`);
 }
 
-function routeExists(path: string): boolean {
-  if (path === "/404") return existsSync(join(ROUTES_DIR, "__root.tsx")); // router default
-  const clean = path.replace(/^\//, "").replace(/\/$/, "");
-  if (!clean) return existsSync(join(ROUTES_DIR, "index.tsx"));
-  const candidates = [
-    `${clean}.tsx`,
-    `${clean}/index.tsx`,
-    `${clean.replace(/\//g, ".")}.tsx`,
-    `${clean.replace(/\//g, "_")}.tsx`,
-  ];
-  return candidates.some((c) => existsSync(join(ROUTES_DIR, c)));
+/**
+ * Whether a public URL path has a TanStack file route. Layout folders (`_authenticated`,
+ * `_admin`, …) are skipped so `/account` matches `src/routes/_authenticated/account.tsx`
+ * and `/admin` matches `src/routes/_authenticated/_admin/admin.tsx`.
+ */
+export function routeExists(path: string, routesDir = ROUTES_DIR): boolean {
+  if (path === "/404") return existsSync(join(routesDir, "__root.tsx"));
+  const parts = path.replace(/^\//, "").replace(/\/$/, "").split("/").filter(Boolean);
+  if (parts.length === 0) return existsSync(join(routesDir, "index.tsx"));
+
+  const walk = (dir: string, rest: string[]): boolean => {
+    if (rest.length === 0) {
+      return (
+        existsSync(join(dir, "index.tsx")) ||
+        existsSync(join(dir, "route.tsx")) ||
+        // leaf file for the last segment already consumed by the caller
+        false
+      );
+    }
+    const [head, ...tail] = rest;
+    const leaf = join(dir, `${head}.tsx`);
+    if (tail.length === 0 && existsSync(leaf)) return true;
+    // TanStack: `members_.$slug.tsx` for `/members/:slug`
+    if (tail.length === 1) {
+      const dyn = readdirSync(dir).some(
+        (f) => f.startsWith(`${head}_.`) && f.endsWith(".tsx") && !f.includes("/"),
+      );
+      if (dyn) return true;
+    }
+    const nested = join(dir, head);
+    if (existsSync(nested) && statSync(nested).isDirectory() && walk(nested, tail)) return true;
+    // Pathless layout folders (leading `_`) wrap URL segments without appearing in the path.
+    for (const ent of readdirSync(dir)) {
+      if (!ent.startsWith("_")) continue;
+      const layout = join(dir, ent);
+      if (!statSync(layout).isDirectory()) continue;
+      if (walk(layout, rest)) return true;
+    }
+    return false;
+  };
+
+  return walk(routesDir, parts);
 }
 
 function main(): number {
@@ -151,4 +183,4 @@ function main(): number {
   return 1;
 }
 
-process.exit(main());
+if (import.meta.main) process.exit(main());
