@@ -97,6 +97,9 @@ function ProfileEditorPage({ userId, profile, avatar, logoUrl, hoodList, applied
   const [focus, setFocus] = React.useState<string | null>(null);
   const [saved, setSaved] = React.useState(false);
   const [openMember, setOpenMember] = React.useState<MemberProfile | null>(null);
+  // Cleared on unmount so a slow suite (VPS deploy) can't fire setState after jsdom is gone.
+  const savedFlash = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  React.useEffect(() => () => { if (savedFlash.current) clearTimeout(savedFlash.current); }, []);
   const card = { ...profile, ...draft };
   const approved = profile.status === "approved";
   const changes = changedFields(profile, draft);
@@ -125,7 +128,8 @@ function ProfileEditorPage({ userId, profile, avatar, logoUrl, hoodList, applied
         setDraft((d) => changedFields(next, d));
         setEditing({});
         setSaved(true);
-        setTimeout(() => setSaved(false), 2500);
+        if (savedFlash.current) clearTimeout(savedFlash.current);
+        savedFlash.current = setTimeout(() => setSaved(false), 2500);
       },
     });
   }
