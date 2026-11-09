@@ -8,10 +8,10 @@ const emailApproval = vi.hoisted(() => vi.fn(async (_id: string) => ({ sent: tru
 vi.mock("./approval-email", () => ({ emailApproval: (id: string) => emailApproval(id) }));
 
 import {
-  adminApplicationsQuery, adminBookingsQuery, adminMembersQuery, adminNeighborhoodsQuery,
+  adminApplicationsQuery, adminBookingsQuery, adminEventsQuery, adminMembersQuery, adminNeighborhoodsQuery,
 } from "./queries";
 import {
-  createNeighborhood, createNeighborhoodMutation, reviewApplicationMutation, setBookingStatusMutation,
+  createNeighborhood, createNeighborhoodMutation, deleteEventMutation, reviewApplicationMutation, saveEventMutation, setBookingStatusMutation,
   setMemberStatusMutation, updateNeighborhood, updateNeighborhoodMutation,
 } from "./mutations";
 
@@ -32,6 +32,7 @@ describe("admin queries", () => {
     expect(adminMembersQuery.queryKey).toEqual(["admin", "members"]);
     expect(adminNeighborhoodsQuery.queryKey).toEqual(["admin", "neighborhoods"]);
     expect(adminBookingsQuery.queryKey).toEqual(["admin", "bookings"]);
+    expect(adminEventsQuery.queryKey).toEqual(["admin", "events"]);
   });
 
   it.each([
@@ -39,6 +40,7 @@ describe("admin queries", () => {
     ["members", adminMembersQuery, "adminMembersFn"],
     ["neighborhoods", adminNeighborhoodsQuery, "adminNeighborhoodsFn"],
     ["bookings", adminBookingsQuery, "adminBookingsFn"],
+    ["events", adminEventsQuery, "adminEventsFn"],
   ] as const)("%s: returns the server's rows, and throws its error", async (_name, query, fn) => {
     fake.results = [[{ id: "x" }], denied];
     expect(await run(query)).toEqual([{ id: "x" }]);
@@ -93,6 +95,32 @@ describe("admin mutations", () => {
     await new MutationObserver(qc, setBookingStatusMutation(qc)).mutate({ id: "b1", status: "confirmed" });
     expect(fake.calls).toEqual([["setBookingStatusFn", { id: "b1", status: "confirmed" }]]);
     expect(keys(spy)).toEqual([["admin", "bookings"]]);
+  });
+
+  const gathering = { title: "Picnic", description: "", location: "Park", neighborhood: "Astoria", starts_at: "2026-12-05T17:00:00.000Z", kind: "gathering" };
+  const EVENT_KEYS = [["admin", "events"], ["events"], ["public-events"]];
+
+  it("saving a new gathering creates it and refreshes the admin card, members' list and public calendar", async () => {
+    const { qc, spy } = setup();
+    fake.results = ["e1"];
+    await new MutationObserver(qc, saveEventMutation(qc)).mutate(gathering);
+    expect(fake.calls).toEqual([["createEventFn", gathering]]);
+    expect(keys(spy)).toEqual(EVENT_KEYS);
+  });
+
+  it("saving with an id updates that gathering", async () => {
+    const { qc } = setup();
+    fake.results = [null];
+    await new MutationObserver(qc, saveEventMutation(qc)).mutate({ ...gathering, id: "e1" });
+    expect(fake.calls).toEqual([["updateEventFn", { id: "e1", ...gathering }]]);
+  });
+
+  it("deleting a gathering sends its id and refreshes every gathering list", async () => {
+    const { qc, spy } = setup();
+    fake.results = [null];
+    await new MutationObserver(qc, deleteEventMutation(qc)).mutate("e1");
+    expect(fake.calls).toEqual([["deleteEventFn", { id: "e1" }]]);
+    expect(keys(spy)).toEqual(EVENT_KEYS);
   });
 
   it("rejects with the server's error and invalidates nothing", async () => {

@@ -67,10 +67,10 @@ describe("_admin guard", () => {
 });
 
 const FETCH = Symbol("fetch");
-type AdminKey = "applications" | "members" | "neighborhoods" | "bookings";
+type AdminKey = "applications" | "members" | "neighborhoods" | "bookings" | "events";
 /** Seeds every admin read (empty lists, plus `members`) unless overridden; FETCH leaves that read to the queued fake results. */
 function renderAdmin(over: Partial<Record<AdminKey, unknown>> = {}, extra: [unknown[], unknown][] = []) {
-  const data: Record<AdminKey, unknown> = { applications: [], members, neighborhoods: [], bookings: [], ...over };
+  const data: Record<AdminKey, unknown> = { applications: [], members, neighborhoods: [], bookings: [], events: [], ...over };
   const seed = Object.entries(data).filter(([, v]) => v !== FETCH).map(([k, v]) => [["admin", k], v] as [unknown[], unknown]);
   return renderWithQueries(<Page />, [...seed, ...extra]);
 }
@@ -89,9 +89,9 @@ describe("/admin", () => {
       expect(main.contains(h1[0])).toBe(true);
     });
 
-    it("renders all four cards as anchored regions, and the sidebar marks the top one as here", () => {
+    it("renders all five cards as anchored regions, and the sidebar marks the top one as here", () => {
       renderAdmin();
-      for (const [name, id] of [["Applications", "applications"], ["All members", "members"], ["Neighborhoods", "neighborhoods"], ["Headshot bookings", "bookings"]]) {
+      for (const [name, id] of [["Applications", "applications"], ["All members", "members"], ["Neighborhoods", "neighborhoods"], ["Headshot bookings", "bookings"], ["Gatherings", "gatherings"]]) {
         expect(card(name).id).toBe(id);
       }
       const nav = screen.getAllByRole("navigation", { name: "Main" })[0];
@@ -99,6 +99,9 @@ describe("/admin", () => {
       expect(link("Applications").getAttribute("href")).toBe("#applications");
       expect(link("Applications").getAttribute("aria-current")).toBe("location");
       expect(link("Headshot bookings").getAttribute("aria-current")).toBeNull();
+      // Two "Gatherings": the members' list on /account, and this card (named apart for screen readers).
+      expect(link("Gatherings").getAttribute("href")).toBe("/account#gatherings");
+      expect(link("Admin Gatherings").getAttribute("href")).toBe("#gatherings");
       // The other internal page's cards are router links, never "here".
       expect(link("Profile").getAttribute("href")).toBe("/account#profile");
       expect(link("Profile").getAttribute("aria-current")).toBeNull();
@@ -307,6 +310,124 @@ describe("/admin", () => {
       fireEvent.click(screen.getByRole("button", { name: /save astoria/i }));
       await settle();
       expect(fake.calls).toEqual([]);
+    });
+  });
+
+  describe("gatherings", () => {
+    const guest = (user_id: string, full_name: string, over: Record<string, unknown> = {}) => ({
+      user_id, full_name, catalogue_number: 14, neighborhood: "Jackson Heights", email: `${user_id}@x.test`, saved_at: "2030-10-02T12:00:00Z", ...over,
+    });
+    const gathering = (id: string, title: string, over: Record<string, unknown> = {}) => ({
+      id, title, description: "Long-table dinner.", location: "Bistro on 37th Avenue", neighborhood: "Jackson Heights",
+      starts_at: "2030-11-14T23:00:00.000Z", kind: "supper", guests: [] as unknown[], ...over,
+    });
+    const supper = gathering("e1", "Founders Supper Club", { guests: [guest("u1", "Rosa Diaz"), guest("u2", "", { catalogue_number: null, neighborhood: null })] });
+    const past = gathering("e0", "Spring Picnic", { starts_at: "2020-05-01T16:00:00.000Z", kind: "gathering" });
+    const gatherings = () => card("Gatherings");
+    const field = (label: RegExp) => within(gatherings()).getByLabelText(label) as HTMLInputElement;
+    const restore: (() => void)[] = [];
+    afterEach(() => restore.splice(0).forEach((r) => r()));
+
+    it("lists upcoming gatherings in New York time with their seat counts, and folds past ones away", () => {
+      renderAdmin({ events: [past, supper] });
+      const upcoming = within(gatherings()).getByRole("table", { name: "Upcoming gatherings" });
+      const row = within(upcoming).getByRole("row", { name: /Founders Supper Club/ });
+      expect(row.textContent).toMatch(/Nov14Thu · 6:00 PM/);
+      expect(row.textContent).toMatch(/Supper · Bistro on 37th Avenue/);
+      expect(row.textContent).toMatch(/Jackson Heights/);
+      expect(within(row).getAllByRole("cell")[2].textContent).toBe("2");
+      expect(within(gatherings()).getByText("Past gatherings (1)")).toBeTruthy();
+      expect(within(gatherings()).getByRole("table", { name: "Past gatherings", hidden: true }).textContent).toMatch(/Spring Picnic/);
+    });
+
+    it("says when nothing is coming up", () => {
+      renderAdmin();
+      expect(within(gatherings()).getByText("Nothing on the calendar yet. Add the first gathering and members will see it on their account.")).toBeTruthy();
+    });
+
+    it("adds a gathering, reading the start as New York time, then refetches the list", async () => {
+      renderAdmin();
+      fireEvent.click(within(gatherings()).getByRole("button", { name: "Add a gathering" }));
+      const form = within(gatherings()).getByRole("form", { name: "Add a gathering" });
+      expect(document.activeElement).toBe(field(/title/i));
+      fireEvent.change(field(/title/i), { target: { value: " Skyline Picnic " } });
+      fireEvent.change(field(/kind/i), { target: { value: "gathering" } });
+      fireEvent.change(field(/date and start time/i), { target: { value: "2030-07-04T12:30" } });
+      fireEvent.change(field(/neighborhood/i), { target: { value: "Astoria" } });
+      fireEvent.change(field(/location/i), { target: { value: "Rainey Park" } });
+      fake.results = ["e9", [gathering("e9", "Skyline Picnic")]];
+      fireEvent.submit(form);
+      await waitFor(() => expect(fake.calls).toContainEqual(["createEventFn", {
+        title: "Skyline Picnic", kind: "gathering", starts_at: "2030-07-04T16:30:00.000Z", neighborhood: "Astoria", location: "Rainey Park", description: "",
+      }]));
+      await waitFor(() => expect(within(gatherings()).getByRole("row", { name: /Skyline Picnic/ })).toBeTruthy());
+      expect(within(gatherings()).queryByRole("form")).toBeNull();
+    });
+
+    it("won't send a gathering without a start time", async () => {
+      renderAdmin();
+      fireEvent.click(within(gatherings()).getByRole("button", { name: "Add a gathering" }));
+      fireEvent.submit(within(gatherings()).getByRole("form", { name: "Add a gathering" }));
+      expect((await within(gatherings()).findByRole("alert")).textContent).toMatch(/choose a date and start time/i);
+      expect(field(/date and start time/i).getAttribute("aria-invalid")).toBe("true");
+      expect(fake.calls).toEqual([]);
+    });
+
+    it("edits a gathering from its saved values and shows a server refusal", async () => {
+      renderAdmin({ events: [supper] });
+      fireEvent.click(within(gatherings()).getByRole("button", { name: "Edit Founders Supper Club" }));
+      const form = within(gatherings()).getByRole("form", { name: "Edit Founders Supper Club" });
+      expect(field(/date and start time/i).value).toBe("2030-11-14T18:00");
+      expect(field(/neighborhood/i).value).toBe("Jackson Heights");
+      expect(field(/kind/i).value).toBe("supper");
+      fireEvent.change(field(/location/i), { target: { value: "Bistro on 82nd Street" } });
+      fake.results = [new Error("Invalid neighborhood.")];
+      fireEvent.submit(form);
+      expect((await within(form).findByRole("alert")).textContent).toMatch(/invalid neighborhood/i);
+      expect(fake.calls).toContainEqual(["updateEventFn", expect.objectContaining({ id: "e1", location: "Bistro on 82nd Street", starts_at: "2030-11-14T23:00:00.000Z" })]);
+    });
+
+    it("deletes a gathering only after a confirmation that names its saved seats", async () => {
+      const confirm = vi.spyOn(window, "confirm").mockReturnValueOnce(false).mockReturnValueOnce(true);
+      restore.push(() => confirm.mockRestore());
+      renderAdmin({ events: [supper] });
+      fireEvent.click(within(gatherings()).getByRole("button", { name: "Edit Founders Supper Club" }));
+      const remove = within(gatherings()).getByRole("button", { name: "Delete gathering" });
+      fireEvent.click(remove);
+      expect(confirm).toHaveBeenLastCalledWith("Delete Founders Supper Club? 2 saved seats go with it.");
+      await settle();
+      expect(fake.calls).toEqual([]);
+      fake.results = [null, []];
+      fireEvent.click(remove);
+      await waitFor(() => expect(fake.calls).toContainEqual(["deleteEventFn", { id: "e1" }]));
+      await waitFor(() => expect(within(gatherings()).queryByRole("row", { name: /Founders Supper Club/ })).toBeNull());
+    });
+
+    it("says one seat in the singular", () => {
+      const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
+      restore.push(() => confirm.mockRestore());
+      renderAdmin({ events: [gathering("e2", "Coffee", { guests: [guest("u1", "Rosa Diaz")] })] });
+      fireEvent.click(within(gatherings()).getByRole("button", { name: "Edit Coffee" }));
+      fireEvent.click(within(gatherings()).getByRole("button", { name: "Delete gathering" }));
+      expect(confirm).toHaveBeenCalledWith("Delete Coffee? 1 saved seat goes with it.");
+    });
+
+    it("shows a gathering's guest list and copies their emails", async () => {
+      const writeText = vi.fn(async (_text: string) => undefined);
+      Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
+      restore.push(() => Reflect.deleteProperty(navigator, "clipboard"));
+      renderAdmin({ events: [supper] });
+      fireEvent.click(within(gatherings()).getByRole("button", { name: "Guest list for Founders Supper Club" }));
+      const list = within(gatherings()).getByRole("region", { name: "Guest list · Founders Supper Club" });
+      expect(list.textContent).toMatch(/2 members saved a seat/);
+      const guests = within(list).getAllByRole("listitem");
+      expect(guests[0].textContent).toMatch(/Rosa Diaz.*Nº 014.*Jackson Heights.*u1@x\.test/);
+      expect(guests[1].textContent).toMatch(/Unnamed member/);
+      fireEvent.click(within(list).getByRole("button", { name: "Copy emails" }));
+      expect((await within(list).findByRole("status")).textContent).toBe("Emails copied");
+      expect(writeText).toHaveBeenCalledWith("u1@x.test, u2@x.test");
+      fireEvent.click(within(list).getByRole("button", { name: /close the guest list/i }));
+      expect(within(gatherings()).queryByRole("region", { name: /guest list/i })).toBeNull();
     });
   });
 });
