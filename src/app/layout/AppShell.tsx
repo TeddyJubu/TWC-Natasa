@@ -8,7 +8,7 @@ import { ring } from "./app-classes";
 import { useSignOut } from "./sign-out";
 
 /** The internal pages: each renders `AppShell` with its own path. */
-export type ShellPage = "/account" | "/admin";
+export type ShellPage = "/account" | "/admin" | "/admin/forms";
 /** `sr` prefixes the accessible name where a label repeats in another group ("Admin Gatherings"). */
 type NavItem = { label: string; icon: IconName; to: "/" | "/members" | ShellPage; hash?: string; sr?: string };
 type NavGroup = { label: string; items: NavItem[]; fold?: boolean };
@@ -33,18 +33,20 @@ const ADMIN: NavItem[] = [
   { label: "Admin activity", icon: "notebook-pen", to: "/admin", hash: "activity" },
   { label: "Member reviews", icon: "notebook-pen", to: "/admin", hash: "reviews" },
   { label: "Spotlight answers", icon: "notebook-pen", to: "/admin", hash: "spotlight" },
-  { label: "Join & review", icon: "notebook-pen", to: "/admin", hash: "membership-forms" },
-  { label: "Form responses", icon: "notebook-pen", to: "/admin", hash: "forms" },
   { label: "Neighborhoods", icon: "map-pin", to: "/admin", hash: "neighborhoods" },
   { label: "Headshot bookings", icon: "calendar", to: "/admin", hash: "bookings" },
   { label: "Gatherings", icon: "calendar-days", to: "/admin", hash: "gatherings", sr: "Admin" },
 ];
+const FORMS: NavItem[] = [
+  { label: "Your forms", icon: "notebook-pen", to: "/admin/forms", hash: "forms" },
+  { label: "Join & review", icon: "notebook-pen", to: "/admin/forms", hash: "membership-forms" },
+];
 
-/** The Admin group only for admins; UX only, since /admin's guard and every admin server function check again. */
+/** The Admin and Forms groups only for admins; UX only, since /admin's guard and every admin server function check again. */
 const groups = (admin: boolean): NavGroup[] => [
   { label: "Collective", items: COLLECTIVE },
   { label: "My account", items: MY_ACCOUNT, fold: true },
-  ...(admin ? [{ label: "Admin", items: ADMIN, fold: true }] : []),
+  ...(admin ? [{ label: "Admin", items: ADMIN, fold: true }, { label: "Forms", items: FORMS, fold: true }] : []),
 ];
 
 /**
@@ -53,7 +55,7 @@ const groups = (admin: boolean): NavGroup[] => [
  */
 function useActiveSection(page: ShellPage) {
   // Page groups first, so the top card (Profile, Applications) is "here" before anything scrolls.
-  const anchors = [...MY_ACCOUNT, ...ADMIN, ...COLLECTIVE].filter((i) => i.to === page && i.hash).map((i) => i.hash!);
+  const anchors = [...MY_ACCOUNT, ...ADMIN, ...FORMS, ...COLLECTIVE].filter((i) => i.to === page && i.hash).map((i) => i.hash!);
   const key = anchors.join(" ");
   const [active, setActive] = React.useState(anchors[0]);
   React.useEffect(() => {

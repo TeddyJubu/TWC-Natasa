@@ -898,14 +898,14 @@ function MembershipFormRow({ state: s }: { state: AdminFormState }) {
   );
 }
 
-// ---------- Form responses (CRM-099/100/103 light + CRM-130) ----------
+// ---------- Your forms (CRM-099/100/103 light + CRM-130) ----------
 
 export function FormResponsesPanel() {
   const forms = useQuery(adminFormResponsesQuery);
   const list = forms.data ?? [];
   const total = list.reduce((n, f) => n + f.total, 0);
   return (
-    <Card id="forms" title="Form responses" subtitle={forms.data ? `${total} answers · ${list.length} forms at /f/…` : "Answers to the forms at /f/…"}>
+    <Card id="forms" title="Your forms" subtitle={forms.data ? `${total} answers · ${list.length} forms at /f/…` : "Answers to the forms at /f/…"}>
       <QueryGate query={forms} what="form responses">
         <AddCustomForm />
         {list.length === 0 ? <Empty>No forms yet. Add one above to publish at /f/…</Empty> : list.map((f) => <FormRow key={f.id} form={f} />)}

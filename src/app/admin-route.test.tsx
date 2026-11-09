@@ -17,9 +17,11 @@ vi.mock("@/features/forms-state/fns", async (orig) => (await import("@/test/fake
 
 import { Route as GuardRoute } from "@/routes/_authenticated/_admin/route";
 import { Route } from "@/routes/_authenticated/_admin/admin";
+import { Route as FormsRoute } from "@/routes/_authenticated/_admin/admin_.forms";
 
 const Page = Route.options.component as React.ComponentType;
-vi.spyOn(Route, "useRouteContext").mockReturnValue({ user: { id: "admin1", email: "natasa@x.test", name: "Natasa Admin" } } as never);
+const FormsPage = FormsRoute.options.component as React.ComponentType;
+for (const r of [Route, FormsRoute]) vi.spyOn(r, "useRouteContext").mockReturnValue({ user: { id: "admin1", email: "natasa@x.test", name: "Natasa Admin" } } as never);
 afterEach(() => {
   cleanup();
   fake.reset();
@@ -77,11 +79,12 @@ const formsState = [
   { kind: "review", open: true, message: "", updated_at: "2026-11-10T00:00:00Z", updated_by: null },
 ];
 /** Seeds every admin read (empty lists, plus `members`) unless overridden; FETCH leaves that read to the queued fake results. */
-function renderAdmin(over: Partial<Record<AdminKey, unknown>> = {}, extra: [unknown[], unknown][] = []) {
+function renderAdmin(over: Partial<Record<AdminKey, unknown>> = {}, extra: [unknown[], unknown][] = [], Component = Page) {
   const data: Record<AdminKey, unknown> = { inbox: [], applications: [], members, neighborhoods: [], bookings: [], events: [], "review-links": {}, "spotlight-links": {}, reviews: [], spotlights: [], "forms-state": formsState, "form-responses": [], notes: [], actions: [], "logged-actions": [], newsletter: [], ...over };
   const seed = Object.entries(data).filter(([, v]) => v !== FETCH).map(([k, v]) => [["admin", k], v] as [unknown[], unknown]);
-  return renderWithQueries(<Page />, [...seed, ...extra]);
+  return renderWithQueries(<Component />, [...seed, ...extra]);
 }
+const renderForms = (over: Partial<Record<AdminKey, unknown>> = {}) => renderAdmin(over, [], FormsPage);
 const card = (name: string) => screen.getByRole("region", { name });
 
 describe("/admin", () => {
@@ -104,7 +107,7 @@ describe("/admin", () => {
 
     it("renders all six cards as anchored regions, and the sidebar marks the top one as here", () => {
       renderAdmin();
-      for (const [name, id] of [["Inbox", "inbox"], ["Applications", "applications"], ["All members", "members"], ["Newsletter", "newsletter"], ["Admin activity", "activity"], ["Member reviews", "reviews"], ["Spotlight answers", "spotlight"], ["Join & review", "membership-forms"], ["Form responses", "forms"], ["Neighborhoods", "neighborhoods"], ["Headshot bookings", "bookings"], ["Gatherings", "gatherings"]]) {
+      for (const [name, id] of [["Inbox", "inbox"], ["Applications", "applications"], ["All members", "members"], ["Newsletter", "newsletter"], ["Admin activity", "activity"], ["Member reviews", "reviews"], ["Spotlight answers", "spotlight"], ["Neighborhoods", "neighborhoods"], ["Headshot bookings", "bookings"], ["Gatherings", "gatherings"]]) {
         expect(card(name).id).toBe(id);
       }
       const nav = screen.getAllByRole("navigation", { name: "Main" })[0];
@@ -121,6 +124,24 @@ describe("/admin", () => {
       expect(link("Profile").getAttribute("href")).toBe("/account#profile");
       expect(link("Profile").getAttribute("aria-current")).toBeNull();
       expect(screen.getByRole("button", { name: /sign out/i })).toBeTruthy();
+      // Forms are their own page now: router links, never cards here.
+      expect(screen.queryByRole("region", { name: "Your forms" })).toBeNull();
+      expect(link("Your forms").getAttribute("href")).toBe("/admin/forms#forms");
+      expect(link("Join & review").getAttribute("href")).toBe("/admin/forms#membership-forms");
+    });
+
+    it("/admin/forms is its own page: Forms h1, both form cards anchored, and Your forms marked here", () => {
+      renderForms();
+      expect(screen.getAllByRole("main")).toHaveLength(1);
+      expect(screen.getAllByRole("heading", { level: 1 }).map((h) => h.textContent)).toEqual(["Forms"]);
+      expect(card("Your forms").id).toBe("forms");
+      expect(card("Join & review").id).toBe("membership-forms");
+      expect(screen.queryByRole("region", { name: "Inbox" })).toBeNull();
+      const nav = screen.getAllByRole("navigation", { name: "Main" })[0];
+      const link = (name: string) => within(nav).getByRole("link", { name });
+      expect(link("Your forms").getAttribute("href")).toBe("#forms");
+      expect(link("Your forms").getAttribute("aria-current")).toBe("location");
+      expect(link("Inbox").getAttribute("href")).toBe("/admin#inbox");
     });
   });
 
@@ -543,7 +564,7 @@ describe("/admin", () => {
   });
 
   it("join & review: lists both switches and Close posts open:false with the message", async () => {
-    renderAdmin({ "forms-state": [
+    renderForms({ "forms-state": [
       { kind: "application", open: true, message: "", updated_at: "2026-11-10T00:00:00Z", updated_by: null },
       { kind: "review", open: false, message: "Reviews paused.", updated_at: "2026-11-10T00:00:00Z", updated_by: "admin1" },
     ] });
@@ -566,12 +587,12 @@ describe("/admin", () => {
   it("form responses: each form with its count, link, newest date and answers under question labels", () => {
     const entries = [{ key: "name", label: "Your name", value: "Rosa Diaz" }, { key: "diet", label: "Anything we should know?", value: ["Vegan", "No nuts"] }];
     const questions = [{ key: "name", type: "short", label: "Your name", required: true }];
-    renderAdmin({ "form-responses": [
+    renderForms({ "form-responses": [
       { id: "demo0001", name: "Salon RSVP (demo)", slug: "salon-rsvp", open: true, closed_message: "", intro: "", thanks: "", one_per_email: true, version: 1, questions, total: 1, newest_at: "2026-11-09T15:00:00Z", responses: [{ id: "a1", created_at: "2026-11-09T15:00:00Z", entries }] },
       { id: "demo0002", name: "Old survey (demo, closed)", slug: "old-survey", open: false, closed_message: "This survey has closed.", intro: "", thanks: "", one_per_email: false, version: 1, questions: [{ key: "feedback", type: "paragraph", label: "Your feedback", required: true }], total: 0, newest_at: null, responses: [] },
     ] });
-    expect(within(card("Form responses")).getByRole("form", { name: "Add a form" })).toBeTruthy();
-    const rsvp = within(card("Form responses")).getByRole("article", { name: "Salon RSVP (demo)" });
+    expect(within(card("Your forms")).getByRole("form", { name: "Add a form" })).toBeTruthy();
+    const rsvp = within(card("Your forms")).getByRole("article", { name: "Salon RSVP (demo)" });
     expect(within(rsvp).getByRole("link", { name: "/f/salon-rsvp" }).getAttribute("href")).toBe("/f/salon-rsvp");
     expect(rsvp.textContent).toMatch(/1 answer/);
     expect(rsvp.textContent).toMatch(/v1/);
@@ -583,7 +604,7 @@ describe("/admin", () => {
     expect(within(rsvp).getByRole("button", { name: "Download CSV of Salon RSVP (demo)" })).toBeTruthy();
     expect(within(rsvp).getByText("Your name").nextElementSibling!.textContent).toBe("Rosa Diaz");
     expect(within(rsvp).getAllByRole("listitem").map((li) => li.textContent)).toEqual(["Vegan", "No nuts"]);
-    const closed = within(card("Form responses")).getByRole("article", { name: "Old survey (demo, closed)" });
+    const closed = within(card("Your forms")).getByRole("article", { name: "Old survey (demo, closed)" });
     expect(closed.textContent).toMatch(/0 answers/);
     expect(closed.textContent).toMatch(/Closed/);
     expect(within(closed).getByRole("button", { name: "Open Old survey (demo, closed)" })).toBeTruthy();
@@ -591,10 +612,10 @@ describe("/admin", () => {
   });
 
   it("form responses: Close form asks confirm then posts open:false with the closed message", async () => {
-    renderAdmin({ "form-responses": [
+    renderForms({ "form-responses": [
       { id: "demo0001", name: "Salon RSVP (demo)", slug: "salon-rsvp", open: true, closed_message: "", intro: "", thanks: "", one_per_email: false, version: 1, questions: [{ key: "name", type: "short", label: "Your name" }], total: 0, newest_at: null, responses: [] },
     ] });
-    const rsvp = within(card("Form responses")).getByRole("article", { name: "Salon RSVP (demo)" });
+    const rsvp = within(card("Your forms")).getByRole("article", { name: "Salon RSVP (demo)" });
     fireEvent.change(within(rsvp).getByLabelText("Closed message"), { target: { value: "Full for now." } });
     fake.results = [null, [
       { id: "demo0001", name: "Salon RSVP (demo)", slug: "salon-rsvp", open: false, closed_message: "Full for now.", intro: "", thanks: "", one_per_email: false, version: 1, questions: [{ key: "name", type: "short", label: "Your name" }], total: 0, newest_at: null, responses: [] },
@@ -605,7 +626,7 @@ describe("/admin", () => {
   });
 
   it("form responses: Download CSV asks the server for that form's export", async () => {
-    renderAdmin({ "form-responses": [
+    renderForms({ "form-responses": [
       { id: "demo0001", name: "Salon RSVP (demo)", slug: "salon-rsvp", open: true, closed_message: "", intro: "", thanks: "", one_per_email: false, version: 1, questions: [{ key: "name", type: "short", label: "Your name" }], total: 2, newest_at: "2026-11-09T15:00:00Z", responses: [] },
     ] });
     fake.results = [{ filename: "salon-rsvp-responses-2026-11-09.csv", csv: "\uFEFF\"Received (UTC)\"\r\n" }];
@@ -613,7 +634,7 @@ describe("/admin", () => {
     const revokeObjectURL = vi.fn();
     vi.stubGlobal("URL", { ...URL, createObjectURL, revokeObjectURL });
     const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
-    fireEvent.click(within(card("Form responses")).getByRole("button", { name: "Download CSV of Salon RSVP (demo)" }));
+    fireEvent.click(within(card("Your forms")).getByRole("button", { name: "Download CSV of Salon RSVP (demo)" }));
     await waitFor(() => expect(fake.calls).toEqual([["formResponsesCsvFn", { id: "demo0001" }]]));
     expect(createObjectURL).toHaveBeenCalled();
     expect(click).toHaveBeenCalled();
@@ -622,8 +643,8 @@ describe("/admin", () => {
   });
 
   it("form responses: Add a form publishes through saveAdminFormFn", async () => {
-    renderAdmin({ "form-responses": [] });
-    const add = within(card("Form responses")).getByRole("form", { name: "Add a form" });
+    renderForms({ "form-responses": [] });
+    const add = within(card("Your forms")).getByRole("form", { name: "Add a form" });
     fireEvent.change(within(add).getByLabelText("Name"), { target: { value: "Coffee chat" } });
     fireEvent.change(within(add).getByLabelText("Slug"), { target: { value: "coffee-chat" } });
     fake.results = [{ id: "abcd1234" }, []];
@@ -639,10 +660,10 @@ describe("/admin", () => {
   });
 
   it("form responses: Edit form saves an existing definition", async () => {
-    renderAdmin({ "form-responses": [
+    renderForms({ "form-responses": [
       { id: "demo0001", name: "Salon RSVP (demo)", slug: "salon-rsvp", open: true, closed_message: "", intro: "Hi", thanks: "Bye", one_per_email: true, version: 2, questions: [{ key: "name", type: "short", label: "Your name", required: true }], total: 0, newest_at: null, responses: [] },
     ] });
-    const rsvp = within(card("Form responses")).getByRole("article", { name: "Salon RSVP (demo)" });
+    const rsvp = within(card("Your forms")).getByRole("article", { name: "Salon RSVP (demo)" });
     fireEvent.click(within(rsvp).getByRole("button", { name: "Edit Salon RSVP (demo)" }));
     const edit = within(rsvp).getByRole("form", { name: "Edit Salon RSVP (demo)" });
     fireEvent.change(within(edit).getByLabelText("Name"), { target: { value: "Salon RSVP" } });

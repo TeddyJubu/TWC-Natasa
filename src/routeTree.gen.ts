@@ -50,6 +50,7 @@ import { Route as AuthenticatedAdminAdminRouteImport } from './routes/_authentic
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiFormsSlugRouteImport } from './routes/api/forms.$slug'
 import { Route as FSlugThanksRouteImport } from './routes/f.$slug_.thanks'
+import { Route as AuthenticatedAdminAdminFormsRouteImport } from './routes/_authenticated/_admin/admin_.forms'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -254,6 +255,12 @@ const FSlugThanksRoute = FSlugThanksRouteImport.update({
   path: '/f/$slug/thanks',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminAdminFormsRoute =
+  AuthenticatedAdminAdminFormsRouteImport.update({
+    id: '/admin_/forms',
+    path: '/admin/forms',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -295,6 +302,7 @@ export interface FileRoutesByFullPath {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/forms/$slug': typeof ApiFormsSlugRoute
   '/f/$slug/thanks': typeof FSlugThanksRoute
+  '/admin/forms': typeof AuthenticatedAdminAdminFormsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -336,6 +344,7 @@ export interface FileRoutesByTo {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/forms/$slug': typeof ApiFormsSlugRoute
   '/f/$slug/thanks': typeof FSlugThanksRoute
+  '/admin/forms': typeof AuthenticatedAdminAdminFormsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -380,6 +389,7 @@ export interface FileRoutesById {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/forms/$slug': typeof ApiFormsSlugRoute
   '/f/$slug_/thanks': typeof FSlugThanksRoute
+  '/_authenticated/_admin/admin_/forms': typeof AuthenticatedAdminAdminFormsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -423,6 +433,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/forms/$slug'
     | '/f/$slug/thanks'
+    | '/admin/forms'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -464,6 +475,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/forms/$slug'
     | '/f/$slug/thanks'
+    | '/admin/forms'
   id:
     | '__root__'
     | '/'
@@ -507,6 +519,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/forms/$slug'
     | '/f/$slug_/thanks'
+    | '/_authenticated/_admin/admin_/forms'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -839,16 +852,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FSlugThanksRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/_admin/admin_/forms': {
+      id: '/_authenticated/_admin/admin_/forms'
+      path: '/admin/forms'
+      fullPath: '/admin/forms'
+      preLoaderRoute: typeof AuthenticatedAdminAdminFormsRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
   }
 }
 
 interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminAdminRoute: typeof AuthenticatedAdminAdminRoute
+  AuthenticatedAdminAdminFormsRoute: typeof AuthenticatedAdminAdminFormsRoute
 }
 
 const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
   {
     AuthenticatedAdminAdminRoute: AuthenticatedAdminAdminRoute,
+    AuthenticatedAdminAdminFormsRoute: AuthenticatedAdminAdminFormsRoute,
   }
 
 const AuthenticatedAdminRouteRouteWithChildren =
