@@ -1,21 +1,28 @@
 // Server-only: custom forms at /f/<slug> (migration 0005). Anyone reads an open form and sends answers (POST
-// /api/forms/<slug>: size, per-visitor-per-form limit, honeypot); only admins read the answers (requireAdmin).
+// /api/forms/<slug>: size, per-visitor-per-form limit, honeypot); only admins open/close forms, read answers and
+// download CSV (requireAdmin).
 import type { Ctx } from "@/server/context.server";
 import type { DB } from "@/server/db";
 import { AccessError, requireAdmin } from "@/server/guard";
 import { checkSize, clientIp, HttpError, rateLimit, respond } from "@/server/request";
-import { bad, isObject } from "@/server/validate";
-import type { AnswerEntry } from "@/features/admin/format";
+import { bad, isObject, str } from "@/server/validate";
+import { toCsv, type AnswerEntry } from "@/features/admin/format";
 import { checkAnswers, choicesOf, type Answers, type Question } from "./schema";
 
 export const CLOSED = "This form is closed for now. Thank you for your interest.";
 export const THANKS = "Thank you — we’ve got your answers. A person reads every one.";
 export const DUPLICATE = "We already have an answer from this email address for this form, so we didn’t save this one. If something has changed, email us at hello@thewomenscollective.club.";
+/** CRM-100's closed-message cap (the column allows 2,000; the switch keeps the shorter one). */
+export const CLOSED_MESSAGE_MAX = 1000;
 
 /** What the /f/<slug> and /f/<slug>/thanks pages need. `moved`: the slug asked for is an old name of `slug`. */
 export type PublicForm = { slug: string; name: string; intro: string; thanks: string; closed: string | null; questions: Question[]; moved: boolean };
 export type AdminFormResponse = { id: string; created_at: string; entries: AnswerEntry[] };
-export type AdminForm = { id: string; name: string; slug: string; open: boolean; total: number; responses: AdminFormResponse[] };
+export type AdminForm = {
+  id: string; name: string; slug: string; open: boolean; closed_message: string;
+  total: number; newest_at: string | null; responses: AdminFormResponse[];
+};
+export type CsvExport = { filename: string; csv: string };
 
 type Row = { id: string; slug: string; name: string; intro: string; thanks: string; closed_message: string; questions: string; version: number; open: number; one_per_email: number };
 const SLUG = /^[a-z0-9-]{1,40}$/;
@@ -95,19 +102,88 @@ export function responseEntries(questions: Question[], answers: Answers): Answer
   ];
 }
 
-// ponytail: the newest 100 per form; paging (or CSV, CRM-135) when a form outgrows that.
+// ponytail: the newest 100 per form in the card; CSV (CRM-130) exports every answer.
 const SHOWN = 100;
 
-/** Every form with its answer count and newest answers, by name (CRM-094, CRM-135). */
+/** Every form with its answer count, newest date and newest answers, by name (CRM-094, CRM-099, CRM-135). */
 export function adminFormResponses({ db, actor }: Ctx): AdminForm[] {
   requireAdmin(db, actor);
-  const forms = db.prepare(`select f.id, f.name, f.slug, f.open, f.questions, (select count(*) from custom_form_responses r where r.form_id = f.id) as total
-    from custom_forms f order by f.name collate nocase`).all() as (Pick<Row, "id" | "name" | "slug" | "open" | "questions"> & { total: number })[];
+  const forms = db.prepare(`select f.id, f.name, f.slug, f.open, f.closed_message, f.questions,
+      (select count(*) from custom_form_responses r where r.form_id = f.id) as total,
+      (select max(r.created_at) from custom_form_responses r where r.form_id = f.id) as newest_at
+    from custom_forms f order by f.name collate nocase`).all() as (Pick<Row, "id" | "name" | "slug" | "open" | "closed_message" | "questions"> & { total: number; newest_at: string | null })[];
   const recent = db.prepare(`select id, answers, created_at from custom_form_responses where form_id = ? order by created_at desc, rowid desc limit ${SHOWN}`);
   return forms.map((f) => {
     const questions = JSON.parse(f.questions) as Question[];
     const responses = (recent.all(f.id) as { id: string; answers: string; created_at: string }[])
       .map((r) => ({ id: r.id, created_at: r.created_at, entries: responseEntries(questions, JSON.parse(r.answers) as Answers) }));
-    return { id: f.id, name: f.name, slug: f.slug, open: f.open === 1, total: Number(f.total), responses };
+    return {
+      id: f.id, name: f.name, slug: f.slug, open: f.open === 1, closed_message: f.closed_message,
+      total: Number(f.total), newest_at: f.newest_at, responses,
+    };
   });
+}
+
+/**
+ * Open or close a custom form (CRM-100). Closing keeps /f/<slug> reachable with closed_message (openForm).
+ * Opening with no message keeps the last closed_message; a provided message (≤ 1,000 chars) is stored either way.
+ */
+export function setFormOpen({ db, actor }: Ctx, input: unknown): void {
+  requireAdmin(db, actor);
+  if (!isObject(input)) throw bad("form");
+  const id = str(input.id, "form", 8);
+  if (id.length !== 8) throw bad("form");
+  if (input.open !== true && input.open !== false) throw bad("open");
+  const open = input.open;
+  const row = db.prepare("select closed_message from custom_forms where id = ?").get(id) as { closed_message: string } | undefined;
+  if (!row) throw bad("form");
+  let message = row.closed_message;
+  if (input.message !== undefined) {
+    const next = str(input.message, "message", CLOSED_MESSAGE_MAX).trim();
+    // Empty on open keeps the last message (CRM-100); empty on close clears to the public default.
+    if (next || !open) message = next;
+  }
+  db.prepare(`update custom_forms set open = ?, closed_message = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') where id = ?`)
+    .run(open ? 1 : 0, message, id);
+}
+
+/** One answer cell for CSV: choice labels joined, else the string (CRM-130). */
+const csvCell = (value: string | string[]) => (Array.isArray(value) ? value.join(", ") : value);
+
+/**
+ * Every answer for one form as CSV (CRM-130): BOM, CRLF, quoted cells, formula guard. Header = Received (UTC) +
+ * question labels (a duplicate wording gets ` (key)`). Filename `<slug>-responses-<YYYY-MM-DD>.csv`.
+ */
+export function formResponsesCsv({ db, actor }: Ctx, input: unknown): CsvExport {
+  requireAdmin(db, actor);
+  if (!isObject(input)) throw bad("form");
+  const id = str(input.id, "form", 8);
+  if (id.length !== 8) throw bad("form");
+  const form = db.prepare("select slug, questions from custom_forms where id = ?").get(id) as { slug: string; questions: string } | undefined;
+  if (!form) throw bad("form");
+  const questions = JSON.parse(form.questions) as Question[];
+  const seen = new Map<string, number>();
+  for (const q of questions) seen.set(q.label, (seen.get(q.label) ?? 0) + 1);
+  const used = new Map<string, number>();
+  const headers = ["Received (UTC)", ...questions.map((q) => {
+    const n = seen.get(q.label)!;
+    if (n === 1) return q.label;
+    const i = (used.get(q.label) ?? 0) + 1;
+    used.set(q.label, i);
+    return `${q.label} (${q.key})`;
+  })];
+  const rows = (db.prepare("select answers, created_at from custom_form_responses where form_id = ? order by created_at asc, rowid asc")
+    .all(id) as { answers: string; created_at: string }[])
+    .map((r) => {
+      const answers = JSON.parse(r.answers) as Answers;
+      return [r.created_at, ...questions.map((q) => {
+        const v = answers[q.key];
+        if (v === undefined) return "";
+        // Choice values → labels (same as the card), so the sheet matches what an admin sees.
+        const entries = responseEntries([q], { [q.key]: v });
+        return csvCell(entries[0]!.value);
+      })];
+    });
+  const day = new Date().toISOString().slice(0, 10);
+  return { filename: `${form.slug}-responses-${day}.csv`, csv: toCsv(headers, rows) };
 }
