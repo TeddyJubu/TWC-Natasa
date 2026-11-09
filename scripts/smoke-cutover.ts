@@ -52,6 +52,13 @@ export function checks(md: string, formSlug?: string): Check[] {
     // The app's own answer for a bad link: the one neutral 404 (members-links).
     { host: "new.thewomenscollective.club", path: `/review?t=${BAD_TOKEN}`, status: 404 },
     { host: "new.thewomenscollective.club", path: `/spotlight?t=${BAD_TOKEN}`, status: 404 },
+    // admin.*/crm.* → /admin (twc_admin_cutover / twc_crm_cutover): NOT live yet. Uncomment these
+    // four rows when the integrator pastes the snippets and AUDIT says enabled — until then they
+    // still reverse-proxy intake/crm and would FAIL smoke. See AUDIT-TASKS "admin-crm-cutover".
+    // { host: "admin.thewomenscollective.club", path: "/", ...to(`${NEW}/admin`) },
+    // { host: "admin.thewomenscollective.club", path: "/login", ...to(`${NEW}/admin`) },
+    // { host: "crm.thewomenscollective.club", path: "/", ...to(`${NEW}/admin`) },
+    // { host: "crm.thewomenscollective.club", path: "/v2", ...to(`${NEW}/admin`) },
   );
   // /f/* stays on the old stack until forms-import lands (redirects.md "Not redirected yet").
   if (formSlug) list.push({ host: APEX, path: `/f/${formSlug}`, status: 200 });
