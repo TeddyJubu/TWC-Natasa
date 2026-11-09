@@ -7,7 +7,7 @@
  * Exit 0 only when the gate passes.
  */
 import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { join, basename } from "node:path";
+import { join } from "node:path";
 
 type ManifestItem = {
   id: string;
