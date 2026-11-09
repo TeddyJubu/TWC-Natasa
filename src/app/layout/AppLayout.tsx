@@ -25,7 +25,7 @@ export function AppPage({ children, className }: { children: React.ReactNode; cl
   );
 }
 
-type SiteLink = { label: string; to: "/about" | "/members" | "/gatherings" | "/neighborhoods" | "/faq" | "/contact" | "/join" | "/account" };
+type SiteLink = { label: string; to: "/about" | "/members" | "/gatherings" | "/neighborhoods" | "/faq" | "/fellowship" | "/partnerships" | "/contact" | "/join" | "/account" };
 
 const NAV_START: SiteLink[] = [
   { label: "About", to: "/about" },
@@ -114,6 +114,8 @@ const FOOTER: SiteLink[] = [
   { label: "Gatherings", to: "/gatherings" },
   { label: "Neighborhoods", to: "/neighborhoods" },
   { label: "FAQ", to: "/faq" },
+  { label: "Fellowship", to: "/fellowship" },
+  { label: "Partnerships", to: "/partnerships" },
   { label: "Join", to: "/join" },
   { label: "Contact", to: "/contact" },
   { label: "Sign in", to: "/account" },

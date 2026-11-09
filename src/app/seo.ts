@@ -31,7 +31,7 @@ export function currentPathname(matches: readonly HeadMatch[]): string | undefin
 // wrong one. noindex (showcase, /admin), members-only (/account), one-off and preview pages stay out.
 // /sitemap.xml (src/server/sitemap.ts) lists these plus active neighborhoods and public member pages.
 export const INDEXED = new Set([
-  "/", "/about", "/members", "/gatherings", "/neighborhoods", "/faq", "/contact", "/join", "/auth", "/privacy", "/terms", "/code-of-conduct",
+  "/", "/about", "/members", "/gatherings", "/neighborhoods", "/faq", "/fellowship", "/partnerships", "/contact", "/join", "/auth", "/privacy", "/terms", "/code-of-conduct",
 ]);
 
 const absolute = (site: string, path: string) => site + (path.startsWith("/") ? path : `/${path}`);
