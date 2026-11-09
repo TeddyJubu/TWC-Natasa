@@ -96,9 +96,9 @@ function useActiveSection(page: ShellPage) {
 /** The constellation and the collective's name, linking home. */
 function Brand({ className }: { className?: string }) {
   return (
-    <Link to="/" aria-label="The Women’s Collective home" className={cn("flex min-h-11 min-w-0 items-center gap-2.5 rounded-full px-2.5 font-display text-lg/[1.3] text-ink", ring, className)}>
+    <Link to="/" aria-label="The Women’s Collective home" className={cn("flex min-h-11 min-w-0 items-center gap-2.5 rounded-full px-1.5 font-display text-[17px]/[1.2] text-ink", ring, className)}>
       <ConstellationLogo variant="ink" alt="" className="w-7.5 shrink-0" />
-      <span className="truncate">The Women’s Collective</span>
+      <span className="min-w-0">The Women’s Collective</span>
     </Link>
   );
 }

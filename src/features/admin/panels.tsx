@@ -536,7 +536,7 @@ function GatheringsTable({ rows, caption, onEdit, onGuests }: {
                     <span>{when.weekday} · {when.time}</span>
                   </div>
                 </td>
-                <th scope="row" className={cn(cell, "font-normal")}>
+                <th scope="row" className={cn(cell, "min-w-52 font-normal")}>
                   <span className="block font-display text-xl/[1.3] text-ink">{e.title}</span>
                   <span className={meta}>{kindLabel(e.kind)} · {e.location}</span>
                 </th>
