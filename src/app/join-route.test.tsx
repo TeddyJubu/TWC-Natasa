@@ -90,6 +90,18 @@ describe("/join", () => {
     const status = await screen.findByRole("status");
     expect(within(status).getByRole("heading", { name: /thank you for introducing yourself/i })).toBeTruthy();
     expect(screen.queryByRole("button", { name: /review another application/i })).toBeNull();
+    // A visitor is offered the next step: create a login in sign-up mode.
+    expect(within(status).getByRole("link", { name: /create your login/i }).getAttribute("href")).toBe("/auth?mode=signup");
+  });
+
+  it("a signed-in applicant is not offered a login they already have", async () => {
+    fake.results = [{ email: "rosa@x.test", fullName: "Rosa Diaz" }, ok];
+    renderWithQueries(<Page />);
+    await waitFor(() => expect(field(/^email address$/i).value).toBe("rosa@x.test"));
+    fillMinimum();
+    fireEvent.click(submitButton());
+    const status = await screen.findByRole("status");
+    expect(within(status).queryByRole("link", { name: /create your login/i })).toBeNull();
   });
 
   it("an insert error shows an alert, keeps the form and its values, and Retry resubmits", async () => {
@@ -213,7 +225,7 @@ describe("/join structure", () => {
     renderSignedOut();
     expectNoSkippedHeadings();
     expect(screen.getByRole("heading", { level: 1 })).toBeTruthy();
-    expect(screen.getByRole("heading", { name: "Start With You", level: 2 })).toBeTruthy();
-    expect(screen.getByRole("group", { name: "Start With You" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Start with you.", level: 2 })).toBeTruthy();
+    expect(screen.getByRole("group", { name: "Start with you." })).toBeTruthy();
   });
 });
