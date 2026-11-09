@@ -78,7 +78,7 @@ function LogoRow({ userId, path, url, business }: { userId: string; path: string
   const remove = useRemoveLogo(userId);
   const failed = upload.isError ? upload.error : remove.isError ? remove.error : null;
   const pick = (verb: string) => (
-    <label className={cn(linkClass, "shrink-0 cursor-pointer has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring has-[:disabled]:opacity-50")}>
+    <label className={cn(linkClass, "shrink-0 cursor-pointer has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-app-accent has-[:disabled]:opacity-50")}>
       {verb}<span className="sr-only"> business logo</span>
       <input
         type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={upload.isPending}
@@ -101,7 +101,7 @@ function LogoRow({ userId, path, url, business }: { userId: string; path: string
           </>
         ) : (
           <>
-            <span className="flex-1">Optional · JPG, PNG or WebP, up to 5 MB</span>
+            <span className="flex-1 text-[13px]">Optional · JPG, PNG or WebP, up to 5 MB</span>
             {pick("Add")}
           </>
         )}
@@ -119,7 +119,7 @@ export function WordsCard({ editor }: { editor: ProfileEditor }) {
     <Card title="In your words" subtitle="Short and warm beats long and formal" action={<EditButton card="in your words" editing={editing} onClick={() => editor.toggle("words")} />}>
       <Row label="Bio" htmlFor={editing ? fieldId("bio") : undefined} top empty={!editing && !card.bio.trim()}>
         {editing ? (
-          <textarea id={fieldId("bio")} form={PROFILE_FORM} value={card.bio} maxLength={400} rows={4} className={cn(fieldClass, "leading-[23px]")} onChange={(e) => set({ bio: e.currentTarget.value })} />
+          <textarea id={fieldId("bio")} form={PROFILE_FORM} value={card.bio} maxLength={400} rows={4} className={fieldClass} onChange={(e) => set({ bio: e.currentTarget.value })} />
         ) : (
           <p className="leading-[23px] whitespace-pre-line">{card.bio.trim() || "Tell neighbors what you make, who you make it for, and what brought you to the collective. Up to 400 characters."}</p>
         )}
@@ -141,7 +141,7 @@ export function MembershipCard({ profile }: { profile: Profile }) {
     <Card title="Membership">
       <Row label="Status">
         {approved ? (
-          <span className="inline-flex items-center gap-2">Approved <Chip>Verified</Chip></span>
+          <span className="inline-flex items-center gap-2">Approved <Chip tone="ok">Verified</Chip></span>
         ) : declined ? "Your application wasn’t approved this time" : "Your application is being reviewed"}
       </Row>
       <Row label="Catalogue number" empty={!approved}>

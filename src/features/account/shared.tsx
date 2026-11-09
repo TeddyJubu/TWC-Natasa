@@ -2,13 +2,18 @@
 import { Link } from "@tanstack/react-router";
 import { linkClass } from "@/app/layout/app-classes";
 
-/** Card body for applicants: gatherings, headshots and introductions open once she is approved. */
-export function Locked() {
+/**
+ * Card body before approval: gatherings, headshots and introductions open once she is welcomed in. The /join link
+ * shows only to someone who hasn't applied; an applicant (pending or declined) already has.
+ */
+export function Locked({ applied }: { applied: boolean }) {
   return (
-    <div className="flex flex-col items-start gap-2 px-5.5 py-5 text-[15px]">
-      <p className="text-ink">Unlocks once you’re welcomed in</p>
-      <p className="text-[13.5px]/5 text-app-muted">Members see gatherings, headshot booking, and personal introductions here.</p>
-      <Link to="/join" className={linkClass}>Haven’t applied yet? Start your application</Link>
+    <div className="p-5 sm:px-7 sm:py-6">
+      <div className="twc-notice items-start">
+        <p className="twc-notice__title">Unlocks once you’re welcomed in</p>
+        <p className="text-sm text-app-muted">Members see gatherings, headshot booking, and personal introductions here.</p>
+        {!applied && <Link to="/join" className={linkClass}>Haven’t applied yet? Start your application</Link>}
+      </div>
     </div>
   );
 }

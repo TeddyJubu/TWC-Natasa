@@ -16,7 +16,8 @@ export type Profile = {
   directory_visible: boolean; public_profile: boolean; status: MembershipStatus; catalogue_number: number | null;
   member_since: string | null; created_at: string; updated_at: string;
 };
-export type ProfileData = { profile: Profile; avatarUrl: string | undefined; logoUrl?: string };
+/** `hasApplication`: she has applied (any status), so /account needn't point her at /join. */
+export type ProfileData = { profile: Profile; avatarUrl: string | undefined; logoUrl?: string; hasApplication: boolean };
 type ProfileRow = Omit<Profile, "directory_visible" | "public_profile"> & { directory_visible: number; public_profile: number };
 
 export const toProfile = (row: ProfileRow): Profile =>
@@ -85,7 +86,8 @@ export function ownProfile({ db, actor }: Ctx): ProfileData | null {
   const me = requireSession(actor);
   const row = db.prepare("select * from profiles where id = ?").get(me.id) as ProfileRow | undefined;
   if (!row) return null;
-  return { profile: toProfile(row), avatarUrl: avatar(row.avatar_path), logoUrl: avatar(row.business_logo_url) };
+  const hasApplication = !!db.prepare("select 1 from applications where user_id = ? limit 1").get(me.id);
+  return { profile: toProfile(row), avatarUrl: avatar(row.avatar_path), logoUrl: avatar(row.business_logo_url), hasApplication };
 }
 
 const INTROS = 4;

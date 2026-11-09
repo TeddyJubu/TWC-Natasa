@@ -134,12 +134,13 @@ describe("/account", () => {
     expect(screen.queryByText(/application pending/i)).toBeNull();
     expect(screen.queryByText(/being reviewed/i)).toBeNull();
     expect(screen.getByText(/wasn’t approved this time/i)).toBeTruthy();
-    expect(screen.getByText("Not approved")).toBeTruthy();
+    expect(screen.getByText("Application not approved")).toBeTruthy();
+    expect(screen.getByText("Your card stays private and isn’t shown to anyone.")).toBeTruthy();
   });
 
   it("still shows a pending application as in review", () => {
     renderAccount({ status: "pending", catalogue_number: null });
-    expect(screen.getByText("In review")).toBeTruthy();
+    expect(screen.getByText("Application under review")).toBeTruthy();
     expect(screen.getByText(/being reviewed/i)).toBeTruthy();
   });
 
@@ -148,7 +149,7 @@ describe("/account", () => {
     expect(screen.getByRole("heading", { level: 1, name: "Rosa Diaz" })).toBeTruthy();
     expect(screen.getByText(/application under review/i)).toBeTruthy();
     expect(screen.queryByText(/approved member since/i)).toBeNull();
-    expect(screen.queryByRole("img", { name: /verified/i })).toBeNull();
+    expect(screen.queryByText(/verified member/i)).toBeNull();
     expect(screen.queryByText("Verified")).toBeNull();
     const membership = screen.getByRole("region", { name: "Membership" });
     expect(within(membership).getByText(/being reviewed/i)).toBeTruthy();
@@ -157,11 +158,33 @@ describe("/account", () => {
 
   it("an approved member gets the verified badge and her number in the subline", () => {
     renderAccount();
-    expect(screen.getByRole("img", { name: "Verified member" })).toBeTruthy();
+    expect(screen.getByText("Verified member")).toBeTruthy();
     expect(screen.getByText("Member No. 27 · Approved member since January 2026")).toBeTruthy();
     const membership = screen.getByRole("region", { name: "Membership" });
     expect(within(membership).getByText("Verified")).toBeTruthy();
     expect(within(membership).getByText("No. 27")).toBeTruthy();
+  });
+
+  describe("before approval", () => {
+    const locked = () => screen.getAllByText("Unlocks once you’re welcomed in");
+    const joinLinks = () => screen.queryAllByRole("link", { name: /start your application/i });
+
+    it("gatherings, headshot and introductions show the locked panel, pointing at /join when she hasn't applied", () => {
+      renderAccount({ status: "pending", catalogue_number: null });
+      expect(locked()).toHaveLength(3);
+      for (const id of ["gatherings", "headshot", "introductions"]) {
+        expect(within(document.getElementById(id)!).getByText("Unlocks once you’re welcomed in")).toBeTruthy();
+      }
+      expect(joinLinks().map((a) => a.getAttribute("href"))).toEqual(["/join", "/join", "/join"]);
+      expect(screen.queryByRole("button", { name: /request my session/i })).toBeNull();
+    });
+
+    it.each(["pending", "declined"] as const)("a %s applicant (application on file) gets no /join link", async (status) => {
+      const { queryClient } = renderAccount({ status, catalogue_number: null });
+      act(() => queryClient.setQueryData(["profile", "u1"], (d: object) => ({ ...d, hasApplication: true })));
+      await waitFor(() => expect(joinLinks()).toHaveLength(0));
+      expect(locked()).toHaveLength(3);
+    });
   });
 
   it("hides an inactive neighborhood from the select unless it is her current one", () => {

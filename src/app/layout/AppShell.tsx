@@ -2,7 +2,7 @@
 // Public pages use AppNav/AppFooter instead. See DESIGN.md "Internal pages".
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
-import { ConstellationLogo, cn } from "@/index";
+import { ConstellationLogo, cn, initials } from "@/index";
 import { Icon, type IconName } from "./icons";
 import { ring } from "./app-classes";
 import { useSignOut } from "./sign-out";
@@ -36,7 +36,7 @@ const ADMIN: NavItem[] = [
 /** The Admin group only for admins; UX only, since /admin's guard and every admin server function check again. */
 const groups = (admin: boolean): NavGroup[] => [
   { label: "Collective", items: COLLECTIVE },
-  { label: "My Account", items: MY_ACCOUNT, fold: true },
+  { label: "My account", items: MY_ACCOUNT, fold: true },
   ...(admin ? [{ label: "Admin", items: ADMIN, fold: true }] : []),
 ];
 
@@ -93,16 +93,12 @@ function useActiveSection(page: ShellPage) {
   return active;
 }
 
-/** Logo tile + name + domain, linking home. */
+/** The constellation and the collective's name, linking home. */
 function Brand({ className }: { className?: string }) {
   return (
-    <Link to="/" aria-label="The Women’s Collective home" className={cn("flex min-w-0 items-center gap-2.5 rounded-[10px] border border-app-line bg-app px-2.5 py-2 hover:bg-app-sunken", ring, className)}>
-      {/* The logo artwork is white, so its tile is fixed black in both themes. */}
-      <span className="grid size-7 shrink-0 place-items-center rounded-[7px] bg-black"><ConstellationLogo variant="white" alt="" className="w-4.5" /></span>
-      <span className="flex min-w-0 flex-col gap-px">
-        <span className="truncate text-sm font-medium text-ink">The Women’s Collective</span>
-        <span className="truncate text-xs text-app-muted">thewomenscollective.club</span>
-      </span>
+    <Link to="/" aria-label="The Women’s Collective home" className={cn("flex min-h-11 min-w-0 items-center gap-2.5 rounded-full px-2.5 font-display text-lg/[1.3] text-ink", ring, className)}>
+      <ConstellationLogo variant="ink" alt="" className="w-7.5 shrink-0" />
+      <span className="truncate">The Women’s Collective</span>
     </Link>
   );
 }
@@ -112,10 +108,10 @@ function NavLink({ item, page, active, onNavigate }: { item: NavItem; page: Shel
   const here = item.to === page && !!item.hash;
   const current = here && item.hash === active;
   const cls = cn(
-    "flex w-full items-center gap-3.5 rounded-[10px] px-3 py-2.5 text-[15.5px] transition-colors",
-    current ? "bg-app-line font-medium text-ink" : "text-ink hover:bg-app-line/50", ring,
+    "flex min-h-11 w-full items-center gap-3 rounded-full px-3.5 text-[15px]/[1.3] transition-colors duration-150",
+    current ? "bg-ink text-app" : "text-ink hover:bg-app-sunken", ring,
   );
-  const body = <><Icon name={item.icon} className={cn("size-4.75", current ? "text-ink" : "text-ink-muted")} />{item.sr && <span className="sr-only">{item.sr} </span>}{item.label}</>;
+  const body = <><Icon name={item.icon} className="size-4.5" />{item.sr && <span className="sr-only">{item.sr} </span>}{item.label}</>;
   return (
     <li>
       {here
@@ -136,24 +132,26 @@ function ShellNav({ page, admin, active, onSignOut, onNavigate }: {
   );
   return (
     <>
-      <nav aria-label="Main" className="flex flex-col gap-7">
+      <nav aria-label="Main" className="flex flex-col gap-2">
         {groups(admin).map((g) => g.fold ? (
           <details key={g.label} open className="group flex flex-col gap-0.5">
-            <summary className={cn("flex w-fit cursor-pointer list-none items-center gap-1.5 rounded-md px-3 pb-2 text-sm text-app-muted [&::-webkit-details-marker]:hidden", ring)}>
-              {g.label} <Icon name="chevron-down" className="size-3.25 -rotate-90 transition-transform group-open:rotate-0 motion-reduce:transition-none" />
+            <summary className={cn("twc-eyebrow flex w-fit cursor-pointer list-none items-center gap-1.5 rounded-full px-3.5 pt-3 pb-2 [&::-webkit-details-marker]:hidden", ring)}>
+              {g.label} <Icon name="chevron-down" className="size-3 -rotate-90 transition-transform group-open:rotate-0 motion-reduce:transition-none" />
             </summary>
             {list(g.items)}
           </details>
         ) : (
           <div key={g.label} className="flex flex-col gap-0.5">
-            <p className="px-3 pb-2 text-sm text-app-muted">{g.label}</p>
+            <p className="twc-eyebrow px-3.5 pt-3 pb-2">{g.label}</p>
             {list(g.items)}
           </div>
         ))}
       </nav>
-      <button type="button" onClick={onSignOut} className={cn("mt-auto flex w-full items-center gap-3.5 rounded-[10px] px-3 py-2.5 text-[15.5px] text-ink-muted hover:bg-app-line/50", ring)}>
-        <Icon name="log-out" className="size-4.75 text-app-muted" />Sign out
-      </button>
+      <div className="mt-auto border-t border-app-line pt-3">
+        <button type="button" onClick={onSignOut} className={cn("flex min-h-11 w-full items-center gap-3 rounded-full px-3.5 text-[15px]/[1.3] text-ink transition-colors duration-150 hover:bg-app-sunken", ring)}>
+          <Icon name="log-out" className="size-4.5" />Sign out
+        </button>
+      </div>
     </>
   );
 }
@@ -176,11 +174,11 @@ function MobileBar(props: { page: ShellPage; admin: boolean; active: string; onS
   }, [open]);
 
   return (
-    <div className="flex items-center justify-between gap-3 border-b border-app-line bg-app-sunken px-4 py-3 lg:hidden">
+    <div className="flex items-center justify-between gap-3 border-b border-app-line bg-app px-4 py-3 lg:hidden">
       <Brand />
       <button
         ref={button} type="button" aria-label="Open menu" aria-expanded={open} aria-controls="app-drawer" onClick={() => setOpen(true)}
-        className={cn("grid size-10 shrink-0 place-items-center rounded-[9px] border border-app-line bg-app text-ink", ring)}
+        className={cn("grid size-11 shrink-0 place-items-center rounded-full bg-app text-ink shadow-[inset_0_0_0_1.5px_currentColor]", ring)}
       >
         <Icon name="menu" className="size-5" />
       </button>
@@ -189,13 +187,13 @@ function MobileBar(props: { page: ShellPage; admin: boolean; active: string; onS
         onClose={close}
         onKeyDown={(e) => { if (e.key === "Escape") close(); }}
         onClick={(e) => { if (e.target === e.currentTarget) close(); }}
-        className="m-0 h-dvh max-h-none w-[min(20.75rem,85vw)] max-w-none bg-app-sunken p-0 text-ink backdrop:bg-black/40"
+        className="m-0 h-dvh max-h-none w-[min(20rem,85vw)] max-w-none bg-app p-0 text-ink backdrop:bg-black/40"
       >
         {open && (
-          <div className="flex min-h-full flex-col gap-7 px-4 pt-4 pb-6">
+          <div className="flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
             <div className="flex items-center gap-2">
               <Brand className="flex-1" />
-              <button type="button" aria-label="Close menu" onClick={close} className={cn("grid size-10 shrink-0 place-items-center rounded-[9px] text-ink-muted hover:bg-app-line/50", ring)}>
+              <button type="button" aria-label="Close menu" onClick={close} className={cn("grid size-11 shrink-0 place-items-center rounded-full text-ink hover:bg-app-sunken", ring)}>
                 <Icon name="x" className="size-5" />
               </button>
             </div>
@@ -215,9 +213,9 @@ export function AppShell({ page, admin, children }: { page: ShellPage; admin: bo
   const { signOut, error } = useSignOut();
   const active = useActiveSection(page);
   return (
-    <div className="min-h-screen bg-app text-ink lg:flex">
+    <div className="min-h-screen bg-app-sunken text-ink lg:flex">
       <MobileBar page={page} admin={admin} active={active} onSignOut={signOut} />
-      <aside className="sticky top-0 hidden h-dvh w-83 shrink-0 flex-col gap-7 overflow-y-auto border-r border-app-line bg-app-sunken px-4 pt-5.5 pb-6 lg:flex">
+      <aside className="sticky top-0 hidden h-dvh w-70 shrink-0 flex-col gap-3 overflow-y-auto border-r border-app-line bg-app px-4 pt-6 pb-7 lg:flex">
         <Brand />
         <ShellNav page={page} admin={admin} active={active} onSignOut={signOut} />
       </aside>
@@ -229,23 +227,26 @@ export function AppShell({ page, admin, children }: { page: ShellPage; admin: bo
   );
 }
 
+/** Who is signed in, at the top bar's end: her portrait (or initials) and name. */
+export type Who = { name: string; avatar?: string };
+
 /**
- * The sticky bar atop the page column: "Section / icon Title" and the page's actions. `heading` makes the title
- * the page's h1 (pages whose body has no other h1). Children are absolutely placeable against the bar.
+ * The sticky bar atop the page column: the page title in Gilda and who is signed in. `heading` makes the title
+ * the page's h1 (pages whose body has no other h1).
  */
-export function TopBar({ section, icon, title, heading, children }: {
-  section: string; icon: IconName; title: string; heading?: boolean; children?: React.ReactNode;
-}) {
-  const Title = heading ? "h1" : "span";
+export function TopBar({ title, heading, who }: { title: string; heading?: boolean; who?: Who }) {
+  const Title = heading ? "h1" : "p";
   return (
-    <div className="sticky top-0 z-10 flex min-h-16.25 items-center justify-between gap-3 border-b border-app-line bg-app px-4 py-3 sm:px-8 lg:min-h-20.25 lg:py-5">
-      <div className="flex min-w-0 items-center gap-2.5 text-[17px]">
-        <span className="hidden text-app-muted sm:inline">{section}</span>
-        <span aria-hidden className="hidden text-app-muted/50 sm:inline">/</span>
-        <Icon name={icon} className="size-4.5 text-ink" />
-        <Title className="truncate font-medium text-ink">{title}</Title>
-      </div>
-      {children}
+    <div className="sticky top-0 z-10 flex min-h-16 flex-wrap items-center justify-between gap-x-5 gap-y-3 border-b border-app-line bg-app px-4 py-3.5 sm:px-8 lg:py-4.5">
+      <Title className="min-w-0 truncate font-display text-[26px]/[1.25] text-ink">{title}</Title>
+      {who && (
+        <div className="flex min-w-0 items-center gap-2.5 text-[15px]/[1.3] text-ink">
+          {who.avatar
+            ? <img src={who.avatar} alt="" className="size-9 shrink-0 rounded-full bg-app-sunken object-cover" />
+            : <span aria-hidden className="grid size-9 shrink-0 place-items-center rounded-full bg-app-sunken font-display text-sm">{initials(who.name)}</span>}
+          <span className="truncate">{who.name}</span>
+        </div>
+      )}
     </div>
   );
 }

@@ -9,7 +9,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { openDb, type DB } from "./db";
 import type { Ctx } from "./context.server";
 import { mediaFile, serveMedia, writeMedia } from "./media";
-import { directory, intros, memberPage, publicProfiles, removeLogo, saveProfile, uploadImage } from "@/features/members/members.server";
+import { directory, intros, memberPage, ownProfile, publicProfiles, removeLogo, saveProfile, uploadImage } from "@/features/members/members.server";
 import { bookHeadshot, listEvents, publicEvents, setRsvp } from "@/features/events/events.server";
 import { submitApplication } from "@/features/applications/applications.server";
 import { listNeighborhoods } from "@/features/neighborhoods/neighborhoods.server";
@@ -526,3 +526,19 @@ async function serverFunctionNames(): Promise<string[]> {
   ]);
   return modules.flatMap((m) => Object.keys(m));
 }
+
+// Last, so its user and applications shift no fixture above. /account's locked panel offers /join only to someone
+// with no application of her own; an unlinked one with the same email doesn't count, and nobody sees anyone else's.
+describe("own profile: hasApplication", () => {
+  it("is true only once an application is linked to her", () => {
+    const H = id("ab0");
+    addUser(H, "applies@x.test");
+    apply(null, "applies@x.test", "Same Email, Not Linked");
+    expect(ownProfile(as(H))!.hasApplication).toBe(false);
+    expect(ownProfile(as(C))!.hasApplication).toBe(false);
+    apply(H, "applies@x.test", "Hana");
+    expect(ownProfile(as(H))!.hasApplication).toBe(true);
+    expect(ownProfile(as(C))!.hasApplication).toBe(false);
+    throwsAccess(() => ownProfile(anon()));
+  });
+});

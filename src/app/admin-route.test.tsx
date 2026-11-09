@@ -16,6 +16,7 @@ import { Route as GuardRoute } from "@/routes/_authenticated/_admin/route";
 import { Route } from "@/routes/_authenticated/_admin/admin";
 
 const Page = Route.options.component as React.ComponentType;
+vi.spyOn(Route, "useRouteContext").mockReturnValue({ user: { id: "admin1", email: "natasa@x.test", name: "Natasa Admin" } } as never);
 afterEach(() => {
   cleanup();
   fake.reset();
