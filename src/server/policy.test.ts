@@ -19,6 +19,9 @@ import {
   setMemberStatus, updateEvent,
 } from "@/features/admin/admin.server";
 import { adminReviews, markReviewDone, mintReviewLink, openReview, reviewLinkStates, revokeReviewLink, submitReview } from "@/features/member-links/member-links.server";
+import { adminFormResponses, openForm, submitResponse } from "@/features/forms/forms.server";
+import { saveForm } from "@/features/forms/store";
+import { DEMO_FORMS } from "@/features/forms/fixtures";
 import { TINY } from "@/test/images";
 
 const id = (n: string) => `00000000-0000-4000-8000-${n.padStart(12, "0")}`;
@@ -570,12 +573,35 @@ describe("member review links", () => {
   });
 });
 
+// ---------- Custom forms (migration 0005): anyone answers an open form; only admins read the answers ----------
+describe("custom forms", () => {
+  beforeAll(() => {
+    for (const form of DEMO_FORMS) saveForm(db, form);
+  });
+  it("anon reads an open form and answers it; nobody answers a closed one", () => {
+    expect(openForm(anon(), { slug: "salon-rsvp" })!.questions.length).toBeGreaterThan(0);
+    submitResponse(anon(), "salon-rsvp", { answers: { name: "Vi", email: "vi-form@x.test", coming: "yes" } });
+    expect(() => submitResponse(as(A), "old-survey", { answers: { feedback: "Hi" } })).toThrow(/closed/);
+  });
+  it("an answer cannot pick its form, version or stored email", () => {
+    submitResponse(anon(), "salon-rsvp", { answers: { name: "Sly", email: "sly-form@x.test", coming: "no" }, form_id: "demo0002", form_version: 9, email: "x@x.test" });
+    expect(get("select form_id, form_version, email from custom_form_responses where email = 'sly-form@x.test'"))
+      .toEqual({ form_id: "demo0001", form_version: 1, email: "sly-form@x.test" });
+  });
+  it.each([["anon", null], ["pending member", C], ["approved member", B]])("%s cannot read form answers", (_who, who) => {
+    throwsAccess(() => adminFormResponses(as(who)));
+  });
+  it("admin reads every answer", () => {
+    expect(adminFormResponses(as(A)).find((f) => f.slug === "salon-rsvp")!.total).toBe(2);
+  });
+});
+
 /** Every server function the browser can call, by export name. */
 async function serverFunctionNames(): Promise<string[]> {
   const modules = await Promise.all([
     import("@/features/auth/fns"), import("@/features/members/fns"), import("@/features/events/fns"),
     import("@/features/applications/fns"), import("@/features/neighborhoods/fns"), import("@/features/admin/fns"),
-    import("@/features/admin/approval-email"), import("@/features/member-links/fns"),
+    import("@/features/admin/approval-email"), import("@/features/member-links/fns"), import("@/features/forms/fns"),
   ]);
   return modules.flatMap((m) => Object.keys(m));
 }

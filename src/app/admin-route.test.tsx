@@ -12,6 +12,7 @@ vi.mock("@/features/admin/approval-email", () => ({ emailApproval: (id: string) 
 vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs }));
 vi.mock("@/features/auth/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 vi.mock("@/features/member-links/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
+vi.mock("@/features/forms/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 
 import { Route as GuardRoute } from "@/routes/_authenticated/_admin/route";
 import { Route } from "@/routes/_authenticated/_admin/admin";
@@ -69,10 +70,10 @@ describe("_admin guard", () => {
 });
 
 const FETCH = Symbol("fetch");
-type AdminKey = "inbox" | "applications" | "members" | "neighborhoods" | "bookings" | "events" | "review-links" | "reviews";
+type AdminKey = "inbox" | "applications" | "members" | "neighborhoods" | "bookings" | "events" | "review-links" | "reviews" | "form-responses";
 /** Seeds every admin read (empty lists, plus `members`) unless overridden; FETCH leaves that read to the queued fake results. */
 function renderAdmin(over: Partial<Record<AdminKey, unknown>> = {}, extra: [unknown[], unknown][] = []) {
-  const data: Record<AdminKey, unknown> = { inbox: [], applications: [], members, neighborhoods: [], bookings: [], events: [], "review-links": {}, reviews: [], ...over };
+  const data: Record<AdminKey, unknown> = { inbox: [], applications: [], members, neighborhoods: [], bookings: [], events: [], "review-links": {}, reviews: [], "form-responses": [], ...over };
   const seed = Object.entries(data).filter(([, v]) => v !== FETCH).map(([k, v]) => [["admin", k], v] as [unknown[], unknown]);
   return renderWithQueries(<Page />, [...seed, ...extra]);
 }
@@ -93,7 +94,7 @@ describe("/admin", () => {
 
     it("renders all six cards as anchored regions, and the sidebar marks the top one as here", () => {
       renderAdmin();
-      for (const [name, id] of [["Inbox", "inbox"], ["Applications", "applications"], ["All members", "members"], ["Member reviews", "reviews"], ["Neighborhoods", "neighborhoods"], ["Headshot bookings", "bookings"], ["Gatherings", "gatherings"]]) {
+      for (const [name, id] of [["Inbox", "inbox"], ["Applications", "applications"], ["All members", "members"], ["Member reviews", "reviews"], ["Form responses", "forms"], ["Neighborhoods", "neighborhoods"], ["Headshot bookings", "bookings"], ["Gatherings", "gatherings"]]) {
         expect(card(name).id).toBe(id);
       }
       const nav = screen.getAllByRole("navigation", { name: "Main" })[0];
@@ -315,6 +316,22 @@ describe("/admin", () => {
     fireEvent.click(within(article).getByRole("button", { name: "Mark the review from Rosa Diaz as handled" }));
     await waitFor(() => expect(within(card("Member reviews")).queryByRole("article")).toBeNull());
     expect(fake.calls[0]).toEqual(["markReviewDoneFn", { id: "r1" }]);
+  });
+
+  it("form responses: each form with its count, and every answer under its question's label", () => {
+    const entries = [{ key: "name", label: "Your name", value: "Rosa Diaz" }, { key: "diet", label: "Anything we should know?", value: ["Vegan", "No nuts"] }];
+    renderAdmin({ "form-responses": [
+      { id: "demo0001", name: "Salon RSVP (demo)", slug: "salon-rsvp", open: true, total: 1, responses: [{ id: "a1", created_at: "2026-11-09T15:00:00Z", entries }] },
+      { id: "demo0002", name: "Old survey (demo, closed)", slug: "old-survey", open: false, total: 0, responses: [] },
+    ] });
+    const rsvp = within(card("Form responses")).getByRole("article", { name: "Salon RSVP (demo)" });
+    expect(rsvp.textContent).toMatch(/\/f\/salon-rsvp · 1 answer/);
+    expect(rsvp.textContent).toMatch(/Open/);
+    expect(within(rsvp).getByText("Your name").nextElementSibling!.textContent).toBe("Rosa Diaz");
+    expect(within(rsvp).getAllByRole("listitem").map((li) => li.textContent)).toEqual(["Vegan", "No nuts"]);
+    const closed = within(card("Form responses")).getByRole("article", { name: "Old survey (demo, closed)" });
+    expect(closed.textContent).toMatch(/0 answers/);
+    expect(closed.textContent).toMatch(/Closed/);
   });
 
   it("members: approve sets the profile status directly", async () => {

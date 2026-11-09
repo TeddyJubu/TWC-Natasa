@@ -784,7 +784,8 @@
       "acceptance": "Custom-form answers: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
       "status": "todo",
-      "target": "/admin"
+      "target": "/admin",
+      "evidence": "Partial: answers are stored one row per answer in custom_form_responses and listed in /admin › Form responses with the question labels. Not yet: CRM items (name/business/area from marked questions, origin), file answers."
     },
     {
       "id": "CRM-095",
@@ -882,7 +883,8 @@
       "acceptance": "Question model: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
       "status": "todo",
-      "target": "/admin"
+      "target": "/admin",
+      "evidence": "Partial: 11 of the 22 types (short, email, phone, url, number, date, paragraph, dropdown, radio, checkboxes, yesno) with the old key/choice limits (src/features/forms/schema.ts). Not yet: consent, statement, file, time, rating, scale, hidden, ranking, grid, address, total."
     },
     {
       "id": "CRM-107",
@@ -978,7 +980,8 @@
       "acceptance": "Slugs: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
       "status": "todo",
-      "target": "/admin"
+      "target": "/admin",
+      "evidence": "Partial: one live slug per form plus old slugs that 301 (custom_form_old_slugs); reserved and taken names refused by the table. Not yet: the slug-check endpoint (needs the form builder)."
     },
     {
       "id": "CRM-119",
@@ -1114,7 +1117,8 @@
       "acceptance": "Responses and Summary UI: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
       "status": "todo",
-      "target": "/admin"
+      "target": "/admin",
+      "evidence": "Partial: /admin › Form responses lists each form (open/closed, count) and its newest 100 answers with labels. Not yet: filters, columns, Summary, Hold, delete, CSV."
     },
     {
       "id": "CRM-136",
@@ -3086,7 +3090,8 @@
       "acceptance": "Custom form thank-you location: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Partial: the form's own thank-you words live at /f/<slug>/thanks (src/routes/f.$slug_.thanks.tsx). Thank-you per answer, redirect after sending and embed are not in this slice."
     },
     {
       "id": "OPS-192",
@@ -3117,8 +3122,9 @@
       "source": "backoffice.md:Bots get a plain success.",
       "acceptance": "Bots get a plain success.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/f/*"
+      "status": "built",
+      "target": "/f/*",
+      "evidence": "A filled honeypot on POST /api/forms/<slug> gets the same 204 as a real answer and nothing is stored (submitResponse in src/features/forms/forms.server.ts); the page then shows the plain /f/<slug>/thanks — no variant or redirect exists to reveal. tests: src/features/forms/forms.test.ts, src/server/policy.test.ts › custom forms, src/app/form-route.test.tsx"
     },
     {
       "id": "OPS-196",
@@ -3197,8 +3203,9 @@
       "source": "backoffice.md:Plumbing fields that are never stored:",
       "acceptance": "Plumbing fields that are never stored:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "parity"
+      "status": "built",
+      "target": "parity",
+      "evidence": "Only the form's own question keys are stored (checkAnswers in src/features/forms/schema.ts drops every other key: honeypot, form-*, anything sent); the client sends { answers, honeypot } only. tests: src/features/forms/forms.test.ts, src/server/policy.test.ts › custom forms, src/app/form-route.test.tsx"
     },
     {
       "id": "OPS-206",
@@ -3350,8 +3357,9 @@
       "source": "backoffice.md:Write locking.",
       "acceptance": "Write locking.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "notifications"
+      "status": "built",
+      "target": "notifications",
+      "evidence": "Answers are rows in custom_form_responses (migration 0005) written through node:sqlite, which serialises every write; no file appends, so no lock to forget. src/features/forms/forms.server.ts"
     },
     {
       "id": "OPS-225",
@@ -3382,8 +3390,9 @@
       "source": "backoffice.md:Published custom form files `${CUSTOM_FORMS_DIR}/<8-char id>.json`.",
       "acceptance": "Published custom form files `${CUSTOM_FORMS_DIR}/<8-char id>.json`.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "notifications"
+      "status": "built",
+      "target": "notifications",
+      "evidence": "Published forms are rows in custom_forms (migration 0005) instead of ${CUSTOM_FORMS_DIR}/<id>.json: the 8-char [a-z0-9] id, slug rule + reserved set, 1–80 one-line name and JSON questions are CHECK constraints; questions are checked on write (checkQuestions, saveForm in src/features/forms/store.ts). tests: src/features/forms/forms.test.ts, src/server/policy.test.ts › custom forms, src/app/form-route.test.tsx"
     },
     {
       "id": "OPS-229",
@@ -3486,16 +3495,18 @@
       "source": "backoffice.md:Closing custom forms.",
       "acceptance": "Closing custom forms.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "parity"
+      "status": "built",
+      "target": "parity",
+      "evidence": "custom_forms.open = 0: /f/<slug> shows closed_message or the default (CLOSED) on a 200 page with no questions, and POST /api/forms/<slug> stores nothing (410 with the same words). No schedule, as before. tests: src/features/forms/forms.test.ts, src/server/policy.test.ts › custom forms, src/app/form-route.test.tsx"
     },
     {
       "id": "OPS-242",
       "source": "backoffice.md:Honeypot `bot-field`.",
       "acceptance": "Honeypot `bot-field`.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "parity"
+      "status": "built",
+      "target": "parity",
+      "evidence": "Honeypot field `honeypot` (off-screen, aria-hidden, tabindex -1, as on /contact): any non-empty value is a silent 204, nothing stored. Unlike the old service the per-form limiter still counts it (it is checked before the body is read). src/features/forms/CustomForm.tsx, forms.server.ts. tests: src/features/forms/forms.test.ts, src/server/policy.test.ts › custom forms, src/app/form-route.test.tsx"
     },
     {
       "id": "OPS-243",
@@ -3510,8 +3521,9 @@
       "source": "backoffice.md:Per-form, per-visitor limit",
       "acceptance": "Per-form, per-visitor limit: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "parity"
+      "status": "built",
+      "target": "parity",
+      "evidence": "10 per visitor (clientIp) per form per 10 minutes, 429 with the friendly words, checked before the body is read (formRequest, rateLimit in src/server/request.ts). Deviation: every POST counts, not only stored ones (ponytail comment). tests: src/features/forms/forms.test.ts, src/server/policy.test.ts › custom forms, src/app/form-route.test.tsx"
     },
     {
       "id": "OPS-245",
@@ -3550,8 +3562,9 @@
       "source": "backoffice.md:One answer per email",
       "acceptance": "One answer per email: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "notifications"
+      "status": "built",
+      "target": "notifications",
+      "evidence": "custom_forms.one_per_email: a second answer whose first email-type answer matches (trimmed, any case) gets 409 DUPLICATE and nothing is stored; check and insert can't interleave (node:sqlite is synchronous). The email is kept in its own column (custom_form_responses.email), like every other table's email, instead of a keyed-hash side index. tests: src/features/forms/forms.test.ts, src/server/policy.test.ts › custom forms, src/app/form-route.test.tsx"
     },
     {
       "id": "OPS-250",
@@ -4902,8 +4915,9 @@
       "source": "ops-part-d.md:Validation of a published CRM form.",
       "acceptance": "Validation of a published CRM form.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/f/*"
+      "status": "built",
+      "target": "/f/*",
+      "evidence": "Same slug rule ([a-z0-9], inner '-', no '--', 1–40) and the full reserved set as a CHECK on custom_forms.slug; id 8 [a-z0-9]; name 1–80, one line (migration 0005). The route is /f/$slug, so a form can't shadow an app route. tests: src/features/forms/forms.test.ts › custom_forms table"
     },
     {
       "id": "OPS-419",
@@ -4958,8 +4972,9 @@
       "source": "ops-part-d.md:Moved pages.",
       "acceptance": "Moved pages.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/f/*"
+      "status": "built",
+      "target": "/f/*",
+      "evidence": "custom_form_old_slugs (migration 0005): /f/<old> and /f/<old>/thanks 301 to the current slug (src/routes/f.$slug.tsx, f.$slug_.thanks.tsx); answers posted to an old name land on the form. Embed/prefill query strings are not carried (no embed or prefill in this slice). tests: src/features/forms/forms.test.ts, src/server/policy.test.ts › custom forms, src/app/form-route.test.tsx"
     },
     {
       "id": "OPS-426",
@@ -5390,8 +5405,9 @@
       "source": "ops-part-d.md:Rate limits per visitor per form.",
       "acceptance": "Rate limits per visitor per form.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/f/*"
+      "status": "built",
+      "target": "/f/*",
+      "evidence": "Per visitor per form: rateLimit(10, 10 min) keyed by client IP + slug in formRequest (src/features/forms/forms.server.ts); in memory like the app's other limits. Every POST counts (documented deviation). tests: src/features/forms/forms.test.ts, src/server/policy.test.ts › custom forms, src/app/form-route.test.tsx"
     },
     {
       "id": "OPS-480",
@@ -5710,8 +5726,9 @@
       "source": "ops-part-d.md:External origins that the new CSP does not allow.",
       "acceptance": "External origins that the new CSP does not allow.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "parity"
+      "status": "built",
+      "target": "parity",
+      "evidence": "Retired: the rebuilt /f/* pages load nothing from outside (scrapbook kit, self-hosted fonts); the Google Fonts look sets and Turnstile are not ported, so the same-origin CSP is unchanged. Smoke test: no googleapis/gstatic/challenges.cloudflare in the /f/salon-rsvp HTML; src/app/security-headers.test.ts."
     },
     {
       "id": "OPS-520",
@@ -5758,8 +5775,9 @@
       "source": "ops-part-d.md:Counting responses depends on the writer's JSON spacing.",
       "acceptance": "Counting responses depends on the writer's JSON spacing.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "parity"
+      "status": "built",
+      "target": "parity",
+      "evidence": "Counts come from the table: adminFormResponses counts custom_form_responses rows per form_id (src/features/forms/forms.server.ts), never from text."
     },
     {
       "id": "OPS-526",
