@@ -1188,11 +1188,7 @@
       "owner": "custom-forms",
       "status": "todo",
       "target": "/admin",
-<<<<<<< HEAD
-      "evidence": "Partial: /admin › Form responses lists each form (open/closed, count) and its newest 100 answers with labels. Not yet: filters, columns, Summary, Hold, delete, CSV."
-=======
-      "evidence": "Partial: /admin \u203a Form responses lists each form (open/closed, count, newest date) and its newest 100 answers with labels; open/close + closed message (CRM-100) and per-form CSV (CRM-130) are built. Not yet: filters, column picker, Summary, Hold, delete-for-good."
->>>>>>> t3/custom-forms-followup-phase-one
+      "evidence": "Partial: /admin › Form responses lists each form (open/closed, count, newest date) and its newest 100 answers with labels; open/close + closed message (CRM-100) and per-form CSV (CRM-130) are built. Not yet: filters, column picker, Summary, Hold, delete-for-good."
     },
     {
       "id": "CRM-136",
