@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import balconyFriends from "@/assets/photography/home/balcony-friends.webp";
-import queensPolaroid from "@/assets/photography/home/queens-polaroid.webp";
+import aboutGathering from "@/assets/photography/site/about-gathering.webp";
+import aboutCoffee from "@/assets/photography/site/about-coffee.webp";
 import natasaFounder from "@/assets/photography/home/natasa-founder.webp";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import { Icon, Scallop, TwcRibbon } from "@/app/layout/twc";
@@ -52,9 +52,9 @@ function AboutPage() {
             <p className="twc-chip twc-chip--ring self-start"><Icon name="pin" />Western Queens, New York</p>
           </div>
           <div className="relative min-h-[440px] min-w-0 flex-[1_1_380px]">
-            <img src={balconyFriends} alt="Two friends leaning on a balcony railing, faces turned to the sky" width={800} height={1120} fetchPriority="high" className="twc-photo twc-photo--arch absolute left-0 top-0 aspect-[5/7] w-[min(300px,80%)]" />
+            <img src={aboutGathering} alt="A group of women laughing together outdoors on a sunny day" width={1280} height={1600} fetchPriority="high" className="twc-photo twc-photo--arch absolute left-0 top-0 aspect-[5/7] w-[min(300px,80%)]" />
             <figure className="twc-polaroid absolute -bottom-2.5 right-0 w-[min(200px,55%)]">
-              <img src={queensPolaroid} alt="Women laughing together at an evening rooftop gathering" width={320} height={256} />
+              <img src={aboutCoffee} alt="Two women chatting over coffee at an outdoor café" width={1600} height={901} loading="lazy" />
               <figcaption>our people, Queens</figcaption>
             </figure>
           </div>
