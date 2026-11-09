@@ -19,7 +19,7 @@ Read `migration/BRIEF.md` and manifest items with `owner: "data-import"`.
 ## Built (branch `t3/76b2f1fb`)
 
 - `scripts/import-legacy.ts` (CLI, runs on **Node**, not Bun — `node:sqlite`) → `src/server/legacy-import.ts` (logic + tests).
-- `db/migrations/0003_legacy_import.sql`: `applications.legacy_id`, `legacy_members`, `newsletter_subscribers`, and the replaced
+- `db/migrations/0004_legacy_import.sql`: `applications.legacy_id`, `legacy_members`, `newsletter_subscribers`, and the replaced
   `user_created` / `user_verified` triggers that link by verified email.
 - Synthetic fixtures: `scripts/fixtures/legacy-{applications,members,subscribers,submissions}.json`.
 

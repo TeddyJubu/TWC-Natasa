@@ -297,7 +297,7 @@ Owner-authorized cutover of the old static site (`/opt/nbwc/site`), CRM (`crm.th
 - **Import is insert-only (data-import):** re-running reports `existing` and never overwrites an admin's edits. Old statuses map `approved`/`approved_member` → approved, `rejected`/`declined`/`auto_rejected`/`archived` → declined, everything else → pending; **merged** duplicates, **archived** members and unreadable rows are skipped and counted.
 - **Newsletter consent (CRM-036):** `newsletter_subscribers.consent` is null for the old Beehiiv list (never recorded here), 1/0 from a form's answer; notifications decides what null means (fixes the legacy Beehiiv sync ignoring consent).
 - **Inbox history:** old contact/partnership messages import as `archived` (already emailed) unless `--inbox-new`; spam-flagged and tombstoned rows are not imported; a contact with no subject gets the topic label "General".
-- **Migration number:** `0003_legacy_import.sql` — if another branch also took 0003, renumber this one before merge (it replaces the 0001 sign-up triggers, so it must run last).
+- **Migration number:** renumbered on merge to `0004_legacy_import.sql` so members-links can keep `0003_member_links.sql`. Legacy import replaces the 0001 sign-up triggers, so it must stay last.
 
 ### Progress
 
@@ -307,6 +307,6 @@ Owner-authorized cutover of the old static site (`/opt/nbwc/site`), CRM (`crm.th
 - [x] Seed `migration/manifest.json` from all inventories (902 items)
 - [x] public-pages: `/fellowship`, `/partnerships`, `migration/redirects.md` (merged)
 - [x] admin-inbox: `0002_inbox.sql`, `/api/contact` + `/api/partnerships` store then email, `/admin` Inbox card; consent + honeypot (merged)
-- [x] data-import: `scripts/import-legacy.ts`, `0003_legacy_import.sql`, link-on-verify triggers, fixtures + tests (branch `t3/76b2f1fb`)
+- [x] data-import: `scripts/import-legacy.ts`, `0004_legacy_import.sql`, link-on-verify triggers, fixtures + tests (branch `t3/76b2f1fb`)
 - [ ] Workstreams remaining: members-links, custom-forms, notifications, vps-cutover
 - [ ] `migration:check` passes; final Haiku sweep green; live smoke; old services stopped

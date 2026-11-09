@@ -4,7 +4,7 @@
 // exactly as it is, so an admin's later edits are never overwritten.
 //
 // What it never does: approve anyone through sign-up (members are written to `legacy_members`, claimed by a
-// verified email in the 0003 triggers), copy review tokens (members-links mints fresh hashed ones), or import
+// verified email in the 0004 triggers), copy review tokens (members-links mints fresh hashed ones), or import
 // custom-form rows (custom-forms).
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";

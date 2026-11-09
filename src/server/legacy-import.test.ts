@@ -1,5 +1,5 @@
 // The legacy import (scripts/import-legacy.ts) on an in-memory database, with the synthetic rows in
-// scripts/fixtures/, plus the link-on-sign-up rules of migration 0003: a verified email claims what was imported;
+// scripts/fixtures/, plus the link-on-sign-up rules of migration 0004: a verified email claims what was imported;
 // nothing is ever approved by signing up.
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";

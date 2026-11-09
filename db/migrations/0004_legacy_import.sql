@@ -1,4 +1,4 @@
--- 0003 — the legacy import (BRIEF decision 10): the old site's members and newsletter list have a home before anyone
+-- 0004 — the legacy import (BRIEF decision 10): the old site's members and newsletter list have a home before anyone
 -- has a login, and the sign-up triggers link them by email. Nothing here approves anyone on her own say-so:
 -- `legacy_members` rows are written only by scripts/import-legacy.ts (an admin running it on the server), and a row
 -- is claimed only by an account whose email is *verified*, exactly like applications in 0001.
