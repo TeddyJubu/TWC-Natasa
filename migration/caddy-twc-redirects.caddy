@@ -109,7 +109,7 @@
 # /join to the app. Review links keep their query (`{uri}` = path + query). GET/HEAD only (new for
 # join.* too): a 301 turns a POST into a GET and drops the answers (CRM-175), so an application or
 # review form opened before the cutover still POSTs to intake and is stored where the CRM reads it.
-# /review/thanks, /join/thanks and /spotlight stay on intake.
+# /review/thanks and /join/thanks stay on intake. /spotlight moves with /review once 0008 is live.
 (twc_members_cutover) {
 	@joinform {
 		host join.thewomenscollective.club members.thewomenscollective.club
@@ -124,6 +124,13 @@
 		path /review
 	}
 	redir @review https://new.thewomenscollective.club{uri} 301
+
+	@spotlight {
+		host members.thewomenscollective.club
+		method GET HEAD
+		path /spotlight
+	}
+	redir @spotlight https://new.thewomenscollective.club{uri} 301
 }
 
 # nbwc.site, … { … } — replaces the `@join`/`redir @join` and `@forms`/`redir @forms` lines; paste at
@@ -139,6 +146,13 @@
 		path /review
 	}
 	redir @review https://new.thewomenscollective.club{uri} permanent
+
+	@spotlight {
+		host members.nbwc.site
+		method GET HEAD
+		path /spotlight
+	}
+	redir @spotlight https://new.thewomenscollective.club{uri} permanent
 
 	@apply {
 		host nbwc.site www.nbwc.site
