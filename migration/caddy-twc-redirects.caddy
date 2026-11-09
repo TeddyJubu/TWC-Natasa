@@ -7,9 +7,8 @@
 # src/app/cutover-redirects.test.ts can check this file against migration/redirects.md.
 # Runbook: migration/briefs/vps-cutover.md. Smoke: bun scripts/smoke-cutover.ts.
 #
-# ENABLED:   twc_apex_cutover, twc_members_cutover, twc_nbwc_cutover
-# NOT YET:   twc_forms_cutover (waits for forms-import), twc_admin_cutover / twc_crm_cutover
-#            (repo ready — integrator pastes; see AUDIT-TASKS "admin-crm-cutover — repo ready")
+# ENABLED:   twc_apex_cutover, twc_members_cutover, twc_nbwc_cutover,
+#            twc_admin_cutover, twc_crm_cutover, twc_forms_cutover (2026-11-09; 0 live forms)
 
 # thewomenscollective.club { … } — replaces the `@nologin`/`redir @nologin` and `@apply`/`redir @apply`
 # lines. Everything else in the block (try_files, @formpost, /f/* proxying, handle_errors) stays.

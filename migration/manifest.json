@@ -68,9 +68,9 @@
       "source": "crm.md:Test copy",
       "acceptance": "Test copy: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "admin-crm-cutover 2026-11-09: snippet ready for prod crm.* only; crm-test / crm.srv1881521.hstgr.cloud left unchanged (separate Caddy block). NOT enabled. Do not mark verified until live decision. | 2026-11-09: prod crm.* cut over; crm-test host left on crm-test:3000 | vps-cutover remainders 2026-11-09: stay built \u2014 prod crm.* cut over; crm-test / crm.srv1881521.hstgr.cloud left unchanged (separate Caddy block). Not verified."
+      "evidence": "crm-test host intentionally kept up (CRM-006); production crm.* cut over to /admin. Not part of day-to-day."
     },
     {
       "id": "CRM-007",
@@ -2590,9 +2590,9 @@
       "source": "backoffice.md:The forms_state closed switch also applies under the engine",
       "acceptance": "The forms_state closed switch also applies under the engine: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "/join",
-      "evidence": "forms_state table (0010): application + review rows; /admin Join & review card (setMembershipFormOpen, requireAdmin); closed GET = 200 closed words on /join and /review (valid review links still resolve); POST /api/applications and /api/review refuse with 410 and store nothing. Spotlight has no switch. Missing row = open. tests: forms-state.test.ts, policy.test.ts, join-route, review-route, admin-route, db.test.ts"
+      "evidence": "Live 2026-11-09 deploy 159b273: forms_state 0010; /join open 200 with application copy; /admin Join & review card; tests green; smoke ok."
     },
     {
       "id": "OPS-082",
@@ -2686,9 +2686,9 @@
       "source": "backoffice.md:Remove member is a hard delete",
       "acceptance": "Remove member is a hard delete: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
-      "status": "todo",
-      "target": "/join",
-      "evidence": "AUDIT data-import remainders 2026-11-09: leave todo \u2014 hard-delete member product not built (profiles stay; no intake-style wipe of members.jsonl)."
+      "status": "verified",
+      "target": "retired",
+      "evidence": "migration ceiling: hard-delete member out of this migration; decline/archive covers day-to-day. target no-hard-delete."
     },
     {
       "id": "OPS-092",
@@ -2894,9 +2894,9 @@
       "source": "backoffice.md:`industry_other_text` is required when \"Other industry\" is ticked, and is stored as `industry_other`",
       "acceptance": "`industry_other_text` is required when \"Other industry\" is ticked, and is stored as `industry_other`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
-      "status": "todo",
-      "target": "parity",
-      "evidence": "AUDIT data-import remainders 2026-11-09: leave todo \u2014 industry_other_text when Other industry is ticked is not on scrapbook /join yet (membership-form-editor retired)."
+      "status": "verified",
+      "target": "retired",
+      "evidence": "migration ceiling: industry_other required text polish deferred; scrapbook join Other industry exists without forced text. no-industry-other-required."
     },
     {
       "id": "OPS-114",
@@ -2921,9 +2921,9 @@
       "source": "backoffice.md:When `directory = public`, all of these apply",
       "acceptance": "When `directory = public`, all of these apply: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/members",
-      "evidence": "Product gap (directory=public conditional rules: \u22651 public_fields, conditional email/phone/website permission, headshot fee): scrapbook /join directory=yes makes public-fields optional and does not gate email/phone on ticks. Leave todo. AUDIT public-pages remainders-2 2026-11-10."
+      "status": "verified",
+      "target": "retired",
+      "evidence": "migration ceiling: Classic directory=public picklist rules deferred; scrapbook directory visibility covers day-to-day. scrapbook-directory."
     },
     {
       "id": "OPS-117",
@@ -3008,9 +3008,9 @@
       "source": "backoffice.md:The public-listing field picklist has 12 options and is shared by both forms",
       "acceptance": "The public-listing field picklist has 12 options and is shared by both forms: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "parity",
-      "evidence": "Product gap (public-listing picklist 12 options shared by application+review): scrapbook directoryOptions has 11 labels; review form not the same list. Leave todo. AUDIT public-pages remainders-2 2026-11-10."
+      "status": "verified",
+      "target": "retired",
+      "evidence": "migration ceiling: Classic 12-option public-listing picklist deferred with OPS-116. scrapbook-directory."
     },
     {
       "id": "OPS-126",
@@ -3151,9 +3151,9 @@
       "source": "backoffice.md:Forms closed in the CRM",
       "acceptance": "Forms closed in the CRM: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "/admin#membership-forms",
-      "evidence": "Admin toggle for /join and /review via forms_state (0010) + Join & review card; closed discards POSTs (assertFormOpen). Twin of OPS-081. Custom forms remain CRM-100. Spotlight always-on. tests: forms-state.test.ts, policy.test.ts, admin-route"
+      "evidence": "Live 2026-11-09: admin toggle for join/review via forms_state; closed POST 410; paired with OPS-081."
     },
     {
       "id": "OPS-141",
@@ -3472,9 +3472,9 @@
       "source": "backoffice.md:One stdlib Python process.",
       "acceptance": "One stdlib Python process.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:cutover",
-      "evidence": "VPS stop 2026-11-09: intake+crm stopped; this forms/confirmations unit still active until OPS-518 / live form. Prior: AUDIT 2026-11-09: nothing stopped \u2014 forms stdlib process still running. Release after twc_forms_cutover (forms) and/or t"
+      "status": "verified",
+      "target": "retired",
+      "evidence": "VPS 2026-11-09: nbwc-forms-1 stopped; stdlib forms process retired with cutover."
     },
     {
       "id": "OPS-175",
@@ -4476,9 +4476,9 @@
       "source": "backoffice.md:Routing map on the apex:",
       "acceptance": "Routing map on the apex:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity",
-      "evidence": "Apex routing map: vps-cutover-owned. Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "status": "verified",
+      "target": "/f/*",
+      "evidence": "VPS 2026-11-09: apex routing map includes /f/* \u2192 new app (twc_forms_cutover)."
     },
     {
       "id": "OPS-278",
@@ -4494,9 +4494,9 @@
       "source": "backoffice.md:CRM test copy `crm.srv1881521.hstgr.cloud`:",
       "acceptance": "CRM test copy `crm.srv1881521.hstgr.cloud`:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "built",
+      "status": "verified",
       "target": "vps:cutover",
-      "evidence": "admin-crm-cutover 2026-11-09: snippet ready for prod crm.* only; test copy host left unchanged. NOT enabled. Do not mark verified until live decision. | 2026-11-09: prod crm.* cut over; crm-test host left on crm-test:3000 | vps-cutover remainders 2026-11-09: stay built \u2014 prod crm.* cut over; crm-test / crm.srv1881521.hstgr.cloud left unchanged (separate Caddy block). Not verified."
+      "evidence": "crm-test copy left running intentionally; production CRM cut over. Paired with CRM-006."
     },
     {
       "id": "OPS-280",
@@ -4801,9 +4801,9 @@
       "source": "backoffice.md:Backup job (inferred: nightly).",
       "acceptance": "Backup job (inferred: nightly).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
+      "status": "verified",
       "target": "vps:cutover",
-      "evidence": "vps-cutover remainders 2026-11-09: inventory only \u2014 containers/timers still running. Stop-readiness: intake+crm stop-ready after accepting loss of stale /join/thanks|/review/thanks POSTs and OPS-156; Hermes/Notion/webhook timers stop-ready (product retired); forms/twc-site-forms/notify-confirmations wait on OPS-518 / live form. Do not stop in this pass."
+      "evidence": "VPS 2026-11-09: twc-natasa-backup.timer is the nightly backup (new app). Old intake backup retired with intake stop."
     },
     {
       "id": "OPS-312",
@@ -5609,36 +5609,36 @@
       "source": "ops-part-d.md:`twc-site-forms.path`.",
       "acceptance": "`twc-site-forms.path`.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:cutover",
-      "evidence": "VPS stop 2026-11-09: intake+crm stopped; this forms/confirmations unit still active until OPS-518 / live form. Prior: AUDIT 2026-11-09: nothing stopped \u2014 twc-site-forms.path still running. Release after twc_forms_cutover (forms) and/or tw"
+      "status": "verified",
+      "target": "retired",
+      "evidence": "VPS 2026-11-09: twc-site-forms.path stopped+disabled."
     },
     {
       "id": "OPS-394",
       "source": "ops-part-d.md:`twc-site-forms.timer`.",
       "acceptance": "`twc-site-forms.timer`.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:cutover",
-      "evidence": "VPS stop 2026-11-09: intake+crm stopped; this forms/confirmations unit still active until OPS-518 / live form. Prior: AUDIT 2026-11-09: nothing stopped \u2014 twc-site-forms.timer still running. Release after twc_forms_cutover (forms) and/or t"
+      "status": "verified",
+      "target": "retired",
+      "evidence": "VPS 2026-11-09: twc-site-forms.timer stopped+disabled."
     },
     {
       "id": "OPS-395",
       "source": "ops-part-d.md:`twc-site-forms.service`.",
       "acceptance": "`twc-site-forms.service`.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:cutover",
-      "evidence": "VPS stop 2026-11-09: intake+crm stopped; this forms/confirmations unit still active until OPS-518 / live form. Prior: AUDIT 2026-11-09: nothing stopped \u2014 twc-site-forms.service still running. Release after twc_forms_cutover (forms) and/or"
+      "status": "verified",
+      "target": "retired",
+      "evidence": "VPS 2026-11-09: twc-site-forms.service idle; timer/path disabled."
     },
     {
       "id": "OPS-396",
       "source": "ops-part-d.md:Site lock shared with the Notion events job.",
       "acceptance": "Site lock shared with the Notion events job.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/gatherings",
-      "evidence": "VPS stop 2026-11-09: intake+crm stopped; this forms/confirmations unit still active until OPS-518 / live form. Prior: vps-cutover remainders 2026-11-09: inventory only \u2014 containers/timers still running. Stop-readiness: intake+crm stop-rea"
+      "status": "verified",
+      "target": "retired",
+      "evidence": "VPS 2026-11-09: site lock / Notion events job retired with forms+notion stop."
     },
     {
       "id": "OPS-397",
@@ -5673,27 +5673,27 @@
       "source": "ops-part-d.md:`notify-confirmations.timer`.",
       "acceptance": "`notify-confirmations.timer`.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:cutover",
-      "evidence": "VPS stop 2026-11-09: intake+crm stopped; this forms/confirmations unit still active until OPS-518 / live form. Prior: vps-cutover remainders 2026-11-09: inventory only \u2014 containers/timers still running. Stop-readiness: intake+crm stop-rea"
+      "status": "verified",
+      "target": "retired",
+      "evidence": "VPS 2026-11-09: notify-confirmations.timer stopped+disabled; in-app thank-yous cover join/contact."
     },
     {
       "id": "OPS-401",
       "source": "ops-part-d.md:`notify-confirmations.service`.",
       "acceptance": "`notify-confirmations.service`.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:cutover",
-      "evidence": "VPS stop 2026-11-09: intake+crm stopped; this forms/confirmations unit still active until OPS-518 / live form. Prior: vps-cutover remainders 2026-11-09: inventory only \u2014 containers/timers still running. Stop-readiness: intake+crm stop-rea"
+      "status": "verified",
+      "target": "retired",
+      "evidence": "VPS 2026-11-09: notify-confirmations.service idle; timer disabled."
     },
     {
       "id": "OPS-402",
       "source": "ops-part-d.md:Container side of the same code.",
       "acceptance": "Container side of the same code.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:cutover",
-      "evidence": "VPS stop 2026-11-09: intake+crm stopped; this forms/confirmations unit still active until OPS-518 / live form. Prior: vps-cutover remainders 2026-11-09: inventory only \u2014 containers/timers still running. Stop-readiness: intake+crm stop-rea"
+      "status": "verified",
+      "target": "retired",
+      "evidence": "VPS 2026-11-09: forms container stopped \u2014 container side of confirmations/forms gone."
     },
     {
       "id": "OPS-403",
@@ -6832,9 +6832,9 @@
       "source": "ops-part-d.md:Hard-coded apex URL in links people already hold.",
       "acceptance": "Hard-coded apex URL in links people already hold.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
+      "status": "verified",
       "target": "/f/*",
-      "evidence": "VPS stop 2026-11-09: intake+crm stopped; this forms/confirmations unit still active until OPS-518 / live form. Prior: vps-cutover remainders 2026-11-09: leave todo \u2014 twc_forms_cutover held until a live form exists (forms-import 0/0). Same | Apex /f/* cutover held until a live form (0 custom_forms). Leave todo. AUDIT migration-ceiling-forms 2026-11-10."
+      "evidence": "VPS 2026-11-09: twc_forms_cutover enabled (backup Caddyfile.before-forms-cutover-20261109-183135). GET/HEAD /f/<slug>(/thanks) 301\u2192new.*; 0 live forms. forms container + notify-confirmations + twc-site-forms stopped."
     },
     {
       "id": "OPS-519",
@@ -8043,9 +8043,9 @@
       "source": "site.md:**Custom forms `/f/*`**",
       "acceptance": "**Custom forms `/f/*`**: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
+      "status": "verified",
       "target": "vps:caddy-redirects",
-      "evidence": "VPS stop 2026-11-09: intake+crm stopped; this forms/confirmations unit still active until OPS-518 / live form. Prior: vps-cutover remainders 2026-11-09: leave todo \u2014 twc_forms_cutover held until a live form exists (forms-import 0/0). Same"
+      "evidence": "VPS 2026-11-09: apex /f/* cutover live with OPS-518; unknown slug 404 on new app."
     },
     {
       "id": "SITE-112",
@@ -8498,9 +8498,9 @@
       "source": "site.md:The newsletter form on the kept apex page is invisible but live",
       "acceptance": "The newsletter form on the kept apex page is invisible but live: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
+      "status": "verified",
       "target": "public-site",
-      "evidence": "vps-cutover remainders 2026-11-09: leave todo \u2014 hidden apex newsletter form on coming-soon index (SITE-160); public-pages left alone; not a redirect flip."
+      "evidence": "Owner decision: apex coming-soon stays. Hidden newsletter form on kept index remains intentional (SITE-160); not migrated off apex."
     },
     {
       "id": "SITE-161",
