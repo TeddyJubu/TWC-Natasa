@@ -4,18 +4,13 @@ import { Link, useRouter, type ErrorComponentProps } from "@tanstack/react-route
 import { Button, Container, Section, SectionHeader, buttonVariants } from "@/index";
 import { AppNav, AppPage } from "./AppLayout";
 
-const links = [
-  { label: "Our mission", href: "/#mission" },
-  { label: "Members", href: "/members" },
-  { label: "Join", href: "/join" },
-];
 
 function StatusPage({ badge, title, intro, actions }: {
   badge: string; title: string; intro: string; actions?: React.ReactNode;
 }) {
   return (
     <AppPage>
-      <AppNav variant="solid" links={links} />
+      <AppNav />
       <main id="main" tabIndex={-1} className="outline-none">
       <Section className="pt-14 md:pt-20">
         <Container>

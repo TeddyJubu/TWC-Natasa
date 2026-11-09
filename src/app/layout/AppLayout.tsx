@@ -1,19 +1,21 @@
-// The live site's page chrome. Showcase pages use `@/showcase/Shell` instead; nothing here may import from it.
+// The live site's page chrome (the scrapbook kit: src/app/twc.css). Showcase pages use `@/showcase/Shell`
+// instead; nothing here may import from it.
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
-import { BrandLockup, Footer, ImageTrail, Navbar, type FooterProps, type NavbarProps, type RouterLinkComponent } from "@/index";
+import { ConstellationLogo, ImageTrail, cn } from "@/index";
+import { Icon } from "./twc";
 
 /**
  * Live page wrapper. Its first child is a "Skip to content" link to `#main`: every page puts its content
  * between the nav and the footer in one `<main id="main" tabIndex={-1} className="outline-none">`.
  * It also hosts the flower cursor trail (client-only, fine pointers, no reduced motion).
  */
-export function AppPage({ children }: { children: React.ReactNode }) {
+export function AppPage({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className="min-h-screen bg-canvas text-ink">
+    <div className={cn("twc-page min-h-screen overflow-x-clip", className)}>
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-control focus:bg-ink focus:px-5 focus:py-3 focus:text-canvas focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-canvas"
+        className="sr-only z-50 rounded-full bg-sb-ink px-5 py-3 text-sb-paper focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:outline-none focus:ring-2 focus:ring-sb-blue-ink focus:ring-offset-2"
       >
         Skip to content
       </a>
@@ -23,49 +25,124 @@ export function AppPage({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** Design-system links in, TanStack `Link` out: "/path#hash" becomes `to="/path"` + `hash="hash"`. */
-// ponytail: no "?query" support (no nav/footer href has one); split it into `search` when one does.
-const RouterLink: RouterLinkComponent = ({ href, className, children, onClick }) => {
-  const at = href.indexOf("#");
-  const to = at === -1 ? href : href.slice(0, at) || "/";
-  const hash = at === -1 ? undefined : href.slice(at + 1);
-  return <Link to={to} hash={hash} className={className} onClick={onClick}>{children}</Link>;
-};
+type SiteLink = { label: string; to: "/about" | "/members" | "/gatherings" | "/neighborhoods" | "/faq" | "/contact" | "/join" | "/account" };
 
-export type AppNavProps = Omit<NavbarProps, "brand"> & { brand?: React.ReactNode };
+const NAV_START: SiteLink[] = [
+  { label: "About", to: "/about" },
+  { label: "Members", to: "/members" },
+  { label: "Gatherings", to: "/gatherings" },
+];
+const NAV_END: SiteLink[] = [
+  { label: "Neighborhoods", to: "/neighborhoods" },
+  { label: "FAQ", to: "/faq" },
+];
+const MENU: SiteLink[] = [...NAV_START, ...NAV_END, { label: "Contact", to: "/contact" }, { label: "Sign in", to: "/account" }];
 
-/** Site navbar; the brand defaults to the compact lockup linking home (white on the hero). */
-export function AppNav({ brand, variant, ...props }: AppNavProps) {
+const navLink = "twc-link whitespace-nowrap font-display text-[15px] tracking-[0.3px] text-sb-ink";
+const MENU_ID = "site-menu";
+
+/** Sticky site header: three links, the logo, two links + Sign in + Join us; a full-screen popover menu below lg. */
+export function AppNav() {
+  const menu = React.useRef<HTMLDivElement>(null);
+  const close = () => menu.current?.hidePopover?.();
+  const brand = (
+    <Link to="/" activeOptions={{ exact: true }} className="group flex items-center gap-2.5 text-sb-ink outline-none focus-visible:text-sb-blue-ink" aria-label="The Women’s Collective home">
+      <ConstellationLogo variant="ink" alt="" className="w-7 transition-[rotate] duration-500 ease-[var(--ease-snap)] group-hover:rotate-[24deg] motion-reduce:transition-none xl:w-[34px]" />
+      <span className="whitespace-nowrap font-display text-[15px] max-[359px]:sr-only sm:text-base lg:text-[18px] xl:text-[22px]">The Women’s Collective</span>
+    </Link>
+  );
+  const join = (size: string) => (
+    <Link to="/join" className={cn("twc-btn twc-btn--blue twc-btn--sm", size)}>Join us</Link>
+  );
   return (
-    <Navbar
-      variant={variant}
-      brand={brand ?? (
-        <Link to="/" className="transition-opacity hover:opacity-70" aria-label="The Women’s Collective home">
-          <BrandLockup compact logoVariant={variant === "hero" ? "white" : undefined} />
-        </Link>
-      )}
-      linkComponent={RouterLink}
-      {...props}
-    />
+    <header className="sticky top-0 z-40 bg-sb-paper/85 backdrop-blur-md">
+      <div className="twc-wrap hidden min-h-[88px] grid-cols-[1fr_auto_1fr] items-center gap-6 lg:grid">
+        <nav aria-label="Main" className="flex items-center gap-7 xl:gap-9">
+          {NAV_START.map((l) => <Link key={l.to} to={l.to} className={navLink}>{l.label}</Link>)}
+        </nav>
+        {brand}
+        <div className="flex items-center justify-end gap-7 xl:gap-9">
+          {NAV_END.map((l) => <Link key={l.to} to={l.to} className={navLink}>{l.label}</Link>)}
+          <Link to="/account" className={cn(navLink, "hidden min-[1440px]:inline")}>Sign in</Link>
+          {join("")}
+        </div>
+      </div>
+
+      <div className="flex min-h-16 items-center justify-between gap-3 px-4 lg:hidden">
+        {brand}
+        <div className="-mr-2 flex items-center gap-1">
+          {join("min-h-9 px-3.5 py-2 text-[11px] tracking-[1.2px]")}
+          <button type="button" popoverTarget={MENU_ID} aria-label="Open menu" className="grid size-11 place-items-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-sb-blue-ink">
+            <Icon name="menu" className="size-[22px]" />
+          </button>
+        </div>
+      </div>
+
+      <div ref={menu} id={MENU_ID} popover="auto" className="sb-menu bg-sb-lilac text-sb-ink">
+        <div className="flex h-full flex-col overflow-y-auto px-5 py-4">
+          <div className="flex items-center justify-between">
+            <span className="font-script text-3xl">find your people</span>
+            <button type="button" popoverTarget={MENU_ID} popoverTargetAction="hide" aria-label="Close menu" className="grid size-11 place-items-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-sb-blue-ink">
+              <Icon name="close" className="size-6" />
+            </button>
+          </div>
+          <nav aria-label="Menu" className="mt-8 flex flex-col">
+            {MENU.map((l, i) => (
+              <Link
+                key={l.to}
+                to={l.to}
+                onClick={close}
+                className="sb-menu-item flex items-baseline justify-between border-b border-sb-ink/15 py-3.5 font-display text-[30px] leading-tight outline-none focus-visible:text-sb-blue-ink"
+                style={{ "--d": `${60 + i * 45}ms` } as React.CSSProperties}
+              >
+                {l.label}<span className="font-fragment text-xs text-sb-ink/60">0{i + 1}</span>
+              </Link>
+            ))}
+          </nav>
+          <Link to="/join" onClick={close} className="twc-btn sb-menu-item mt-8 w-full" style={{ "--d": "460ms" } as React.CSSProperties}>
+            Start your application <Icon name="arrow" className="twc-arrow" />
+          </Link>
+        </div>
+      </div>
+    </header>
   );
 }
 
-const LEGAL_LINKS = [
-  { label: "Privacy", href: "/privacy" },
-  { label: "Terms", href: "/terms" },
-  { label: "Code of conduct", href: "/code-of-conduct" },
+const FOOTER: SiteLink[] = [
+  { label: "About", to: "/about" },
+  { label: "Members", to: "/members" },
+  { label: "Gatherings", to: "/gatherings" },
+  { label: "Neighborhoods", to: "/neighborhoods" },
+  { label: "FAQ", to: "/faq" },
+  { label: "Join", to: "/join" },
+  { label: "Contact", to: "/contact" },
+  { label: "Sign in", to: "/account" },
 ];
+const LEGAL = [
+  { label: "Privacy", to: "/privacy" },
+  { label: "Terms", to: "/terms" },
+  { label: "Code of conduct", to: "/code-of-conduct" },
+] as const;
 
-/** Site footer with the shared brand, statement and note; pages pass their own links, the legal pages follow. */
-export function AppFooter({ links = [], ...props }: Omit<FooterProps, "brand" | "statement" | "note">) {
+/** Lilac site footer: tagline + site links, the big wordmark, and the legal links on every live page. */
+export function AppFooter() {
   return (
-    <Footer
-      brand={<BrandLockup logoVariant="white" />}
-      statement="Find your people, share what you do, and help someone else shine."
-      note="The Women’s Collective · Western Queens"
-      linkComponent={RouterLink}
-      links={[...links, ...LEGAL_LINKS]}
-      {...props}
-    />
+    <footer className="twc-footer">
+      <div className="twc-wrap">
+        <div className="twc-footer__top">
+          <p className="twc-footer__tag">find your people, share what you do &amp; help someone else shine</p>
+          <nav aria-label="Footer" className="twc-footer__links">
+            {FOOTER.map((l) => <Link key={l.to} to={l.to} className="twc-link">{l.label}</Link>)}
+          </nav>
+        </div>
+        <p aria-hidden className="twc-footer__word">The Women’s Collective</p>
+        <div className="twc-footer__legal">
+          <span>The Women’s Collective · Western Queens</span>
+          <nav aria-label="Legal" className="twc-footer__links font-geist">
+            {LEGAL.map((l) => <Link key={l.to} to={l.to} className="twc-link">{l.label}</Link>)}
+          </nav>
+        </div>
+      </div>
+    </footer>
   );
 }

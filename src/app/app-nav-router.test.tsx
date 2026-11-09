@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 // AppNav and AppFooter under a real (memory-history) TanStack router: internal links navigate client-side.
 import { afterEach, describe, expect, it } from "vitest";
-import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import {
   Outlet,
   RouterProvider,
@@ -19,16 +19,9 @@ function makeRouter() {
   const rootRoute = createRootRoute({
     component: () => (
       <>
-        <AppNav
-          hideOnScroll={false}
-          links={[
-            { label: "Members", href: "/members" },
-            { label: "Mission", href: "/#mission" },
-            { label: "Elsewhere", href: "https://example.com/" },
-          ]}
-        />
+        <AppNav />
         <Outlet />
-        <AppFooter links={[{ label: "Join", href: "/join" }]} />
+        <AppFooter />
       </>
     ),
   });
@@ -65,7 +58,7 @@ async function renderApp() {
 describe("AppNav and AppFooter under a real router", () => {
   it("an internal nav link changes the router location client-side", async () => {
     const router = await renderApp();
-    const link = screen.getByRole("link", { name: "Members" });
+    const link = within(screen.getByRole("navigation", { name: "Main" })).getByRole("link", { name: "Members" });
     expect(link.getAttribute("href")).toBe("/members");
     // The click is handled by the router, not by the browser.
     expect(await click(link)).toBe(true);
@@ -73,23 +66,19 @@ describe("AppNav and AppFooter under a real router", () => {
     expect(await screen.findByText("Members page")).toBeTruthy();
   });
 
-  it("splits a path#hash href into the route and its hash", async () => {
+  it("the active page's nav link carries aria-current, the home logo only on /", async () => {
     const router = await renderApp();
+    const home = () => screen.getAllByRole("link", { name: "The Women’s Collective home" })[0];
+    expect(home().getAttribute("aria-current")).toBe("page");
     await router.navigate({ to: "/members" });
     await screen.findByText("Members page");
-    const link = screen.getByRole("link", { name: "Mission" });
-    expect(link.getAttribute("href")).toBe("/#mission");
-    expect(await click(link)).toBe(true);
-    await waitFor(() => expect(router.state.location.pathname).toBe("/"));
-    expect(router.state.location.hash).toBe("mission");
+    expect(within(screen.getByRole("navigation", { name: "Main" })).getByRole("link", { name: "Members" }).getAttribute("aria-current")).toBe("page");
+    expect(home().getAttribute("aria-current")).toBeNull();
   });
 
-  it("an internal footer link navigates client-side; external links stay plain", async () => {
+  it("an internal footer link navigates client-side", async () => {
     const router = await renderApp();
-    // A plain anchor: the router leaves it to the browser.
-    expect(await click(screen.getByRole("link", { name: "Elsewhere" }))).toBe(false);
-    expect(router.state.location.pathname).toBe("/");
-    expect(await click(screen.getByRole("link", { name: "Join" }))).toBe(true);
+    expect(await click(within(screen.getByRole("navigation", { name: "Footer" })).getByRole("link", { name: "Join" }))).toBe(true);
     await waitFor(() => expect(router.state.location.pathname).toBe("/join"));
   });
 });

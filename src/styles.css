@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "./design-system/styles/theme.css";
+@import "./app/twc.css";
 
 /* Route focus (useRouteFocus) lands on the page h1; it is a target, not a control, so no ring. */
 #main [tabindex="-1"]:focus { outline: none; }
@@ -25,6 +26,13 @@
   --color-sb-night: #0b0b0a;
   --color-sb-muted: #6b6b66;
   --color-sb-cream: #f3f0e8;
+  --color-sb-blue-ink: #1670b0;
+  --color-sb-olive: #737a4e;
+  --color-sb-mustard: #d9ae5c;
+  --color-sb-rose: #e6b5c1;
+  --color-sb-shell: #faf6ee;
+  --color-sb-terracotta: #b85a45;
+  --color-sb-danger: #c2412d;
 }
 
 html:has(.sb-home) { scroll-behavior: smooth; }

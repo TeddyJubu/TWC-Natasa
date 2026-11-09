@@ -35,14 +35,6 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
-const links = [
-  { label: "Our mission", href: "#mission" },
-  { label: "Members", href: "/members" },
-  { label: "Our constellation", href: "#constellation" },
-  { label: "Take part", href: "#take-part" },
-  { label: "Join", href: "/join" },
-  { label: "Sign in", href: "/account" },
-];
 
 // `dark`: black title on the light hues, where white falls under 3:1 (T26).
 const neighborhoods: { name: string; slug: Parameters<typeof neighborhoodSrcSet>[0]; image: string; overlay: string; dark?: boolean }[] = [
@@ -61,7 +53,7 @@ function HomePage() {
   const publicCards = (useQuery(publicProfilesQuery).data ?? []).filter((m): m is MemberProfile & { image: string } => !!m.image);
   return (
     <AppPage>
-      <AppNav variant="hero" links={links} action={<Link to="/join" className={buttonVariants({ variant: "white" })}>Join the collective</Link>} />
+      <AppNav />
       <main id="main" tabIndex={-1} className="outline-none">
       <Hero
         image={hero}
@@ -167,7 +159,7 @@ function HomePage() {
 
       </main>
 
-      <AppFooter links={[{ label: "Our mission", href: "#mission" }, { label: "Members", href: "/members" }, { label: "Join", href: "/join" }, { label: "Sign in", href: "/account" }]} />
+      <AppFooter />
     </AppPage>
   );
 }

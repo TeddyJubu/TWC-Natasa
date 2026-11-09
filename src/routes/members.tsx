@@ -60,10 +60,7 @@ function MembersPage() {
 
   return (
     <AppPage>
-      <AppNav
-        links={[{ label: "Home", href: "/" }, { label: "Members", href: "/members" }, { label: "Join", href: "/join" }, { label: viewer.data?.signedIn ? "Profile" : "Sign in", href: viewer.data?.signedIn ? "/account" : "/auth" }]}
-        action={<Link to="/join" className={buttonVariants({ variant: "ink", size: "sm" })}>Join<span className="hidden sm:inline"> the collective</span></Link>}
-      />
+      <AppNav />
 
       <main id="main" tabIndex={-1} className="outline-none">
       <header className="overflow-hidden bg-paper pt-20 md:pt-28">
@@ -160,7 +157,7 @@ function MembersPage() {
       <MemberDialog member={openMember} onClose={() => setOpenMember(null)} />
       </main>
 
-      <AppFooter links={[{ label: "Home", href: "/" }, { label: "Join", href: "/join" }]} />
+      <AppFooter />
     </AppPage>
   );
 }

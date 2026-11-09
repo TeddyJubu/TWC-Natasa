@@ -4,11 +4,6 @@ import { Container, FormNotice, Section, SectionHeader, Text } from "@/index";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import type { Block, LegalDoc, Rich } from "./content";
 
-const links = [
-  { label: "Our mission", href: "/#mission" },
-  { label: "Members", href: "/members" },
-  { label: "Join", href: "/join" },
-];
 
 function RichText({ value }: { value: Rich }) {
   if (typeof value === "string") return value;
@@ -42,7 +37,7 @@ function LegalBlock({ block }: { block: Block }) {
 export function LegalPage({ doc }: { doc: LegalDoc }) {
   return (
     <AppPage>
-      <AppNav variant="solid" links={links} />
+      <AppNav />
       <main id="main" tabIndex={-1} className="outline-none">
         <Section className="pt-14 md:pt-20">
           <Container className="flex flex-col items-center gap-6">
@@ -72,7 +67,7 @@ export function LegalPage({ doc }: { doc: LegalDoc }) {
           </Container>
         </Section>
       </main>
-      <AppFooter links={[{ label: "Home", href: "/" }, { label: "Members", href: "/members" }, { label: "Join", href: "/join" }]} />
+      <AppFooter />
     </AppPage>
   );
 }

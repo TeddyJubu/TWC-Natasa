@@ -133,11 +133,11 @@ describe("root route", () => {
 describe("AppFooter", () => {
   const LEGAL = [["Privacy", "/privacy"], ["Terms", "/terms"], ["Code of conduct", "/code-of-conduct"]];
   const footerLinks = () =>
-    within(screen.getByRole("navigation", { name: "Footer" })).getAllByRole("link").map((a) => [a.textContent, a.getAttribute("href")]);
+    within(screen.getByRole("navigation", { name: "Legal" })).getAllByRole("link").map((a) => [a.textContent, a.getAttribute("href")]);
 
-  it("always links the privacy policy, terms and code of conduct, after the page's own links", () => {
-    render(<AppFooter links={[{ label: "Join", href: "/join" }]} />);
-    expect(footerLinks()).toEqual([["Join", "/join"], ...LEGAL]);
+  it("always links the privacy policy, terms and code of conduct", () => {
+    render(<AppFooter />);
+    expect(footerLinks()).toEqual(LEGAL);
   });
 
   it("/join has a footer with the legal links: applicants read them before applying", () => {

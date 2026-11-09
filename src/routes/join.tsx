@@ -1,6 +1,6 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Container, Section, buttonVariants } from "@/index";
+import { Container, Section } from "@/index";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import { ApplicationForm } from "@/features/applications/ApplicationForm";
 import { useSubmitApplication } from "@/features/applications/mutations";
@@ -26,11 +26,7 @@ function JoinPage() {
   const { data: applicant } = useQuery(applicantQuery);
   return (
     <AppPage>
-      <AppNav
-        variant="solid"
-        links={[{ label: "Our mission", href: "/#mission" }, { label: "Our constellation", href: "/#constellation" }]}
-        action={<Link to="/" className={buttonVariants({ variant: "outline", size: "sm" })}>Back to home</Link>}
-      />
+      <AppNav />
       <main id="main" tabIndex={-1} className="outline-none">
       <Section className="pt-14 md:pt-20">
         <Container>
@@ -40,7 +36,7 @@ function JoinPage() {
         </Container>
       </Section>
       </main>
-      <AppFooter links={[{ label: "Home", href: "/" }, { label: "Members", href: "/members" }]} />
+      <AppFooter />
     </AppPage>
   );
 }

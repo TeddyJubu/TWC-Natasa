@@ -1,5 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { useRef, type CSSProperties } from "react";
+import type { CSSProperties } from "react";
 import { ConstellationLogo, cn } from "@/index";
 import heroRock from "@/assets/photography/home/hero-rock.webp";
 import queensPolaroid from "@/assets/photography/home/queens-polaroid.webp";
@@ -9,6 +9,7 @@ import neighbors from "@/assets/photography/home/neighbors.webp";
 import natasaFounder from "@/assets/photography/home/natasa-founder.webp";
 import nightSky from "@/assets/photography/home/night-sky.webp";
 import gathering from "@/assets/photography/event.jpg";
+import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import caveatUrl from "@/assets/fonts/home/caveat-400.woff2?url";
 
 export const Route = createFileRoute("/home-v2")({
@@ -72,7 +73,6 @@ function Icon({ name, className }: { name: keyof typeof ICONS; className?: strin
 
 const delay = (ms: number) => ({ "--d": `${ms}ms` }) as CSSProperties;
 const pill = "sb-pill inline-flex items-center gap-2 rounded-full font-display uppercase tracking-[1.6px] outline-none focus-visible:ring-2 focus-visible:ring-sb-blue focus-visible:ring-offset-2";
-const navLink = "sb-link font-display text-[15px] tracking-[0.3px] outline-none focus-visible:text-sb-blue";
 
 function Scallop({ from, to }: { from: string; to: string }) {
   return <div aria-hidden className="sb-scallop w-full" style={{ "--from": from, "--to": to } as CSSProperties} />;
@@ -113,9 +113,8 @@ function Polaroid({ src, alt, caption, className, photoClass, captionClass }: { 
 
 function HomeV2Page() {
   return (
-    <div className="sb-home min-h-screen overflow-x-clip bg-sb-paper text-sb-ink">
-      <a href="#main" className="sr-only z-50 rounded-full bg-sb-ink px-4 py-2 text-sb-paper focus:not-sr-only focus:fixed focus:left-4 focus:top-4">Skip to content</a>
-      <Nav />
+    <AppPage className="sb-home">
+      <AppNav />
       <main id="main" tabIndex={-1} className="outline-none">
         <Hero />
         <Ribbons />
@@ -129,73 +128,11 @@ function HomeV2Page() {
         <Membership />
         <Faq />
       </main>
-      <SiteFooter />
-    </div>
+      <AppFooter />
+    </AppPage>
   );
 }
 
-function Nav() {
-  const menu = useRef<HTMLDivElement>(null);
-  const close = () => menu.current?.hidePopover();
-  const menuLinks: { label: string; href?: string; to?: "/members" | "/join" | "/account" }[] = [
-    { label: "Our mission", href: "#mission" },
-    { label: "Members", to: "/members" },
-    { label: "Take part", href: "#take-part" },
-    { label: "Our constellation", href: "#constellation" },
-    { label: "Questions", href: "#faq" },
-    { label: "Sign in", to: "/account" },
-  ];
-  const brand = (
-    <Link to="/home-v2" className="group flex items-center gap-2 outline-none focus-visible:text-sb-blue lg:gap-2.5" aria-label="The Women’s Collective — home">
-      <ConstellationLogo variant="ink" alt="" className="w-7 transition-[rotate] duration-500 ease-[var(--ease-snap)] group-hover:rotate-[24deg] lg:w-[34px]" />
-      <span className="whitespace-nowrap font-display text-[17px] max-[359px]:sr-only lg:text-[22px]">The Women’s Collective</span>
-    </Link>
-  );
-  return (
-    <header className="sb-nav sticky top-0 z-40">
-      {/* Desktop */}
-      <nav aria-label="Primary" className="hidden items-center justify-between px-16 py-6 lg:flex">
-        <a href="#mission" className={navLink}>Our mission</a>
-        <Link to="/members" className={navLink}>Members</Link>
-        {brand}
-        <a href="#take-part" className={navLink}>Take part</a>
-        <Link to="/join" className={cn(pill, "bg-sb-blue px-5 py-2.5 text-sm text-sb-paper hover:bg-[#1878be]")}>Join us</Link>
-      </nav>
-      {/* Mobile */}
-      <div className="flex items-center justify-between px-5 py-4 lg:hidden">
-        {brand}
-        <div className="flex items-center gap-3.5">
-          <Link to="/join" className={cn(pill, "bg-sb-blue px-3.5 py-2 text-xs text-sb-paper")}>Join us</Link>
-          <button type="button" popoverTarget="sb-menu" aria-label="Open menu" className="-m-2 rounded-full p-2 outline-none transition-[scale] active:scale-90 focus-visible:ring-2 focus-visible:ring-sb-blue">
-            <Icon name="menu" className="size-[22px]" />
-          </button>
-        </div>
-      </div>
-      <div ref={menu} id="sb-menu" popover="auto" className="sb-menu bg-sb-lilac text-sb-ink">
-        <div className="flex h-full flex-col px-5 py-4">
-          <div className="flex items-center justify-between">
-            <span className="font-script text-3xl">find your people</span>
-            <button type="button" popoverTarget="sb-menu" popoverTargetAction="hide" aria-label="Close menu" className="-m-2 rounded-full p-2 outline-none transition-[rotate] duration-300 hover:rotate-90 focus-visible:ring-2 focus-visible:ring-sb-blue">
-              <Icon name="close" className="size-6" />
-            </button>
-          </div>
-          <nav aria-label="Mobile" className="mt-10 flex flex-col">
-            {menuLinks.map((l, i) => {
-              const cls = "sb-menu-item flex items-baseline justify-between border-b border-sb-ink/15 py-4 font-display text-[34px] leading-tight outline-none focus-visible:text-sb-blue";
-              const body = <>{l.label}<span className="font-fragment text-xs text-sb-ink/60">0{i + 1}</span></>;
-              return l.to
-                ? <Link key={l.label} to={l.to} onClick={close} className={cls} style={delay(60 + i * 50)}>{body}</Link>
-                : <a key={l.label} href={l.href} onClick={close} className={cls} style={delay(60 + i * 50)}>{body}</a>;
-            })}
-          </nav>
-          <Link to="/join" onClick={close} className={cn(pill, "sb-menu-item mt-auto justify-center bg-sb-ink py-4 text-sm text-sb-paper")} style={delay(400)}>
-            Start your application <Icon name="arrow" className="sb-arrow size-4" />
-          </Link>
-        </div>
-      </div>
-    </header>
-  );
-}
 
 function Hero() {
   return (
@@ -494,32 +431,3 @@ function Faq() {
   );
 }
 
-function SiteFooter() {
-  const links = [
-    { label: "Our mission", href: "#mission" },
-    { label: "Members", to: "/members" as const },
-    { label: "Join", to: "/join" as const },
-    { label: "Sign in", to: "/account" as const },
-  ];
-  return (
-    <footer className="flex flex-col gap-7 rounded-t-[36px] bg-sb-lilac px-5 pb-7 pt-12 lg:gap-10 lg:px-16 lg:pb-9 lg:pt-[72px]">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <p className="font-script text-[26px] leading-[29px] lg:text-[34px] lg:leading-normal">find your people, share what you do &amp; help someone else shine</p>
-        <nav aria-label="Footer" className="flex flex-wrap gap-4 lg:gap-7">
-          {links.map((l) => l.to
-            ? <Link key={l.label} to={l.to} className={cn(navLink, "text-[13px]")}>{l.label}</Link>
-            : <a key={l.label} href={l.href} className={cn(navLink, "text-[13px]")}>{l.label}</a>)}
-        </nav>
-      </div>
-      <p aria-hidden className="motion-scroll-reveal font-display text-[clamp(3.25rem,9vw,8.125rem)] leading-none tracking-[-0.03em]">The Women’s Collective</p>
-      <div className="flex flex-col gap-2.5 border-t border-sb-ink/20 pb-1 pt-4 font-geist text-[13px] sm:flex-row sm:justify-between lg:pt-5">
-        <span>The Women’s Collective · Western Queens</span>
-        <div className="flex gap-6">
-          <a href="/privacy" className="sb-link">Privacy</a>
-          <a href="/terms" className="sb-link">Terms</a>
-          <a href="/code-of-conduct" className="sb-link">Code of conduct</a>
-        </div>
-      </div>
-    </footer>
-  );
-}

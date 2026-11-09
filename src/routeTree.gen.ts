@@ -11,23 +11,31 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CodeOfConductRouteImport } from './routes/code-of-conduct'
 import { Route as ColorsRouteImport } from './routes/colors'
 import { Route as ComponentsRouteImport } from './routes/components'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as FaqRouteImport } from './routes/faq'
+import { Route as GatheringsRouteImport } from './routes/gatherings'
 import { Route as HomeV2RouteImport } from './routes/home-v2'
 import { Route as JoinRouteImport } from './routes/join'
 import { Route as MembersRouteImport } from './routes/members'
+import { Route as NeighborhoodsRouteImport } from './routes/neighborhoods'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as TypographyRouteImport } from './routes/typography'
+import { Route as VerifiedRouteImport } from './routes/verified'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/_admin/route'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as ApiApplicationsRouteImport } from './routes/api/applications'
 import { Route as ApiImagesRouteImport } from './routes/api/images'
 import { Route as ApiNeighborhoodLogosRouteImport } from './routes/api/neighborhood-logos'
 import { Route as MediaSplatRouteImport } from './routes/media/$'
+import { Route as MembersSlugRouteImport } from './routes/members_.$slug'
+import { Route as NeighborhoodsSlugRouteImport } from './routes/neighborhoods_.$slug'
 import { Route as AuthenticatedAdminAdminRouteImport } from './routes/_authenticated/_admin/admin'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
@@ -38,6 +46,11 @@ const IndexRoute = IndexRouteImport.update({
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -60,6 +73,21 @@ const ComponentsRoute = ComponentsRouteImport.update({
   path: '/components',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaqRoute = FaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GatheringsRoute = GatheringsRouteImport.update({
+  id: '/gatherings',
+  path: '/gatherings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HomeV2Route = HomeV2RouteImport.update({
   id: '/home-v2',
   path: '/home-v2',
@@ -73,6 +101,11 @@ const JoinRoute = JoinRouteImport.update({
 const MembersRoute = MembersRouteImport.update({
   id: '/members',
   path: '/members',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NeighborhoodsRoute = NeighborhoodsRouteImport.update({
+  id: '/neighborhoods',
+  path: '/neighborhoods',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -93,6 +126,11 @@ const TermsRoute = TermsRouteImport.update({
 const TypographyRoute = TypographyRouteImport.update({
   id: '/typography',
   path: '/typography',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VerifiedRoute = VerifiedRouteImport.update({
+  id: '/verified',
+  path: '/verified',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
@@ -124,6 +162,16 @@ const MediaSplatRoute = MediaSplatRouteImport.update({
   path: '/media/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MembersSlugRoute = MembersSlugRouteImport.update({
+  id: '/members_/$slug',
+  path: '/members/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NeighborhoodsSlugRoute = NeighborhoodsSlugRouteImport.update({
+  id: '/neighborhoods_/$slug',
+  path: '/neighborhoods/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAdminAdminRoute = AuthenticatedAdminAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -137,43 +185,59 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/code-of-conduct': typeof CodeOfConductRoute
   '/colors': typeof ColorsRoute
   '/components': typeof ComponentsRoute
+  '/contact': typeof ContactRoute
+  '/faq': typeof FaqRoute
+  '/gatherings': typeof GatheringsRoute
   '/home-v2': typeof HomeV2Route
   '/join': typeof JoinRoute
   '/members': typeof MembersRoute
+  '/neighborhoods': typeof NeighborhoodsRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/typography': typeof TypographyRoute
+  '/verified': typeof VerifiedRoute
   '/account': typeof AuthenticatedAccountRoute
   '/api/applications': typeof ApiApplicationsRoute
   '/api/images': typeof ApiImagesRoute
   '/api/neighborhood-logos': typeof ApiNeighborhoodLogosRoute
   '/media/$': typeof MediaSplatRoute
+  '/members/$slug': typeof MembersSlugRoute
+  '/neighborhoods/$slug': typeof NeighborhoodsSlugRoute
   '/admin': typeof AuthenticatedAdminAdminRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/code-of-conduct': typeof CodeOfConductRoute
   '/colors': typeof ColorsRoute
   '/components': typeof ComponentsRoute
+  '/contact': typeof ContactRoute
+  '/faq': typeof FaqRoute
+  '/gatherings': typeof GatheringsRoute
   '/home-v2': typeof HomeV2Route
   '/join': typeof JoinRoute
   '/members': typeof MembersRoute
+  '/neighborhoods': typeof NeighborhoodsRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/typography': typeof TypographyRoute
+  '/verified': typeof VerifiedRoute
   '/account': typeof AuthenticatedAccountRoute
   '/api/applications': typeof ApiApplicationsRoute
   '/api/images': typeof ApiImagesRoute
   '/api/neighborhood-logos': typeof ApiNeighborhoodLogosRoute
   '/media/$': typeof MediaSplatRoute
+  '/members/$slug': typeof MembersSlugRoute
+  '/neighborhoods/$slug': typeof NeighborhoodsSlugRoute
   '/admin': typeof AuthenticatedAdminAdminRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
@@ -181,23 +245,31 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/code-of-conduct': typeof CodeOfConductRoute
   '/colors': typeof ColorsRoute
   '/components': typeof ComponentsRoute
+  '/contact': typeof ContactRoute
+  '/faq': typeof FaqRoute
+  '/gatherings': typeof GatheringsRoute
   '/home-v2': typeof HomeV2Route
   '/join': typeof JoinRoute
   '/members': typeof MembersRoute
+  '/neighborhoods': typeof NeighborhoodsRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/typography': typeof TypographyRoute
+  '/verified': typeof VerifiedRoute
   '/_authenticated/_admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/api/applications': typeof ApiApplicationsRoute
   '/api/images': typeof ApiImagesRoute
   '/api/neighborhood-logos': typeof ApiNeighborhoodLogosRoute
   '/media/$': typeof MediaSplatRoute
+  '/members_/$slug': typeof MembersSlugRoute
+  '/neighborhoods_/$slug': typeof NeighborhoodsSlugRoute
   '/_authenticated/_admin/admin': typeof AuthenticatedAdminAdminRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
@@ -205,66 +277,90 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/about'
     | '/auth'
     | '/code-of-conduct'
     | '/colors'
     | '/components'
+    | '/contact'
+    | '/faq'
+    | '/gatherings'
     | '/home-v2'
     | '/join'
     | '/members'
+    | '/neighborhoods'
     | '/privacy'
     | '/reset-password'
     | '/terms'
     | '/typography'
+    | '/verified'
     | '/account'
     | '/api/applications'
     | '/api/images'
     | '/api/neighborhood-logos'
     | '/media/$'
+    | '/members/$slug'
+    | '/neighborhoods/$slug'
     | '/admin'
     | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/about'
     | '/auth'
     | '/code-of-conduct'
     | '/colors'
     | '/components'
+    | '/contact'
+    | '/faq'
+    | '/gatherings'
     | '/home-v2'
     | '/join'
     | '/members'
+    | '/neighborhoods'
     | '/privacy'
     | '/reset-password'
     | '/terms'
     | '/typography'
+    | '/verified'
     | '/account'
     | '/api/applications'
     | '/api/images'
     | '/api/neighborhood-logos'
     | '/media/$'
+    | '/members/$slug'
+    | '/neighborhoods/$slug'
     | '/admin'
     | '/api/auth/$'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/about'
     | '/auth'
     | '/code-of-conduct'
     | '/colors'
     | '/components'
+    | '/contact'
+    | '/faq'
+    | '/gatherings'
     | '/home-v2'
     | '/join'
     | '/members'
+    | '/neighborhoods'
     | '/privacy'
     | '/reset-password'
     | '/terms'
     | '/typography'
+    | '/verified'
     | '/_authenticated/_admin'
     | '/_authenticated/account'
     | '/api/applications'
     | '/api/images'
     | '/api/neighborhood-logos'
     | '/media/$'
+    | '/members_/$slug'
+    | '/neighborhoods_/$slug'
     | '/_authenticated/_admin/admin'
     | '/api/auth/$'
   fileRoutesById: FileRoutesById
@@ -272,21 +368,29 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AboutRoute: typeof AboutRoute
   AuthRoute: typeof AuthRoute
   CodeOfConductRoute: typeof CodeOfConductRoute
   ColorsRoute: typeof ColorsRoute
   ComponentsRoute: typeof ComponentsRoute
+  ContactRoute: typeof ContactRoute
+  FaqRoute: typeof FaqRoute
+  GatheringsRoute: typeof GatheringsRoute
   HomeV2Route: typeof HomeV2Route
   JoinRoute: typeof JoinRoute
   MembersRoute: typeof MembersRoute
+  NeighborhoodsRoute: typeof NeighborhoodsRoute
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TermsRoute: typeof TermsRoute
   TypographyRoute: typeof TypographyRoute
+  VerifiedRoute: typeof VerifiedRoute
   ApiApplicationsRoute: typeof ApiApplicationsRoute
   ApiImagesRoute: typeof ApiImagesRoute
   ApiNeighborhoodLogosRoute: typeof ApiNeighborhoodLogosRoute
   MediaSplatRoute: typeof MediaSplatRoute
+  MembersSlugRoute: typeof MembersSlugRoute
+  NeighborhoodsSlugRoute: typeof NeighborhoodsSlugRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
@@ -304,6 +408,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -334,6 +445,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ComponentsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faq': {
+      id: '/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof FaqRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gatherings': {
+      id: '/gatherings'
+      path: '/gatherings'
+      fullPath: '/gatherings'
+      preLoaderRoute: typeof GatheringsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/home-v2': {
       id: '/home-v2'
       path: '/home-v2'
@@ -353,6 +485,13 @@ declare module '@tanstack/react-router' {
       path: '/members'
       fullPath: '/members'
       preLoaderRoute: typeof MembersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/neighborhoods': {
+      id: '/neighborhoods'
+      path: '/neighborhoods'
+      fullPath: '/neighborhoods'
+      preLoaderRoute: typeof NeighborhoodsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -381,6 +520,13 @@ declare module '@tanstack/react-router' {
       path: '/typography'
       fullPath: '/typography'
       preLoaderRoute: typeof TypographyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/verified': {
+      id: '/verified'
+      path: '/verified'
+      fullPath: '/verified'
+      preLoaderRoute: typeof VerifiedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/_admin': {
@@ -423,6 +569,20 @@ declare module '@tanstack/react-router' {
       path: '/media/$'
       fullPath: '/media/$'
       preLoaderRoute: typeof MediaSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/members_/$slug': {
+      id: '/members_/$slug'
+      path: '/members/$slug'
+      fullPath: '/members/$slug'
+      preLoaderRoute: typeof MembersSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/neighborhoods_/$slug': {
+      id: '/neighborhoods_/$slug'
+      path: '/neighborhoods/$slug'
+      fullPath: '/neighborhoods/$slug'
+      preLoaderRoute: typeof NeighborhoodsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/_admin/admin': {
@@ -472,21 +632,29 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AboutRoute: AboutRoute,
   AuthRoute: AuthRoute,
   CodeOfConductRoute: CodeOfConductRoute,
   ColorsRoute: ColorsRoute,
   ComponentsRoute: ComponentsRoute,
+  ContactRoute: ContactRoute,
+  FaqRoute: FaqRoute,
+  GatheringsRoute: GatheringsRoute,
   HomeV2Route: HomeV2Route,
   JoinRoute: JoinRoute,
   MembersRoute: MembersRoute,
+  NeighborhoodsRoute: NeighborhoodsRoute,
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TermsRoute: TermsRoute,
   TypographyRoute: TypographyRoute,
+  VerifiedRoute: VerifiedRoute,
   ApiApplicationsRoute: ApiApplicationsRoute,
   ApiImagesRoute: ApiImagesRoute,
   ApiNeighborhoodLogosRoute: ApiNeighborhoodLogosRoute,
   MediaSplatRoute: MediaSplatRoute,
+  MembersSlugRoute: MembersSlugRoute,
+  NeighborhoodsSlugRoute: NeighborhoodsSlugRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport
