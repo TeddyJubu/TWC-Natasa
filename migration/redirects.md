@@ -57,7 +57,14 @@ Source of truth for the `vps-cutover` workstream (SITE-100, SITE-162, SITE-164).
 | `crm.thewomenscollective.club/*` | `https://new.thewomenscollective.club/admin` | After CRM parity. |
 | `join.thewomenscollective.club/join` | `https://new.thewomenscollective.club/join` | Already in place. |
 
+## Live on the VPS (2026-11-09)
+
+Page rows and host redirects from this file are active in `/opt/nbwc/Caddyfile` (`twc_apex_cutover`,
+`twc_members_cutover`, `twc_nbwc_cutover`). Backup: `Caddyfile.before-twc-cutover-20261109-151319`.
+Smoke: `bun scripts/smoke-cutover.ts` → ok. Apex `/` still coming-soon.
+
 ## Not redirected yet
 
-- Static assets under `/assets/*`, `/embed.js`, favicons and `robots.txt` stay with the archived site until `vps-cutover` removes them.
-- Apex `/f/*` custom forms (OPS-518): the new app now serves `/f/<slug>`, `/f/<slug>/thanks` and old names (301 to the current slug), so `/f/*` can 301 to `https://new.thewomenscollective.club{uri}`, **keeping the path and the query** (resume links carry `#resume=…` in the fragment, which the browser keeps across a 301). Unblocked by forms-import: run its VPS one-shot (`migration/briefs/forms-import.md`) first, then 301 only the slugs (and their old names) its report lists as `imported`/`updated`. Forms it **skips** (file, ranking, grid or address questions, never published, or a refused name) keep their `/f/<slug>` on the old site until supported; on the new app they are a 404. Still served by the old site: `/f/<slug>/thanks-<n>`, `thanks-go`, `thanks-waitlist`, `full`, `event.ics`, `/f/media/*` and `/forms`, which have no new route yet.
+- Static assets under `/assets/*`, `/embed.js`, favicons and `robots.txt` stay with the archived site files in `/opt/nbwc/site`.
+- Apex `/f/*` custom forms (OPS-518): **held** — live CRM currently has 0 `custom_forms`; `twc_forms_cutover` is prepared but not enabled. After a real form is published and `scripts/import-forms.ts` reports `imported`/`updated` slugs, paste that snippet (or a slug list). Still on the old stack: `/f/<slug>/thanks-<n>`, `thanks-go`, `thanks-waitlist`, `full`, `event.ics`, `/f/media/*`, `/forms`.
+- `admin.*` / `crm.*` → new `/admin` after CRM parity (`twc_admin_cutover` / `twc_crm_cutover`).
