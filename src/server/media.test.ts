@@ -84,6 +84,18 @@ describe("serveMedia", () => {
     db.prepare("update profiles set public_profile = 1 where id = ?").run(OWNER);
   });
 
+  // SITE-118/167: unpublished / unlisted folders are indistinguishable from missing (404), never a stand-in.
+  it("hides a listed-but-private folder from visitors, and a hidden member's folder from everyone but herself", () => {
+    db.prepare("update profiles set public_profile = 0 where id = ?").run(OWNER);
+    expect(get(`/media/avatars/${OWNER}/avatar-1.png`).status).toBe(404);
+    const owner = serveMedia(db, { id: OWNER, email: "o@x.test" }, `/media/avatars/${OWNER}/avatar-1.png`);
+    expect([owner.status, owner.headers.get("Cache-Control")]).toEqual([200, "private, max-age=3600"]);
+    db.prepare("update profiles set directory_visible = 0, public_profile = 1 where id = ?").run(OWNER);
+    expect(get(`/media/avatars/${OWNER}/avatar-1.png`).status).toBe(404);
+    expect(get("/media/public/21/avatar").status).toBe(404);
+    db.prepare("update profiles set directory_visible = 1, public_profile = 1 where id = ?").run(OWNER);
+  });
+
   it("never serves a stored file that isn't an image", () => expect(get(`/media/avatars/${OWNER}/notes.png`).status).toBe(404));
 
   it.each([

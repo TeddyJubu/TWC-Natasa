@@ -51,6 +51,15 @@ describe("vps-cutover Caddy snippet", () => {
     expect([...apex.keys()].some((p) => p.startsWith("/f/"))).toBe(false);
   });
 
+  // SITE-118/167: old directory portraits stay on disk but must 404 (same pattern as /404).
+  it("404s the old /assets/img/directory portraits without redirecting them", () => {
+    const body = snippet("twc_apex_cutover");
+    expect(body).toMatch(/@old_directory_img path \/assets\/img\/directory \/assets\/img\/directory\/\*/);
+    expect(body).toContain("error @old_directory_img 404");
+    expect(apex.has("/assets/img/directory")).toBe(false);
+    expect(apex.has("/assets/img/directory/*")).toBe(false);
+  });
+
   it("sends join.*/members.* /join to the app but leaves POSTs and /join/thanks on intake", () => {
     const r = redirects(snippet("twc_members_cutover"));
     expect(r.get("/join")).toMatchObject({ to: `${NEW}/join`, status: "301" });
