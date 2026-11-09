@@ -5,7 +5,7 @@ import { getAuthClient } from "@/app/auth-client";
 import { emitAuthEvent } from "@/app/auth-events";
 import { AuthFrame, authAlert, authCard, authH, authScript, slink } from "@/app/auth-ui";
 import { Icon } from "@/app/layout/twc";
-import sky from "@/assets/photography/hero-960.webp";
+import sky from "@/assets/photography/site/auth-sky.webp";
 
 type Mode = "signin" | "signup" | "forgot";
 const MODES: readonly string[] = ["signin", "signup", "forgot"];
@@ -127,7 +127,7 @@ function AuthPage() {
       <div className="twc-wrap grid items-start justify-center gap-10 [grid-template-columns:minmax(0,480px)] min-[981px]:[grid-template-columns:minmax(0,1fr)_minmax(0,480px)_minmax(0,1fr)]">
         <div className="order-2 flex flex-col gap-7 min-[981px]:order-none min-[981px]:items-end min-[981px]:pt-10">
           <figure className="twc-polaroid twc-polaroid--left hidden w-full max-w-[230px] min-[981px]:flex">
-            <img src={sky} alt="A woman in a cream suit looks out over yellow wildflowers under a clear blue sky" width={960} height={640} className="aspect-[4/5]" />
+            <img src={sky} alt="City rooftops under a soft pink and lilac sky at dusk" width={1067} height={1600} loading="lazy" className="aspect-[4/5]" />
           </figure>
           <div className="flex min-w-0 flex-col gap-2.5 self-stretch">
             <span className="twc-chip twc-chip--ring self-start">Members only</span>

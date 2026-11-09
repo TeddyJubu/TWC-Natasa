@@ -18,6 +18,8 @@ export const Route = createFileRoute("/verified")({
       { property: "og:description", content: "Confirm the email address for your member account." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
+      // A one-off landing for email links, like /reset-password: never indexed.
+      { name: "robots", content: "noindex" },
     ],
   }),
   component: Verified,
