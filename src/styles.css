@@ -100,6 +100,8 @@ html:has(.sb-menu:popover-open) { overflow: hidden; }
 
 .sb-marquee-reverse { animation-direction: reverse; }
 .sb-ribbon:hover .animate-marquee { animation-play-state: paused; }
+/* WCAG 2.2.2: the homepage's pause button (.sb-still) stills every loop that runs past 5 s. */
+.sb-home:has(.sb-still[aria-pressed="true"]) :is(.animate-marquee, .sb-float, .sb-twinkle) { animation-play-state: paused; }
 
 /* FAQ: native <details name> accordion; height animates where ::details-content exists */
 .sb-faq { interpolate-size: allow-keywords; }

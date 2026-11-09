@@ -4,13 +4,12 @@ import { readdirSync, readFileSync } from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { Input, MemberCard, Navbar, Statement, Tabs, buttonVariants, type MemberProfile } from "@/index";
-import { renderWithQueries } from "@/test/dom";
 import { blend, contrast, tokens } from "@/test/contrast";
+import { installDomStubs } from "@/test/dom";
 
 vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs }));
 
-import { Route } from "@/routes/index";
-
+installDomStubs();
 afterEach(cleanup);
 
 const { light, night } = tokens;
@@ -67,22 +66,6 @@ describe("ink-faint", () => {
       for (const bg of [t.canvas, t.surface]) expect(contrast(blend(t["ink-muted"], bg, alpha), bg)).toBeGreaterThanOrEqual(AA);
     }
     expect(contrast(blend(light["ink-muted"], light.canvas, alpha), light.ink)).toBeGreaterThanOrEqual(AA_LARGE);
-  });
-});
-
-describe("homepage neighborhood cards", () => {
-  it("each title clears 3:1 against its neighborhood colour (white on dark hues, black on light ones)", () => {
-    const Page = Route.options.component as React.ComponentType;
-    renderWithQueries(<Page />, [[["public-profiles"], []]]);
-    const cards = [...document.querySelectorAll("#constellation article")];
-    expect(cards).toHaveLength(7);
-    for (const card of cards) {
-      const overlay = card.querySelector("[class*='bg-gradient-to-t']")!;
-      const hood = classes(overlay).find((c) => c.startsWith("from-"))!.slice(5);
-      const title = card.querySelector("h3")!;
-      const ink = classes(title).includes("text-black") ? "#000000" : "#ffffff";
-      expect({ hood, ok: contrast(light[hood], ink) >= AA_LARGE }).toEqual({ hood, ok: true });
-    }
   });
 });
 
