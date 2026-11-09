@@ -1309,64 +1309,80 @@
       "source": "crm.md:Per-form webhook + Notion database",
       "acceptance": "Per-form webhook + Notion database: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "no-webhooks",
+      "evidence": "Out of scope for rebuild cutover; may return later. No webhook dispatcher or connections.json; form answers store in SQLite. Admin alerts + submitter confirmations + Beehiiv consent gate cover day-to-day. AUDIT-TASKS.md notifications retire-external."
     },
     {
       "id": "CRM-145",
       "source": "crm.md:Webhook address rules",
       "acceptance": "Webhook address rules: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "no-webhooks",
+      "evidence": "Out of scope for rebuild cutover; may return later. No webhook dispatcher or connections.json; form answers store in SQLite. Admin alerts + submitter confirmations + Beehiiv consent gate cover day-to-day. AUDIT-TASKS.md notifications retire-external."
     },
     {
       "id": "CRM-146",
       "source": "crm.md:Signing secret",
       "acceptance": "Signing secret: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "no-webhooks",
+      "evidence": "Out of scope for rebuild cutover; may return later. No webhook dispatcher or connections.json; form answers store in SQLite. Admin alerts + submitter confirmations + Beehiiv consent gate cover day-to-day. AUDIT-TASKS.md notifications retire-external."
     },
     {
       "id": "CRM-147",
       "source": "crm.md:Notion database from a pasted link",
       "acceptance": "Notion database from a pasted link: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "no-notion-mirror",
+      "evidence": "Out of scope for rebuild cutover; may return later. No Notion client or intake mirror in the rebuild; applications/members live in SQLite and /admin. AUDIT-TASKS.md notifications retire-external."
     },
     {
       "id": "CRM-148",
       "source": "crm.md:Switch on / off",
       "acceptance": "Switch on / off: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "no-webhooks",
+      "evidence": "Out of scope for rebuild cutover; may return later. No webhook dispatcher or connections.json; form answers store in SQLite. Admin alerts + submitter confirmations + Beehiiv consent gate cover day-to-day. AUDIT-TASKS.md notifications retire-external."
     },
     {
       "id": "CRM-149",
       "source": "crm.md:Confirm before redirecting live data",
       "acceptance": "Confirm before redirecting live data: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "no-webhooks",
+      "evidence": "Out of scope for rebuild cutover; may return later. No webhook dispatcher or connections.json; form answers store in SQLite. Admin alerts + submitter confirmations + Beehiiv consent gate cover day-to-day. AUDIT-TASKS.md notifications retire-external."
     },
     {
       "id": "CRM-150",
       "source": "crm.md:Test sends",
       "acceptance": "Test sends: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "no-webhooks",
+      "evidence": "Out of scope for rebuild cutover; may return later. No webhook dispatcher or connections.json; form answers store in SQLite. Admin alerts + submitter confirmations + Beehiiv consent gate cover day-to-day. AUDIT-TASKS.md notifications retire-external."
     },
     {
       "id": "CRM-151",
       "source": "crm.md:Delivery status",
       "acceptance": "Delivery status: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "no-webhooks",
+      "evidence": "Out of scope for rebuild cutover; may return later. No webhook dispatcher or connections.json; form answers store in SQLite. Admin alerts + submitter confirmations + Beehiiv consent gate cover day-to-day. AUDIT-TASKS.md notifications retire-external."
     },
     {
       "id": "CRM-152",
@@ -1397,8 +1413,10 @@
       "source": "crm.md:Notion mirror of applications",
       "acceptance": "Notion mirror of applications: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "no-notion-mirror",
+      "evidence": "Out of scope for rebuild cutover; may return later. No Notion client or intake mirror in the rebuild; applications/members live in SQLite and /admin. AUDIT-TASKS.md notifications retire-external."
     },
     {
       "id": "CRM-156",
@@ -1643,8 +1661,10 @@
       "source": "crm.md:FIX-IN-REBUILD — webhook signing secrets stored in clear text",
       "acceptance": "FIX-IN-REBUILD — webhook signing secrets stored in clear text: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "no-webhooks",
+      "evidence": "Out of scope for rebuild cutover; may return later. No webhook dispatcher or connections.json; form answers store in SQLite. Admin alerts + submitter confirmations + Beehiiv consent gate cover day-to-day. AUDIT-TASKS.md notifications retire-external."
     },
     {
       "id": "CRM-182",
@@ -1693,8 +1713,10 @@
       "source": "crm.md:GAP — no global Notion / Beehiiv / webhook admin",
       "acceptance": "GAP — no global Notion / Beehiiv / webhook admin: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "no-webhooks",
+      "evidence": "Out of scope for rebuild cutover; may return later. No webhook dispatcher or connections.json; form answers store in SQLite. Admin alerts + submitter confirmations + Beehiiv consent gate cover day-to-day. AUDIT-TASKS.md notifications retire-external."
     },
     {
       "id": "CRM-188",
@@ -4387,8 +4409,10 @@
       "source": "backoffice.md:Sync step by step (notion_sync.mjs:138-208).",
       "acceptance": "Sync step by step (notion_sync.mjs:138-208).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "built",
+      "target": "retired",
+      "retired": "no-notion-mirror",
+      "evidence": "Out of scope for rebuild cutover; may return later. No Notion client or intake mirror in the rebuild; applications/members live in SQLite and /admin. AUDIT-TASKS.md notifications retire-external."
     },
     {
       "id": "OPS-330",
@@ -4413,16 +4437,20 @@
       "source": "backoffice.md:Full property schema written by `ensure_expanded_notion_schema.mjs`",
       "acceptance": "Full property schema written by `ensure_expanded_notion_schema.mjs`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "no-notion-mirror",
+      "evidence": "Out of scope for rebuild cutover; may return later. No Notion client or intake mirror in the rebuild; applications/members live in SQLite and /admin. AUDIT-TASKS.md notifications retire-external."
     },
     {
       "id": "OPS-333",
       "source": "backoffice.md:Field mapping (record → property; `propertiesForRecord`, expanded_notion.mjs:439-551).",
       "acceptance": "Field mapping (record → property; `propertiesForRecord`, expanded_notion.mjs:439-551).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "built",
+      "target": "retired",
+      "retired": "no-notion-mirror",
+      "evidence": "Out of scope for rebuild cutover; may return later. No Notion client or intake mirror in the rebuild; applications/members live in SQLite and /admin. AUDIT-TASKS.md notifications retire-external."
     },
     {
       "id": "OPS-334",
@@ -4437,8 +4465,10 @@
       "source": "backoffice.md:One-time migration (`migrate_expanded_notion.mjs`).",
       "acceptance": "One-time migration (`migrate_expanded_notion.mjs`).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/join"
+      "status": "built",
+      "target": "retired",
+      "retired": "no-notion-mirror",
+      "evidence": "Out of scope for rebuild cutover; may return later. No Notion client or intake mirror in the rebuild; applications/members live in SQLite and /admin. AUDIT-TASKS.md notifications retire-external."
     },
     {
       "id": "OPS-336",
@@ -4453,8 +4483,10 @@
       "source": "backoffice.md:`build.mjs` (the `notion-sync` job; flags `--strict`, `--check`).",
       "acceptance": "`build.mjs` (the `notion-sync` job; flags `--strict`, `--check`).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "built",
+      "target": "retired",
+      "retired": "no-notion-mirror",
+      "evidence": "Out of scope for rebuild cutover; may return later. No Notion client or intake mirror in the rebuild; applications/members live in SQLite and /admin. AUDIT-TASKS.md notifications retire-external."
     },
     {
       "id": "OPS-338",
@@ -4509,24 +4541,30 @@
       "source": "backoffice.md:Image localisation (notion.mjs:147-220, build.mjs:188-199).",
       "acceptance": "Image localisation (notion.mjs:147-220, build.mjs:188-199).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "built",
+      "target": "retired",
+      "retired": "no-notion-mirror",
+      "evidence": "Out of scope for rebuild cutover; may return later. No Notion client or intake mirror in the rebuild; applications/members live in SQLite and /admin. AUDIT-TASKS.md notifications retire-external."
     },
     {
       "id": "OPS-345",
       "source": "backoffice.md:Notion client (notion.mjs:19-89).",
       "acceptance": "Notion client (notion.mjs:19-89).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "built",
+      "target": "retired",
+      "retired": "no-notion-mirror",
+      "evidence": "Out of scope for rebuild cutover; may return later. No Notion client or intake mirror in the rebuild; applications/members live in SQLite and /admin. AUDIT-TASKS.md notifications retire-external."
     },
     {
       "id": "OPS-346",
       "source": "backoffice.md:`provision.mjs` (one-off; env `NOTION_TOKEN`, `NOTION_PARENT_PAGE`; `--dry-run`).",
       "acceptance": "`provision.mjs` (one-off; env `NOTION_TOKEN`, `NOTION_PARENT_PAGE`; `--dry-run`).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "built",
+      "target": "retired",
+      "retired": "no-notion-mirror",
+      "evidence": "Out of scope for rebuild cutover; may return later. No Notion client or intake mirror in the rebuild; applications/members live in SQLite and /admin. AUDIT-TASKS.md notifications retire-external."
     },
     {
       "id": "OPS-347",
@@ -4708,8 +4746,10 @@
       "source": "backoffice.md:Hermes WhatsApp alert job (external; behaviour pinned by `tools/hermes/test_twc_form_alerts.py`).",
       "acceptance": "Hermes WhatsApp alert job (external; behaviour pinned by `tools/hermes/test_twc_form_alerts.py`).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/join"
+      "status": "built",
+      "target": "retired",
+      "retired": "no-hermes",
+      "evidence": "Out of scope for rebuild cutover; may return later. No Hermes in the Node app (no WhatsApp alert job / auto-approve); approve/decline are human /admin actions (reviewApplication / setMemberStatus). AUDIT-TASKS.md notifications retire-external."
     },
     {
       "id": "OPS-369",
@@ -4847,8 +4887,10 @@
       "source": "backoffice.md:Hermes fails open towards approval.",
       "acceptance": "Hermes fails open towards approval.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/join"
+      "status": "built",
+      "target": "retired",
+      "retired": "no-hermes",
+      "evidence": "Out of scope for rebuild cutover; may return later. No Hermes in the Node app (no WhatsApp alert job / auto-approve); approve/decline are human /admin actions (reviewApplication / setMemberStatus). AUDIT-TASKS.md notifications retire-external."
     },
     {
       "id": "OPS-386",
@@ -4863,16 +4905,20 @@
       "source": "backoffice.md:The Notion sync has a head-of-line block.",
       "acceptance": "The Notion sync has a head-of-line block.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "built",
+      "target": "retired",
+      "retired": "no-notion-mirror",
+      "evidence": "Out of scope for rebuild cutover; may return later. No Notion client or intake mirror in the rebuild; applications/members live in SQLite and /admin. AUDIT-TASKS.md notifications retire-external."
     },
     {
       "id": "OPS-388",
       "source": "backoffice.md:Two Notion intake DBs.",
       "acceptance": "Two Notion intake DBs.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "no-notion-mirror",
+      "evidence": "Out of scope for rebuild cutover; may return later. No Notion client or intake mirror in the rebuild; applications/members live in SQLite and /admin. AUDIT-TASKS.md notifications retire-external."
     },
     {
       "id": "OPS-389",
@@ -4965,8 +5011,10 @@
       "source": "ops-part-d.md:Host entry `tools/form-connections.py`.",
       "acceptance": "Host entry `tools/form-connections.py`.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "built",
+      "target": "retired",
+      "retired": "no-webhooks",
+      "evidence": "Out of scope for rebuild cutover; may return later. No webhook dispatcher or connections.json; form answers store in SQLite. Admin alerts + submitter confirmations + Beehiiv consent gate cover day-to-day. AUDIT-TASKS.md notifications retire-external."
     },
     {
       "id": "OPS-400",
@@ -5248,8 +5296,10 @@
       "source": "ops-part-d.md:Settings file `data/crm/connections.json`, untrusted.",
       "acceptance": "Settings file `data/crm/connections.json`, untrusted.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "no-webhooks",
+      "evidence": "Out of scope for rebuild cutover; may return later. No webhook dispatcher or connections.json; form answers store in SQLite. Admin alerts + submitter confirmations + Beehiiv consent gate cover day-to-day. AUDIT-TASKS.md notifications retire-external."
     },
     {
       "id": "OPS-435",
@@ -5264,8 +5314,10 @@
       "source": "ops-part-d.md:Place, generation, first run.",
       "acceptance": "Place, generation, first run.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "parity"
+      "status": "built",
+      "target": "retired",
+      "retired": "no-webhooks",
+      "evidence": "Out of scope for rebuild cutover; may return later. No webhook dispatcher or connections.json; form answers store in SQLite. Admin alerts + submitter confirmations + Beehiiv consent gate cover day-to-day. AUDIT-TASKS.md notifications retire-external."
     },
     {
       "id": "OPS-437",
@@ -5288,8 +5340,10 @@
       "source": "ops-part-d.md:Test requests.",
       "acceptance": "Test requests.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "built",
+      "target": "retired",
+      "retired": "no-webhooks",
+      "evidence": "Out of scope for rebuild cutover; may return later. No webhook dispatcher or connections.json; form answers store in SQLite. Admin alerts + submitter confirmations + Beehiiv consent gate cover day-to-day. AUDIT-TASKS.md notifications retire-external."
     },
     {
       "id": "OPS-440",
@@ -5304,16 +5358,20 @@
       "source": "ops-part-d.md:Time budget.",
       "acceptance": "Time budget.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "built",
+      "target": "retired",
+      "retired": "no-webhooks",
+      "evidence": "Out of scope for rebuild cutover; may return later. No webhook dispatcher or connections.json; form answers store in SQLite. Admin alerts + submitter confirmations + Beehiiv consent gate cover day-to-day. AUDIT-TASKS.md notifications retire-external."
     },
     {
       "id": "OPS-442",
       "source": "ops-part-d.md:Dry run.",
       "acceptance": "Dry run.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "built",
+      "target": "retired",
+      "retired": "no-webhooks",
+      "evidence": "Out of scope for rebuild cutover; may return later. No webhook dispatcher or connections.json; form answers store in SQLite. Admin alerts + submitter confirmations + Beehiiv consent gate cover day-to-day. AUDIT-TASKS.md notifications retire-external."
     },
     {
       "id": "OPS-443",
@@ -6031,8 +6089,10 @@
       "source": "ops-part-d.md:Webhook and Notion deliveries are lossy after 48 hours or 7 attempts.",
       "acceptance": "Webhook and Notion deliveries are lossy after 48 hours or 7 attempts.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "built",
+      "target": "retired",
+      "retired": "no-webhooks",
+      "evidence": "Out of scope for rebuild cutover; may return later. No webhook dispatcher or connections.json; form answers store in SQLite. Admin alerts + submitter confirmations + Beehiiv consent gate cover day-to-day. AUDIT-TASKS.md notifications retire-external."
     },
     {
       "id": "OPS-531",
@@ -6047,8 +6107,10 @@
       "source": "ops-part-d.md:Notion mapping depends on the person naming properties like questions.",
       "acceptance": "Notion mapping depends on the person naming properties like questions.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "built",
+      "target": "retired",
+      "retired": "no-notion-mirror",
+      "evidence": "Out of scope for rebuild cutover; may return later. No Notion client or intake mirror in the rebuild; applications/members live in SQLite and /admin. AUDIT-TASKS.md notifications retire-external."
     },
     {
       "id": "OPS-533",
