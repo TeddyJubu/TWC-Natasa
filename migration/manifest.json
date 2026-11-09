@@ -1491,8 +1491,9 @@
       "source": "crm.md:FIX-IN-REBUILD — Beehiiv sync ignores `email_subscription_consent`",
       "acceptance": "FIX-IN-REBUILD — Beehiiv sync ignores `email_subscription_consent`: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "src/server/beehiiv.ts subscribeIfConsented + src/features/applications/applications.server.ts newsletterConsent/optInApplicant; src/server/beehiiv.test.ts: applications subscribe only when newsletter AND email consent are both true (form already requires the box). Consent version is not stored (consent=1 + subscribed_at only)."
     },
     {
       "id": "CRM-183",
@@ -2495,8 +2496,9 @@
       "source": "backoffice.md:When `newsletter = yes`, `email_subscription_consent = yes` is required",
       "acceptance": "When `newsletter = yes`, `email_subscription_consent = yes` is required: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "built",
+      "target": "notifications",
+      "evidence": "src/server/beehiiv.test.ts › \"newsletterConsent (applications)\": server-side gate needs newsletter yes AND email consent; the form (schema.ts) already requires the box"
     },
     {
       "id": "OPS-119",
@@ -4422,8 +4424,9 @@
       "source": "backoffice.md:API call.",
       "acceptance": "API call.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "built",
+      "target": "notifications",
+      "evidence": "src/server/beehiiv.ts: same endpoint/body/headers (utm nbwc.site/membership/membership-optin), 8 s timeout; deliberate change: reactivate_existing false"
     },
     {
       "id": "OPS-359",
@@ -4670,8 +4673,9 @@
       "source": "backoffice.md:beehiiv `reactivate_existing: true`",
       "acceptance": "beehiiv `reactivate_existing: true`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/join"
+      "status": "built",
+      "target": "/join",
+      "evidence": "src/server/beehiiv.ts: sends reactivate_existing:false and never calls for an address already in newsletter_subscribers (test \"never subscribes an address that is already on the list\")"
     },
     {
       "id": "OPS-390",
@@ -5158,8 +5162,9 @@
       "source": "ops-part-d.md:Consent gate: what is visible in this part.",
       "acceptance": "Consent gate: what is visible in this part.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/join"
+      "status": "built",
+      "target": "/join",
+      "evidence": "src/server/beehiiv.ts: one subscribeIfConsented() for applications (both answers), site newsletter form and custom-form box (callers pass explicit consent === true); only the application caller is wired so far"
     },
     {
       "id": "OPS-451",
@@ -5718,16 +5723,18 @@
       "source": "ops-part-d.md:The consent-bug cross-reference (Beehiiv).",
       "acceptance": "The consent-bug cross-reference (Beehiiv).: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/join"
+      "status": "built",
+      "target": "/join",
+      "evidence": "Same fix as OPS-450 (src/server/beehiiv.test.ts consent table: only exactly true subscribes)"
     },
     {
       "id": "OPS-521",
       "source": "ops-part-d.md:State loss re-subscribes people who unsubscribed.",
       "acceptance": "State loss re-subscribes people who unsubscribed.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/contact"
+      "status": "built",
+      "target": "/contact",
+      "evidence": "src/server/beehiiv.ts: an address is claimed in newsletter_subscribers before the call, so replayed rows, restored backups and the imported Beehiiv list (consent null) are never re-sent (tests \"already on the list\", \"replaying…\", \"racing\")"
     },
     {
       "id": "OPS-522",

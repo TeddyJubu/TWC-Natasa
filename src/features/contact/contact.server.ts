@@ -2,16 +2,14 @@
 // (the /admin inbox, migration 0002) and emailed (plain text) to every admin, with the sender's address in the body
 // for a reply. A filled honeypot gets the same success with nothing stored or sent.
 import type { Ctx } from "@/server/context.server";
-import { sendEmail } from "@/server/email";
 import { AccessError } from "@/server/guard";
+import { notifyAdmins, oneLine } from "@/server/notify";
 import { bad, isObject } from "@/server/validate";
 import { checkSize, clientIp, HttpError, rateLimit, respond } from "@/server/request";
 import { checkContact, checkPartnership, type ContactInput, type PartnershipInput } from "./schema";
 
 export type InboxKind = "contact" | "partnership";
 
-/** Header-safe: no CR/LF, other control characters or Unicode line breaks can reach a subject line. */
-const oneLine = (s: string) => s.replace(/[\p{Cc}\p{Zl}\p{Zp}]+/gu, " ").trim();
 const replyLine = (email: string, form: string) => `Reply to ${email} (this message came from the ${form} form, not from their address).`;
 
 export function contactEmail(input: ContactInput): { subject: string; text: string } {
@@ -58,10 +56,7 @@ export async function receiveMessage({ db }: Ctx, kind: InboxKind, input: unknow
       .run(v.name, v.email, v.business || null, v.collaboration_type, v.message);
     email = partnershipEmail(v);
   }
-  const admins = db.prepare(`select distinct u.email from "user" u join user_roles r on r.user_id = u.id where r.role = 'admin'`)
-    .all() as { email: string }[];
-  const results = await Promise.all(admins.map(({ email: to }) => sendEmail({ to, ...email })));
-  if (!results.some((r) => r.sent)) console.warn(`[inbox] ${kind} message stored, but no admin email went out`);
+  if (!(await notifyAdmins(db, email))) console.warn(`[inbox] ${kind} message stored, but no admin email went out`);
 }
 
 /** 5 per client IP per 10 minutes, counted separately for each form (as the old forms service did). */

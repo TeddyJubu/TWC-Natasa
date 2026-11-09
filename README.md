@@ -81,13 +81,19 @@ In a sandbox, bun may need writable temp and cache directories, e.g.
 | `HOST`, `PORT` | No | Where `bun run start` listens; default `127.0.0.1:8788`. |
 | `CF_EMAIL_ACCOUNT_ID` | For email | Cloudflare account id for the Email Sending API. |
 | `CF_EMAIL_API_TOKEN` | For email | **Secret.** Cloudflare API token with email sending permission. |
+| `BEEHIIV_API_KEY`, `BEEHIIV_PUBLICATION_ID` | For the newsletter | **Secret** (the first). Both set lets an application that ticked the newsletter and email-consent boxes subscribe the applicant. Without them nothing is sent. |
 | `EMAIL_FROM` | No | Sender address; defaults to `info@thewomenscollective.club`. |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | For Google | **Secret** (the second). Both set turns on Google sign-in. In Google Cloud, allow the redirect URI `${APP_URL}/api/auth/callback/google`. |
 
 Emails (all through `sendEmail()` in `src/server/email.ts`, Cloudflare Email Sending): the email-verification link
 on sign-up, the password-reset link, and the welcome email when an admin approves an application (or a member,
 via her newest application). Declines never send. Without the two `CF_EMAIL_*` values nothing is sent and `/admin`
-says "Approved — email not sent (email isn’t set up)".
+says "Approved — email not sent (email isn’t set up)". Every admin also gets an email when a contact message, a
+partnership inquiry or a member review arrives (the review alert names the member and their choice, never the answers).
+
+Newsletter: `subscribeIfConsented()` (`src/server/beehiiv.ts`) is the only way to Beehiiv. It needs an explicit `true`,
+skips any address already in `newsletter_subscribers` (the imported list has `consent` null and is never re-sent) and
+never asks Beehiiv to reactivate someone who left. Applications need the newsletter answer **and** the email consent.
 
 `src/app/secrets.test.ts` fails the test suite if a tracked file assigns a value to `BETTER_AUTH_SECRET`,
 `CF_EMAIL_API_TOKEN` or `GOOGLE_CLIENT_SECRET`, or if `.env` holds anything but `VITE_` values.

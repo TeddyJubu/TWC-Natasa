@@ -7,6 +7,7 @@ import type { Ctx } from "@/server/context.server";
 import { now, tx, type DB } from "@/server/db";
 import { appUrl } from "@/server/email";
 import { AccessError, isMember, requireAdmin } from "@/server/guard";
+import { notifyAdmins, oneLine } from "@/server/notify";
 import { checkSize, clientIp, HttpError, rateLimit, respond } from "@/server/request";
 import { bad, isObject, str, type Json } from "@/server/validate";
 import { checkReview, FORM_VERSION, INFO_FIELDS, type InfoField } from "./schema";
@@ -129,21 +130,44 @@ const isBot = (input: Record<string, unknown>) => input.honeypot !== undefined &
 /**
  * Stores her review and uses the link up, in one transaction: the conditional update is the single-use check, so
  * two sends racing on one link store one review (OPS-088). Her profile is never touched — a person acts on it.
+ * Returns the stored review's id, or null for a bot (nothing stored, so nothing to announce).
  */
-export function submitReview({ db }: Ctx, input: unknown): void {
+export function submitReview({ db }: Ctx, input: unknown): string | null {
   if (!isObject(input)) throw bad("review");
-  if (isBot(input)) return;
+  if (isBot(input)) return null;
   const link = activeLink(db, input.token);
   if (!link) throw invalidLink();
   const checked = checkReview(input);
   if ("errors" in checked) throw new AccessError(Object.values(checked.errors)[0]!, 400);
   const at = now();
-  tx(db, () => {
+  return tx(db, () => {
     const used = db.prepare("update member_links set used_at = ? where id = ? and used_at is null and expires_at > ?").run(at, link.id, at).changes;
     if (!used) throw invalidLink();
-    db.prepare("insert into member_reviews (link_id, member_id, answers, form_version, created_at) values (?, ?, ?, ?, ?)")
-      .run(link.id, link.member_id, JSON.stringify(checked.value), FORM_VERSION, at);
+    const row = db.prepare("insert into member_reviews (link_id, member_id, answers, form_version, created_at) values (?, ?, ?, ?, ?) returning id")
+      .get(link.id, link.member_id, JSON.stringify(checked.value), FORM_VERSION, at) as { id: string };
+    return row.id;
   });
+}
+
+/** What the alert says about her choice, in words an admin can act on. */
+const STAYING: Record<string, string> = { keep: "wants to stay connected", leave: "wants to leave and asks for their active member information to be removed", contact_me: "isn’t sure and asks to be contacted" };
+
+/**
+ * Tells every admin a review is waiting (the stored review, not the form post): who sent it and the one decision that
+ * needs a person — the full answers stay in /admin. Never throws: the review is already stored and the link used.
+ */
+export async function alertReview(db: DB, reviewId: string): Promise<void> {
+  try {
+    const r = db.prepare(`select p.full_name, r.answers from member_reviews r join profiles p on p.id = r.member_id where r.id = ?`)
+      .get(reviewId) as { full_name: string; answers: string } | undefined;
+    if (!r) return;
+    const { membership } = JSON.parse(r.answers) as { membership?: string };
+    const text = [`${oneLine(r.full_name)} has sent a member review and ${STAYING[membership ?? ""] ?? "answered"}.`, "",
+      `Read it, apply what it asks and mark it handled in the Member reviews card: ${appUrl()}/admin#reviews`].join("\n");
+    if (!(await notifyAdmins(db, { subject: oneLine(`Member review: ${r.full_name}`), text }))) console.warn("[review] stored, but no admin email went out");
+  } catch {
+    console.warn("[review] stored, but the admin alert failed");
+  }
 }
 
 // ponytail: 10 per client IP per 10 minutes, in memory (see rateLimit); generous because a link opens once anyway.
@@ -160,6 +184,7 @@ export function reviewRequest(c: Ctx, request: Request): Promise<Response> {
     } catch {
       throw bad("review");
     }
-    submitReview(c, input);
+    const id = submitReview(c, input);
+    if (id) await alertReview(c.db, id);
   });
 }
