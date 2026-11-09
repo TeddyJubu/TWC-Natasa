@@ -10,7 +10,7 @@ const one = <T,>(db: ReturnType<typeof openDb>, sql: string, ...args: (string | 
 describe("database", () => {
   it("migrates a fresh database to the newest user_version, with foreign keys on", () => {
     const db = openDb(":memory:");
-    expect(one<{ user_version: number }>(db, "pragma user_version").user_version).toBe(10);
+    expect(one<{ user_version: number }>(db, "pragma user_version").user_version).toBe(11);
     expect(one<{ foreign_keys: number }>(db, "pragma foreign_keys").foreign_keys).toBe(1);
     expect(one<{ busy_timeout?: number; timeout?: number }>(db, "pragma busy_timeout")).toEqual({ timeout: 5000 });
   });
@@ -39,11 +39,24 @@ describe("database", () => {
     writeFileSync(join(dir, "0008_spotlight_answers.sql"), "this would fail if it ran again");
     writeFileSync(join(dir, "0009_logged_actions.sql"), "this would fail if it ran again");
     writeFileSync(join(dir, "0010_forms_state.sql"), "this would fail if it ran again");
-    writeFileSync(join(dir, "0011_bad.sql"), "create table half (id integer); select * from missing_table;");
-    expect(() => migrate(db, dir)).toThrow(/0011_bad\.sql/);
-    expect(one<{ user_version: number }>(db, "pragma user_version").user_version).toBe(10);
+    writeFileSync(join(dir, "0011_form_copy.sql"), "this would fail if it ran again");
+    writeFileSync(join(dir, "0012_bad.sql"), "create table half (id integer); select * from missing_table;");
+    expect(() => migrate(db, dir)).toThrow(/0012_bad\.sql/);
+    expect(one<{ user_version: number }>(db, "pragma user_version").user_version).toBe(11);
     expect(one(db, "select name from sqlite_master where name = 'half'")).toBeUndefined();
-    expect(() => migrate(db, dir)).toThrow(/0011/);
+    expect(() => migrate(db, dir)).toThrow(/0012/);
+  });
+
+  it("0011: wording rows belong to one of the four public forms, one per default text, plain and bounded", () => {
+    const db = openDb(":memory:");
+    const add = (form: string, original: string, value: string) => () => db.prepare("insert into form_copy (form, original, value) values (?, ?, ?)").run(form, original, value);
+    add("contact", "Send message", "Send it")();
+    expect(add("contact", "Send message", "Again")).toThrow(/UNIQUE|constraint/);
+    expect(add("spotlight", "Send message", "x")).toThrow(/CHECK/);
+    expect(add("contact", "", "x")).toThrow(/CHECK/);
+    expect(add("contact", "x".repeat(401), "x")).toThrow(/CHECK/);
+    expect(add("contact", "Message", "")).toThrow(/CHECK/);
+    expect(add("contact", "Message", "x".repeat(2001))).toThrow(/CHECK/);
   });
 
   it("0010: seeds application and review open; only those kinds; message ≤ 1,000", () => {

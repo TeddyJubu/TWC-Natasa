@@ -3,12 +3,14 @@
 import { useRef, useState, type FormEvent } from "react";
 import { Link } from "@tanstack/react-router";
 import { Icon } from "@/app/layout/twc";
+import { useCopy } from "@/features/form-copy/use-copy";
 import { sendContact, type ContactMessage } from "./mutations";
 import { checkContact, LIMITS, TOPICS, type ContactErrors, type ContactField } from "./schema";
 
 const FIELDS: ContactField[] = ["name", "email", "topic", "message", "consent"];
 
 export function ContactForm({ send = sendContact }: { send?: (input: ContactMessage) => Promise<void> }) {
+  const t = useCopy();
   const [errors, setErrors] = useState<ContactErrors>({});
   const [failure, setFailure] = useState<string | null>(null);
   const [sentTo, setSentTo] = useState<string | null>(null);
@@ -44,8 +46,8 @@ export function ContactForm({ send = sendContact }: { send?: (input: ContactMess
   if (sentTo) {
     return (
       <div role="status" className="flex flex-col items-center gap-3 rounded-md bg-sb-mint px-6 py-12 text-center sm:px-8">
-        <span className="twc-ticket__meta"><span>Message received</span></span>
-        <h2 ref={thanks} tabIndex={-1} className="twc-h3 text-[32px] outline-none sm:text-[40px]">Thanks for reaching out.</h2>
+        <span className="twc-ticket__meta"><span>{t("Message received")}</span></span>
+        <h2 ref={thanks} tabIndex={-1} className="twc-h3 text-[32px] outline-none sm:text-[40px]">{t("Thanks for reaching out.")}</h2>
         <p className="max-w-[420px] text-[17px] [overflow-wrap:anywhere]">We’ll be in touch at {sentTo}.</p>
       </div>
     );
@@ -64,20 +66,20 @@ export function ContactForm({ send = sendContact }: { send?: (input: ContactMess
     >
       <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-5">
         <div className="twc-field">
-          <label htmlFor="c-name">Your name</label>
+          <label htmlFor="c-name">{t("Your name")}</label>
           <input className="twc-input" id="c-name" name="name" type="text" autoComplete="name" required maxLength={LIMITS.name}
             aria-invalid={errors.name ? true : undefined} aria-describedby={describe("name")} />
           {error("name")}
         </div>
         <div className="twc-field">
-          <label htmlFor="c-email">Email</label>
+          <label htmlFor="c-email">{t("Email")}</label>
           <input className="twc-input" id="c-email" name="email" type="email" autoComplete="email" required maxLength={LIMITS.email}
             aria-invalid={errors.email ? true : undefined} aria-describedby={describe("email")} />
           {error("email")}
         </div>
       </div>
       <fieldset className="twc-field m-0 border-0 p-0" aria-describedby={describe("topic")}>
-        <legend className="twc-label mb-2.5">What’s it about?</legend>
+        <legend className="twc-label mb-2.5">{t("What’s it about?")}</legend>
         <div className="flex flex-wrap gap-2">
           {TOPICS.map((t, i) => (
             <label key={t} className="twc-choice">
@@ -88,7 +90,7 @@ export function ContactForm({ send = sendContact }: { send?: (input: ContactMess
         {error("topic")}
       </fieldset>
       <div className="twc-field">
-        <label htmlFor="c-message">Message</label>
+        <label htmlFor="c-message">{t("Message")}</label>
         <textarea className="twc-input" id="c-message" name="message" rows={6} required maxLength={LIMITS.message}
           aria-invalid={errors.message ? true : undefined} aria-describedby={describe("message")} />
         {error("message")}
@@ -114,7 +116,7 @@ export function ContactForm({ send = sendContact }: { send?: (input: ContactMess
         </div>
       )}
       <button type="submit" className="twc-btn self-start" disabled={sending}>
-        {sending ? "Sending…" : "Send message"} <Icon name="arrow" className="twc-arrow" />
+        {sending ? "Sending…" : t("Send message")} <Icon name="arrow" className="twc-arrow" />
       </button>
     </form>
   );

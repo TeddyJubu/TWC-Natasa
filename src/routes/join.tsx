@@ -9,10 +9,15 @@ import { useSubmitApplication } from "@/features/applications/mutations";
 import { applicantQuery } from "@/features/applications/queries";
 import { CLOSED_TITLE } from "@/features/forms-state/constants";
 import { publicFormStateFn } from "@/features/forms-state/fns";
+import { FormCopyProvider } from "@/features/form-copy/FormCopy";
+import { loadFormCopy } from "@/features/form-copy/queries";
 import { paragraphs } from "@/features/forms/schema";
 
 export const Route = createFileRoute("/join")({
-  loader: async () => publicFormStateFn({ data: { kind: "application" } }),
+  loader: async () => {
+    const [state, copy] = await Promise.all([publicFormStateFn({ data: { kind: "application" } }), loadFormCopy("application")]);
+    return { ...state, copy };
+  },
   head: () => ({
     meta: [
       { title: "Join The Women’s Collective — Membership application" },
@@ -30,6 +35,7 @@ const sections = ["About", "Work", "Community", "WhatsApp", "Spotlight", "Direct
 
 function JoinPage() {
   const state = Route.useLoaderData();
+  const t = (text: string) => state.copy?.[text] ?? text;
   const { mutateAsync: submit } = useSubmitApplication();
   // Prefill is a convenience: while it loads, or if it fails, the form simply starts empty.
   const { data: applicant } = useQuery(applicantQuery);
@@ -45,13 +51,14 @@ function JoinPage() {
   return (
     <AppPage>
       <AppNav />
+      <FormCopyProvider copy={state.copy}>
       <main id="main" tabIndex={-1} className="twc-wrap flex max-w-[960px] flex-col gap-8 pb-[104px] pt-14 outline-none">
         <div className="twc-ticket bg-[linear-gradient(160deg,#16213f_0%,#0b0b0a_100%)]">
           <div className="twc-ticket__main grow-[4] basis-[480px]">
-            <p className="twc-eyebrow-script">psst — there’s a seat for you</p>
-            <span className="twc-eyebrow text-sb-paper/70">Membership application</span>
-            <h1 className="twc-display text-[clamp(32px,9vw,60px)]">Tell us about your place in the constellation.</h1>
-            <p className="max-w-[520px] text-[17px] leading-[1.6] text-sb-paper/85">Complete this application so we can learn about you, your work, and how you would like to participate in The Women’s Collective.</p>
+            <p className="twc-eyebrow-script">{t("psst — there’s a seat for you")}</p>
+            <span className="twc-eyebrow text-sb-paper/70">{t("Membership application")}</span>
+            <h1 className="twc-display text-[clamp(32px,9vw,60px)]">{t("Tell us about your place in the constellation.")}</h1>
+            <p className="max-w-[520px] text-[17px] leading-[1.6] text-sb-paper/85">{t("Complete this application so we can learn about you, your work, and how you would like to participate in The Women’s Collective.")}</p>
           </div>
           <div className="twc-ticket__stub grow basis-[280px]">
             <div className="twc-ticket__meta"><span>Admit one</span><span>New member</span></div>
@@ -78,6 +85,7 @@ function JoinPage() {
           )}
         />
       </main>
+      </FormCopyProvider>
       <AppFooter />
     </AppPage>
   );

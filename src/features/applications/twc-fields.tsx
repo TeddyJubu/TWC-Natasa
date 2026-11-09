@@ -1,6 +1,7 @@
 // The membership form's field vocabulary on the public twc kit (classes in src/app/twc.css).
 import * as React from "react";
 import { cn } from "@/index";
+import { useCopy } from "@/features/form-copy/use-copy";
 import { LIMITS } from "./schema";
 
 const Optional = () => <span className="ml-2 text-[13px] font-normal normal-case tracking-normal text-sb-muted">Optional</span>;
@@ -14,12 +15,13 @@ type ControlProps = { id?: string; "aria-describedby"?: string };
 
 /** Labels its single child control: gives it `id` and points `aria-describedby` at the hint. */
 export function Field({ id, label, optional, hint, className, children }: { id: string; label: string; optional?: boolean; hint?: string; className?: string; children: React.ReactElement<ControlProps> }) {
+  const t = useCopy();
   const hintId = hint ? `${id}-hint` : undefined;
   return (
     <div className={cn("twc-field", className)}>
-      <label htmlFor={id}>{label}{optional && <Optional />}</label>
+      <label htmlFor={id}>{t(label)}{optional && <Optional />}</label>
       {React.cloneElement(children, { id, "aria-describedby": hintId })}
-      {hint && <span id={hintId} className="twc-hint">{hint}</span>}
+      {hint && <span id={hintId} className="twc-hint">{t(hint)}</span>}
     </div>
   );
 }
@@ -48,6 +50,7 @@ export interface ChoicesProps {
 
 /** A pill group (`twc-choice`) of checkboxes or radios in a labelled fieldset. */
 export function Choices({ name, legend, options, type = "checkbox", hint, optional, required, defaultValue, onValueChange, className }: ChoicesProps) {
+  const t = useCopy();
   const group = React.useRef<HTMLFieldSetElement>(null);
   const [invalid, setInvalid] = React.useState(false);
   const errorId = React.useId();
@@ -69,8 +72,8 @@ export function Choices({ name, legend, options, type = "checkbox", hint, option
   return (
     <fieldset ref={group} aria-describedby={showError ? errorId : undefined} className={cn("min-w-0", className)}>
       <legend className="twc-label mb-2.5">
-        {legend}{optional && <Optional />}
-        {hint && <span className="ml-2 text-[13px] font-normal normal-case tracking-normal text-sb-muted">{hint}</span>}
+        {t(legend)}{optional && <Optional />}
+        {hint && <span className="ml-2 text-[13px] font-normal normal-case tracking-normal text-sb-muted">{t(hint)}</span>}
       </legend>
       <div className="flex flex-wrap gap-2">
         {options.map((option, i) => {
@@ -98,12 +101,13 @@ export function Choices({ name, legend, options, type = "checkbox", hint, option
 
 /** One numbered form section; its visible heading names the fieldset, so the title is announced once. */
 export function Section({ index, title, description, children }: { index: string; title: string; description: string; children: React.ReactNode }) {
+  const t = useCopy();
   const headingId = React.useId();
   return (
     <fieldset aria-labelledby={headingId} className="flex min-w-0 flex-col gap-[22px] border-t border-sb-ink/15 pt-12 first:border-t-0 first:pt-0">
       <span className="twc-index">{index}</span>
-      <h2 id={headingId} className="font-display text-[32px] leading-[1.09] tracking-[-0.5px] sm:text-[40px]">{title}</h2>
-      <p className="text-sb-muted">{description}</p>
+      <h2 id={headingId} className="font-display text-[32px] leading-[1.09] tracking-[-0.5px] sm:text-[40px]">{t(title)}</h2>
+      <p className="text-sb-muted">{t(description)}</p>
       {children}
     </fieldset>
   );

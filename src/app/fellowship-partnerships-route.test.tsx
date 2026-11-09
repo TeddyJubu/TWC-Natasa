@@ -12,6 +12,8 @@ vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), 
 import { Route as Fellowship } from "@/routes/fellowship";
 import { Route as Partnerships } from "@/routes/partnerships";
 
+// The loader reads the page's editable wording; none saved means the defaults.
+vi.spyOn(Partnerships, "useLoaderData").mockReturnValue({} as never);
 afterEach(() => {
   cleanup();
   sendPartnership.mockReset();

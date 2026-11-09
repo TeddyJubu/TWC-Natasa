@@ -26,6 +26,7 @@ import { adminFormResponses, formResponsesCsv, openForm, saveAdminForm, setFormO
 import { saveForm } from "@/features/forms/store";
 import { DEMO_FORMS } from "@/features/forms/fixtures";
 import { adminFormsState, publicFormState, setMembershipFormOpen } from "@/features/forms-state/forms-state.server";
+import { adminFormCopy, publicFormCopy, saveFormCopy } from "@/features/form-copy/copy.server";
 import { TINY } from "@/test/images";
 
 const id = (n: string) => `00000000-0000-4000-8000-${n.padStart(12, "0")}`;
@@ -605,6 +606,20 @@ describe("membership form switches", () => {
     expect(publicFormState(anon(), { kind: "application" }).closed).toBe("Closed by admin.");
     expect(() => submitApplication(anon(), { email: "closed@x.test", fullName: "X", neighborhood: "", answers: {} })).toThrow(/Closed by admin/);
     setMembershipFormOpen(as(A), { kind: "application", open: true });
+  });
+});
+
+// ---------- Built-in form wording (migration 0011): anyone reads; only admins write ----------
+describe("built-in form wording", () => {
+  it("anon reads the wording; only admins read it as the editor or change it", () => {
+    expect(publicFormCopy(anon(), { form: "contact" })).toEqual({});
+    throwsAccess(() => adminFormCopy(anon(), { form: "contact" }));
+    throwsAccess(() => adminFormCopy(as(B), { form: "contact" }));
+    throwsAccess(() => saveFormCopy(anon(), { form: "contact", values: { "Send message": "x" } }));
+    throwsAccess(() => saveFormCopy(as(B), { form: "contact", values: { "Send message": "x" } }));
+    saveFormCopy(as(A), { form: "contact", values: { "Send message": "Send it" } });
+    expect(publicFormCopy(anon(), { form: "contact" })).toEqual({ "Send message": "Send it" });
+    saveFormCopy(as(A), { form: "contact", values: { "Send message": "" } });
   });
 });
 

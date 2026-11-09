@@ -3,6 +3,8 @@ import gatheringCeramics from "@/assets/photography/site/gathering-ceramics.webp
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import { Icon, Scallop } from "@/app/layout/twc";
 import { PartnershipForm } from "@/features/contact/PartnershipForm";
+import { FormCopyProvider } from "@/features/form-copy/FormCopy";
+import { loadFormCopy } from "@/features/form-copy/queries";
 
 const TITLE = "Partnerships — The Women’s Collective";
 const DESCRIPTION = "Host, teach, supply or support: partner with The Women’s Collective in Western Queens. Neither of us is buying anything.";
@@ -18,6 +20,7 @@ export const Route = createFileRoute("/partnerships")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
+  loader: () => loadFormCopy("partnership"),
   component: PartnershipsPage,
 });
 
@@ -30,15 +33,18 @@ const WAYS = [
 ];
 
 function PartnershipsPage() {
+  const copy = Route.useLoaderData();
+  const t = (text: string) => copy?.[text] ?? text;
   return (
+    <FormCopyProvider copy={copy}>
     <AppPage>
       <AppNav />
       <main id="main" tabIndex={-1} className="outline-none">
         <section className="twc-wrap flex flex-wrap items-center gap-14 pb-[88px] pt-[72px]">
           <div className="flex min-w-0 flex-[1_1_520px] flex-col gap-5">
-            <p className="twc-eyebrow-script">for businesses</p>
-            <h1 className="twc-display">Partners, not vendors.</h1>
-            <p className="twc-lede max-w-[560px]">Every gathering happens because someone opens their doors and shares what they know. That’s a collaboration, and we treat it like one.</p>
+            <p className="twc-eyebrow-script">{t("for businesses")}</p>
+            <h1 className="twc-display">{t("Partners, not vendors.")}</h1>
+            <p className="twc-lede max-w-[560px]">{t("Every gathering happens because someone opens their doors and shares what they know. That’s a collaboration, and we treat it like one.")}</p>
             <p className="twc-chip twc-chip--ring self-start"><Icon name="pin" />Western Queens, New York</p>
           </div>
           <div className="min-w-0 flex-[1_1_380px]">
@@ -80,9 +86,9 @@ function PartnershipsPage() {
         <section aria-labelledby="inquiry-title" className="twc-band twc-band--lilac">
           <div className="twc-wrap flex flex-wrap items-start gap-x-16 gap-y-12">
             <div className="flex min-w-0 flex-[1_1_340px] flex-col gap-[18px]">
-              <p className="twc-eyebrow-script text-sb-ink">start the conversation</p>
-              <h2 id="inquiry-title" className="twc-h3">Tell us what you had in mind.</h2>
-              <p className="max-w-[460px] text-[17px] leading-[1.65]">A couple of sentences is plenty. We answer every one of these, and we’ll say no clearly if it isn’t a fit rather than going quiet on you.</p>
+              <p className="twc-eyebrow-script text-sb-ink">{t("start the conversation")}</p>
+              <h2 id="inquiry-title" className="twc-h3">{t("Tell us what you had in mind.")}</h2>
+              <p className="max-w-[460px] text-[17px] leading-[1.65]">{t("A couple of sentences is plenty. We answer every one of these, and we’ll say no clearly if it isn’t a fit rather than going quiet on you.")}</p>
               <div className="mt-2 flex flex-col gap-2 rounded-md bg-sb-paper px-6 py-[22px]">
                 <h3 className="font-display text-[22px] leading-[1.3]">Before you write</h3>
                 <p className="text-[15px] text-sb-muted">
@@ -102,5 +108,6 @@ function PartnershipsPage() {
       </main>
       <AppFooter />
     </AppPage>
+    </FormCopyProvider>
   );
 }

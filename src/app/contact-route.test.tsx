@@ -11,6 +11,8 @@ vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), 
 import { Route } from "@/routes/contact";
 
 const Page = Route.options.component as React.ComponentType;
+// The loader reads the page's editable wording; none saved means the defaults.
+vi.spyOn(Route, "useLoaderData").mockReturnValue({} as never);
 afterEach(() => {
   cleanup();
   sendContact.mockReset();

@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Icon } from "@/app/layout/twc";
+import { useCopy } from "@/features/form-copy/use-copy";
 import { GUIDELINES, LIMITS, TYPED_LOCATIONS, parseApplication, type ApplicationInput } from "./schema";
 import { Check, Choices, Field, Input, LongAnswer, Notice, Section, Select } from "./twc-fields";
 
@@ -85,15 +86,16 @@ export function ApplicationForm({ submit, initial, resettable, nextStep }: Appli
 }
 
 function Received({ nextStep, onReset }: { nextStep?: React.ReactNode; onReset?: () => void }) {
+  const t = useCopy();
   const panel = React.useRef<HTMLDivElement>(null);
   // The long form is gone, so move focus to the confirmation instead of leaving it on a removed button.
   React.useEffect(() => panel.current?.focus(), []);
   return (
     <div ref={panel} tabIndex={-1} role="status" className="motion-panel-in scroll-mt-28 flex flex-col items-center gap-4 rounded-[6px] bg-sb-sun px-6 py-16 text-center outline-none sm:px-8">
-      <span className="twc-ticket__meta">Application received</span>
+      <span className="twc-ticket__meta">{t("Application received")}</span>
       <p aria-hidden className="inline-flex items-center gap-2 font-script text-[36px] leading-[1.1]">thank you <Icon name="sparkle" className="size-6" /></p>
-      <h2 className="twc-h3">Thank you for introducing yourself.</h2>
-      <p className="max-w-[520px] text-[17px]">We are excited to learn more about you and your work. Your application will be reviewed, and we will contact you if we need anything else.</p>
+      <h2 className="twc-h3">{t("Thank you for introducing yourself.")}</h2>
+      <p className="max-w-[520px] text-[17px]">{t("We are excited to learn more about you and your work. Your application will be reviewed, and we will contact you if we need anything else.")}</p>
       {nextStep}
       {onReset && <button type="button" className="twc-btn mt-2" onClick={onReset}>Review another application</button>}
     </div>
@@ -109,6 +111,7 @@ interface FieldsProps {
 }
 
 function ApplicationFields({ initial, busy, failure, onSubmit, onEdit }: FieldsProps) {
+  const t = useCopy();
   const [location, setLocation] = React.useState("");
   const [industry, setIndustry] = React.useState<string[]>([]);
   const [whatsApp, setWhatsApp] = React.useState("no");
@@ -275,7 +278,7 @@ function ApplicationFields({ initial, busy, failure, onSubmit, onEdit }: FieldsP
             </Notice>
           )}
           <div className="flex flex-wrap items-center gap-4">
-            <button type="submit" {...pending} className={`twc-btn ${pending.className}`}>Submit application <Icon name="arrow" className="twc-arrow" /></button>
+            <button type="submit" {...pending} className={`twc-btn ${pending.className}`}>{t("Submit application")} <Icon name="arrow" className="twc-arrow" /></button>
             <p className="max-w-md text-[13px] leading-relaxed text-sb-muted">Leaving an optional question unanswered never counts as permission.</p>
           </div>
         </Section>

@@ -1,6 +1,7 @@
 // The /admin cards (sidebar anchors). Data and rules live in ./queries, ./mutations and ./format; these only render.
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { cn } from "@/index";
 import { fieldClass, primaryButton, ring, secondaryButton } from "@/app/layout/app-classes";
 import { Card, Chip, InlineError, Toggle, type ChipTone } from "@/app/layout/app-ui";
@@ -36,6 +37,8 @@ import { FormEditor } from "@/features/forms/FormEditor";
 import { draftFromQuestions, questionsFromDraft, starterQuestions, type FormEditorValues } from "@/features/forms/form-draft";
 import { adminFormResponsesQuery, useDownloadFormCsv, useSaveAdminForm, useSetFormOpen, type AdminForm } from "@/features/forms/queries";
 import { KIND_LABEL } from "@/features/forms-state/constants";
+import { BUILT_IN, BUILT_IN_INFO, COPY_FIELDS, COPY_MAX, LONG_TEXT, isCopyForm, type BuiltIn, type CopyForm } from "@/features/form-copy/manifest";
+import { adminFormCopyQuery, useSaveFormCopy } from "@/features/form-copy/queries";
 import { adminFormsStateQuery, useSetMembershipFormOpen, type AdminFormState } from "@/features/forms-state/queries";
 
 const errorMessage = (error: unknown) =>
@@ -845,48 +848,10 @@ function SpotlightRow({ spotlight: s }: { spotlight: AdminSpotlight }) {
   );
 }
 
-// ---------- Built-in forms: join & review open/close (OPS-081 / OPS-140) + the three fixed forms ----------
+// ---------- Forms: the list, and each form's own edit page ----------
 
-/** Where each built-in form's answers land: a card on /admin. */
-const ANSWERS_IN: Record<string, [label: string, href: string]> = {
-  application: ["Applications", "/admin#applications"],
-  review: ["Member reviews", "/admin#reviews"],
-  inbox: ["Inbox", "/admin#inbox"],
-  newsletter: ["Newsletter", "/admin#newsletter"],
-};
-
-/**
- * The old CRM's five fixed forms (not /f/… rows). Only join and review can close (forms_state); contact and
- * partnership are always on, and the newsletter has no public page yet (SITE-160) — sign-ups come from /join.
- */
-const FIXED_FORMS: { title: string; href?: string; answers: string; status: string; note?: string }[] = [
-  { title: "Contact", href: "/contact", answers: "inbox", status: "always_on" },
-  { title: "Partnership", href: "/partnerships", answers: "inbox", status: "always_on" },
-  { title: "Newsletter", answers: "newsletter", status: "no_page", note: "No public signup page yet; sign-ups come from the membership application’s opt-in." },
-];
-
-function AnswersLink({ to }: { to: string }) {
-  const [label, href] = ANSWERS_IN[to];
-  return <>answers in <a className={cn("underline", ring)} href={href}>{label}</a></>;
-}
-
-export function MembershipFormsPanel() {
-  const states = useQuery(adminFormsStateQuery);
-  return (
-    <Card id="built-in-forms" title="Built-in forms" subtitle="The site’s five fixed forms. Join and review can be closed; Spotlight stays always on.">
-      <QueryGate query={states} what="built-in forms">
-        {(states.data ?? []).map((s) => <MembershipFormRow key={s.kind} state={s} />)}
-        {FIXED_FORMS.map((f) => (
-          <Item key={f.title} headingId={`built-in-${f.title.toLowerCase()}`} title={f.title} status={f.status}
-            details={<p className={meta}>
-              {f.href && <><a className={cn("underline", ring)} href={f.href}>{f.href}</a> · </>}
-              <AnswersLink to={f.answers} />
-              {f.note && <><br />{f.note}</>}
-            </p>}>{null}</Item>
-        ))}
-      </QueryGate>
-    </Card>
-  );
+function AnswersLink({ to }: { to: [label: string, href: string] }) {
+  return <>answers in <a className={cn("underline", ring)} href={to[1]}>{to[0]}</a></>;
 }
 
 function MembershipFormRow({ state: s }: { state: AdminFormState }) {
@@ -903,7 +868,7 @@ function MembershipFormRow({ state: s }: { state: AdminFormState }) {
   return (
     <Item headingId={`membership-form-${s.kind}`} title={label} status={s.open ? "open" : "closed"}
       details={<p className={meta}>
-        <a className={cn("underline", ring)} href={href}>{href}</a> · <AnswersLink to={s.kind} />
+        <a className={cn("underline", ring)} href={href}>{href}</a> · <AnswersLink to={BUILT_IN_INFO[s.kind].answers} />
         {s.updated_at ? ` · updated ${formatDate(s.updated_at)}` : ""}
       </p>}>
       <div className="flex flex-col gap-3 rounded-md bg-app-sunken p-3.5">
@@ -929,19 +894,145 @@ function MembershipFormRow({ state: s }: { state: AdminFormState }) {
   );
 }
 
-// ---------- Your forms (CRM-099/100/103 light + CRM-130) ----------
+const formLink = (id: string, label: string, className?: string) =>
+  <Link to="/admin/forms/$formId" params={{ formId: id }} className={cn("underline-offset-4", ring, className)}>{label}</Link>;
 
-export function FormResponsesPanel() {
-  const forms = useQuery(adminFormResponsesQuery);
-  const list = forms.data ?? [];
-  const total = list.reduce((n, f) => n + f.total, 0);
+/** One form in the list: its name opens its edit page (as does Edit). */
+function FormListRow({ id, title, status, details }: { id: string; title: string; status: string; details: React.ReactNode }) {
+  const headingId = `form-row-${id}`;
   return (
-    <Card id="forms" title="Your forms" subtitle={forms.data ? `${total} answers · ${list.length} forms at /f/…` : "Answers to the forms at /f/…"}>
-      <QueryGate query={forms} what="form responses">
+    <article aria-labelledby={headingId} className={cn(pad, "flex flex-wrap items-start justify-between gap-x-4 gap-y-3 py-5")}>
+      <div className="flex min-w-0 flex-col gap-0.5">
+        <h3 id={headingId} className="text-base font-medium break-words text-ink">{formLink(id, title, "hover:underline")}</h3>
+        {details}
+      </div>
+      <div className="flex items-center gap-3">
+        <StatusChip status={status} />
+        <Link to="/admin/forms/$formId" params={{ formId: id }} aria-label={`Edit ${title}`} className={secondaryButton}>Edit</Link>
+      </div>
+    </article>
+  );
+}
+
+/** Every form, separately: the five built-in ones, then your own /f/… forms. Click one to edit it. */
+export function FormsListPanel() {
+  const states = useQuery(adminFormsStateQuery);
+  const forms = useQuery(adminFormResponsesQuery);
+  const custom = forms.data ?? [];
+  const open = (kind: "application" | "review") => (states.data?.find((s) => s.kind === kind)?.open === false ? "closed" : "open");
+  const status: Record<BuiltIn, string> = { application: open("application"), review: open("review"), contact: "always_on", partnership: "always_on", newsletter: "no_page" };
+  const total = custom.reduce((n, f) => n + f.total, 0);
+  return (
+    <Card id="forms" title="Forms" subtitle={`${BUILT_IN.length} built-in forms${forms.data ? ` · ${custom.length} of your own (${total} answers)` : ""}. Click a form to edit it.`}>
+      {BUILT_IN.map((kind) => {
+        const info = BUILT_IN_INFO[kind];
+        return (
+          <FormListRow key={kind} id={kind} title={info.title} status={status[kind]}
+            details={<p className={meta}>{info.href && <>{info.href} · </>}{info.note}</p>} />
+        );
+      })}
+      <QueryGate query={forms} what="your forms">
+        {custom.map((f) => (
+          <FormListRow key={f.id} id={f.id} title={f.name} status={f.open ? "open" : "closed"}
+            details={<p className={meta}>
+              /f/{f.slug} · {f.total === 1 ? "1 answer" : `${f.total} answers`}{f.newest_at ? ` · newest ${formatDate(f.newest_at)}` : ""}
+            </p>} />
+        ))}
         <AddCustomForm />
-        {list.length === 0 ? <Empty>No forms yet. Add one above to publish at /f/…</Empty> : list.map((f) => <FormRow key={f.id} form={f} />)}
       </QueryGate>
     </Card>
+  );
+}
+
+/** An edit page's way back to the list. */
+export function BackToForms() {
+  return <Link to="/admin/forms" className={cn("inline-flex w-fit items-center gap-1.5 text-sm text-app-muted underline-offset-4 hover:underline", ring)}>← All forms</Link>;
+}
+
+function NotFound() {
+  return <Card id="form" title="Form not found"><Empty>There is no form with this address. It may have been renamed or removed.</Empty></Card>;
+}
+
+/** The edit page for a built-in form: where it lives, open/close (join and review), and its wording. */
+export function BuiltInFormPanel({ kind }: { kind: BuiltIn }) {
+  const info = BUILT_IN_INFO[kind];
+  const states = useQuery(adminFormsStateQuery);
+  const state = states.data?.find((s) => s.kind === kind);
+  return (
+    <>
+      <Card id="form" title={info.title} subtitle={info.note}>
+        <p className={cn(pad, "py-4 text-[15px]")}>
+          {info.href && <>Public page: <a className={cn("underline", ring)} href={info.href}>{info.href}</a> · </>}
+          <AnswersLink to={info.answers} />
+        </p>
+      </Card>
+      {(kind === "application" || kind === "review") && (
+        <Card id="status" title="Open or closed" subtitle="When closed, visitors see your closed message instead of the form.">
+          <QueryGate query={states} what="the open/closed switch">
+            {state ? <MembershipFormRow state={state} /> : <Empty>No switch found for this form.</Empty>}
+          </QueryGate>
+        </Card>
+      )}
+      {isCopyForm(kind)
+        ? <WordingPanel form={kind} />
+        : <Card id="wording" title="Wording"><Empty>This form has no public page yet, so there is no wording to edit.</Empty></Card>}
+    </>
+  );
+}
+
+/** Every editable text of a built-in form, grouped as on the page. Blank restores the original. */
+function WordingPanel({ form }: { form: CopyForm }) {
+  const current = useQuery(adminFormCopyQuery(form));
+  const save = useSaveFormCopy();
+  return (
+    <Card id="wording" title="Wording" subtitle="Change what visitors read. Clear a box to restore the original. Consent statements, answer choices and notices stay as written.">
+      <QueryGate query={current} what="the wording">
+        <WordingForm key={JSON.stringify(current.data)} form={form} current={current.data ?? {}} save={save} />
+      </QueryGate>
+    </Card>
+  );
+}
+
+function WordingForm({ form, current, save }: { form: CopyForm; current: Record<string, string>; save: ReturnType<typeof useSaveFormCopy> }) {
+  const fields = COPY_FIELDS[form];
+  const [draft, setDraft] = React.useState<Record<string, string>>(() => Object.fromEntries(fields.map((f) => [f.text, current[f.text] ?? f.text])));
+  const changed = fields.some((f) => draft[f.text] !== (current[f.text] ?? f.text));
+  const groups = [...new Set(fields.map((f) => f.group))];
+  return (
+    <form aria-label="Wording" className="flex flex-col gap-7 px-5 py-6 sm:px-7" onSubmit={(e) => { e.preventDefault(); save.mutate({ form, values: draft }); }}>
+      {groups.map((group, gi) => (
+        <section key={group} aria-labelledby={`wording-${form}-group-${gi}`} className="flex flex-col gap-4">
+          <h3 id={`wording-${form}-group-${gi}`} className="twc-eyebrow">{group}</h3>
+          {fields.filter((f) => f.group === group).map((f) => {
+            const id = `wording-${form}-field-${fields.indexOf(f)}`;
+            const long = f.text.length > LONG_TEXT;
+            const props = { id, value: draft[f.text], maxLength: COPY_MAX, className: fieldClass, placeholder: f.text, // Read the value now: React clears `currentTarget` once the handler returns, before a queued update runs.
+              onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => { const { value } = e.currentTarget; setDraft((d) => ({ ...d, [f.text]: value })); } };
+            return (
+              <Field key={f.text} id={id} label={f.text} hint={f.text.includes("{name}") ? "{name} becomes the member’s first name." : undefined}>
+                {long ? <textarea rows={3} {...props} /> : <input {...props} />}
+              </Field>
+            );
+          })}
+        </section>
+      ))}
+      <MutationError mutation={save} />
+      <div className="flex flex-wrap items-center gap-3">
+        <button type="submit" className={primaryButton} disabled={!changed || save.isPending}>Save wording</button>
+        {save.isSuccess && !changed && <p role="status" className="text-sm text-app-muted">Saved. The page now reads this way.</p>}
+      </div>
+    </form>
+  );
+}
+
+/** The edit page for one of your own /f/… forms: settings, questions, open/close, answers and CSV. */
+export function CustomFormPanel({ id }: { id: string }) {
+  const forms = useQuery(adminFormResponsesQuery);
+  const form = forms.data?.find((f) => f.id === id);
+  return (
+    <QueryGate query={forms} what="this form">
+      {form ? <Card id="form" title="Edit form" subtitle={`/f/${form.slug}`}><FormRow form={form} startEditing /></Card> : <NotFound />}
+    </QueryGate>
   );
 }
 
@@ -980,12 +1071,12 @@ function AddCustomForm() {
   );
 }
 
-function FormRow({ form: f }: { form: AdminForm }) {
+function FormRow({ form: f, startEditing = false }: { form: AdminForm; startEditing?: boolean }) {
   const setOpen = useSetFormOpen();
   const csv = useDownloadFormCsv();
   const save = useSaveAdminForm();
   const [message, setMessage] = React.useState(f.closed_message);
-  const [editing, setEditing] = React.useState(false);
+  const [editing, setEditing] = React.useState(startEditing);
   React.useEffect(() => { setMessage(f.closed_message); }, [f.closed_message]);
   const shown = f.total > f.responses.length ? ` · newest ${f.responses.length} shown` : "";
   const newest = f.newest_at ? ` · newest ${formatDate(f.newest_at)}` : "";

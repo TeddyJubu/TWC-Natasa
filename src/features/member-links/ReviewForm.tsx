@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Icon } from "@/app/layout/twc";
 import { Check, Choices, Field, Input, Notice, Section } from "@/features/applications/twc-fields";
+import { useCopy } from "@/features/form-copy/use-copy";
 import { sendReview, type ReviewPrefill, type ReviewSubmission } from "./queries";
 import { CORRECTIONS, INFO_FIELDS, LIMITS, MEMBERSHIP, PERMISSIONS, PUBLIC_FIELDS, checkReview } from "./schema";
 
@@ -12,6 +13,7 @@ const AUTOCOMPLETE: Partial<Record<string, string>> = { full_name: "name", email
 export function ReviewForm({ token, prefill, send = sendReview }: {
   token: string; prefill: ReviewPrefill; send?: (input: ReviewSubmission) => Promise<void>;
 }) {
+  const t = useCopy();
   const [failure, setFailure] = React.useState<string | null>(null);
   const [busy, setBusy] = React.useState(false);
   const [done, setDone] = React.useState(false);
@@ -53,9 +55,9 @@ export function ReviewForm({ token, prefill, send = sendReview }: {
   if (done) {
     return (
       <div ref={thanks} tabIndex={-1} role="status" className="flex flex-col items-center gap-4 rounded-[6px] bg-sb-mint px-6 py-16 text-center outline-none sm:px-8">
-        <span className="twc-ticket__meta">Response received</span>
-        <h2 className="twc-h3">Thank you — your response is saved.</h2>
-        <p className="max-w-[520px] text-[17px]">Your choices have been recorded. A person will review them before anything changes.</p>
+        <span className="twc-ticket__meta">{t("Response received")}</span>
+        <h2 className="twc-h3">{t("Thank you — your response is saved.")}</h2>
+        <p className="max-w-[520px] text-[17px]">{t("Your choices have been recorded. A person will review them before anything changes.")}</p>
         <ul className="max-w-[520px] list-disc pl-5 text-left text-[15px] text-sb-muted">
           <li>Nothing is published automatically.</li>
           <li>If you asked for a correction or removal, it will be handled by a person who will contact you.</li>
@@ -101,7 +103,7 @@ export function ReviewForm({ token, prefill, send = sendReview }: {
             {CORRECTIONS.map((c) => <Check key={c.value} name="correction_requests" value={c.value} label={c.label} />)}
           </fieldset>
           <div className="twc-field">
-            <label htmlFor="correction_request">Anything we should correct, or details about your request<span className="ml-2 text-[13px] font-normal normal-case tracking-normal text-sb-muted">Optional</span></label>
+            <label htmlFor="correction_request">{t("Anything we should correct, or details about your request")}<span className="ml-2 text-[13px] font-normal normal-case tracking-normal text-sb-muted">Optional</span></label>
             <textarea id="correction_request" name="other_note" className="twc-input" rows={4} maxLength={LIMITS.note} />
           </div>
           {/* Honeypot: off-screen and out of the tab order and accessibility tree; people never fill it, bots do. */}
@@ -114,7 +116,7 @@ export function ReviewForm({ token, prefill, send = sendReview }: {
             </Notice>
           )}
           <div>
-            <button type="submit" {...pending} className={`twc-btn ${pending.className}`}>Submit my review <Icon name="arrow" className="twc-arrow" /></button>
+            <button type="submit" {...pending} className={`twc-btn ${pending.className}`}>{t("Submit my review")} <Icon name="arrow" className="twc-arrow" /></button>
           </div>
         </Section>
       </div>

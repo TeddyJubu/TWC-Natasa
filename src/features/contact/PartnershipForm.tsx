@@ -3,12 +3,14 @@
 import { Link } from "@tanstack/react-router";
 import { useRef, useState, type FormEvent } from "react";
 import { Icon } from "@/app/layout/twc";
+import { useCopy } from "@/features/form-copy/use-copy";
 import { sendPartnership } from "./partnership-mutation";
 import { checkPartnership, COLLABORATIONS, PARTNERSHIP_LIMITS as L, type PartnershipErrors, type PartnershipField, type PartnershipInput } from "./partnership";
 
 const FIELDS: PartnershipField[] = ["name", "email", "business", "collaboration_type", "message", "consent"];
 
 export function PartnershipForm({ send = sendPartnership }: { send?: (input: PartnershipInput) => Promise<void> }) {
+  const t = useCopy();
   const [errors, setErrors] = useState<PartnershipErrors>({});
   const [failure, setFailure] = useState<string | null>(null);
   const [sentTo, setSentTo] = useState<string | null>(null);
@@ -42,8 +44,8 @@ export function PartnershipForm({ send = sendPartnership }: { send?: (input: Par
   if (sentTo) {
     return (
       <div role="status" className="flex flex-col items-center gap-3 rounded-md bg-sb-mint px-6 py-12 text-center sm:px-8">
-        <span className="twc-ticket__meta"><span>Inquiry received</span></span>
-        <h3 ref={thanks} tabIndex={-1} className="twc-h3 text-[32px] outline-none sm:text-[40px]">Thanks for writing.</h3>
+        <span className="twc-ticket__meta"><span>{t("Inquiry received")}</span></span>
+        <h3 ref={thanks} tabIndex={-1} className="twc-h3 text-[32px] outline-none sm:text-[40px]">{t("Thanks for writing.")}</h3>
         <p className="max-w-[420px] text-[17px] [overflow-wrap:anywhere]">We’ll be in touch at {sentTo}.</p>
       </div>
     );
@@ -63,26 +65,26 @@ export function PartnershipForm({ send = sendPartnership }: { send?: (input: Par
       </div>
       <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-5">
         <div className="twc-field">
-          <label htmlFor="p-name">Your name</label>
+          <label htmlFor="p-name">{t("Your name")}</label>
           <input className="twc-input" id="p-name" name="name" type="text" autoComplete="name" required maxLength={L.name}
             aria-invalid={invalid("name")} aria-describedby={describe("name")} />
           {error("name")}
         </div>
         <div className="twc-field">
-          <label htmlFor="p-email">Email</label>
+          <label htmlFor="p-email">{t("Email")}</label>
           <input className="twc-input" id="p-email" name="email" type="email" autoComplete="email" required maxLength={L.email}
             aria-invalid={invalid("email")} aria-describedby={describe("email")} />
           {error("email")}
         </div>
       </div>
       <div className="twc-field">
-        <label htmlFor="p-business">Business</label>
+        <label htmlFor="p-business">{t("Business")}</label>
         <input className="twc-input" id="p-business" name="business" type="text" autoComplete="organization" required maxLength={L.business}
           aria-invalid={invalid("business")} aria-describedby={describe("business")} />
         {error("business")}
       </div>
       <fieldset className="twc-field m-0 border-0 p-0" aria-describedby={describe("collaboration_type")}>
-        <legend className="twc-label mb-2.5">Type of collaboration</legend>
+        <legend className="twc-label mb-2.5">{t("Type of collaboration")}</legend>
         <div className="flex flex-wrap gap-2">
           {COLLABORATIONS.map((c, i) => (
             <label key={c.value} className="twc-choice">
@@ -93,10 +95,10 @@ export function PartnershipForm({ send = sendPartnership }: { send?: (input: Par
         {error("collaboration_type")}
       </fieldset>
       <div className="twc-field">
-        <label htmlFor="p-message">What did you have in mind?</label>
+        <label htmlFor="p-message">{t("What did you have in mind?")}</label>
         <textarea className="twc-input" id="p-message" name="message" rows={6} required maxLength={L.message}
           aria-invalid={invalid("message")} aria-describedby={["p-message-hint", describe("message")].filter(Boolean).join(" ")} />
-        <p id="p-message-hint" className="twc-hint">A couple of sentences is plenty. Include your neighborhood if it’s relevant.</p>
+        <p id="p-message-hint" className="twc-hint">{t("A couple of sentences is plenty. Include your neighborhood if it’s relevant.")}</p>
         {error("message")}
       </div>
       <div className="flex min-w-0 flex-col gap-2">
@@ -114,7 +116,7 @@ export function PartnershipForm({ send = sendPartnership }: { send?: (input: Par
         </div>
       )}
       <button type="submit" className="twc-btn self-start" disabled={sending}>
-        {sending ? "Sending…" : "Send inquiry"} <Icon name="arrow" className="twc-arrow" />
+        {sending ? "Sending…" : t("Send inquiry")} <Icon name="arrow" className="twc-arrow" />
       </button>
     </form>
   );

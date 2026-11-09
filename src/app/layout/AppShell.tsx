@@ -8,9 +8,10 @@ import { ring } from "./app-classes";
 import { useSignOut } from "./sign-out";
 
 /** The internal pages: each renders `AppShell` with its own path. */
-export type ShellPage = "/account" | "/admin" | "/admin/forms";
+/** `/admin/forms/edit` stands for any one form's edit page: no sidebar card is "here" on it. */
+export type ShellPage = "/account" | "/admin" | "/admin/forms" | "/admin/forms/edit";
 /** `sr` prefixes the accessible name where a label repeats in another group ("Admin Gatherings"). */
-type NavItem = { label: string; icon: IconName; to: "/" | "/members" | ShellPage; hash?: string; sr?: string };
+type NavItem = { label: string; icon: IconName; to: "/" | "/members" | "/account" | "/admin" | "/admin/forms"; hash?: string; sr?: string };
 type NavGroup = { label: string; items: NavItem[]; fold?: boolean };
 
 const COLLECTIVE: NavItem[] = [
@@ -38,8 +39,7 @@ const ADMIN: NavItem[] = [
   { label: "Gatherings", icon: "calendar-days", to: "/admin", hash: "gatherings", sr: "Admin" },
 ];
 const FORMS: NavItem[] = [
-  { label: "Your forms", icon: "notebook-pen", to: "/admin/forms", hash: "forms" },
-  { label: "Built-in forms", icon: "notebook-pen", to: "/admin/forms", hash: "built-in-forms" },
+  { label: "All forms", icon: "notebook-pen", to: "/admin/forms", hash: "forms" },
 ];
 
 /** The Admin and Forms groups only for admins; UX only, since /admin's guard and every admin server function check again. */

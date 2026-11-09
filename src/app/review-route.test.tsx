@@ -8,6 +8,7 @@ import { fake } from "@/test/fake-fns";
 
 vi.mock("@/features/member-links/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 vi.mock("@/features/forms-state/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
+vi.mock("@/features/form-copy/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 vi.mock("@/app/api", async () => (await import("@/test/fake-fns")).fakeApi);
 vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs }));
 
@@ -46,8 +47,8 @@ describe("/review", () => {
   });
 
   it("keeps a valid link on 200 with closed words when reviews are paused", async () => {
-    fake.results = [prefill, { kind: "review", open: false, closed: "Reviews paused." }];
-    await expect(load(TOKEN)).resolves.toEqual({ token: TOKEN, prefill, closed: "Reviews paused." });
+    fake.results = [prefill, { kind: "review", open: false, closed: "Reviews paused." }, { "Existing members": "Our members" }];
+    await expect(load(TOKEN)).resolves.toEqual({ token: TOKEN, prefill, closed: "Reviews paused.", copy: { "Existing members": "Our members" } });
     show("Reviews paused.");
     expect(screen.getByRole("heading", { name: "Member reviews are paused" })).toBeTruthy();
     expect(screen.getByText("Reviews paused.")).toBeTruthy();

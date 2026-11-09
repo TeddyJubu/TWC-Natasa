@@ -4,6 +4,8 @@ import { StatusPage } from "@/app/layout/StatusPages";
 import { Icon } from "@/app/layout/twc";
 import { CLOSED_TITLE } from "@/features/forms-state/constants";
 import { publicFormStateFn } from "@/features/forms-state/fns";
+import { FormCopyProvider } from "@/features/form-copy/FormCopy";
+import { loadFormCopy } from "@/features/form-copy/queries";
 import { paragraphs } from "@/features/forms/schema";
 import { openReviewFn } from "@/features/member-links/fns";
 import { ReviewForm } from "@/features/member-links/ReviewForm";
@@ -19,8 +21,8 @@ export const Route = createFileRoute("/review")({
   loader: async ({ deps }) => {
     const prefill = deps.t ? await openReviewFn({ data: { token: deps.t } }) : null;
     if (!prefill) throw notFound();
-    const state = await publicFormStateFn({ data: { kind: "review" } });
-    return { token: deps.t!, prefill, closed: state.closed };
+    const [state, copy] = await Promise.all([publicFormStateFn({ data: { kind: "review" } }), loadFormCopy("review")]);
+    return { token: deps.t!, prefill, closed: state.closed, copy };
   },
   // Loaded once: after the review is sent the link is used, and a reload (e.g. on sign-in) would swap the thank-you for a 404.
   shouldReload: false,
@@ -50,7 +52,8 @@ function InvalidLink() {
 }
 
 function ReviewPage() {
-  const { token, prefill, closed } = Route.useLoaderData();
+  const { token, prefill, closed, copy } = Route.useLoaderData();
+  const t = (text: string) => copy?.[text] ?? text;
   if (closed) {
     const [first = "", ...rest] = paragraphs(closed);
     return (
@@ -63,17 +66,18 @@ function ReviewPage() {
   return (
     <AppPage>
       <AppNav />
+      <FormCopyProvider copy={copy}>
       <main id="main" tabIndex={-1} className="twc-wrap flex max-w-[960px] flex-col gap-8 pb-[104px] pt-14 outline-none">
         <div className="flex flex-col gap-4">
-          <span className="twc-eyebrow">Existing members</span>
-          <h1 className="twc-h2">Member information &amp; permissions review</h1>
+          <span className="twc-eyebrow">{t("Existing members")}</span>
+          <h1 className="twc-h2">{t("Member information & permissions review")}</h1>
           <p className="max-w-[640px] text-[17px] leading-[1.65] text-sb-muted">
-            Hello {prefill.firstName} — this private page shows your own record only. Confirm or correct your details, then make each choice below
-            separately. Nothing publishes automatically.
+            {t("Hello {name} — this private page shows your own record only. Confirm or correct your details, then make each choice below separately. Nothing publishes automatically.").replace("{name}", prefill.firstName)}
           </p>
         </div>
         <ReviewForm token={token} prefill={prefill} />
       </main>
+      </FormCopyProvider>
       <AppFooter />
     </AppPage>
   );
