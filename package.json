@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "test": "vitest run",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "check": "bun run typecheck && bun run lint && bun run test && bun run build"
+    "check": "bun run typecheck && bun run lint && bun run test && bun run build",
+    "migration:check": "bun run scripts/migration-check.ts"
   },
   "dependencies": {
     "@tanstack/react-query": "5.107.1",

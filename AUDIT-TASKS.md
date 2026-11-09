@@ -244,3 +244,36 @@ Also before go-live, by hand in a browser: tap a hash link (`#constellation`) in
   - Owner to-do before go-live: export the Lovable/Supabase data (`auth.users`, `auth.identities`, the public tables) to the JSON shape in the README and import it into a fresh `DATA_DIR`; copy the `avatars` and `neighborhood-logos` buckets into `DATA_DIR/uploads/`; set the server env (`APP_URL`, `BETTER_AUTH_SECRET`, `NODE_ENV=production`, `HOST=172.18.0.1`, `DATA_DIR`, and the `CF_EMAIL_*`/`GOOGLE_*` values) and point the service at `bun run start`; for Google, add `${APP_URL}/api/auth/callback/google` as a redirect URI; set up the nightly `sqlite3 … ".backup …"`.
 - [x] Internal-page app shell (owner request 2026-11-08): the `/account` settings look is now the system for every signed-in page. `AppShell`/`TopBar`, the card vocabulary, control classes and icons moved to `src/app/layout/`; the sidebar gained an Admin group (admins only) linking `/admin`'s cards. `/admin` is restyled onto it: its four tabs became four anchored cards on one page, so all four admin reads load on arrival (decision: anchors match `/account` and the shared sidebar; the lists are small). Behaviour, mutations and guards unchanged. Pre-existing, not touched (public pages out of scope): at 375px the public navbar's menu button sits past the right edge on `/` and `/join` (body clips it), same on `main`.
 - [x] Scrapbook site from the design canvas (2026-11-09, `6a1b583`..`53f0ef0`, deployed): every board built. Shared kit (`src/app/twc.css`, `src/app/layout/twc.tsx`, prop-less `AppNav`/`AppFooter`); home-v2 is `/`; new `/about`, `/faq`, `/contact` (+ rate-limited, CSRF-covered `/api/contact`), `/gatherings` (public read + admin create/edit/delete card), `/neighborhoods` and `/neighborhoods/:slug`, `/members/:slug` (public profiles only; name + catalogue number), `/verified` (confirmation links land there); `/join`, `/auth`, `/reset-password`, legal, 404/error, `/account` and `/admin` restyled. `/sitemap.xml` is built from the database. Stock photos from Pexels via Apify (`src/assets/photography/site/CREDITS.md`). This also fixes the 375px public-navbar overflow noted above. Open questions are Owner decisions 11–15.
+
+---
+
+## Migration onto the new site (2026-11-09)
+
+Owner-authorized cutover of the old static site (`/opt/nbwc/site`), CRM (`crm.thewomenscollective.club`), and intake/forms back office into this app. Shared brief: `migration/BRIEF.md`. Gate: `bun run migration:check` (`scripts/migration-check.ts` + `migration/manifest.json`).
+
+### Owner decisions (migration)
+
+1. **Coming-soon stays.** Only the old homepage (`site/index.html`) remains at apex `/`.
+2. **Archive, never delete.** Every other old page moves to an archive folder on the VPS; its URL 301s to the matching new page.
+3. **Old pages in scope:** about, contact, directory, events, fellowship, partnerships, editing, privacy, terms, code-of-conduct, message-sent, subscribed, thanks-*, 404.
+4. **Build missing pages in the scrapbook kit** before redirecting (fellowship, partnerships, …). Drop `[BRACKETED]` facts; never invent them.
+5. **`/account` design is frozen.** Do not restyle it.
+6. **Public = scrapbook; signed-in = app shell** (same as `/account`).
+7. **CRM rebuilds inside `/admin`** with feature parity; SQLite is the single source of truth (applications, members, inbox, custom forms, notes, statuses, approve/decline, review links, Spotlight, notifications, CSV, Notion/Beehiiv/Hermes/webhooks).
+8. **Retire old hosts after parity:** `crm.*`, `admin.*`, `members.*`, `join.*` redirect here; then stop their timers/containers.
+9. **`/contact` stores messages in the database** (not email-only) so they appear in the admin inbox.
+10. **Import on the VPS only:** 128 applications, 120 members, 44 newsletter subscribers, `submissions.jsonl`. Email match on sign-up; no self-approve.
+11. **VPS edits** only TWC blocks in `/opt/nbwc/Caddyfile` and TWC services in `/opt/nbwc/compose.yaml`; timestamped backups; `caddy validate` before reload. Never touch Vantrix, Hermes, studio, natasatuohy.com, buzz, nbwc.site.
+12. **Do not port known bugs:** wrong-record approve without `record_id`; plaintext review tokens; unlocked rewrites; Beehiiv ignoring `email_subscription_consent`; decline only via CRM internal API; `members.*/join` and `admin.*` still writing the old form file.
+
+### Improvisations
+
+- **CRM live UI:** both Classic (`crm/src`, default at `/`) and Bento (`crm/src-v2` at `/v2`) ship from one server; default preference is classic. Inventory treats the shared API as the parity surface; UI twins are one capability each.
+- **Local inputs:** legacy snapshot and inventories live in gitignored `.migration/` (copied from the prior session scratchpad). Tracked work lives under `migration/`.
+
+### Progress
+
+- [ ] Inventories: SITE-*, CRM-*, OPS Part D (`tools/forms/*`, notify-confirmations/resume)
+- [ ] Seed `migration/manifest.json` from all inventories
+- [ ] Workstreams built and verified (public-pages, data-import, admin-inbox, members-links, custom-forms, notifications, vps-cutover)
+- [ ] `migration:check` passes; final Haiku sweep green; live smoke; old services stopped

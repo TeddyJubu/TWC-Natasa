@@ -19,6 +19,10 @@ dist-ssr
 # Server data (SQLite database and uploads; DATA_DIR defaults to ./data)
 data/
 
+# Local migration inputs (legacy snapshot, inventories); never commit real data
+.migration/
+.dev-data/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
