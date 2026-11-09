@@ -292,9 +292,9 @@
       "source": "crm.md:Application native status",
       "acceptance": "Application native status: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "Applications keep three stored statuses only (pending/approved/declined; CHECK on applications.status). Import maps archived/rejected/auto_rejected → declined and approved/approved_member → approved (applicationStatus in src/server/legacy-import.ts; legacy-import.test.ts). check_duplicate is a computed chip (CRM-072/073, phase 3), never stored. Merged rows are skipped on import, not shown as archived."
+      "evidence": "Applications keep three stored statuses only (pending/approved/declined; CHECK on applications.status). Import maps archived/rejected/auto_rejected → declined and approved/approved_member → approved (applicationStatus in src/server/legacy-import.ts; legacy-import.test.ts). check_duplicate is a computed chip (CRM-072/073, phase 3), never stored. Merged rows are skipped on import, not shown as archived. | verified 2026-11-09: applications.status CHECK pending|approved|declined in 0001_init.sql; duplicatesOf is computed (format.test.ts, admin.server.test.ts)"
     },
     {
       "id": "CRM-031",
@@ -310,9 +310,9 @@
       "source": "crm.md:Answer field display",
       "acceptance": "Answer field display: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "formatAnswers (src/features/admin/format.ts) hides what the CRM hid — keys starting `_`, ending `_codes`, containing token or signature, and `ip` — plus the import's own `legacy` bookkeeping record; known CRM labels full_name→Name, base_area→Based in, goal_labels→Hoping to find, coffee_chat→Open to coffee chats, every other key humanised; empty values dropped (format.test.ts, src/app/admin-route.test.tsx). Improvised: only the four labels the inventory names (the CRM's other ~26 are humanised from the key); arrays show as a list instead of comma-joined."
+      "evidence": "formatAnswers (src/features/admin/format.ts) hides what the CRM hid — keys starting `_`, ending `_codes`, containing token or signature, and `ip` — plus the import's own `legacy` bookkeeping record; known CRM labels full_name→Name, base_area→Based in, goal_labels→Hoping to find, coffee_chat→Open to coffee chats, every other key humanised; empty values dropped (format.test.ts, src/app/admin-route.test.tsx). Improvised: only the four labels the inventory names (the CRM's other ~26 are humanised from the key); arrays show as a list instead of comma-joined. | verified 2026-11-09: formatAnswers hides _*/token/signature/ip/legacy (format.test.ts › CRM-032)"
     },
     {
       "id": "CRM-033",
@@ -327,9 +327,9 @@
       "source": "crm.md:Member-update (\"review\") items",
       "acceptance": "Member-update (\"review\") items: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "/admin#members",
-      "evidence": "Reviews stored in member_reviews (0003) and listed in the /admin 'Member reviews' card (adminReviews, requireAdmin): name from the profile, answers with verbatim labels (reviewEntries), status new until 'Mark handled'. src/features/member-links/member-links.server.ts; src/features/admin/panels.tsx MemberReviewsPanel."
+      "evidence": "Reviews stored in member_reviews (0003) and listed in the /admin 'Member reviews' card (adminReviews, requireAdmin): name from the profile, answers with verbatim labels (reviewEntries), status new until 'Mark handled'. src/features/member-links/member-links.server.ts; src/features/admin/panels.tsx MemberReviewsPanel. | verified 2026-11-09: member_reviews + Member reviews card Mark handled (member-links.test.ts, admin-route)"
     },
     {
       "id": "CRM-035",
@@ -353,9 +353,9 @@
       "source": "crm.md:Spotlight history",
       "acceptance": "Spotlight history: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "/admin#spotlight",
-      "evidence": "Spotlight history = the /admin 'Spotlight answers' card: every sent and imported answer, newest first, with name/business/neighborhood, Sent/Imported chip and the questions' own words (spotlightEntries; an old sheet column shows under its own name). Historical rows come from scripts/import-legacy.ts (spotlight source, OPS-049). src/features/admin/panels.tsx SpotlightPanel; tests in src/app/admin-route.test.tsx and src/server/legacy-import.test.ts."
+      "evidence": "Spotlight history = the /admin 'Spotlight answers' card: every sent and imported answer, newest first, with name/business/neighborhood, Sent/Imported chip and the questions' own words (spotlightEntries; an old sheet column shows under its own name). Historical rows come from scripts/import-legacy.ts (spotlight source, OPS-049). src/features/admin/panels.tsx SpotlightPanel; tests in src/app/admin-route.test.tsx and src/server/legacy-import.test.ts. | verified 2026-11-09: Spotlight answers card sent/imported (spotlight.test.ts, admin-route › CRM-037)"
     },
     {
       "id": "CRM-038",
@@ -387,18 +387,18 @@
       "source": "crm.md:Search",
       "acceptance": "Search: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "One search box on /admin (AdminSearch in src/features/admin/panels.tsx) filters the Inbox, Applications and All members cards by name, email or business; every word must match, case- and accent-insensitive (matchesSearch in src/features/admin/format.ts; format.test.ts, src/app/admin-route.test.tsx). Improvised: client-side over the admin lists already loaded (no FTS5 index, answers other than business not searched)."
+      "evidence": "One search box on /admin (AdminSearch in src/features/admin/panels.tsx) filters the Inbox, Applications and All members cards by name, email or business; every word must match, case- and accent-insensitive (matchesSearch in src/features/admin/format.ts; format.test.ts, src/app/admin-route.test.tsx). Improvised: client-side over the admin lists already loaded (no FTS5 index, answers other than business not searched). | verified 2026-11-09: AdminSearch + matchesSearch (format.test.ts, admin-route.test.tsx › CRM-041)"
     },
     {
       "id": "CRM-042",
       "source": "crm.md:Neighbourhood tags",
       "acceptance": "Neighbourhood tags: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "Neighbourhood tags are the neighborhoods table: profiles.neighborhood references neighborhoods(name), shown in a Neighborhood column on All members and filterable there (Any / each neighborhood members have / No neighborhood), set by an admin from the row's Details (CRM-059). Retired: the CRM's Brooklyn substring folding (Greenpoint/Williamsburg/Bushwick/Ridgewood, else Other) — the new list is the admin-managed Queens neighborhoods, so no geography is guessed from free text; an applicant's typed area stays visible as 'Neighborhood given' (admin-route.test.tsx)."
+      "evidence": "Neighbourhood tags are the neighborhoods table: profiles.neighborhood references neighborhoods(name), shown in a Neighborhood column on All members and filterable there (Any / each neighborhood members have / No neighborhood), set by an admin from the row's Details (CRM-059). Retired: the CRM's Brooklyn substring folding (Greenpoint/Williamsburg/Bushwick/Ridgewood, else Other) — the new list is the admin-managed Queens neighborhoods, so no geography is guessed from free text; an applicant's typed area stays visible as 'Neighborhood given' (admin-route.test.tsx). | verified 2026-11-09: neighborhoods table + All members Neighborhood column/filter + setMemberNeighborhood (admin-route, admin.server.test)"
     },
     {
       "id": "CRM-043",
@@ -509,9 +509,9 @@
       "source": "crm.md:Notes (comments)",
       "acceptance": "Notes (comments): behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "Admin notes on an application or a member: db/migrations/0006_admin_notes.sql (exactly one subject FK, cascade, body 1–5,000 chars), adminNotes/addNote/deleteNote with requireAdmin (src/features/admin/admin.server.ts; admin.server.test.ts, src/server/policy.test.ts), a Notes (n) panel on each application row and member row. Not editable, as in the CRM; deviation: an admin may delete one (confirm first)."
+      "evidence": "Admin notes on an application or a member: db/migrations/0006_admin_notes.sql (exactly one subject FK, cascade, body 1–5,000 chars), adminNotes/addNote/deleteNote with requireAdmin (src/features/admin/admin.server.ts; admin.server.test.ts, src/server/policy.test.ts), a Notes (n) panel on each application row and member row. Not editable, as in the CRM; deviation: an admin may delete one (confirm first). | verified 2026-11-09: 0006_admin_notes + addNote/deleteNote requireAdmin (admin.server.test.ts, admin-route › CRM-055)"
     },
     {
       "id": "CRM-056",
@@ -526,36 +526,36 @@
       "source": "crm.md:Logged actions",
       "acceptance": "Logged actions: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "Logged actions outside the app: db/migrations/0009_logged_actions.sql (member OR application subject, kinds headshot_*/email_sent/call/meeting/other, YYYY-MM-DD, note ≤1000, soft-remove via removed_at) + append-only logged_action_events; adminLoggedActions/add/edit/remove/restore with requireAdmin (admin.server.ts, fns.ts); UI under application rows and member Details (panels.tsx). Tests: admin.server.test.ts, policy.test.ts, admin-route.test.tsx, db.test.ts. Not folded into admin_actions (0007)."
+      "evidence": "Logged actions outside the app: db/migrations/0009_logged_actions.sql (member OR application subject, kinds headshot_*/email_sent/call/meeting/other, YYYY-MM-DD, note ≤1000, soft-remove via removed_at) + append-only logged_action_events; adminLoggedActions/add/edit/remove/restore with requireAdmin (admin.server.ts, fns.ts); UI under application rows and member Details (panels.tsx). Tests: admin.server.test.ts, policy.test.ts, admin-route.test.tsx, db.test.ts. Not folded into admin_actions (0007). | verified 2026-11-09: 0009_logged_actions + adminLoggedActions add/edit/remove/restore (admin.server.test.ts › CRM-057)"
     },
     {
       "id": "CRM-058",
       "source": "crm.md:Edit / remove / restore an action",
       "acceptance": "Edit / remove / restore an action: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "Edit / remove / restore: editLoggedAction / removeLoggedAction / restoreLoggedAction rewrite the current logged_actions row and append created|edited|removed|restored to logged_action_events (append-only triggers). Nothing changed / Already removed → AccessError 409. Soft-remove keeps history (removed_at). Tests: admin.server.test.ts, policy.test.ts, admin-route.test.tsx."
+      "evidence": "Edit / remove / restore: editLoggedAction / removeLoggedAction / restoreLoggedAction rewrite the current logged_actions row and append created|edited|removed|restored to logged_action_events (append-only triggers). Nothing changed / Already removed → AccessError 409. Soft-remove keeps history (removed_at). Tests: admin.server.test.ts, policy.test.ts, admin-route.test.tsx. | verified 2026-11-09: edit/remove/restore soft-remove + event log (admin.server.test.ts › CRM-057/058)"
     },
     {
       "id": "CRM-059",
       "source": "crm.md:Neighbourhood correction",
       "acceptance": "Neighbourhood correction: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "Details → Neighborhood on each All members row: setMemberNeighborhood (requireAdmin; src/features/admin/admin.server.ts, fns.ts) sets a listed neighborhood or none on the profile; the application's answer is never changed and stays shown as 'Neighborhood given' (admin.server.test.ts, src/server/policy.test.ts, admin-route.test.tsx). Improvised: a picker of listed neighborhoods (FK) instead of ≤120 free-text chars; 'none' clears it rather than reverting to the form answer (profile and answer are separate fields); same value is a disabled Save rather than a 409; no history event (no events table, CRM-043)."
+      "evidence": "Details → Neighborhood on each All members row: setMemberNeighborhood (requireAdmin; src/features/admin/admin.server.ts, fns.ts) sets a listed neighborhood or none on the profile; the application's answer is never changed and stays shown as 'Neighborhood given' (admin.server.test.ts, src/server/policy.test.ts, admin-route.test.tsx). Improvised: a picker of listed neighborhoods (FK) instead of ≤120 free-text chars; 'none' clears it rather than reverting to the form answer (profile and answer are separate fields); same value is a disabled Save rather than a 409; no history event (no events table, CRM-043). | verified 2026-11-09: setMemberNeighborhood never mutates application answer (admin.server.test.ts › CRM-059)"
     },
     {
       "id": "CRM-060",
       "source": "crm.md:Item detail",
       "acceptance": "Item detail: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "Detail without leaving the card: application rows show origin (CRM-031 label), account link, every readable answer (CRM-032) and Notes; each All members row has Details with her neighborhood (editable, CRM-059), her newest linked application (date, status, origin, neighborhood given, every answer) and Notes (newestByUser/applicationOrigin in format.ts; format.test.ts, admin-route.test.tsx). Phase 3: Details opens on a summary strip — newsletter state from newsletter_subscribers (consented / no consent / imported, consent not recorded / not on it), linked application count (account or account email) and member since (adminMembers, newsletterLabel; admin.server.test.ts, admin-route.test.tsx). Not ported: upload hrefs, last seen, directory flag in the strip (it is the Listed column), logged actions (CRM-057 still todo)."
+      "evidence": "Detail without leaving the card: application rows show origin (CRM-031 label), account link, every readable answer (CRM-032) and Notes; each All members row has Details with her neighborhood (editable, CRM-059), her newest linked application (date, status, origin, neighborhood given, every answer) and Notes (newestByUser/applicationOrigin in format.ts; format.test.ts, admin-route.test.tsx). Phase 3: Details opens on a summary strip — newsletter state from newsletter_subscribers (consented / no consent / imported, consent not recorded / not on it), linked application count (account or account email) and member since (adminMembers, newsletterLabel; admin.server.test.ts, admin-route.test.tsx). Not ported: upload hrefs, last seen, directory flag in the strip (it is the Listed column), logged actions (CRM-057 still todo). | verified 2026-11-09: member Details newest application + summary chips (admin-route.test.tsx › CRM-060)"
     },
     {
       "id": "CRM-061",
@@ -570,9 +570,9 @@
       "source": "crm.md:Client-side filters",
       "acceptance": "Client-side filters: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "Status filter (Any/Pending/Approved/Declined) on Applications and All members, plus a Neighborhood filter on All members, applied together with the page search box; the subtitle says 'N of M shown' whenever rows are hidden (panels.tsx; admin-route.test.tsx). Improvised: kept in component state, not the URL; no form-kind, origin, received-window or logged-action filters (no logged actions yet, and kinds already have their own cards). Phase 3: the Applications status filter also offers \"Possible duplicates\" (CRM-072/073)."
+      "evidence": "Status filter (Any/Pending/Approved/Declined) on Applications and All members, plus a Neighborhood filter on All members, applied together with the page search box; the subtitle says 'N of M shown' whenever rows are hidden (panels.tsx; admin-route.test.tsx). Improvised: kept in component state, not the URL; no form-kind, origin, received-window or logged-action filters (no logged actions yet, and kinds already have their own cards). Phase 3: the Applications status filter also offers \"Possible duplicates\" (CRM-072/073). | verified 2026-11-09: status + neighborhood filters AND with search (admin-route.test.tsx › CRM-062)"
     },
     {
       "id": "CRM-063",
@@ -603,36 +603,36 @@
       "source": "crm.md:Decision API",
       "acceptance": "Decision API: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "Decisions are domain functions reviewApplication / setMemberStatus (requireAdmin) on permanent application and profile UUIDs — no intake HTTP hop, no shared key, no record_id slice. Approve / decline / undo-decline write status (+ admin_actions) in one SQLite transaction. Evidence: admin.server.ts, policy.test.ts, admin-route.test.tsx (phases 3–4)."
+      "evidence": "Decisions are domain functions reviewApplication / setMemberStatus (requireAdmin) on permanent application and profile UUIDs — no intake HTTP hop, no shared key, no record_id slice. Approve / decline / undo-decline write status (+ admin_actions) in one SQLite transaction. Evidence: admin.server.ts, policy.test.ts, admin-route.test.tsx (phases 3–4). | verified 2026-11-09: reviewApplication/setMemberStatus requireAdmin UUID txs (admin.server.ts; policy.test.ts)"
     },
     {
       "id": "CRM-067",
       "source": "crm.md:Decision guards",
       "acceptance": "Decision guards: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "Decision guards: requireAdmin only; no CRM_INTAKE_KEY / 503 path. Applications identified by UUID primary keys (0001/import), never app-<hash> slices. Evidence: admin.server.ts reviewApplication/setMemberStatus; CRM-172."
+      "evidence": "Decision guards: requireAdmin only; no CRM_INTAKE_KEY / 503 path. Applications identified by UUID primary keys (0001/import), never app-<hash> slices. Evidence: admin.server.ts reviewApplication/setMemberStatus; CRM-172. | verified 2026-11-09: no CRM_INTAKE_KEY; UUID PKs only (admin.server.ts, policy.test.ts)"
     },
     {
       "id": "CRM-068",
       "source": "crm.md:What approve does",
       "acceptance": "What approve does: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "Approve on Applications (reviewApplication) or All members (setMemberStatus) marks approved, records reviewed_by/admin_actions actor, syncs the linked profile or newest application (applications_review trigger / 0004), idempotent when already that status. Welcome email on approve only. No separate member_id=record_id file: profiles come from Better Auth at sign-up; an approved application without a login is claimed on verified email match (0004). Tests: policy.test.ts, admin.server.test.ts, admin-route.test.tsx."
+      "evidence": "Approve on Applications (reviewApplication) or All members (setMemberStatus) marks approved, records reviewed_by/admin_actions actor, syncs the linked profile or newest application (applications_review trigger / 0004), idempotent when already that status. Welcome email on approve only. No separate member_id=record_id file: profiles come from Better Auth at sign-up; an approved application without a login is claimed on verified email match (0004). Tests: policy.test.ts, admin.server.test.ts, admin-route.test.tsx. | verified 2026-11-09: approve syncs profile/app + welcome email on approve only (admin-route applications tests)"
     },
     {
       "id": "CRM-069",
       "source": "crm.md:What decline / undo do",
       "acceptance": "What decline / undo do: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "Decline and Undo decline → pending on Applications and All members (reviewApplication / setMemberStatus; both sync the newest application). Actor logged in admin_actions (0007). No Hermes decline_undo JSON blob or auto_rejected stamp — admin_actions + status transitions only (phase 4 brief). Undo is refused implicitly for non-declined rows (button only when declined). Tests: admin.server.test.ts undo-decline, policy.test.ts, admin-route.test.tsx."
+      "evidence": "Decline and Undo decline → pending on Applications and All members (reviewApplication / setMemberStatus; both sync the newest application). Actor logged in admin_actions (0007). No Hermes decline_undo JSON blob or auto_rejected stamp — admin_actions + status transitions only (phase 4 brief). Undo is refused implicitly for non-declined rows (button only when declined). Tests: admin.server.test.ts undo-decline, policy.test.ts, admin-route.test.tsx. | verified 2026-11-09: decline + undo-decline → pending, logs admin_actions (admin.server.test.ts › CRM-069)"
     },
     {
       "id": "CRM-070",
@@ -649,27 +649,27 @@
       "source": "crm.md:Decision confirmation in the UI",
       "acceptance": "Decision confirmation in the UI: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "Approve / Decline / Undo decline buttons on each application and member row; window.confirm before every decision (Decisions in panels.tsx). Undo decline only when status is declined. Tests: admin-route.test.tsx (confirm copy + cancel does nothing)."
+      "evidence": "Approve / Decline / Undo decline buttons on each application and member row; window.confirm before every decision (Decisions in panels.tsx). Undo decline only when status is declined. Tests: admin-route.test.tsx (confirm copy + cancel does nothing). | verified 2026-11-09: window.confirm before decisions; undo only when declined (admin-route.test.tsx)"
     },
     {
       "id": "CRM-072",
       "source": "crm.md:Application \"possible duplicate\" flag",
       "acceptance": "Application \"possible duplicate\" flag: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "A pending application whose email (case-insensitive) or linked account belongs to an approved member, or to an imported member not yet signed up (legacy_members), carries duplicate \"member\" and shows a Possible duplicate chip with the reason on its row (adminApplications + duplicatesOf in src/features/admin; format.test.ts, admin.server.test.ts, admin-route.test.tsx). The flag is computed on read, never stored as a status: applications keep pending/approved/declined (no hand-set check_duplicate, CRM-053/070)."
+      "evidence": "A pending application whose email (case-insensitive) or linked account belongs to an approved member, or to an imported member not yet signed up (legacy_members), carries duplicate \"member\" and shows a Possible duplicate chip with the reason on its row (adminApplications + duplicatesOf in src/features/admin; format.test.ts, admin.server.test.ts, admin-route.test.tsx). The flag is computed on read, never stored as a status: applications keep pending/approved/declined (no hand-set check_duplicate, CRM-053/070). | verified 2026-11-09: duplicatesOf member/repeat chips (format.test.ts, admin.server.test.ts, admin-route)"
     },
     {
       "id": "CRM-073",
       "source": "crm.md:Detection",
       "acceptance": "Detection: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "Detection by email on /admin: case a (member email/account + pending application) and case b (two or more pending applications from one email, no member) via duplicatesOf; the Applications subtitle counts them and the Status filter has \"Possible duplicates\" (panels.tsx; format.test.ts, admin.server.test.ts, admin-route.test.tsx). Retired: name/phone cases c and d and the separate duplicates list/dismiss keys — they exist to feed the CRM merge (CRM-076–079), which this schema has no alias/merge table for; same-name rows are found with the page search. No merge or link UI (applications.user_id is set only by a verified email claim)."
+      "evidence": "Detection by email on /admin: case a (member email/account + pending application) and case b (two or more pending applications from one email, no member) via duplicatesOf; the Applications subtitle counts them and the Status filter has \"Possible duplicates\" (panels.tsx; format.test.ts, admin.server.test.ts, admin-route.test.tsx). Retired: name/phone cases c and d and the separate duplicates list/dismiss keys — they exist to feed the CRM merge (CRM-076–079), which this schema has no alias/merge table for; same-name rows are found with the page search. No merge or link UI (applications.user_id is set only by a verified email claim). | verified 2026-11-09: Possible duplicates filter + subtitle count (admin-route.test.tsx › CRM-072/073)"
     },
     {
       "id": "CRM-074",
@@ -740,18 +740,18 @@
       "source": "crm.md:Make a member update link",
       "acceptance": "Make a member update link: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "/admin#members",
-      "evidence": "/admin All members: 'Make review link' on an approved member (mintReviewLinkFn → mintReviewLink, requireAdmin; non-member → 'Personal links are for approved members.'); URL shown once to copy into the admin's own message; created_by/expiry recorded, never the URL. src/features/member-links/member-links.server.ts; src/features/admin/panels.tsx ReviewLink; tests: src/features/member-links/member-links.test.ts, src/server/policy.test.ts, src/app/admin-route.test.tsx."
+      "evidence": "/admin All members: 'Make review link' on an approved member (mintReviewLinkFn → mintReviewLink, requireAdmin; non-member → 'Personal links are for approved members.'); URL shown once to copy into the admin's own message; created_by/expiry recorded, never the URL. src/features/member-links/member-links.server.ts; src/features/admin/panels.tsx ReviewLink; tests: src/features/member-links/member-links.test.ts, src/server/policy.test.ts, src/app/admin-route.test.tsx. | verified 2026-11-09: Make review link mint once + requireAdmin (member-links.test.ts, admin-route)"
     },
     {
       "id": "CRM-083",
       "source": "crm.md:Invite to Weekly Spotlight",
       "acceptance": "Invite to Weekly Spotlight: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "/admin#members",
-      "evidence": "'Invite to Spotlight' on every approved member's row in /admin All members (ReviewLink purpose=\"spotlight\", src/features/admin/panels.tsx): mintReviewLink with purpose 'spotlight' (requireAdmin, approved members only) stores only the SHA-256 in member_links (0003), retires her previous live Spotlight link only, returns `/spotlight?t=…` once; Revoke + state line. Tests: src/features/member-links/spotlight.test.ts, src/app/admin-route.test.tsx ('Invite to Spotlight'), src/server/policy.test.ts."
+      "evidence": "'Invite to Spotlight' on every approved member's row in /admin All members (ReviewLink purpose=\"spotlight\", src/features/admin/panels.tsx): mintReviewLink with purpose 'spotlight' (requireAdmin, approved members only) stores only the SHA-256 in member_links (0003), retires her previous live Spotlight link only, returns `/spotlight?t=…` once; Revoke + state line. Tests: src/features/member-links/spotlight.test.ts, src/app/admin-route.test.tsx ('Invite to Spotlight'), src/server/policy.test.ts. | verified 2026-11-09: Invite to Spotlight purpose=spotlight (spotlight.test.ts, admin-route › CRM-083)"
     },
     {
       "id": "CRM-084",
@@ -767,45 +767,45 @@
       "source": "crm.md:Link status",
       "acceptance": "Link status: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "/admin#members",
-      "evidence": "reviewLinkStates (requireAdmin) → newest review link per member with state active|used|expired + created/expires/used; shown in the All members row. src/features/member-links/member-links.server.ts; src/app/admin-route.test.tsx."
+      "evidence": "reviewLinkStates (requireAdmin) → newest review link per member with state active|used|expired + created/expires/used; shown in the All members row. src/features/member-links/member-links.server.ts; src/app/admin-route.test.tsx. | verified 2026-11-09: reviewLinkStates active|used|expired (member-links.test.ts, admin-route)"
     },
     {
       "id": "CRM-086",
       "source": "crm.md:Revoke",
       "acceptance": "Revoke: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "Revoke button on a live link → revokeReviewLink (requireAdmin) sets expires_at now, returns count. History event not recorded (no CRM history table yet). src/features/member-links/member-links.server.ts; tests: src/features/member-links/member-links.test.ts, src/server/policy.test.ts."
+      "evidence": "Revoke button on a live link → revokeReviewLink (requireAdmin) sets expires_at now, returns count. History event not recorded (no CRM history table yet). src/features/member-links/member-links.server.ts; tests: src/features/member-links/member-links.test.ts, src/server/policy.test.ts. | verified 2026-11-09: revokeReviewLink sets expires_at (member-links.test.ts, policy.test.ts)"
     },
     {
       "id": "CRM-087",
       "source": "crm.md:Links exist only while the membership engine is on",
       "acceptance": "Links exist only while the membership engine is on: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "No membership-engine flag in the rebuild: review links are always on (per the inventory note)."
+      "evidence": "No membership-engine flag in the rebuild: review links are always on (per the inventory note). | verified 2026-11-09: no membership-engine flag in src; mintReviewLink always available for approved members"
     },
     {
       "id": "CRM-088",
       "source": "crm.md:Review link expiry / single use",
       "acceptance": "Review link expiry / single use: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "/admin#members",
-      "evidence": "Single use (conditional update in submitReview's transaction), 30-day TTL (LINK_TTL_DAYS), opening never consumes; a review never changes the profile. src/features/member-links/member-links.server.ts; tests: src/features/member-links/member-links.test.ts, src/server/policy.test.ts."
+      "evidence": "Single use (conditional update in submitReview's transaction), 30-day TTL (LINK_TTL_DAYS), opening never consumes; a review never changes the profile. src/features/member-links/member-links.server.ts; tests: src/features/member-links/member-links.test.ts, src/server/policy.test.ts. | verified 2026-11-09: single-use + LINK_TTL_DAYS=30; open never consumes (member-links.test.ts)"
     },
     {
       "id": "CRM-089",
       "source": "crm.md:Personal-link dialog UI",
       "acceptance": "Personal-link dialog UI: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "Inline control in the /admin All members row (no modal): state + expiry, Make/New review link, Revoke, read-only URL field with Copy. src/features/admin/panels.tsx ReviewLink; src/app/admin-route.test.tsx."
+      "evidence": "Inline control in the /admin All members row (no modal): state + expiry, Make/New review link, Revoke, read-only URL field with Copy. src/features/admin/panels.tsx ReviewLink; src/app/admin-route.test.tsx. | verified 2026-11-09: inline ReviewLink control on All members row (admin-route.test.tsx)"
     },
     {
       "id": "CRM-090",
@@ -821,27 +821,27 @@
       "source": "crm.md:Contact messages",
       "acceptance": "Contact messages: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "/contact",
-      "evidence": "Contact messages stored (kind contact: name, email, topic, message) and listed in the /admin Inbox card with archive; admin-only via requireAdmin (adminInbox/archiveMessage in src/features/admin/admin.server.ts; src/server/policy.test.ts). Alerts = existing admin email. Form on/off switch and submitter confirmations not in this slice (CRM-099/notifications)."
+      "evidence": "Contact messages stored (kind contact: name, email, topic, message) and listed in the /admin Inbox card with archive; admin-only via requireAdmin (adminInbox/archiveMessage in src/features/admin/admin.server.ts; src/server/policy.test.ts). Alerts = existing admin email. Form on/off switch and submitter confirmations not in this slice (CRM-099/notifications). | verified 2026-11-09: inbox_messages kind=contact + Inbox archive requireAdmin (admin-route, contact.test.ts, policy.test.ts)"
     },
     {
       "id": "CRM-092",
       "source": "crm.md:Partnership enquiries",
       "acceptance": "Partnership enquiries: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "Partnership inquiries stored (kind partnership: name, email, business, collaboration_type, message) via POST /api/partnerships and listed in the /admin Inbox card; requireAdmin + policy tests. Public /partnerships form page is public-pages' (SITE-149)."
+      "evidence": "Partnership inquiries stored (kind partnership: name, email, business, collaboration_type, message) via POST /api/partnerships and listed in the /admin Inbox card; requireAdmin + policy tests. Public /partnerships form page is public-pages' (SITE-149). | verified 2026-11-09: partnership via /api/partnerships into same Inbox (contact.test.ts, admin-route)"
     },
     {
       "id": "CRM-093",
       "source": "crm.md:Newsletter sign-ups",
       "acceptance": "Newsletter sign-ups: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "Newsletter card on /admin: adminNewsletterSubscribers (requireAdmin) lists newsletter_subscribers newest first — email, consent (Consented / No consent / Imported — consent unknown), source (Website / Beehiiv), subscribed_at; page search filters client-side; sidebar Admin → Newsletter. No Beehiiv write from the card. Tests: admin.server.test.ts, policy.test.ts, admin-route.test.tsx."
+      "evidence": "Newsletter card on /admin: adminNewsletterSubscribers (requireAdmin) lists newsletter_subscribers newest first — email, consent (Consented / No consent / Imported — consent unknown), source (Website / Beehiiv), subscribed_at; page search filters client-side; sidebar Admin → Newsletter. No Beehiiv write from the card. Tests: admin.server.test.ts, policy.test.ts, admin-route.test.tsx. | verified 2026-11-09: Newsletter card adminNewsletterSubscribers read-only (admin.server.test.ts, admin-route › CRM-093)"
     },
     {
       "id": "CRM-094",
@@ -865,18 +865,18 @@
       "source": "crm.md:Member update responses",
       "acceptance": "Member update responses: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "/admin#members",
-      "evidence": "Member review responses appear in their own /admin card 'Member reviews' (#reviews, sidebar Admin group); the form has no public href, only personal links. Form open/close switch not in this slice (CRM-100, admin-inbox)."
+      "evidence": "Member review responses appear in their own /admin card 'Member reviews' (#reviews, sidebar Admin group); the form has no public href, only personal links. Form open/close switch not in this slice (CRM-100, admin-inbox). | verified 2026-11-09: Member reviews admin card #reviews (admin-route)"
     },
     {
       "id": "CRM-097",
       "source": "crm.md:Weekly Spotlight",
       "acceptance": "Weekly Spotlight: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "/admin#spotlight",
-      "evidence": "Weekly Spotlight rebuilt: invite from /admin members (CRM-083), public form /spotlight?t= (OPS-028), answers in spotlight_answers (0008) listed in the /admin 'Spotlight answers' card (adminSpotlights, requireAdmin; sidebar Admin → Spotlight answers). No open/close switch, as in the old intake (OPS-081). src/features/member-links/spotlight.server.ts."
+      "evidence": "Weekly Spotlight rebuilt: invite from /admin members (CRM-083), public form /spotlight?t= (OPS-028), answers in spotlight_answers (0008) listed in the /admin 'Spotlight answers' card (adminSpotlights, requireAdmin; sidebar Admin → Spotlight answers). No open/close switch, as in the old intake (OPS-081). src/features/member-links/spotlight.server.ts. | verified 2026-11-09: Weekly Spotlight invite + /spotlight?t= + admin answers card (spotlight.test.ts, admin-route)"
     },
     {
       "id": "CRM-098",
@@ -891,18 +891,18 @@
       "source": "crm.md:Forms overview",
       "acceptance": "Forms overview: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "built",
+      "status": "verified",
       "target": "/admin#forms",
-      "evidence": "Light custom-forms overview on /admin \u203a Form responses (#forms): name, /f/<slug> link, open/closed chip, answer count, newest answer date (adminFormResponses in src/features/forms/forms.server.ts; FormResponsesPanel). Not the CRM's fixed website-form kinds (application/review/contact/\u2026) or last7/last30/schedule \u2014 those stay todo with CRM-101. tests: forms.test.ts, admin-route.test.tsx"
+      "evidence": "Light custom-forms overview on /admin › Form responses (#forms): name, /f/<slug> link, open/closed chip, answer count, newest answer date (adminFormResponses in src/features/forms/forms.server.ts; FormResponsesPanel). Not the CRM's fixed website-form kinds (application/review/contact/…) or last7/last30/schedule — those stay todo with CRM-101. tests: forms.test.ts, admin-route.test.tsx | verified 2026-11-09: Form responses overview open/count/newest (forms.test.ts adminFormResponses, admin-route)"
     },
     {
       "id": "CRM-100",
       "source": "crm.md:Open / close switch",
       "acceptance": "Open / close switch: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "built",
+      "status": "verified",
       "target": "/admin#forms",
-      "evidence": "Open/close switch on each Form responses row (setFormOpen, requireAdmin): closing keeps /f/<slug> reachable with closed_message (openForm); optional closed-message edit \u2264 1,000 chars; opening with no message keeps the last one. No schedule / max_responses (CRM-101). Website-form kinds (application/review/contact/\u2026) not switched here. tests: forms.test.ts, policy.test.ts, admin-route.test.tsx"
+      "evidence": "Open/close switch on each Form responses row (setFormOpen, requireAdmin): closing keeps /f/<slug> reachable with closed_message (openForm); optional closed-message edit ≤ 1,000 chars; opening with no message keeps the last one. No schedule / max_responses (CRM-101). Website-form kinds (application/review/contact/…) not switched here. tests: forms.test.ts, policy.test.ts, admin-route.test.tsx | verified 2026-11-09: setFormOpen + closed_message (forms.test.ts, policy.test.ts, admin-route)"
     },
     {
       "id": "CRM-101",
@@ -1144,9 +1144,9 @@
       "source": "crm.md:CSV download",
       "acceptance": "CSV download: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "built",
+      "status": "verified",
       "target": "/admin#forms",
-      "evidence": "Per-form Download CSV on Form responses (formResponsesCsv, requireAdmin, POST server fn \u2192 blob): Received (UTC) + question labels (duplicate wording gets (key)), choice labels, BOM/CRLF/quoted/formula guard via toCsv (CRM-130 rules). Filename <slug>-responses-<YYYY-MM-DD>.csv. No Came from / Newsletter / Notes / Held columns yet (hold/waitlist not built). tests: forms.test.ts, policy.test.ts, admin-route.test.tsx"
+      "evidence": "Per-form Download CSV on Form responses (formResponsesCsv, requireAdmin, POST server fn → blob): Received (UTC) + question labels (duplicate wording gets (key)), choice labels, BOM/CRLF/quoted/formula guard via toCsv (CRM-130 rules). Filename <slug>-responses-<YYYY-MM-DD>.csv. No Came from / Newsletter / Notes / Held columns yet (hold/waitlist not built). tests: forms.test.ts, policy.test.ts, admin-route.test.tsx | verified 2026-11-09: formResponsesCsv per-form BOM/CRLF (forms.test.ts, admin-route)"
     },
     {
       "id": "CRM-131",
@@ -1188,11 +1188,7 @@
       "owner": "custom-forms",
       "status": "todo",
       "target": "/admin",
-<<<<<<< HEAD
-      "evidence": "Partial: /admin › Form responses lists each form (open/closed, count) and its newest 100 answers with labels. Not yet: filters, columns, Summary, Hold, delete, CSV."
-=======
-      "evidence": "Partial: /admin \u203a Form responses lists each form (open/closed, count, newest date) and its newest 100 answers with labels; open/close + closed message (CRM-100) and per-form CSV (CRM-130) are built. Not yet: filters, column picker, Summary, Hold, delete-for-good."
->>>>>>> t3/custom-forms-followup-phase-one
+      "evidence": "Partial: /admin › Form responses lists each form (open/closed, count, newest date) and its newest 100 answers with labels; open/close + closed message (CRM-100) and per-form CSV (CRM-130) are built. Not yet: filters, column picker, Summary, Hold, delete-for-good."
     },
     {
       "id": "CRM-136",
@@ -1500,9 +1496,9 @@
       "source": "crm.md:FIX-IN-REBUILD — wrong or missing record when `record_id` is absent",
       "acceptance": "FIX-IN-REBUILD — wrong or missing record when `record_id` is absent: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "FIX-IN-REBUILD done: applications.id is a permanent UUID at insert and import; approve/decline/undo use that id only (reviewApplication / setMemberStatus). No record_id slice and no newest-first list index. Evidence: db/migrations/0001_init.sql applications, admin.server.ts, scripts/import-legacy.ts."
+      "evidence": "FIX-IN-REBUILD done: applications.id is a permanent UUID at insert and import; approve/decline/undo use that id only (reviewApplication / setMemberStatus). No record_id slice and no newest-first list index. Evidence: db/migrations/0001_init.sql applications, admin.server.ts, scripts/import-legacy.ts. | verified 2026-11-09: applications.id UUID at insert/import; decisions use that id (0001_init.sql, admin.server.ts)"
     },
     {
       "id": "CRM-173",
@@ -1518,9 +1514,9 @@
       "source": "crm.md:FIX-IN-REBUILD — decline exists only in the CRM internal API",
       "acceptance": "FIX-IN-REBUILD — decline exists only in the CRM internal API: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "FIX-IN-REBUILD: decline and undo-decline live on /admin Applications and All members (not a CRM-only internal API). Same requireAdmin domain functions as approve; actor on admin_actions. BRIEF 12."
+      "evidence": "FIX-IN-REBUILD: decline and undo-decline live on /admin Applications and All members (not a CRM-only internal API). Same requireAdmin domain functions as approve; actor on admin_actions. BRIEF 12. | verified 2026-11-09: decline/undo on /admin Applications + All members (admin.server.test.ts › CRM-069/174)"
     },
     {
       "id": "CRM-175",
@@ -1536,9 +1532,9 @@
       "source": "crm.md:FIX-IN-REBUILD — read-modify-write without locks on shared JSON",
       "acceptance": "FIX-IN-REBUILD — read-modify-write without locks on shared JSON: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "FIX-IN-REBUILD done: admin writes use SQLite tx() (review, notes, logged actions, neighborhood, etc.) instead of JSON read-modify-write. Evidence: src/server/db.ts tx, admin.server.ts."
+      "evidence": "FIX-IN-REBUILD done: admin writes use SQLite tx() (review, notes, logged actions, neighborhood, etc.) instead of JSON read-modify-write. Evidence: src/server/db.ts tx, admin.server.ts. | verified 2026-11-09: admin writes use db tx() not JSON RMW (src/server/db.ts, admin.server.ts)"
     },
     {
       "id": "CRM-177",
@@ -1622,9 +1618,9 @@
       "source": "crm.md:GAP — no CSV of the inbox, applications or members in the CRM",
       "acceptance": "GAP — no CSV of the inbox, applications or members in the CRM: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "Download CSV on the Applications and All members cards: adminCsv (requireAdmin, POST server fn) returns the card's columns (applications + every answer as JSON, OPS-037's payload_json; members: name, status, listed, public, catalogue, email, business, neighborhood, member since); toCsv adds BOM, CRLF, full quoting and the ' formula guard (CRM-130 rules); saved via a blob link, nothing logged (admin.server.test.ts, format.test.ts, admin-route.test.tsx). Inbox CSV not built."
+      "evidence": "Download CSV on the Applications and All members cards: adminCsv (requireAdmin, POST server fn) returns the card's columns (applications + every answer as JSON, OPS-037's payload_json; members: name, status, listed, public, catalogue, email, business, neighborhood, member since); toCsv adds BOM, CRLF, full quoting and the ' formula guard (CRM-130 rules); saved via a blob link, nothing logged (admin.server.test.ts, format.test.ts, admin-route.test.tsx). Inbox CSV not built. | verified 2026-11-09: adminCsv applications+members BOM/CRLF/formula guard (admin.server.test.ts, format.test.ts, admin-route); inbox CSV still not built"
     },
     {
       "id": "CRM-187",
@@ -1793,9 +1789,9 @@
       "source": "backoffice.md:`GET /review?t=<token>`",
       "acceptance": "`GET /review?t=<token>`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "/admin#members",
-      "evidence": "GET /review?t=<token> (src/routes/review.tsx): loader → openReviewFn → openReview; unknown/malformed/used/expired/revoked/spotlight/no-longer-approved tokens all → the same 404 invalid-link page; opening never consumes. Closed-form switch not in this slice. tests: src/features/member-links/member-links.test.ts, src/server/policy.test.ts, src/app/review-route.test.tsx."
+      "evidence": "GET /review?t=<token> (src/routes/review.tsx): loader → openReviewFn → openReview; unknown/malformed/used/expired/revoked/spotlight/no-longer-approved tokens all → the same 404 invalid-link page; opening never consumes. Closed-form switch not in this slice. tests: src/features/member-links/member-links.test.ts, src/server/policy.test.ts, src/app/review-route.test.tsx. | verified 2026-11-09: GET /review?t= same 404 for bad tokens; open never consumes (member-links.test.ts, review-route.test.tsx)"
     },
     {
       "id": "OPS-020",
@@ -1821,9 +1817,9 @@
       "source": "backoffice.md:Review form contents",
       "acceptance": "Review form contents: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "parity",
-      "evidence": "Review form sections 01–04 with the verbatim §2a labels/options (src/features/member-links/schema.ts), public_fields only when directory = public, 6 correction boxes + other_note (id correction_request), honeypot, 'Hello <first name>'. src/features/member-links/ReviewForm.tsx; src/app/review-route.test.tsx."
+      "evidence": "Review form sections 01–04 with the verbatim §2a labels/options (src/features/member-links/schema.ts), public_fields only when directory = public, 6 correction boxes + other_note (id correction_request), honeypot, 'Hello <first name>'. src/features/member-links/ReviewForm.tsx; src/app/review-route.test.tsx. | verified 2026-11-09: ReviewForm §2a sections (review-route.test.tsx, schema.ts)"
     },
     {
       "id": "OPS-023",
@@ -1862,8 +1858,8 @@
       "source": "backoffice.md:Invalid review link page",
       "acceptance": "Invalid review link page: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "built",
-      "evidence": "Bad/used/expired/revoked review tokens all get one neutral 404 (member-links.server.ts INVALID_LINK); covered by members-links slice",
+      "status": "verified",
+      "evidence": "Bad/used/expired/revoked review tokens all get one neutral 404 (member-links.server.ts INVALID_LINK); covered by members-links slice | verified 2026-11-09: bad/used/expired/revoked → INVALID_LINK 404 (member-links.test.ts)",
       "target": "/admin#members"
     },
     {
@@ -1871,18 +1867,18 @@
       "source": "backoffice.md:`GET /spotlight?t=<token>`, `POST /spotlight?t=<token>`, `GET /spotlight/thanks`",
       "acceptance": "`GET /spotlight?t=<token>`, `POST /spotlight?t=<token>`, `GET /spotlight/thanks`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "/spotlight",
-      "evidence": "src/routes/spotlight.tsx + POST /api/spotlight (src/routes/api/spotlight.ts, in API_ROUTES/CSRF): token-only, noindex, no-referrer, Disallow in robots.txt; any token that doesn't open it (review tokens, used, expired, revoked, not-approved) gets one neutral 404 with the old words; 32 KB cap + 10/IP/10 min checked before the body is read; honeypot = success with nothing stored; success uses the link up in the same transaction and shows the old thanks text inline (no separate /spotlight/thanks page, like /review). Tests: src/features/member-links/spotlight.test.ts, src/app/spotlight-route.test.tsx, src/app/security-headers.test.ts."
+      "evidence": "src/routes/spotlight.tsx + POST /api/spotlight (src/routes/api/spotlight.ts, in API_ROUTES/CSRF): token-only, noindex, no-referrer, Disallow in robots.txt; any token that doesn't open it (review tokens, used, expired, revoked, not-approved) gets one neutral 404 with the old words; 32 KB cap + 10/IP/10 min checked before the body is read; honeypot = success with nothing stored; success uses the link up in the same transaction and shows the old thanks text inline (no separate /spotlight/thanks page, like /review). Tests: src/features/member-links/spotlight.test.ts, src/app/spotlight-route.test.tsx, src/app/security-headers.test.ts. | verified 2026-11-09: /spotlight + POST /api/spotlight in API_ROUTES (spotlight-route.test.tsx, spotlight.test.ts, start.ts)"
     },
     {
       "id": "OPS-029",
       "source": "backoffice.md:Spotlight questions",
       "acceptance": "Spotlight questions: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "/spotlight",
-      "evidence": "src/features/member-links/spotlight.ts SPOTLIGHT_QUESTIONS: the 14 questions with verbatim labels/help, stored under the old Google Form column keys, POST names q_<snake> (fieldName); 4 required, Yes/No and http(s) reel checks with the old messages; identity fields capped at 300. checkSpotlight runs in the form and on the server. Tests: spotlight.test.ts (checkSpotlight)."
+      "evidence": "src/features/member-links/spotlight.ts SPOTLIGHT_QUESTIONS: the 14 questions with verbatim labels/help, stored under the old Google Form column keys, POST names q_<snake> (fieldName); 4 required, Yes/No and http(s) reel checks with the old messages; identity fields capped at 300. checkSpotlight runs in the form and on the server. Tests: spotlight.test.ts (checkSpotlight). | verified 2026-11-09: SPOTLIGHT_QUESTIONS 14 keys (spotlight.ts, spotlight.test.ts)"
     },
     {
       "id": "OPS-030",
@@ -2041,9 +2037,9 @@
       "source": "backoffice.md:`spotlight_answers.jsonl`",
       "acceptance": "`spotlight_answers.jsonl`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "/admin#spotlight",
-      "evidence": "spotlight_answers (db/migrations/0008_spotlight_answers.sql; member_reviews rejected: its link_id/member_id are required). Historical rows: scripts/import-legacy.ts --dir … reads intake/spotlight_answers.jsonl (or --spotlight <file>), both old shapes (spotlight_submission with at/link_id, spotlight_answers with date_added), record_id kept as legacy_id (old hash rule when missing), blanks dropped, insert-only/re-runnable, counts only in logs. Fixture scripts/fixtures/legacy-spotlight.json; tests src/server/legacy-import.test.ts."
+      "evidence": "spotlight_answers (db/migrations/0008_spotlight_answers.sql; member_reviews rejected: its link_id/member_id are required). Historical rows: scripts/import-legacy.ts --dir … reads intake/spotlight_answers.jsonl (or --spotlight <file>), both old shapes (spotlight_submission with at/link_id, spotlight_answers with date_added), record_id kept as legacy_id (old hash rule when missing), blanks dropped, insert-only/re-runnable, counts only in logs. Fixture scripts/fixtures/legacy-spotlight.json; tests src/server/legacy-import.test.ts. | verified 2026-11-09: spotlight_answers 0008 + legacy import path (db.test / spotlight.test / import-legacy)"
     },
     {
       "id": "OPS-050",
@@ -2058,9 +2054,9 @@
       "source": "backoffice.md:`links.jsonl`",
       "acceptance": "`links.jsonl`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "links.jsonl → member_links table (0003): id, member_id, purpose review|spotlight, token_hash (sha256 hex), created_by, created_at, expires_at, used_at; revoke = expires_at now, as before. src/features/member-links/member-links.server.ts."
+      "evidence": "links.jsonl → member_links table (0003): id, member_id, purpose review|spotlight, token_hash (sha256 hex), created_by, created_at, expires_at, used_at; revoke = expires_at now, as before. src/features/member-links/member-links.server.ts. | verified 2026-11-09: member_links 0003 purpose review|spotlight token_hash only (member-links.test.ts, spotlight.test.ts)"
     },
     {
       "id": "OPS-052",
@@ -2356,18 +2352,18 @@
       "source": "backoffice.md:Non-atomic read-modify-write",
       "acceptance": "Non-atomic read-modify-write: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "Link writes are single SQL statements / one transaction (mint retires + inserts in tx; consume is a conditional update in the same tx as the insert), so concurrent writers can't overwrite each other. src/features/member-links/member-links.server.ts."
+      "evidence": "Link writes are single SQL statements / one transaction (mint retires + inserts in tx; consume is a conditional update in the same tx as the insert), so concurrent writers can't overwrite each other. src/features/member-links/member-links.server.ts. | verified 2026-11-09: mint+consume in SQLite transactions (member-links.server.ts; tests)"
     },
     {
       "id": "OPS-089",
       "source": "backoffice.md:No review link once a member has responded",
       "acceptance": "No review link once a member has responded: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "Fixed: an admin can always make a fresh review link for an approved member, even after a response (the old dashboard hid it). Review answers are still never written back; a person applies them."
+      "evidence": "Fixed: an admin can always make a fresh review link for an approved member, even after a response (the old dashboard hid it). Review answers are still never written back; a person applies them. | verified 2026-11-09: fresh review link always mintable after response (member-links.test.ts)"
     },
     {
       "id": "OPS-090",
@@ -2574,9 +2570,9 @@
       "source": "backoffice.md:When `spotlight_interest = yes`, `spotlight_permission = yes` is required",
       "acceptance": "When `spotlight_interest = yes`, `spotlight_permission = yes` is required: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "/join",
-      "evidence": "Application form: spotlight 'yes' requires the focus answer and the publication consent box (src/features/applications/schema.ts spotlight → r.required + r.consent); tested in src/features/applications/schema.test.ts ('spotlight: yes' → publicationConsent: true)."
+      "evidence": "Application form: spotlight 'yes' requires the focus answer and the publication consent box (src/features/applications/schema.ts spotlight → r.required + r.consent); tested in src/features/applications/schema.test.ts ('spotlight: yes' → publicationConsent: true). | verified 2026-11-09: application spotlight yes requires focus + publication consent (applications schema; covered in app tests via schema)"
     },
     {
       "id": "OPS-116",
@@ -2784,18 +2780,18 @@
       "source": "backoffice.md:The review form opens only through a personal link",
       "acceptance": "The review form opens only through a personal link: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "parity",
-      "evidence": "The form opens only through a live, unexpired review link for an approved member (activeLink in src/features/member-links/member-links.server.ts); anything else is the invalid-link 404."
+      "evidence": "The form opens only through a live, unexpired review link for an approved member (activeLink in src/features/member-links/member-links.server.ts); anything else is the invalid-link 404. | verified 2026-11-09: activeLink gate for approved member only (member-links.server.ts, member-links.test.ts)"
     },
     {
       "id": "OPS-142",
       "source": "backoffice.md:Review links are single use",
       "acceptance": "Review links are single use: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "parity",
-      "evidence": "Marked used after a successful submit, atomically with storing the review (submitReview); second submit → 404. tests: src/features/member-links/member-links.test.ts, src/server/policy.test.ts."
+      "evidence": "Marked used after a successful submit, atomically with storing the review (submitReview); second submit → 404. tests: src/features/member-links/member-links.test.ts, src/server/policy.test.ts. | verified 2026-11-09: submitReview marks used atomically; second → 404 (member-links.test.ts)"
     },
     {
       "id": "OPS-143",
@@ -2811,8 +2807,8 @@
       "source": "backoffice.md:The review requires only `full_name`, a valid `email` and `membership`, plus at least one `public_fields` box when `directory = public`",
       "acceptance": "The review requires only `full_name`, a valid `email` and `membership`, plus at least one `public_fields` box when `directory = public`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "built",
-      "evidence": "checkReview enforces required fields + directory public_fields; members-links slice (member-links schema + server)",
+      "status": "verified",
+      "evidence": "checkReview enforces required fields + directory public_fields; members-links slice (member-links schema + server) | verified 2026-11-09: checkReview required + public_fields (schema.ts; member-links.test.ts)",
       "target": "/members"
     },
     {
@@ -2820,17 +2816,17 @@
       "source": "backoffice.md:Review membership choices are keep, leave and contact_me, with the verbatim labels in §2a",
       "acceptance": "Review membership choices are keep, leave and contact_me, with the verbatim labels in §2a: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "/contact",
-      "evidence": "membership radio keep | leave | contact_me with the verbatim labels; required, and (unlike the old intake) the value is checked against the options. checkReview in src/features/member-links/schema.ts; tests."
+      "evidence": "membership radio keep | leave | contact_me with the verbatim labels; required, and (unlike the old intake) the value is checked against the options. checkReview in src/features/member-links/schema.ts; tests. | verified 2026-11-09: membership keep|leave|contact_me (schema.ts; member-links.test.ts)"
     },
     {
       "id": "OPS-146",
       "source": "backoffice.md:Review permission radios",
       "acceptance": "Review permission radios: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "built",
-      "evidence": "Review permission radios checked against options in checkReview; members-links slice",
+      "status": "verified",
+      "evidence": "Review permission radios checked against options in checkReview; members-links slice | verified 2026-11-09: permission radios validated in checkReview (schema.ts; member-links.test.ts)",
       "target": "parity"
     },
     {
@@ -2838,18 +2834,18 @@
       "source": "backoffice.md:The review form's 6 correction/removal request boxes are stored as `correction_requests`, alongside free text `other_note`",
       "acceptance": "The review form's 6 correction/removal request boxes are stored as `correction_requests`, alongside free text `other_note`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "parity",
-      "evidence": "correction_requests stored as an array of the six req_* codes (validated), other_note as free text (field id correction_request). src/features/member-links/schema.ts; tests."
+      "evidence": "correction_requests stored as an array of the six req_* codes (validated), other_note as free text (field id correction_request). src/features/member-links/schema.ts; tests. | verified 2026-11-09: correction_requests six codes + other_note (schema.ts; member-links.test.ts)"
     },
     {
       "id": "OPS-148",
       "source": "backoffice.md:The review record has `type",
       "acceptance": "The review record has `type: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "parity",
-      "evidence": "A member_reviews row carries member_id, link_id (unique), form_version 1, status new|done, created_at; the token is never in the answers. consent_version not stored (the rebuild has no consent-version registry yet). db/migrations/0003_member_links.sql; tests."
+      "evidence": "A member_reviews row carries member_id, link_id (unique), form_version 1, status new|done, created_at; the token is never in the answers. consent_version not stored (the rebuild has no consent-version registry yet). db/migrations/0003_member_links.sql; tests. | verified 2026-11-09: member_reviews shape link_id unique, no token in answers (0003, member-links.test.ts)"
     },
     {
       "id": "OPS-149",
@@ -2864,18 +2860,18 @@
       "source": "backoffice.md:Spotlight has 3 identity fields",
       "acceptance": "Spotlight has 3 identity fields: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "/spotlight",
-      "evidence": "src/features/member-links/spotlight.ts: IDENTITY (Your name required; Business name, Neighborhood optional, ≤300) + 14 SPOTLIGHT_QUESTIONS (4 required). Tested in spotlight.test.ts."
+      "evidence": "src/features/member-links/spotlight.ts: IDENTITY (Your name required; Business name, Neighborhood optional, ≤300) + 14 SPOTLIGHT_QUESTIONS (4 required). Tested in spotlight.test.ts. | verified 2026-11-09: IDENTITY + 14 questions (spotlight.ts; spotlight.test.ts)"
     },
     {
       "id": "OPS-151",
       "source": "backoffice.md:Spotlight answers are stored under the old Google Form column names",
       "acceptance": "Spotlight answers are stored under the old Google Form column names: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "/admin#spotlight",
-      "evidence": "checkSpotlight stores answers keyed by the old column names, blanks left out; the import keeps the same keys. spotlight.test.ts ('store one set of answers under the old column names')."
+      "evidence": "checkSpotlight stores answers keyed by the old column names, blanks left out; the import keeps the same keys. spotlight.test.ts ('store one set of answers under the old column names'). | verified 2026-11-09: answers under old Google Form column names (spotlight.test.ts)"
     },
     {
       "id": "OPS-152",
@@ -2890,27 +2886,27 @@
       "source": "backoffice.md:Spotlight record shape",
       "acceptance": "Spotlight record shape: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "/admin#spotlight",
-      "evidence": "spotlight_answers (0008): id, link_id (one answer per link), member_id, legacy_id (old record_id), legacy_member_id, full_name/business/neighborhood, answers JSON object ≤32 KB, created_at. 'type'/'source' are implied (link_id vs legacy_id); date_added = created_at. src/server/db.test.ts (0008 checks)."
+      "evidence": "spotlight_answers (0008): id, link_id (one answer per link), member_id, legacy_id (old record_id), legacy_member_id, full_name/business/neighborhood, answers JSON object ≤32 KB, created_at. 'type'/'source' are implied (link_id vs legacy_id); date_added = created_at. src/server/db.test.ts (0008 checks). | verified 2026-11-09: spotlight_answers columns (0008; spotlight.test.ts)"
     },
     {
       "id": "OPS-154",
       "source": "backoffice.md:Spotlight prefill: name ← `full_name`, business ← `business_practice`, neighborhood ← `base_area`, else `neighborhood_ci",
       "acceptance": "Spotlight prefill: name ← `full_name`, business ← `business_practice`, neighborhood ← `base_area`, else `neighborhood_ci: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "/spotlight",
-      "evidence": "openSpotlight prefill via memberValues: name ← profile full_name (else application), business ← profile business (else application business), neighborhood ← profile neighborhood, else the approved application's neighborhood (the new base_area), else basedIn. Never 'Other' literal: the new application stores the area itself. spotlight.test.ts ('prefill name, business and neighborhood')."
+      "evidence": "openSpotlight prefill via memberValues: name ← profile full_name (else application), business ← profile business (else application business), neighborhood ← profile neighborhood, else the approved application's neighborhood (the new base_area), else basedIn. Never 'Other' literal: the new application stores the area itself. spotlight.test.ts ('prefill name, business and neighborhood'). | verified 2026-11-09: openSpotlight memberValues prefill (spotlight.server.ts; spotlight.test.ts)"
     },
     {
       "id": "OPS-155",
       "source": "backoffice.md:Spotlight links are separate from review links",
       "acceptance": "Spotlight links are separate from review links: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "built",
+      "status": "verified",
       "target": "/spotlight",
-      "evidence": "Same member_links table, separated by purpose: every lookup (activeLink) filters on purpose, minting/revoking one kind never touches the other, approved members only. spotlight.test.ts ('live beside the review link', review token → 404) and member-links.test.ts (spotlight token → review 404)."
+      "evidence": "Same member_links table, separated by purpose: every lookup (activeLink) filters on purpose, minting/revoking one kind never touches the other, approved members only. spotlight.test.ts ('live beside the review link', review token → 404) and member-links.test.ts (spotlight token → review 404). | verified 2026-11-09: purpose filter separates spotlight vs review tokens (spotlight.test.ts, member-links.test.ts)"
     },
     {
       "id": "OPS-156",
@@ -3467,9 +3463,9 @@
       "source": "backoffice.md:Write locking.",
       "acceptance": "Write locking.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "built",
+      "status": "verified",
       "target": "notifications",
-      "evidence": "Answers are rows in custom_form_responses (migration 0005) written through node:sqlite, which serialises every write; no file appends, so no lock to forget. src/features/forms/forms.server.ts"
+      "evidence": "Answers are rows in custom_form_responses (migration 0005) written through node:sqlite, which serialises every write; no file appends, so no lock to forget. src/features/forms/forms.server.ts | verified 2026-11-09: answers in custom_form_responses via node:sqlite (forms.server.ts, forms.test.ts)"
     },
     {
       "id": "OPS-225",
@@ -3500,9 +3496,9 @@
       "source": "backoffice.md:Published custom form files `${CUSTOM_FORMS_DIR}/<8-char id>.json`.",
       "acceptance": "Published custom form files `${CUSTOM_FORMS_DIR}/<8-char id>.json`.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "built",
+      "status": "verified",
       "target": "notifications",
-      "evidence": "Published forms are rows in custom_forms (migration 0005) instead of ${CUSTOM_FORMS_DIR}/<id>.json: the 8-char [a-z0-9] id, slug rule + reserved set, 1–80 one-line name and JSON questions are CHECK constraints; questions are checked on write (checkQuestions, saveForm in src/features/forms/store.ts). tests: src/features/forms/forms.test.ts, src/server/policy.test.ts › custom forms, src/app/form-route.test.tsx"
+      "evidence": "Published forms are rows in custom_forms (migration 0005) instead of ${CUSTOM_FORMS_DIR}/<id>.json: the 8-char [a-z0-9] id, slug rule + reserved set, 1–80 one-line name and JSON questions are CHECK constraints; questions are checked on write (checkQuestions, saveForm in src/features/forms/store.ts). tests: src/features/forms/forms.test.ts, src/server/policy.test.ts › custom forms, src/app/form-route.test.tsx | verified 2026-11-09: custom_forms rows + CHECKs (0005, forms.test.ts › custom_forms table)"
     },
     {
       "id": "OPS-229",
@@ -3614,9 +3610,9 @@
       "source": "backoffice.md:Honeypot `bot-field`.",
       "acceptance": "Honeypot `bot-field`.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "built",
+      "status": "verified",
       "target": "parity",
-      "evidence": "Honeypot field `honeypot` (off-screen, aria-hidden, tabindex -1, as on /contact): any non-empty value is a silent 204, nothing stored. Unlike the old service the per-form limiter still counts it (it is checked before the body is read). src/features/forms/CustomForm.tsx, forms.server.ts. tests: src/features/forms/forms.test.ts, src/server/policy.test.ts › custom forms, src/app/form-route.test.tsx"
+      "evidence": "Honeypot field `honeypot` (off-screen, aria-hidden, tabindex -1, as on /contact): any non-empty value is a silent 204, nothing stored. Unlike the old service the per-form limiter still counts it (it is checked before the body is read). src/features/forms/CustomForm.tsx, forms.server.ts. tests: src/features/forms/forms.test.ts, src/server/policy.test.ts › custom forms, src/app/form-route.test.tsx | verified 2026-11-09: honeypot silent 204 (forms.test.ts)"
     },
     {
       "id": "OPS-243",
@@ -3737,8 +3733,8 @@
       "source": "backoffice.md:Contact and partnership alerts to the team",
       "acceptance": "Contact and partnership alerts to the team: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "built",
-      "evidence": "src/features/contact/contact.server.ts receiveMessage \u2192 notifyAdmins for contact + partnership; contact.test.ts emails every admin, honeypot sends nothing, mail failure still 204",
+      "status": "verified",
+      "evidence": "src/features/contact/contact.server.ts receiveMessage → notifyAdmins for contact + partnership; contact.test.ts emails every admin, honeypot sends nothing, mail failure still 204 | verified 2026-11-09: receiveMessage → notifyAdmins contact+partnership (contact.test.ts)",
       "target": "/contact"
     },
     {
@@ -4552,9 +4548,9 @@
       "source": "backoffice.md:API call.",
       "acceptance": "API call.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "built",
+      "status": "verified",
       "target": "notifications",
-      "evidence": "src/server/beehiiv.ts: same endpoint/body/headers (utm nbwc.site/membership/membership-optin), 8 s timeout; deliberate change: reactivate_existing false"
+      "evidence": "src/server/beehiiv.ts: same endpoint/body/headers (utm nbwc.site/membership/membership-optin), 8 s timeout; deliberate change: reactivate_existing false | verified 2026-11-09: beehiiv subscribe body reactivate_existing:false (beehiiv.ts; beehiiv.test.ts)"
     },
     {
       "id": "OPS-359",
@@ -4593,8 +4589,8 @@
       "source": "backoffice.md:Shared sender (`notify-applications.send`, lines 93-130).",
       "acceptance": "Shared sender (`notify-applications.send`, lines 93-130).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "built",
-      "evidence": "Shared admin sender is notifyAdmins() \u2192 sendEmail() in src/server/notify.ts / email.ts; used by contact, partnership, application, review, Spotlight alerts",
+      "status": "verified",
+      "evidence": "Shared admin sender is notifyAdmins() → sendEmail() in src/server/notify.ts / email.ts; used by contact, partnership, application, review, Spotlight alerts | verified 2026-11-09: notifyAdmins → sendEmail shared path (notify.ts; alert tests)",
       "target": "/join"
     },
     {
@@ -4610,8 +4606,8 @@
       "source": "backoffice.md:`notify-applications.py` (new application alert).",
       "acceptance": "`notify-applications.py` (new application alert).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "built",
-      "evidence": "src/features/applications/applications.server.ts alertApplication after POST /api/applications stores; subject New application: <name>, link /admin#applications, no answer dump; mail failure logs only (application-alert.test.ts)",
+      "status": "verified",
+      "evidence": "src/features/applications/applications.server.ts alertApplication after POST /api/applications stores; subject New application: <name>, link /admin#applications, no answer dump; mail failure logs only (application-alert.test.ts) | verified 2026-11-09: alertApplication subject + /admin#applications no answers (application-alert.test.ts)",
       "target": "/join"
     },
     {
@@ -4619,8 +4615,8 @@
       "source": "backoffice.md:`notify-messages.py` (contact and partnership alerts).",
       "acceptance": "`notify-messages.py` (contact and partnership alerts).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "built",
-      "evidence": "Same as OPS-257: contact.server.ts receiveMessage + notifyAdmins; partnership subjects Partnership inquiry: <type> \u2014 <name>",
+      "status": "verified",
+      "evidence": "Same as OPS-257: contact.server.ts receiveMessage + notifyAdmins; partnership subjects Partnership inquiry: <type> — <name> | verified 2026-11-09: partnership subjects via receiveMessage (contact.test.ts)",
       "target": "/contact"
     },
     {
@@ -4644,8 +4640,8 @@
       "source": "backoffice.md:Tests to port (`tools/test_notify_alerts.py`).",
       "acceptance": "Tests to port (`tools/test_notify_alerts.py`).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "built",
-      "evidence": "Alert tests ported as application-alert.test.ts, review-alert.test.ts, spotlight-alert.test.ts, contact.test.ts (admin mail paths)",
+      "status": "verified",
+      "evidence": "Alert tests ported as application-alert.test.ts, review-alert.test.ts, spotlight-alert.test.ts, contact.test.ts (admin mail paths) | verified 2026-11-09: application/review/spotlight/contact alert tests present and passing",
       "target": "/join"
     },
     {
@@ -4757,8 +4753,8 @@
       "source": "backoffice.md:Imports trigger alerts.",
       "acceptance": "Imports trigger alerts.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "built",
-      "evidence": "Retired: legacy import (scripts/import-legacy.ts / legacy-import.ts) never calls alertApplication; only POST /api/applications alerts, so a re-import cannot spam admins",
+      "status": "verified",
+      "evidence": "Retired: legacy import (scripts/import-legacy.ts / legacy-import.ts) never calls alertApplication; only POST /api/applications alerts, so a re-import cannot spam admins | verified 2026-11-09: legacy-import never calls alertApplication (legacy-import.ts grep; only POST /api/applications alerts)",
       "target": "/join"
     },
     {
@@ -4766,8 +4762,8 @@
       "source": "backoffice.md:The application alert body lists legacy-form keys.",
       "acceptance": "The application alert body lists legacy-form keys.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "built",
-      "evidence": "Retired legacy-key dump: alertApplication sends short subject + /admin#applications only (no answers). application-alert.test.ts asserts answers stay out of the mail",
+      "status": "verified",
+      "evidence": "Retired legacy-key dump: alertApplication sends short subject + /admin#applications only (no answers). application-alert.test.ts asserts answers stay out of the mail | verified 2026-11-09: alert body has no answer dump (application-alert.test.ts)",
       "target": "/join"
     },
     {
@@ -5041,9 +5037,9 @@
       "source": "ops-part-d.md:Validation of a published CRM form.",
       "acceptance": "Validation of a published CRM form.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "built",
+      "status": "verified",
       "target": "/f/*",
-      "evidence": "Same slug rule ([a-z0-9], inner '-', no '--', 1–40) and the full reserved set as a CHECK on custom_forms.slug; id 8 [a-z0-9]; name 1–80, one line (migration 0005). The route is /f/$slug, so a form can't shadow an app route. tests: src/features/forms/forms.test.ts › custom_forms table"
+      "evidence": "Same slug rule ([a-z0-9], inner '-', no '--', 1–40) and the full reserved set as a CHECK on custom_forms.slug; id 8 [a-z0-9]; name 1–80, one line (migration 0005). The route is /f/$slug, so a form can't shadow an app route. tests: src/features/forms/forms.test.ts › custom_forms table | verified 2026-11-09: slug/id/name CHECKs + reserved set (forms.test.ts)"
     },
     {
       "id": "OPS-419",
@@ -5098,9 +5094,9 @@
       "source": "ops-part-d.md:Moved pages.",
       "acceptance": "Moved pages.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "built",
+      "status": "verified",
       "target": "/f/*",
-      "evidence": "custom_form_old_slugs (migration 0005): /f/<old> and /f/<old>/thanks 301 to the current slug (src/routes/f.$slug.tsx, f.$slug_.thanks.tsx); answers posted to an old name land on the form. Embed/prefill query strings are not carried (no embed or prefill in this slice). tests: src/features/forms/forms.test.ts, src/server/policy.test.ts › custom forms, src/app/form-route.test.tsx"
+      "evidence": "custom_form_old_slugs (migration 0005): /f/<old> and /f/<old>/thanks 301 to the current slug (src/routes/f.$slug.tsx, f.$slug_.thanks.tsx); answers posted to an old name land on the form. Embed/prefill query strings are not carried (no embed or prefill in this slice). tests: src/features/forms/forms.test.ts, src/server/policy.test.ts › custom forms, src/app/form-route.test.tsx | verified 2026-11-09: old slug 301 via custom_form_old_slugs (forms.test.ts, f.$slug routes)"
     },
     {
       "id": "OPS-426",
@@ -5709,8 +5705,8 @@
       "source": "ops-part-d.md:Website forms (`contact`, `partnership`).",
       "acceptance": "Website forms (`contact`, `partnership`).: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "built",
-      "evidence": "Website contact + partnership forms store then alert via receiveMessage (contact.server.ts); covered by contact.test.ts",
+      "status": "verified",
+      "evidence": "Website contact + partnership forms store then alert via receiveMessage (contact.server.ts); covered by contact.test.ts | verified 2026-11-09: contact+partnership store-then-alert (contact.test.ts)",
       "target": "/contact"
     },
     {
@@ -5873,9 +5869,9 @@
       "source": "ops-part-d.md:State loss re-subscribes people who unsubscribed.",
       "acceptance": "State loss re-subscribes people who unsubscribed.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "built",
+      "status": "verified",
       "target": "/contact",
-      "evidence": "src/server/beehiiv.ts: an address is claimed in newsletter_subscribers before the call, so replayed rows, restored backups and the imported Beehiiv list (consent null) are never re-sent (tests \"already on the list\", \"replaying…\", \"racing\")"
+      "evidence": "src/server/beehiiv.ts: an address is claimed in newsletter_subscribers before the call, so replayed rows, restored backups and the imported Beehiiv list (consent null) are never re-sent (tests \"already on the list\", \"replaying…\", \"racing\") | verified 2026-11-09: newsletter_subscribers claim before Beehiiv call (beehiiv.test.ts already/replay/racing)"
     },
     {
       "id": "OPS-522",
@@ -5906,9 +5902,9 @@
       "source": "ops-part-d.md:Counting responses depends on the writer's JSON spacing.",
       "acceptance": "Counting responses depends on the writer's JSON spacing.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "built",
+      "status": "verified",
       "target": "parity",
-      "evidence": "Counts come from the table: adminFormResponses counts custom_form_responses rows per form_id (src/features/forms/forms.server.ts), never from text."
+      "evidence": "Counts come from the table: adminFormResponses counts custom_form_responses rows per form_id (src/features/forms/forms.server.ts), never from text. | verified 2026-11-09: adminFormResponses counts table rows (forms.server.ts, forms.test.ts)"
     },
     {
       "id": "OPS-526",
