@@ -954,25 +954,27 @@
       "source": "crm.md:Versioned definitions",
       "acceptance": "Versioned definitions: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin#forms",
+      "evidence": "Minimal admin editor on Form responses writes through saveForm (saveAdminForm, requireAdmin): create mints an 8-char id at version 1; edit bumps version and stores the previous slug in custom_form_old_slugs for 301. No separate form_versions/drafts table — publish is this write (CRM-104 light). tests: forms.test.ts, policy.test.ts, admin-route.test.tsx"
     },
     {
       "id": "CRM-105",
       "source": "crm.md:Publish guards",
       "acceptance": "Publish guards: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin#forms",
+      "evidence": "Light publish guards only: checkQuestions blocks bad definitions before write; slug shape + UNIQUE/CHECK refused with clear AccessError; version increments on every edit. Not built: shared draft, seenVersion concurrency, restore, 'No changes' short-circuit (CRM-105 light — enough to publish without the Classic editor)."
     },
     {
       "id": "CRM-106",
       "source": "crm.md:Question model",
       "acceptance": "Question model: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/admin",
-      "evidence": "Partial: 11 of the 22 types (short, email, phone, url, number, date, paragraph, dropdown, radio, checkboxes, yesno) with the old key/choice limits (src/features/forms/schema.ts). The importer converts scale → radio (its numbers, end words on the ends), rating → radio 1–5, consent → one required tick box, time → short; drops statement, hidden, total; skips forms with file, ranking, grid, address (src/features/forms/import.test.ts). Not yet as native types."
+      "status": "built",
+      "target": "/admin#forms",
+      "evidence": "Admin editor + public renderer share the 11 types in QUESTION_TYPES (short, email, phone, url, number, date, paragraph, dropdown, radio, checkboxes, yesno) with old key/choice/value limits (schema.ts checkQuestions). Importer still converts scale/rating/consent/time and skips file/ranking/grid/address. Not native: the other 11 CRM types."
     },
     {
       "id": "CRM-107",
@@ -1059,25 +1061,27 @@
       "source": "crm.md:Forms list + create + duplicate",
       "acceptance": "Forms list + create + duplicate: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/f/*"
+      "status": "built",
+      "target": "/admin#forms",
+      "evidence": "Form responses lists every custom form (name, slug, /f/ link, open/closed, version, counts) and Add a form creates one (name, slug, intro, thanks, closed_message, open, one_per_email, questions) via saveAdminForm. Not built: duplicate, templates, listed-on-/forms flag, draft status."
     },
     {
       "id": "CRM-118",
       "source": "crm.md:Slugs",
       "acceptance": "Slugs: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/admin",
-      "evidence": "Partial: one live slug per form plus old slugs that 301 (custom_form_old_slugs); reserved and taken names refused by the table. Not yet: the slug-check endpoint (needs the form builder)."
+      "status": "built",
+      "target": "/admin#forms",
+      "evidence": "Admin editor validates slug shape before write; table CHECK refuses reserved names; UNIQUE refuses taken slugs; rename keeps old slug in custom_form_old_slugs (301). No separate slug-check endpoint (inline in saveAdminForm)."
     },
     {
       "id": "CRM-119",
       "source": "crm.md:Editor workflow",
       "acceptance": "Editor workflow: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/admin#members"
+      "status": "built",
+      "target": "/admin#forms",
+      "evidence": "Minimal editor workflow on Form responses: create/edit meta + questions (saveAdminForm → saveForm), open/close + closed message (setFormOpen). Not built: drafts, restore, preview-shell, look/thanks-rules, published/custom JSON rewrite."
     },
     {
       "id": "CRM-120",

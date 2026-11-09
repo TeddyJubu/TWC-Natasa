@@ -539,16 +539,21 @@ describe("/admin", () => {
 
   it("form responses: each form with its count, link, newest date and answers under question labels", () => {
     const entries = [{ key: "name", label: "Your name", value: "Rosa Diaz" }, { key: "diet", label: "Anything we should know?", value: ["Vegan", "No nuts"] }];
+    const questions = [{ key: "name", type: "short", label: "Your name", required: true }];
     renderAdmin({ "form-responses": [
-      { id: "demo0001", name: "Salon RSVP (demo)", slug: "salon-rsvp", open: true, closed_message: "", total: 1, newest_at: "2026-11-09T15:00:00Z", responses: [{ id: "a1", created_at: "2026-11-09T15:00:00Z", entries }] },
-      { id: "demo0002", name: "Old survey (demo, closed)", slug: "old-survey", open: false, closed_message: "This survey has closed.", total: 0, newest_at: null, responses: [] },
+      { id: "demo0001", name: "Salon RSVP (demo)", slug: "salon-rsvp", open: true, closed_message: "", intro: "", thanks: "", one_per_email: true, version: 1, questions, total: 1, newest_at: "2026-11-09T15:00:00Z", responses: [{ id: "a1", created_at: "2026-11-09T15:00:00Z", entries }] },
+      { id: "demo0002", name: "Old survey (demo, closed)", slug: "old-survey", open: false, closed_message: "This survey has closed.", intro: "", thanks: "", one_per_email: false, version: 1, questions: [{ key: "feedback", type: "paragraph", label: "Your feedback", required: true }], total: 0, newest_at: null, responses: [] },
     ] });
+    expect(within(card("Form responses")).getByRole("form", { name: "Add a form" })).toBeTruthy();
     const rsvp = within(card("Form responses")).getByRole("article", { name: "Salon RSVP (demo)" });
     expect(within(rsvp).getByRole("link", { name: "/f/salon-rsvp" }).getAttribute("href")).toBe("/f/salon-rsvp");
     expect(rsvp.textContent).toMatch(/1 answer/);
+    expect(rsvp.textContent).toMatch(/v1/);
+    expect(rsvp.textContent).toMatch(/one per email/);
     expect(rsvp.textContent).toMatch(/newest Nov 9, 2026/);
     expect(rsvp.textContent).toMatch(/Open/);
     expect(within(rsvp).getByRole("button", { name: "Close Salon RSVP (demo)" })).toBeTruthy();
+    expect(within(rsvp).getByRole("button", { name: "Edit Salon RSVP (demo)" })).toBeTruthy();
     expect(within(rsvp).getByRole("button", { name: "Download CSV of Salon RSVP (demo)" })).toBeTruthy();
     expect(within(rsvp).getByText("Your name").nextElementSibling!.textContent).toBe("Rosa Diaz");
     expect(within(rsvp).getAllByRole("listitem").map((li) => li.textContent)).toEqual(["Vegan", "No nuts"]);
@@ -561,12 +566,12 @@ describe("/admin", () => {
 
   it("form responses: Close form asks confirm then posts open:false with the closed message", async () => {
     renderAdmin({ "form-responses": [
-      { id: "demo0001", name: "Salon RSVP (demo)", slug: "salon-rsvp", open: true, closed_message: "", total: 0, newest_at: null, responses: [] },
+      { id: "demo0001", name: "Salon RSVP (demo)", slug: "salon-rsvp", open: true, closed_message: "", intro: "", thanks: "", one_per_email: false, version: 1, questions: [{ key: "name", type: "short", label: "Your name" }], total: 0, newest_at: null, responses: [] },
     ] });
     const rsvp = within(card("Form responses")).getByRole("article", { name: "Salon RSVP (demo)" });
     fireEvent.change(within(rsvp).getByLabelText("Closed message"), { target: { value: "Full for now." } });
     fake.results = [null, [
-      { id: "demo0001", name: "Salon RSVP (demo)", slug: "salon-rsvp", open: false, closed_message: "Full for now.", total: 0, newest_at: null, responses: [] },
+      { id: "demo0001", name: "Salon RSVP (demo)", slug: "salon-rsvp", open: false, closed_message: "Full for now.", intro: "", thanks: "", one_per_email: false, version: 1, questions: [{ key: "name", type: "short", label: "Your name" }], total: 0, newest_at: null, responses: [] },
     ]];
     fireEvent.click(within(rsvp).getByRole("button", { name: "Close Salon RSVP (demo)" }));
     expect(confirm).toHaveBeenCalled();
@@ -575,7 +580,7 @@ describe("/admin", () => {
 
   it("form responses: Download CSV asks the server for that form's export", async () => {
     renderAdmin({ "form-responses": [
-      { id: "demo0001", name: "Salon RSVP (demo)", slug: "salon-rsvp", open: true, closed_message: "", total: 2, newest_at: "2026-11-09T15:00:00Z", responses: [] },
+      { id: "demo0001", name: "Salon RSVP (demo)", slug: "salon-rsvp", open: true, closed_message: "", intro: "", thanks: "", one_per_email: false, version: 1, questions: [{ key: "name", type: "short", label: "Your name" }], total: 2, newest_at: "2026-11-09T15:00:00Z", responses: [] },
     ] });
     fake.results = [{ filename: "salon-rsvp-responses-2026-11-09.csv", csv: "\uFEFF\"Received (UTC)\"\r\n" }];
     const createObjectURL = vi.fn(() => "blob:csv");
@@ -588,6 +593,39 @@ describe("/admin", () => {
     expect(click).toHaveBeenCalled();
     click.mockRestore();
     vi.unstubAllGlobals();
+  });
+
+  it("form responses: Add a form publishes through saveAdminFormFn", async () => {
+    renderAdmin({ "form-responses": [] });
+    const add = within(card("Form responses")).getByRole("form", { name: "Add a form" });
+    fireEvent.change(within(add).getByLabelText("Name"), { target: { value: "Coffee chat" } });
+    fireEvent.change(within(add).getByLabelText("Slug"), { target: { value: "coffee-chat" } });
+    fake.results = [{ id: "abcd1234" }, []];
+    fireEvent.click(within(add).getByRole("button", { name: "Publish form" }));
+    await waitFor(() => expect(fake.calls[0]?.[0]).toBe("saveAdminFormFn"));
+    expect(fake.calls[0]?.[1]).toMatchObject({
+      name: "Coffee chat", slug: "coffee-chat", open: true, one_per_email: false,
+      questions: [
+        { key: "name", type: "short", label: "Your name", required: true },
+        { key: "email", type: "email", label: "Email", required: true },
+      ],
+    });
+  });
+
+  it("form responses: Edit form saves an existing definition", async () => {
+    renderAdmin({ "form-responses": [
+      { id: "demo0001", name: "Salon RSVP (demo)", slug: "salon-rsvp", open: true, closed_message: "", intro: "Hi", thanks: "Bye", one_per_email: true, version: 2, questions: [{ key: "name", type: "short", label: "Your name", required: true }], total: 0, newest_at: null, responses: [] },
+    ] });
+    const rsvp = within(card("Form responses")).getByRole("article", { name: "Salon RSVP (demo)" });
+    fireEvent.click(within(rsvp).getByRole("button", { name: "Edit Salon RSVP (demo)" }));
+    const edit = within(rsvp).getByRole("form", { name: "Edit Salon RSVP (demo)" });
+    fireEvent.change(within(edit).getByLabelText("Name"), { target: { value: "Salon RSVP" } });
+    fake.results = [{ id: "demo0001" }, []];
+    fireEvent.click(within(edit).getByRole("button", { name: "Save form" }));
+    await waitFor(() => expect(fake.calls[0]).toEqual(["saveAdminFormFn", expect.objectContaining({
+      id: "demo0001", name: "Salon RSVP", slug: "salon-rsvp", intro: "Hi", thanks: "Bye", one_per_email: true, open: true,
+      questions: [{ key: "name", type: "short", label: "Your name", required: true }],
+    })]));
   });
 
   it("members: approve sets the profile status directly", async () => {

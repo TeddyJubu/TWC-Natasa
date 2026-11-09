@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { openDb, type DB } from "@/server/db";
 import { DEMO_FORMS } from "./fixtures";
 import { toCsv } from "@/features/admin/format";
-import { adminFormResponses, CLOSED, CLOSED_MESSAGE_MAX, DUPLICATE, formRequest, formResponsesCsv, openForm, responseEntries, setFormOpen } from "./forms.server";
+import { adminFormResponses, CLOSED, CLOSED_MESSAGE_MAX, DUPLICATE, formRequest, formResponsesCsv, openForm, responseEntries, saveAdminForm, setFormOpen } from "./forms.server";
 import { checkAnswers, checkQuestions, type Question } from "./schema";
 import { saveForm } from "./store";
 
@@ -188,13 +188,14 @@ describe("adminFormResponses", () => {
     expect(() => adminFormResponses(ctx())).toThrow(/sign in/i);
   });
 
-  it("lists every form by name with its count, newest date and answers under their labels (choices by label)", async () => {
+  it("lists every form by name with its definition, count, newest date and answers under their labels (choices by label)", async () => {
     await send("salon-rsvp", { answers: { ...good, diet: ["vegan", "no-nuts"], plus_one: "no" } });
     const forms = adminFormResponses({ db, actor: ADMIN });
-    expect(forms.map((f) => [f.name, f.open, f.total, f.newest_at !== null, f.closed_message])).toEqual([
-      ["Old survey (demo, closed)", false, 0, false, "This survey has closed. Thank you to everyone who answered."],
-      ["Salon RSVP (demo)", true, 1, true, ""],
+    expect(forms.map((f) => [f.name, f.open, f.total, f.newest_at !== null, f.closed_message, f.one_per_email, f.version, f.questions.length])).toEqual([
+      ["Old survey (demo, closed)", false, 0, false, "This survey has closed. Thank you to everyone who answered.", false, 1, 1],
+      ["Salon RSVP (demo)", true, 1, true, "", true, 1, 6],
     ]);
+    expect(forms[1]!.intro).toMatch(/Made-up form/);
     expect(forms[1]!.responses[0]!.entries).toEqual([
       { key: "name", label: "Your name", value: "Rosa Diaz" },
       { key: "email", label: "Email", value: "Rosa@X.test" },
@@ -208,6 +209,52 @@ describe("adminFormResponses", () => {
     expect(responseEntries([{ key: "a", type: "short", label: "A" }], { a: "x", gone: "y" })).toEqual([
       { key: "a", label: "A", value: "x" }, { key: "gone", label: "gone", value: "y" },
     ]);
+  });
+});
+
+describe("saveAdminForm", () => {
+  const admin = () => ({ db, actor: ADMIN });
+  const base = {
+    name: "Coffee chat", slug: "coffee-chat", intro: "Say hello.", thanks: "Thanks!",
+    closed_message: "Full for now.", open: true, one_per_email: true,
+    questions: [
+      { key: "name", type: "short" as const, label: "Your name", required: true },
+      { key: "email", type: "email" as const, label: "Email", required: true },
+    ],
+  };
+
+  it("is admin-only", () => {
+    expect(() => saveAdminForm(ctx(), base)).toThrow(/sign in/i);
+  });
+
+  it("creates a form with a minted id and serves it at /f/<slug>", () => {
+    const { id } = saveAdminForm(admin(), base);
+    expect(id).toMatch(/^[a-z0-9]{8}$/);
+    expect(openForm(ctx(), { slug: "coffee-chat" })).toMatchObject({
+      name: "Coffee chat", intro: "Say hello.", thanks: "Thanks!", closed: null, questions: base.questions,
+    });
+    expect(db.prepare("select version, open, one_per_email from custom_forms where id = ?").get(id))
+      .toEqual({ version: 1, open: 1, one_per_email: 1 });
+  });
+
+  it("edits a form, bumps version, and keeps the old slug redirecting", async () => {
+    const { id } = saveAdminForm(admin(), base);
+    await send("coffee-chat", { answers: { name: "Ada", email: "ada@x.test" } });
+    saveAdminForm(admin(), {
+      ...base, id, slug: "coffee-rsvp", name: "Coffee RSVP",
+      questions: [...base.questions, { key: "note", type: "paragraph", label: "Note" }],
+    });
+    expect(openForm(ctx(), { slug: "coffee-rsvp" })).toMatchObject({ name: "Coffee RSVP", moved: false, questions: expect.arrayContaining([{ key: "note", type: "paragraph", label: "Note", required: false }]) });
+    expect(openForm(ctx(), { slug: "coffee-chat" })).toMatchObject({ slug: "coffee-rsvp", moved: true });
+    expect(db.prepare("select version from custom_forms where id = ?").get(id)).toEqual({ version: 2 });
+    expect(adminFormResponses(admin()).find((f) => f.id === id)?.total).toBe(1);
+  });
+
+  it("refuses a bad slug, a taken slug and questions checkQuestions would refuse", () => {
+    expect(() => saveAdminForm(admin(), { ...base, slug: "Bad" })).toThrow(/Slug/);
+    expect(() => saveAdminForm(admin(), { ...base, slug: "salon-rsvp" })).toThrow(/already taken/i);
+    expect(() => saveAdminForm(admin(), { ...base, slug: "ok-form", questions: [{ key: "a", type: "file", label: "x" }] as never })).toThrow(/unknown type/);
+    expect(() => saveAdminForm(admin(), { ...base, id: "nope0001", slug: "ok-form" })).toThrow(/Invalid form/);
   });
 });
 

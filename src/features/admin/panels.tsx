@@ -32,7 +32,9 @@ import {
 } from "@/features/member-links/queries";
 import { reviewEntries } from "@/features/member-links/schema";
 import { spotlightEntries } from "@/features/member-links/spotlight";
-import { adminFormResponsesQuery, useDownloadFormCsv, useSetFormOpen, type AdminForm } from "@/features/forms/queries";
+import { FormEditor } from "@/features/forms/FormEditor";
+import { draftFromQuestions, questionsFromDraft, starterQuestions, type FormEditorValues } from "@/features/forms/form-draft";
+import { adminFormResponsesQuery, useDownloadFormCsv, useSaveAdminForm, useSetFormOpen, type AdminForm } from "@/features/forms/queries";
 
 const errorMessage = (error: unknown) =>
   (error as { message?: string } | null)?.message || "Something went wrong. Please try again.";
@@ -850,29 +852,73 @@ export function FormResponsesPanel() {
   return (
     <Card id="forms" title="Form responses" subtitle={forms.data ? `${total} answers · ${list.length} forms at /f/…` : "Answers to the forms at /f/…"}>
       <QueryGate query={forms} what="form responses">
-        {list.length === 0 ? <Empty>No forms yet.</Empty> : list.map((f) => <FormRow key={f.id} form={f} />)}
+        <AddCustomForm />
+        {list.length === 0 ? <Empty>No forms yet. Add one above to publish at /f/…</Empty> : list.map((f) => <FormRow key={f.id} form={f} />)}
       </QueryGate>
     </Card>
+  );
+}
+
+function formEditorPayload(values: FormEditorValues, id?: string) {
+  return {
+    ...(id ? { id } : {}),
+    name: values.name, slug: values.slug.trim(), intro: values.intro, thanks: values.thanks,
+    closed_message: values.closed_message, open: values.open, one_per_email: values.one_per_email,
+    questions: questionsFromDraft(values.questions),
+  };
+}
+
+function AddCustomForm() {
+  const save = useSaveAdminForm();
+  const [formKey, setFormKey] = React.useState(0);
+  const initial: FormEditorValues = {
+    name: "", slug: "", intro: "", thanks: "", closed_message: "", open: true, one_per_email: false,
+    questions: starterQuestions(),
+  };
+  return (
+    <div key={formKey} className={subpanel}>
+      <FormEditor
+        idPrefix="form-new"
+        title="Add a form"
+        initial={initial}
+        submitLabel="Publish form"
+        busy={save.isPending}
+        error={save.isError ? errorMessage(save.error) : null}
+        onSubmit={(values) => {
+          save.mutate(formEditorPayload(values), {
+            onSuccess: () => { save.reset(); setFormKey((k) => k + 1); },
+          });
+        }}
+      />
+    </div>
   );
 }
 
 function FormRow({ form: f }: { form: AdminForm }) {
   const setOpen = useSetFormOpen();
   const csv = useDownloadFormCsv();
+  const save = useSaveAdminForm();
   const [message, setMessage] = React.useState(f.closed_message);
+  const [editing, setEditing] = React.useState(false);
   React.useEffect(() => { setMessage(f.closed_message); }, [f.closed_message]);
   const shown = f.total > f.responses.length ? ` · newest ${f.responses.length} shown` : "";
   const newest = f.newest_at ? ` · newest ${formatDate(f.newest_at)}` : "";
-  const busy = setOpen.isPending || csv.isPending;
+  const busy = setOpen.isPending || csv.isPending || save.isPending;
   const closeForm = () => {
     if (!window.confirm(`Close “${f.name}”? Visitors will see the closed message instead of the form.`)) return;
     setOpen.mutate({ id: f.id, open: false, message });
+  };
+  const editInitial: FormEditorValues = {
+    name: f.name, slug: f.slug, intro: f.intro, thanks: f.thanks, closed_message: f.closed_message,
+    open: f.open, one_per_email: f.one_per_email, questions: draftFromQuestions(f.questions),
   };
   return (
     <Item headingId={`form-${f.id}`} title={f.name} status={f.open ? "open" : "closed"}
       details={<p className={meta}>
         <a className={cn("underline", ring)} href={`/f/${f.slug}`}>/f/{f.slug}</a>
+        {" · "}v{f.version}
         {" · "}{f.total === 1 ? "1 answer" : `${f.total} answers`}{newest}{shown}
+        {f.one_per_email ? " · one per email" : ""}
       </p>}>
       <div className="flex flex-col gap-3 rounded-md bg-app-sunken p-3.5">
         <Field id={`form-closed-${f.id}`} label="Closed message" hint="Shown on /f/… when the form is closed (up to 1,000 characters).">
@@ -890,6 +936,11 @@ function FormRow({ form: f }: { form: AdminForm }) {
                   aria-label={`Update closed message for ${f.name}`}
                   onClick={() => setOpen.mutate({ id: f.id, open: false, message })}>Update closed message</button>
               </>}
+          <button type="button" className={secondaryButton} disabled={busy}
+            aria-label={editing ? `Cancel editing ${f.name}` : `Edit ${f.name}`}
+            onClick={() => { setEditing((on) => !on); save.reset(); }}>
+            {editing ? "Cancel edit" : "Edit form"}
+          </button>
           {f.total > 0 && (
             <button type="button" className={secondaryButton} disabled={busy}
               aria-label={`Download CSV of ${f.name}`} onClick={() => csv.mutate(f.id)}>
@@ -900,6 +951,25 @@ function FormRow({ form: f }: { form: AdminForm }) {
         <MutationError mutation={setOpen} />
         <MutationError mutation={csv} />
       </div>
+      {editing && (
+        <div className="rounded-md bg-app-sunken p-3.5 sm:p-5">
+          <FormEditor
+            key={`${f.id}-v${f.version}`}
+            idPrefix={`form-edit-${f.id}`}
+            title={`Edit ${f.name}`}
+            initial={editInitial}
+            submitLabel="Save form"
+            busy={save.isPending}
+            error={save.isError ? errorMessage(save.error) : null}
+            onCancel={() => { setEditing(false); save.reset(); }}
+            onSubmit={(values) => {
+              save.mutate(formEditorPayload(values, f.id), {
+                onSuccess: () => { setEditing(false); save.reset(); },
+              });
+            }}
+          />
+        </div>
+      )}
       {f.responses.map((r) => (
         <details key={r.id} className="group rounded-md bg-app-sunken">
           <summary className={cn("flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-md px-3.5 text-sm font-medium text-ink [&::-webkit-details-marker]:hidden", ring)}>

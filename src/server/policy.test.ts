@@ -22,7 +22,7 @@ import {
 } from "@/features/admin/admin.server";
 import { adminReviews, markReviewDone, mintReviewLink, openReview, reviewLinkStates, revokeReviewLink, submitReview } from "@/features/member-links/member-links.server";
 import { adminSpotlights, openSpotlight, submitSpotlight } from "@/features/member-links/spotlight.server";
-import { adminFormResponses, formResponsesCsv, openForm, setFormOpen, submitResponse } from "@/features/forms/forms.server";
+import { adminFormResponses, formResponsesCsv, openForm, saveAdminForm, setFormOpen, submitResponse } from "@/features/forms/forms.server";
 import { saveForm } from "@/features/forms/store";
 import { DEMO_FORMS } from "@/features/forms/fixtures";
 import { TINY } from "@/test/images";
@@ -609,17 +609,24 @@ describe("custom forms", () => {
     expect(get("select form_id, form_version, email from custom_form_responses where email = 'sly-form@x.test'"))
       .toEqual({ form_id: "demo0001", form_version: 1, email: "sly-form@x.test" });
   });
-  it.each([["anon", null], ["pending member", C], ["approved member", B]])("%s cannot read form answers, open/close or download CSV", (_who, who) => {
+  it.each([["anon", null], ["pending member", C], ["approved member", B]])("%s cannot read form answers, open/close, edit or download CSV", (_who, who) => {
     throwsAccess(() => adminFormResponses(as(who)));
     throwsAccess(() => setFormOpen(as(who), { id: "demo0001", open: false }));
+    throwsAccess(() => saveAdminForm(as(who), { name: "X", slug: "x-form", questions: [{ key: "a", type: "short", label: "A" }] }));
     throwsAccess(() => formResponsesCsv(as(who), { id: "demo0001" }));
   });
-  it("admin reads every answer, may close a form and download its CSV", () => {
+  it("admin reads every answer, may close a form, edit it and download its CSV", () => {
     expect(adminFormResponses(as(A)).find((f) => f.slug === "salon-rsvp")!.total).toBe(2);
     setFormOpen(as(A), { id: "demo0001", open: false, message: "Closed by admin." });
     expect(openForm(anon(), { slug: "salon-rsvp" })!.closed).toBe("Closed by admin.");
     setFormOpen(as(A), { id: "demo0001", open: true });
     expect(formResponsesCsv(as(A), { id: "demo0001" }).csv).toContain("Received (UTC)");
+    const { id } = saveAdminForm(as(A), {
+      name: "Policy form", slug: "policy-form", open: true,
+      questions: [{ key: "note", type: "paragraph", label: "Note", required: true }],
+    });
+    expect(openForm(anon(), { slug: "policy-form" })!.questions).toHaveLength(1);
+    expect(id).toMatch(/^[a-z0-9]{8}$/);
   });
 });
 

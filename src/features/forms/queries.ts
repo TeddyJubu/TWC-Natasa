@@ -1,11 +1,12 @@
-// Custom forms on the client: the admin's answers list, open/close and CSV (requireAdmin on the server), and the
-// public POST.
+// Custom forms on the client: the admin's answers list, open/close, create/edit and CSV (requireAdmin on the
+// server), and the public POST.
 import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 import { postApi } from "@/app/api";
-import { adminFormResponsesFn, formResponsesCsvFn, setFormOpenFn } from "./fns";
+import { adminFormResponsesFn, formResponsesCsvFn, saveAdminFormFn, setFormOpenFn, type SaveAdminFormInput } from "./fns";
 import type { Answers } from "./schema";
 
 export type { AdminForm, AdminFormResponse, PublicForm } from "./forms.server";
+export type { SaveAdminFormInput };
 
 /** Every form with its answer count and newest answers. */
 export const adminFormResponsesQuery = queryOptions({ queryKey: ["admin", "form-responses"], queryFn: () => adminFormResponsesFn() });
@@ -16,6 +17,14 @@ export function useSetFormOpen() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: FormOpenInput) => setFormOpenFn({ data }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "form-responses"] }),
+  });
+}
+
+export function useSaveAdminForm() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: SaveAdminFormInput) => saveAdminFormFn({ data }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "form-responses"] }),
   });
 }
