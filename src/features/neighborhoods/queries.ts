@@ -1,4 +1,4 @@
-import { queryOptions, useQuery } from "@tanstack/react-query";
+import { queryOptions, useQuery, type QueryClient } from "@tanstack/react-query";
 import { neighborhoodsFn } from "./fns";
 
 /** Inactive rows stay in the list so cards that still use one keep its color and logo; pickers hide them (pickerNames). */
@@ -25,3 +25,7 @@ export const neighborhoodsQuery = queryOptions({
 });
 
 export const useNeighborhoods = () => useQuery(neighborhoodsQuery);
+
+/** For route loaders: the current list (fetched when stale), or the seed if the fetch fails — like the query. */
+export const fetchNeighborhoods = (queryClient: QueryClient): Promise<Neighborhood[]> =>
+  queryClient.fetchQuery(neighborhoodsQuery).catch(() => queryClient.getQueryData(neighborhoodsQuery.queryKey) ?? NEIGHBORHOOD_SEED);
