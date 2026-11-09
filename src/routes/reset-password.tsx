@@ -1,7 +1,9 @@
 import * as React from "react";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Badge, Button, Container, FormField, Heading, ImageTrail, Input, Section, Text } from "@/index";
+import { cn } from "@/index";
 import { getAuthClient } from "@/app/auth-client";
+import { AuthFrame, authAlert, authCard, authH } from "@/app/auth-ui";
+import { Icon } from "@/app/layout/twc";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
@@ -18,6 +20,7 @@ export const Route = createFileRoute("/reset-password")({
 });
 
 type Status = "checking" | "ready" | "invalid" | "expired";
+const SAVE_FAILED = "We couldn’t save your password. Please try again.";
 
 function ResetPassword() {
   const navigate = useNavigate();
@@ -43,37 +46,48 @@ function ResetPassword() {
     // Sessions are revoked on reset, so she signs in with the new password.
     if (!error) navigate({ to: "/auth" });
     else if (error.code === "INVALID_TOKEN") setStatus("expired");
-    else setError(error.message ?? "We couldn’t save your password. Please try again.");
+    else setError(error.code?.startsWith("PASSWORD_TOO") && error.message ? error.message : SAVE_FAILED); // the rule, or one safe line
   }
 
+  const bad = status === "invalid" || status === "expired";
   return (
-    <main id="main" tabIndex={-1} className="outline-none">
-    <Section className="min-h-screen">
-      <Container width="narrow" className="flex flex-col items-start gap-8">
-        <Badge>Account</Badge>
-        <Heading as="h1">Choose a New Password</Heading>
-        {status === "checking" && <p role="status" className="text-sm text-ink-muted">Checking your reset link…</p>}
-        {(status === "invalid" || status === "expired") && (
-          <div role="alert" className="flex max-w-md flex-col items-start gap-4">
-            <Text tone="muted">
-              {status === "expired"
-                ? "This reset link has expired or was already used."
-                : "This link isn’t valid for resetting a password. Open the newest link from your email, or ask for a fresh one."}
-            </Text>
-            <Link to="/auth" search={{ mode: "forgot" }} className="text-sm underline underline-offset-4">Request a new link</Link>
-          </div>
-        )}
-        {status === "ready" && (
-          <form onSubmit={submit} className="flex w-full max-w-md flex-col gap-8">
-            <FormField label="New password" htmlFor="password" error={error ?? undefined}>
-              <Input name="password" type="password" minLength={8} required autoComplete="new-password" />
-            </FormField>
-            <Button type="submit" variant="ink" state={busy ? "loading" : "idle"}>Save password</Button>
-          </form>
-        )}
-      </Container>
-    </Section>
-      <ImageTrail />
-    </main>
+    <AuthFrame>
+      <div className="twc-wrap flex justify-center">
+        <div className={cn(authCard, "max-w-[480px]")}>
+          <span className="twc-eyebrow">Account</span>
+          <h1 className={cn(authH, "-mt-1.5")}>Choose a new password.</h1>
+          {status === "checking" && <p role="status" className="text-sb-muted">Checking your reset link…</p>}
+          {bad && (
+            <>
+              <p role="alert" className={authAlert}>
+                {status === "expired"
+                  ? "This reset link has expired or was already used."
+                  : "This link isn’t valid for resetting a password. Open the newest link from your email, or ask for a fresh one."}
+              </p>
+              <Link to="/auth" search={{ mode: "forgot" }} className="twc-btn twc-btn--outline w-full">
+                Request a new link <Icon name="arrow" className="twc-arrow" />
+              </Link>
+            </>
+          )}
+          {status === "ready" && (
+            <>
+              <p className="text-sb-muted">Set a new password for your member account.</p>
+              <form onSubmit={submit} className="flex flex-col gap-[18px]">
+                <div className="twc-field">
+                  <label htmlFor="password">New password</label>
+                  <input id="password" name="password" type="password" minLength={8} required autoComplete="new-password" className="twc-input"
+                    aria-invalid={error ? true : undefined} aria-describedby={cn("password-hint", error && "password-error")} />
+                  <span id="password-hint" className="twc-hint">At least 8 characters.</span>
+                  {error && <p id="password-error" role="alert" className="twc-error">{error}</p>}
+                </div>
+                <button type="submit" disabled={busy} aria-busy={busy || undefined} className="twc-btn mt-1 w-full">
+                  Save password <Icon name="arrow" className="twc-arrow" />
+                </button>
+              </form>
+            </>
+          )}
+        </div>
+      </div>
+    </AuthFrame>
   );
 }

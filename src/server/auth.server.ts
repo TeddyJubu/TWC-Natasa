@@ -15,6 +15,15 @@ ${url}
 If you didn’t sign up, you can ignore this email.
 `;
 
+// Every confirmation link lands on /verified, whichever flow sent it (sign-up, an unverified sign-in, a resend):
+// the sign-in call can't carry a callbackURL, since Better Auth would redirect a successful sign-in there too.
+// Better Auth appends ?error=TOKEN_EXPIRED|INVALID_TOKEN|… to it when the link fails.
+function toVerifiedPage(url: string) {
+  const link = new URL(url);
+  link.searchParams.set("callbackURL", "/verified");
+  return link.toString();
+}
+
 const resetText = (url: string) => `Someone asked to reset the password for your Women’s Collective account.
 
 Choose a new password here (the link expires in an hour):
@@ -57,7 +66,7 @@ export function createAuth(db: DB) {
       autoSignInAfterVerification: true,
       // Verifying flips user.emailVerified; the user_verified trigger (0001_init.sql) then links applications.
       sendVerificationEmail: async ({ user, url }) => {
-        void sendEmail({ to: user.email, subject: "Confirm your email", text: verificationText(url) });
+        void sendEmail({ to: user.email, subject: "Confirm your email", text: verificationText(toVerifiedPage(url)) });
       },
     },
     socialProviders: googleId && googleSecret ? { google: { clientId: googleId, clientSecret: googleSecret } } : {},

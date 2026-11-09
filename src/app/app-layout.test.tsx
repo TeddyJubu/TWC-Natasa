@@ -172,9 +172,15 @@ describe("AppPage", () => {
   });
 });
 
-describe("live pages without AppPage keep the trail", () => {
-  it.each(["src/routes/auth.tsx", "src/routes/reset-password.tsx"])("%s mounts ImageTrail", (file) => {
-    expect(readFileSync(resolve(process.cwd(), file), "utf8")).toMatch(/<ImageTrail \/>/);
+describe("account-access pages use the site chrome", () => {
+  // AuthFrame is AppPage → AppNav → main → AppFooter, so they get the skip link and the trail from AppPage.
+  it("AuthFrame wraps AppPage, AppNav and AppFooter", () => {
+    expect(readFileSync(resolve(process.cwd(), "src/app/auth-ui.tsx"), "utf8")).toMatch(/<AppPage>\s*<AppNav \/>[\s\S]*<AppFooter \/>\s*<\/AppPage>/);
+  });
+  it.each(["src/routes/auth.tsx", "src/routes/reset-password.tsx", "src/routes/verified.tsx"])("%s renders in AuthFrame, not its own trail", (file) => {
+    const source = readFileSync(resolve(process.cwd(), file), "utf8");
+    expect(source).toMatch(/<AuthFrame>/);
+    expect(source).not.toMatch(/\bImageTrail\b/);
   });
 });
 
