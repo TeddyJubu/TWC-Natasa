@@ -133,6 +133,34 @@ describe("admin activity (0007)", () => {
   });
 });
 
+describe("undo-decline (CRM-069 / CRM-174)", () => {
+  it("puts a declined application back to pending, logs it, and restores a linked profile", () => {
+    const uid = "00000000-0000-4000-8000-000000000099";
+    db.prepare(`insert into "user" (id, name, email, emailVerified, createdAt, updatedAt) values (?, 'Dee', 'dee@x.test', 1, datetime('now'), datetime('now'))`).run(uid);
+    const appId = (db.prepare("insert into applications (user_id, email, full_name, neighborhood, answers) values (?, 'dee@x.test', 'Dee', '', '{}') returning id").get(uid) as { id: string }).id;
+    reviewApplication(admin(), { id: appId, status: "declined" });
+    expect((db.prepare("select status from profiles where id = ?").get(uid) as { status: string }).status).toBe("declined");
+    reviewApplication(admin(), { id: appId, status: "pending" });
+    expect((db.prepare("select status from applications where id = ?").get(appId) as { status: string }).status).toBe("pending");
+    expect((db.prepare("select status from profiles where id = ?").get(uid) as { status: string }).status).toBe("pending");
+    expect(adminActions(admin())[0]).toMatchObject({ action: "pending", application_id: appId, actor_name: "Ada Admin", subject_name: "Dee" });
+    db.prepare("delete from applications where id = ?").run(appId);
+    db.prepare(`delete from "user" where id = ?`).run(uid);
+  });
+
+  it("undoing a member decline restores her newest application too", () => {
+    const uid = "00000000-0000-4000-8000-000000000098";
+    db.prepare(`insert into "user" (id, name, email, emailVerified, createdAt, updatedAt) values (?, 'Mo', 'mo@x.test', 1, datetime('now'), datetime('now'))`).run(uid);
+    const appId = (db.prepare("insert into applications (user_id, email, full_name, neighborhood, answers) values (?, 'mo@x.test', 'Mo', '', '{}') returning id").get(uid) as { id: string }).id;
+    setMemberStatus(admin(), { id: uid, status: "declined" });
+    setMemberStatus(admin(), { id: uid, status: "pending" });
+    expect((db.prepare("select status from profiles where id = ?").get(uid) as { status: string }).status).toBe("pending");
+    expect((db.prepare("select status from applications where id = ?").get(appId) as { status: string }).status).toBe("pending");
+    db.prepare("delete from applications where id = ?").run(appId);
+    db.prepare(`delete from "user" where id = ?`).run(uid);
+  });
+});
+
 describe("duplicates and member summary (CRM-072/073, CRM-038/060)", () => {
   it("flag pending applications by a member's or an imported member's email, and repeats; members get newsletter + application count", () => {
     db.prepare("update profiles set status = 'approved' where id = ?").run(ADMIN);

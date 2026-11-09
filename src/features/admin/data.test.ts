@@ -72,6 +72,14 @@ describe("admin mutations", () => {
     expect(emailApproval).not.toHaveBeenCalled();
   });
 
+  it("undo-decline (back to pending) sends no email", async () => {
+    const { qc } = setup();
+    fake.results = [null];
+    expect(await new MutationObserver(qc, reviewApplicationMutation(qc)).mutate({ id: "a1", status: "pending" })).toBeNull();
+    expect(fake.calls).toEqual([["reviewApplicationFn", { id: "a1", status: "pending" }]]);
+    expect(emailApproval).not.toHaveBeenCalled();
+  });
+
   it("a member status change saves it and refreshes members, applications, directory, public cards and intros", async () => {
     const { qc, spy } = setup();
     fake.results = [null];

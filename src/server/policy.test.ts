@@ -394,10 +394,11 @@ describe("access rules (ported from the RLS checks)", () => {
   });
   it("admin declining a profile leaves her older application alone", () =>
     expect(app("old-22@x.test")).toMatchObject({ status: "pending", reviewed_at: null }));
-  // Only approve and decline sync: putting a profile back to pending isn't a review.
-  it("admin resetting a profile to pending leaves her application's decision", () => {
+  // Undo-decline restores the newest application too (CRM-069); older ones stay alone.
+  it("admin undoing a decline puts her newest application back to pending", () => {
     setMemberStatus(as(A), { id: id("22"), status: "pending" });
-    expect(app("new-22@x.test").status).toBe("declined");
+    expect(app("new-22@x.test")).toMatchObject({ status: "pending", reviewed_by: A });
+    expect(app("old-22@x.test")).toMatchObject({ status: "pending", reviewed_at: null });
   });
   it("admin approving an older application approves the profile", () => {
     reviewApplication(as(A), { id: app("old-23@x.test").id, status: "approved" });

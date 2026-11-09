@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { isRedirect } from "@tanstack/react-router";
 import { renderWithQueries } from "@/test/dom";
@@ -80,6 +80,11 @@ function renderAdmin(over: Partial<Record<AdminKey, unknown>> = {}, extra: [unkn
 const card = (name: string) => screen.getByRole("region", { name });
 
 describe("/admin", () => {
+  // Decisions (approve / decline / undo / booking confirm) ask window.confirm first (CRM-071).
+  let confirm: ReturnType<typeof vi.spyOn>;
+  beforeEach(() => { confirm = vi.spyOn(window, "confirm").mockReturnValue(true); });
+  afterEach(() => { confirm.mockRestore(); });
+
   describe("shell", () => {
     it("is one main landmark with the Admin h1 in the top bar, after the skip link", () => {
       const { container } = renderAdmin();
@@ -327,6 +332,22 @@ describe("/admin", () => {
       expect(within(row).queryByRole("status")).toBeNull();
     });
 
+    it("asks before approving, and offers Undo decline on a declined application", async () => {
+      fake.results = [[application("a1", "Pia Pending", { status: "declined", reviewed_at: "2026-11-08T12:00:00Z" })]];
+      renderAdmin({ applications: FETCH });
+      const row = await within(card("Applications")).findByRole("article");
+      expect(within(row).getByRole("button", { name: /undo decline/i })).toBeTruthy();
+      confirm.mockReturnValueOnce(false);
+      fireEvent.click(within(row).getByRole("button", { name: /undo decline/i }));
+      expect(fake.calls.some((c) => c[0] === "reviewApplicationFn")).toBe(false);
+      expect(confirm).toHaveBeenLastCalledWith("Undo decline for Pia Pending? She’ll go back to pending.");
+      fake.results = [null, [application("a1", "Pia Pending", { status: "pending" })], members];
+      confirm.mockReturnValueOnce(true);
+      fireEvent.click(within(row).getByRole("button", { name: /undo decline/i }));
+      await waitFor(() => expect(fake.calls).toContainEqual(["reviewApplicationFn", { id: "a1", status: "pending" }]));
+      expect(emailApproval).not.toHaveBeenCalled();
+    });
+
     it("shows a failed review as an alert and re-enables the buttons", async () => {
       fake.results = [[application("a1", "Pia Pending")]];
       renderAdmin({ applications: FETCH });
@@ -479,10 +500,20 @@ describe("/admin", () => {
     expect(row.textContent).toMatch(/lena@x\.test/);
     fake.results = [null];
     fireEvent.click(within(row).getByRole("button", { name: /approve/i }));
+    expect(confirm).toHaveBeenCalledWith("Approve Lena Ortiz?");
     await waitFor(() => expect(fake.calls[0]).toEqual(["setMemberStatusFn", { id: "u2", status: "approved" }]));
     // No application on file: a quiet notice, no email call.
     expect((await within(row).findByRole("status")).textContent).toBe("Approved — email not sent (no application on file)");
     expect(emailApproval).not.toHaveBeenCalled();
+  });
+
+  it("members: Undo decline is offered only when declined", () => {
+    renderAdmin({ members: [
+      member("u2", "Lena Ortiz", { status: "declined", catalogue_number: null }),
+      member("u3", "Pat Pending", { status: "pending", catalogue_number: null }),
+    ] });
+    expect(within(screen.getByRole("row", { name: /Lena Ortiz/ })).getByRole("button", { name: /undo decline/i })).toBeTruthy();
+    expect(within(screen.getByRole("row", { name: /Pat Pending/ })).queryByRole("button", { name: /undo decline/i })).toBeNull();
   });
 
   it("members: approve emails the member's newest application", async () => {
@@ -621,8 +652,7 @@ describe("/admin", () => {
     });
 
     it("deletes a gathering only after a confirmation that names its saved seats", async () => {
-      const confirm = vi.spyOn(window, "confirm").mockReturnValueOnce(false).mockReturnValueOnce(true);
-      restore.push(() => confirm.mockRestore());
+      confirm.mockReturnValueOnce(false).mockReturnValueOnce(true);
       renderAdmin({ events: [supper] });
       fireEvent.click(within(gatherings()).getByRole("button", { name: "Edit Founders Supper Club" }));
       const remove = within(gatherings()).getByRole("button", { name: "Delete gathering" });
@@ -637,8 +667,7 @@ describe("/admin", () => {
     });
 
     it("says one seat in the singular", () => {
-      const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
-      restore.push(() => confirm.mockRestore());
+      confirm.mockReturnValue(false);
       renderAdmin({ events: [gathering("e2", "Coffee", { guests: [guest("u1", "Rosa Diaz")] })] });
       fireEvent.click(within(gatherings()).getByRole("button", { name: "Edit Coffee" }));
       fireEvent.click(within(gatherings()).getByRole("button", { name: "Delete gathering" }));

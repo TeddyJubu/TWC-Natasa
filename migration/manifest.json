@@ -256,8 +256,9 @@
       "source": "crm.md:Application native status",
       "acceptance": "Application native status: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin#members"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "Applications keep three stored statuses only (pending/approved/declined; CHECK on applications.status). Import maps archived/rejected/auto_rejected \u2192 declined and approved/approved_member \u2192 approved (applicationStatus in src/server/legacy-import.ts; legacy-import.test.ts). check_duplicate is a computed chip (CRM-072/073, phase 3), never stored. Merged rows are skipped on import, not shown as archived."
     },
     {
       "id": "CRM-031",
@@ -574,32 +575,37 @@
       "source": "crm.md:What approve does",
       "acceptance": "What approve does: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "Approve on Applications (reviewApplication) or All members (setMemberStatus) marks approved, records reviewed_by/admin_actions actor, syncs the linked profile or newest application (applications_review trigger / 0004), idempotent when already that status. Welcome email on approve only. No separate member_id=record_id file: profiles come from Better Auth at sign-up; an approved application without a login is claimed on verified email match (0004). Tests: policy.test.ts, admin.server.test.ts, admin-route.test.tsx."
     },
     {
       "id": "CRM-069",
       "source": "crm.md:What decline / undo do",
       "acceptance": "What decline / undo do: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin#members"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "Decline and Undo decline \u2192 pending on Applications and All members (reviewApplication / setMemberStatus; both sync the newest application). Actor logged in admin_actions (0007). No Hermes decline_undo JSON blob or auto_rejected stamp \u2014 admin_actions + status transitions only (phase 4 brief). Undo is refused implicitly for non-declined rows (button only when declined). Tests: admin.server.test.ts undo-decline, policy.test.ts, admin-route.test.tsx."
     },
     {
       "id": "CRM-070",
       "source": "crm.md:Application statuses by hand",
       "acceptance": "Application statuses by hand: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "three-statuses-only",
+      "evidence": "Retired: hand-set in_progress and archived. The app uses pending/approved/declined only; check_duplicate is computed (CRM-072), not a hand status; import maps archived \u2192 declined (CRM-030). No day-to-day need for a fourth status column on /admin Applications."
     },
     {
       "id": "CRM-071",
       "source": "crm.md:Decision confirmation in the UI",
       "acceptance": "Decision confirmation in the UI: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "Approve / Decline / Undo decline buttons on each application and member row; window.confirm before every decision (Decisions in panels.tsx). Undo decline only when status is declined. Tests: admin-route.test.tsx (confirm copy + cancel does nothing)."
     },
     {
       "id": "CRM-072",
@@ -1446,8 +1452,9 @@
       "source": "crm.md:FIX-IN-REBUILD \u2014 decline exists only in the CRM internal API",
       "acceptance": "FIX-IN-REBUILD \u2014 decline exists only in the CRM internal API: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "FIX-IN-REBUILD: decline and undo-decline live on /admin Applications and All members (not a CRM-only internal API). Same requireAdmin domain functions as approve; actor on admin_actions. BRIEF 12."
     },
     {
       "id": "CRM-175",
