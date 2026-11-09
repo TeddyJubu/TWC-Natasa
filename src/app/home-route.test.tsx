@@ -76,6 +76,15 @@ describe("/ (home) structure", () => {
     expect(within(mission as HTMLElement).getByRole("link", { name: /Introduce yourself/ }).getAttribute("href")).toBe("/join");
   });
 
+  it("North Brooklyn follows the hero: labelled map, four neighbors, link to /neighborhoods", () => {
+    renderWithQueries(<Page />, [[["public-profiles"], []]]);
+    const section = screen.getByRole("heading", { name: "Our neighbors in North Brooklyn.", level: 2 }).closest("section")!;
+    expect(section.previousElementSibling).toBe(screen.getByRole("heading", { level: 1 }).closest("section"));
+    expect(within(section).getByRole("img").getAttribute("aria-label")).toMatch(/Newtown Creek/);
+    expect(within(section).getAllByRole("listitem").map((li) => li.lastElementChild!.textContent)).toEqual(["Greenpoint", "Williamsburg", "East Williamsburg", "Bushwick"]);
+    expect(within(section).getByRole("link", { name: /Explore the neighborhoods/ }).getAttribute("href")).toBe("/neighborhoods");
+  });
+
   it("the neighborhood colour row comes from the neighborhoods data, active ones only", () => {
     const hoods = [...NEIGHBORHOOD_SEED.slice(0, 2), { ...NEIGHBORHOOD_SEED[2], active: false }, { slug: "woodside", name: "Woodside", color: "#123456", logoUrl: null, active: true }];
     renderWithQueries(<Page />, [[["public-profiles"], []], [["neighborhoods"], hoods]]);

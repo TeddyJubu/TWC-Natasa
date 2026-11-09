@@ -97,6 +97,7 @@ function HomePage() {
       <AppNav />
       <main id="main" tabIndex={-1} className="outline-none">
         <Hero />
+        <NorthBrooklyn />
         <Ribbons />
         <WhoYoullMeet />
         <MeetTheMembers />
@@ -159,6 +160,74 @@ function Hero() {
           <p aria-hidden className="sb-write mr-4 mt-1 -rotate-6 self-end whitespace-nowrap font-script text-[28px] leading-[27px] text-sb-blue lg:text-4xl lg:leading-[34px] xl:mr-6 xl:mt-0 xl:self-auto" style={delay(1500)}>
             &amp; help someone<br />else shine ↓
           </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// Across Newtown Creek from Long Island City, north to south.
+const NORTH_BROOKLYN = [
+  { name: "Greenpoint", tone: "bg-sb-olive text-sb-paper" },
+  { name: "Williamsburg", tone: "bg-sb-rose text-sb-ink" },
+  { name: "East Williamsburg", tone: "bg-sb-shell text-sb-ink" },
+  { name: "Bushwick", tone: "bg-sb-terracotta text-sb-paper" },
+];
+const tape = "absolute h-7 w-[110px] bg-sb-cream/85 shadow-[0_1px_2px_rgb(31_31_28/0.12)]";
+
+function NorthBrooklyn() {
+  return (
+    <section aria-labelledby="brooklyn-title" className="bg-sb-mustard pb-[72px] pt-16 lg:pb-[104px] lg:pt-[88px]">
+      <div className="twc-wrap grid items-center gap-x-16 gap-y-12 lg:grid-cols-[1.38fr_1fr]">
+        <div className="relative px-3 py-7">
+          <div className="relative -rotate-3 bg-sb-paper p-3.5 pb-[18px] shadow-[0_10px_28px_rgb(31_31_28/0.2)]">
+            <span aria-hidden className={cn(tape, "-top-3 left-[19%] -rotate-6")} />
+            <span aria-hidden className={cn(tape, "-top-2.5 right-[13%] rotate-5")} />
+            <svg viewBox="0 0 640 460" role="img" aria-label="Hand-drawn map: Greenpoint, Williamsburg, East Williamsburg and Bushwick across Newtown Creek from Long Island City, with Nataša’s studio marked in Greenpoint" className="block h-auto w-full">
+              <rect width="640" height="460" className="fill-sb-paper" />
+              <path d="M0 0 L168 0 C178 40 196 80 190 118 C184 160 168 200 178 246 C188 300 218 360 250 460 L0 460 Z" className="fill-sb-mint" />
+              <path d="M184 112 C230 122 280 132 330 128 C380 124 412 108 444 128 C478 150 500 182 540 196 C572 208 610 206 640 214" fill="none" strokeWidth="16" strokeLinecap="round" className="stroke-sb-mint" />
+              <path d="M196 138 C240 146 290 152 330 148 C372 144 410 130 440 148 C470 166 494 196 534 214 C570 230 596 262 606 300 C616 344 604 392 588 430 L420 444 C360 446 300 438 262 420 C238 380 214 330 200 280 C190 236 192 190 196 138 Z" fillOpacity=".55" strokeWidth="2.5" strokeLinejoin="round" className="fill-sb-sun stroke-sb-ink" />
+              <g fill="none" strokeWidth="1.5" strokeDasharray="6 6" opacity=".6" className="stroke-sb-ink">
+                <path d="M196 226 C260 232 330 228 410 214 C440 208 470 200 500 196" />
+                <path d="M330 228 C344 290 352 360 360 442" />
+                <path d="M352 332 C420 330 500 320 600 316" />
+              </g>
+              <g className="fill-sb-ink font-script">
+                <text x="250" y="196" fontSize="28">Greenpoint</text>
+                <text x="216" y="300" fontSize="28">Williamsburg</text>
+                <text x="376" y="276" fontSize="26">East Williamsburg</text>
+                <text x="430" y="392" fontSize="28">Bushwick</text>
+                <text x="250" y="66" fontSize="24" className="fill-sb-blue-ink">Long Island City</text>
+                <text x="24" y="210" fontSize="22" className="fill-sb-blue-ink">East River</text>
+              </g>
+              <circle cx="238" cy="58" r="6" className="fill-lic" />
+              <text x="296" y="176" fontSize="28" className="fill-sb-blue font-script">✶</text>
+            </svg>
+          </div>
+          <p className="absolute -bottom-[26px] -left-1 -rotate-3 font-script text-[22px] leading-[1.15] lg:text-[28px]">✶ Nataša’s studio, Greenpoint</p>
+        </div>
+
+        <div className="flex flex-col gap-5">
+          <p className="font-script text-[32px] leading-[1.1] lg:text-[44px]">just across the creek</p>
+          <h2 id="brooklyn-title" className="motion-scroll-reveal font-display text-[clamp(2.25rem,3.75vw,3.375rem)] leading-[1.09] text-balance">
+            Our neighbors in North Brooklyn.
+          </h2>
+          <p className="motion-scroll-reveal max-w-[420px] font-geist text-[17px] leading-[1.6]">
+            Greenpoint, Williamsburg, East Williamsburg and Bushwick sit across Newtown Creek from Long Island City.
+          </p>
+          <ul className="grid grid-cols-2 gap-2">
+            {NORTH_BROOKLYN.map((n, i) => (
+              <li key={n.name} className={cn("flex min-h-[132px] flex-col justify-between gap-2 p-5", n.tone)}>
+                {/* Decorative index, hidden from screen readers: paper on olive/terracotta is 4.4:1, under AA for 13px text. */}
+                <span aria-hidden className="font-fragment text-[13px] leading-[19.5px] tracking-[1px] opacity-80">{String(i + 1).padStart(2, "0")}</span>
+                <span className="font-editorial text-[28px] leading-[1.09] tracking-[0.5px]">{n.name}</span>
+              </li>
+            ))}
+          </ul>
+          <Link to="/neighborhoods" className={cn(pill, "self-start bg-sb-ink px-6 py-3.5 text-[13px] text-sb-paper hover:bg-black lg:text-sm")}>
+            Explore the neighborhoods <Icon name="arrow" className="sb-arrow size-3.5" />
+          </Link>
         </div>
       </div>
     </section>
