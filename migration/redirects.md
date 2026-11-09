@@ -1,0 +1,48 @@
+# Redirect map — old site URLs → new app
+
+Source of truth for the `vps-cutover` workstream (SITE-100, SITE-162, SITE-164). It mirrors `OLD_TO_NEW` in
+`scripts/migration-check.ts`, which the gate reads; change both together.
+
+**Rules**
+
+- Every page is live at two URLs today because of `try_files {path} {path}.html`, so each row needs **both** the tidy path and the `.html` path. External links in emails and PDFs are more likely the `.html` form.
+- One hop, `301`, to `https://new.thewomenscollective.club{new path}`. Nothing chains through another host or another redirect.
+- Query strings are dropped (`?form=…` on the thank-you pages carried nothing the new pages use).
+- Apex `/` is **not** redirected: it stays the coming-soon page (BRIEF decision 1). `/index.html` → `/` (same page, one canonical form).
+- The legacy files are archived on the VPS, never deleted (BRIEF decision 2).
+
+## Pages
+
+| Old path | Old `.html` path | New path | Notes |
+|---|---|---|---|
+| `/about` | `/about.html` | `/about` | |
+| `/contact` | `/contact.html` | `/contact` | |
+| `/directory` | `/directory.html` | `/members` | Vocabulary shift: Directory → Members (SITE-139). |
+| `/events` | `/events.html` | `/gatherings` | Vocabulary shift: Events → Gatherings. |
+| `/fellowship` | `/fellowship.html` | `/fellowship` | Built in this workstream (SITE-006). Western Queens only; no eligibility lists. |
+| `/partnerships` | `/partnerships.html` | `/partnerships` | Built in this workstream (SITE-007). No "current partners" block. |
+| `/editing` | `/editing.html` | `/account` | Editor guide; no equivalent screen yet (SITE-143). `/account` is behind sign-in. |
+| `/privacy` | `/privacy.html` | `/privacy` | |
+| `/terms` | `/terms.html` | `/terms` | |
+| `/code-of-conduct` | `/code-of-conduct.html` | `/code-of-conduct` | |
+| `/message-sent` | `/message-sent.html` | `/contact` | Generic thank-you; the new form confirms inline. |
+| `/thanks-contact` | `/thanks-contact.html` | `/contact` | |
+| `/thanks-newsletter` | `/thanks-newsletter.html` | `/contact` | The new app has no newsletter sign-up page; lands on the nearest working page. |
+| `/subscribed` | `/subscribed.html` | `/contact` | Same as above. |
+| `/thanks-partnership` | `/thanks-partnership.html` | `/partnerships` | The form there confirms inline. |
+| `/404` | `/404.html` | *(retire)* | Served by the app's own not-found page. No redirect; a request for it returns the app's 404. |
+| `/` | `/index.html` | `/` (coming-soon, unchanged) | Only the apex keeps the old file. |
+
+## Application and sign-in URLs
+
+| Old URL | New destination | Notes |
+|---|---|---|
+| `thewomenscollective.club/apply`, `/apply.html` | `https://new.thewomenscollective.club/join` | Today it is two hops (`join.*/join` → `new.*/join`, SITE-107). Point the apex rule straight at `new.*/join`. |
+| `join.thewomenscollective.club/join` | `https://new.thewomenscollective.club/join` | Already one hop (Caddyfile `@joinform`). Keep. |
+| `join.nbwc.site`, `nbwc.site/apply`, `forms.nbwc.site` | `https://new.thewomenscollective.club/join` | Chain them straight to the new app rather than via `join.thewomenscollective.club{uri}`. |
+| `/login(.html)`, `/forgot-password(.html)`, `/set-password(.html)`, `/apply-thank-you(.html)`, `/members/*` (apex) | `/` today (`302`) | `vps-cutover` to decide: keep the `302` to `/`, or send sign-in URLs to `/auth` and `/members/*` to `/members`. Not a page decision, so left unchanged here (SITE-106). |
+
+## Not redirected
+
+- Static assets under `/assets/*`, `/embed.js`, favicons and `robots.txt` stay with the archived site until `vps-cutover` removes them.
+- `members.*` review links keep working until the `members-links` workstream replaces them.
