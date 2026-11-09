@@ -1,0 +1,55 @@
+[
+ {
+  "member_id": "fx-sub-01",
+  "subscriber_id": "fx-sub-01",
+  "legacy_member_id": "fx-sub-01",
+  "full_name": "Olive Reader",
+  "email": "olive.reader@example.com",
+  "source": "beehiiv_newsletter",
+  "record_type": "subscriber",
+  "lifecycle_stage": "subscriber",
+  "application_status": "not_applied",
+  "review_status": "not_started",
+  "migrated_at": "2026-09-01T10:00:00Z"
+ },
+ {
+  "member_id": "fx-sub-02",
+  "subscriber_id": "fx-sub-02",
+  "legacy_member_id": "fx-sub-02",
+  "full_name": "Pia Reader",
+  "email": "pia.reader@example.com",
+  "source": "beehiiv_newsletter",
+  "record_type": "subscriber",
+  "lifecycle_stage": "subscriber",
+  "application_status": "not_applied",
+  "review_status": "not_started",
+  "migrated_at": "2026-09-01T10:00:00Z",
+  "converted_at": "2026-10-01T10:00:00Z"
+ },
+ {
+  "member_id": "fx-sub-03",
+  "subscriber_id": "fx-sub-03",
+  "legacy_member_id": "fx-sub-03",
+  "full_name": "Rae Subscriber",
+  "email": "rae.subscriber@example.com",
+  "source": "beehiiv_newsletter",
+  "record_type": "subscriber",
+  "lifecycle_stage": "subscriber",
+  "application_status": "not_applied",
+  "review_status": "not_started",
+  "migrated_at": "2026-09-01T10:00:00Z"
+ },
+ {
+  "member_id": "fx-sub-bad",
+  "subscriber_id": "fx-sub-bad",
+  "legacy_member_id": "fx-sub-bad",
+  "full_name": "No Email",
+  "email": "",
+  "source": "beehiiv_newsletter",
+  "record_type": "subscriber",
+  "lifecycle_stage": "subscriber",
+  "application_status": "not_applied",
+  "review_status": "not_started",
+  "migrated_at": "2026-09-01T10:00:00Z"
+ }
+]

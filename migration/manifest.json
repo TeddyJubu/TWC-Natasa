@@ -108,8 +108,9 @@
       "source": "crm.md:Mirror cadence",
       "acceptance": "Mirror cadence: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "src/server/legacy-import.test.ts › \"is re-runnable…\" + scripts/import-legacy.ts: one-shot, insert-only import replaces the 5 s JSONL mirror; SQLite is the only store (retired by CRM-024)"
     },
     {
       "id": "CRM-013",
@@ -204,8 +205,9 @@
       "source": "crm.md:Source of truth today = six JSONL files owned by other services",
       "acceptance": "Source of truth today = six JSONL files owned by other services: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
-      "status": "todo",
-      "target": "/admin#members"
+      "status": "built",
+      "target": "/admin#members",
+      "evidence": "src/server/legacy-import.ts + scripts/import-legacy.ts read the JSONL exports once; src/server/legacy-import.test.ts › \"imports the fixtures…\" and \"scales to the real shape: 128 applications, 120 members, 44 subscribers\". review_responses/links → members-links, spotlight_answers → members-links, custom rows → custom-forms (counted as skipped)"
     },
     {
       "id": "CRM-025",
@@ -236,16 +238,18 @@
       "source": "crm.md:Item id schemes",
       "acceptance": "Item id schemes: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
-      "status": "todo",
-      "target": "/admin#members"
+      "status": "built",
+      "target": "/admin#members",
+      "evidence": "applications.legacy_id = app-<record_id> | app-<hash(at|email)[:12]>, newsletter_subscribers.legacy_id = newsletter-<id> (db/migrations/0003_legacy_import.sql); src/server/legacy-import.test.ts › \"keeps both applications from one email (CRM-173) and ids a row with no record_id by hash (CRM-028)\". Contact/partnership ids are not kept (surrogate uuid; de-duplicated on kind+email+time)"
     },
     {
       "id": "CRM-029",
       "source": "crm.md:Application → item",
       "acceptance": "Application → item: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
-      "status": "todo",
-      "target": "/admin#members"
+      "status": "built",
+      "target": "/admin#members",
+      "evidence": "import side only: email lower-cased, name falls back to email, area = neighborhood_city|base_area, answers kept + answers.legacy; src/server/legacy-import.test.ts › \"lowercases the email, keeps the answers, labels the origin (CRM-031)…\". The /admin list rendering stays with admin-inbox"
     },
     {
       "id": "CRM-030",
@@ -260,8 +264,9 @@
       "source": "crm.md:Application origin labels",
       "acceptance": "Application origin labels: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "answers.legacy.origin = Old HeyForm | Imported list | Earlier form | Join form; src/server/legacy-import.test.ts › \"lowercases the email, keeps the answers, labels the origin (CRM-031)…\""
     },
     {
       "id": "CRM-032",
@@ -300,8 +305,9 @@
       "source": "crm.md:Newsletter subscribers",
       "acceptance": "Newsletter subscribers: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "newsletter_subscribers (0003) ← subscribers.jsonl + Beehiiv rows in members.jsonl + newsletter form rows; src/server/legacy-import.test.ts › \"keeps the newsletter list, records consent only where a form recorded it…\"; 44-row scale test"
     },
     {
       "id": "CRM-037",
@@ -1398,8 +1404,9 @@
       "source": "crm.md:FIX-IN-REBUILD — item id collisions",
       "acceptance": "FIX-IN-REBUILD — item id collisions: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "surrogate uuid keys + legacy_id (unique) on applications and newsletter_subscribers; same-second same-email rows both import; src/server/legacy-import.test.ts › \"keeps both applications from one email (CRM-173)…\""
     },
     {
       "id": "CRM-174",
@@ -3294,8 +3301,9 @@
       "source": "backoffice.md:`${STORE}` = `/data/submissions.jsonl`",
       "acceptance": "`${STORE}` = `/data/submissions.jsonl`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
-      "status": "todo",
-      "target": "parity"
+      "status": "built",
+      "target": "parity",
+      "evidence": "readRows/importInbox read the submissions.jsonl record shape (at, form, fields, spam, tombstones skipped OPS-225); src/server/legacy-import.test.ts › \"turns contact and partnership submissions into archived inbox rows; spam, custom forms and tombstones stay out\""
     },
     {
       "id": "OPS-223",
@@ -6364,8 +6372,9 @@
       "source": "site.md:Stored-submission sources of truth",
       "acceptance": "Stored-submission sources of truth: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
-      "status": "todo",
-      "target": "public-site"
+      "status": "built",
+      "target": "public-site",
+      "evidence": "contact/partnership rows → inbox_messages, newsletter rows → newsletter_subscribers, via scripts/import-legacy.ts; src/server/legacy-import.test.ts › \"imports the fixtures and says what it skipped and why\""
     },
     {
       "id": "SITE-070",
