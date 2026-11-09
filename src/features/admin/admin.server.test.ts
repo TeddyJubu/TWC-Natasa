@@ -5,8 +5,9 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { openDb, type DB } from "@/server/db";
 import { mediaFile } from "@/server/media";
 import {
-  addNote, adminActions, adminApplications, adminCsv, adminMembers, adminNeighborhoods, adminNotes, deleteNote, reviewApplication, saveNeighborhoodLogo,
-  setMemberNeighborhood, setMemberStatus,
+  addLoggedAction, addNote, adminActions, adminApplications, adminCsv, adminLoggedActions, adminMembers, adminNeighborhoods,
+  adminNewsletterSubscribers, adminNotes, deleteNote, editLoggedAction, removeLoggedAction, restoreLoggedAction,
+  reviewApplication, saveNeighborhoodLogo, setMemberNeighborhood, setMemberStatus,
 } from "./admin.server";
 import { TINY } from "@/test/images";
 
@@ -158,6 +159,55 @@ describe("undo-decline (CRM-069 / CRM-174)", () => {
     expect((db.prepare("select status from applications where id = ?").get(appId) as { status: string }).status).toBe("pending");
     db.prepare("delete from applications where id = ?").run(appId);
     db.prepare(`delete from "user" where id = ?`).run(uid);
+  });
+});
+
+describe("logged actions (0009 / CRM-057 / CRM-058)", () => {
+  it("belong to one application or member, keep an edit log, soft-remove and restore", () => {
+    db.prepare("update profiles set full_name = 'Ada Admin' where id = ?").run(ADMIN);
+    const appId = (db.prepare("insert into applications (email, full_name, neighborhood, answers) values ('act@x.test', 'Ava', '', '{}') returning id").get() as { id: string }).id;
+    const id = addLoggedAction(admin(), { applicationId: appId, kind: "call", actionDate: "2026-11-01", note: "Intro call" });
+    expect(adminLoggedActions(admin())[0]).toMatchObject({
+      id, application_id: appId, member_id: null, kind: "call", action_date: "2026-11-01", note: "Intro call", removed_at: null, author_name: "Ada Admin",
+    });
+    editLoggedAction(admin(), { id, kind: "meeting", actionDate: "2026-11-02", note: "Coffee" });
+    expect(adminLoggedActions(admin())[0]).toMatchObject({ kind: "meeting", action_date: "2026-11-02", note: "Coffee" });
+    expect(() => editLoggedAction(admin(), { id, kind: "meeting", actionDate: "2026-11-02", note: "Coffee" })).toThrow(/Nothing changed/);
+    removeLoggedAction(admin(), { id });
+    expect(adminLoggedActions(admin())[0].removed_at).toBeTruthy();
+    expect(() => removeLoggedAction(admin(), { id })).toThrow(/Already removed/);
+    expect(() => editLoggedAction(admin(), { id, kind: "call", actionDate: "2026-11-03", note: "x" })).toThrow(/Already removed/);
+    restoreLoggedAction(admin(), { id });
+    expect(adminLoggedActions(admin())[0].removed_at).toBeNull();
+    expect(() => restoreLoggedAction(admin(), { id })).toThrow(/Nothing changed/);
+    const events = db.prepare("select event, kind, action_date, note from logged_action_events where action_id = ? order by id").all(id) as { event: string }[];
+    expect(events.map((e) => e.event)).toEqual(["created", "edited", "removed", "restored"]);
+    expect(() => db.prepare("update logged_action_events set note = 'x'").run()).toThrow(/append-only/);
+    // Subject gone → action (and its event rows) cascade away; soft-remove is for the admin UI, not this path.
+    db.prepare("delete from applications where id = ?").run(appId);
+    expect(adminLoggedActions(admin()).find((a) => a.id === id)).toBeUndefined();
+    expect(db.prepare("select 1 from logged_action_events where action_id = ?").get(id)).toBeUndefined();
+  });
+
+  it("refuse bad dates, other-without-note, and unknown subjects", () => {
+    expect(() => addLoggedAction(admin(), { memberId: ADMIN, kind: "other", actionDate: "2026-11-09", note: "" })).toThrow(/Invalid note/);
+    expect(() => addLoggedAction(admin(), { memberId: ADMIN, kind: "call", actionDate: "2026-02-30" })).toThrow(/Invalid date/);
+    expect(() => addLoggedAction(admin(), { memberId: ADMIN, kind: "tea", actionDate: "2026-11-09" })).toThrow(/Invalid action/);
+    expect(() => addLoggedAction(admin(), { applicationId: "nope", kind: "call", actionDate: "2026-11-09" })).toThrow(/Invalid action/);
+    const id = addLoggedAction(admin(), { memberId: ADMIN, kind: "email_sent", actionDate: "2026-11-09", note: "Welcome" });
+    removeLoggedAction(admin(), { id });
+  });
+});
+
+describe("newsletter subscribers (CRM-093)", () => {
+  it("lists newest first with consent and source", () => {
+    db.prepare("delete from newsletter_subscribers").run();
+    db.prepare("insert into newsletter_subscribers (email, source, consent, subscribed_at) values ('old@x.test', 'beehiiv', null, '2025-01-01T00:00:00Z')").run();
+    db.prepare("insert into newsletter_subscribers (email, full_name, source, consent, subscribed_at) values ('new@x.test', 'New', 'website', 1, '2026-11-01T00:00:00Z')").run();
+    expect(adminNewsletterSubscribers(admin()).map(({ email, source, consent }) => ({ email, source, consent }))).toEqual([
+      { email: "new@x.test", source: "website", consent: 1 },
+      { email: "old@x.test", source: "beehiiv", consent: null },
+    ]);
   });
 });
 

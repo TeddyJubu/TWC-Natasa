@@ -29,6 +29,7 @@ const ADMIN: NavItem[] = [
   { label: "Inbox", icon: "mail", to: "/admin", hash: "inbox" },
   { label: "Applications", icon: "notebook-pen", to: "/admin", hash: "applications" },
   { label: "All members", icon: "badge-check", to: "/admin", hash: "members" },
+  { label: "Newsletter", icon: "mail", to: "/admin", hash: "newsletter" },
   { label: "Admin activity", icon: "notebook-pen", to: "/admin", hash: "activity" },
   { label: "Member reviews", icon: "notebook-pen", to: "/admin", hash: "reviews" },
   { label: "Spotlight answers", icon: "notebook-pen", to: "/admin", hash: "spotlight" },

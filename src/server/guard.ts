@@ -9,7 +9,7 @@ export type SignedIn = NonNullable<Actor>;
 
 /** A refusal the browser may see: a fixed message and an HTTP-ish status, never internals. */
 export class AccessError extends Error {
-  constructor(message: string, readonly status: 401 | 403 | 400 | 404 = 403) {
+  constructor(message: string, readonly status: 401 | 403 | 400 | 404 | 409 = 403) {
     super(message);
     this.name = "AccessError";
   }

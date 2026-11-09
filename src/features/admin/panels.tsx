@@ -10,17 +10,21 @@ import { useNeighborhoods } from "@/features/neighborhoods/queries";
 import { pickerNames } from "@/features/neighborhoods/options";
 import { EVENT_KINDS, eventWhen, isoToNyLocal, kindLabel, nyLocalToISO } from "@/features/events/format";
 import {
-  adminActionsQuery, adminApplicationsQuery, adminBookingsQuery, adminEventsQuery, adminInboxQuery, adminMembersQuery, adminNeighborhoodsQuery, adminNotesQuery,
-  type AdminApplication, type AdminBooking, type AdminEvent, type AdminMember, type AdminNeighborhood, type AdminNote, type InboxMessage,
+  adminActionsQuery, adminApplicationsQuery, adminBookingsQuery, adminEventsQuery, adminInboxQuery, adminLoggedActionsQuery,
+  adminMembersQuery, adminNeighborhoodsQuery, adminNewsletterQuery, adminNotesQuery,
+  type AdminApplication, type AdminBooking, type AdminEvent, type AdminMember, type AdminNeighborhood, type AdminNote,
+  type InboxMessage, type LoggedAction,
 } from "./queries";
 import {
-  LogoNotSavedError, useAddNote, useArchiveMessage, useCreateNeighborhood, useDeleteEvent, useDeleteNote, useDownloadCsv, useReviewApplication, useSaveEvent,
-  useSetBookingStatus, useSetMemberNeighborhood, useSetMemberStatus, useUpdateNeighborhood, type NoteInput,
+  LogoNotSavedError, useAddLoggedAction, useAddNote, useArchiveMessage, useCreateNeighborhood, useDeleteEvent, useDeleteNote,
+  useDownloadCsv, useEditLoggedAction, useRemoveLoggedAction, useRestoreLoggedAction, useReviewApplication, useSaveEvent,
+  useSetBookingStatus, useSetMemberNeighborhood, useSetMemberStatus, useUpdateNeighborhood, type LoggedActionInput, type NoteInput,
 } from "./mutations";
 import type { ApprovalNotice } from "./approval-email";
 import {
-  applicationOrigin, checkLogo, describeAction, DUPLICATE_TEXT, formatAnswers, formatDate, formatDay, humanizeKey, matchesSearch, newestByUser,
-  newsletterLabel, reviewerName, type AnswerEntry,
+  applicationOrigin, checkLogo, describeAction, DUPLICATE_TEXT, formatAnswers, formatDate, formatDay, humanizeKey,
+  LOGGED_ACTION_KINDS, LOGGED_ACTION_LABELS, matchesSearch, newestByUser, newsletterLabel, subscriberConsentLabel,
+  reviewerName, type AnswerEntry, type LoggedActionKind,
 } from "./format";
 import {
   adminReviewsQuery, adminSpotlightsQuery, reviewLinkStatesQuery, spotlightLinkStatesQuery, useMarkReviewDone, useMintReviewLink, useRevokeReviewLink,
@@ -166,11 +170,11 @@ function FilterSelect({ id, label, value, options, onChange }: { id: string; lab
   );
 }
 
-/** The page's search box (CRM-041): filters the Inbox, Applications and Members cards as she types. */
+/** The page's search box (CRM-041): filters Inbox, Applications, Members and Newsletter as she types. */
 export function AdminSearch({ value, onChange }: { value: string; onChange: (value: string) => void }) {
   return (
     <div role="search" className="flex flex-col gap-1.5">
-      <label htmlFor="admin-search" className="text-sm font-medium text-ink">Search messages, applications and members</label>
+      <label htmlFor="admin-search" className="text-sm font-medium text-ink">Search messages, applications, members and newsletter</label>
       <input id="admin-search" type="search" value={value} onChange={(e) => onChange(e.currentTarget.value)} autoComplete="off"
         aria-describedby="admin-search-hint" className={cn(fieldClass, "max-w-120")} />
       <p id="admin-search-hint" className="twc-hint">Name, email or business</p>
@@ -233,6 +237,116 @@ function Notes({ subject, name, notes }: { subject: { applicationId: string } | 
 }
 
 const notesFor = (notes: AdminNote[] | undefined, key: "application_id" | "member_id", id: string) => (notes ?? []).filter((n) => n[key] === id);
+const actionsFor = (actions: LoggedAction[] | undefined, key: "application_id" | "member_id", id: string) => (actions ?? []).filter((a) => a[key] === id);
+
+/** Logged actions (0009 / CRM-057): list, add, edit, soft-remove and restore on one application or member. */
+function LoggedActions({ subject, name, actions }: {
+  subject: { applicationId: string } | { memberId: string }; name: string; actions: LoggedAction[];
+}) {
+  const add = useAddLoggedAction();
+  const edit = useEditLoggedAction();
+  const remove = useRemoveLoggedAction();
+  const restore = useRestoreLoggedAction();
+  const [kind, setKind] = React.useState<LoggedActionKind>("call");
+  const [actionDate, setActionDate] = React.useState(() => new Date().toISOString().slice(0, 10));
+  const [note, setNote] = React.useState("");
+  const [editing, setEditing] = React.useState<string | null>(null);
+  const [editKind, setEditKind] = React.useState<LoggedActionKind>("call");
+  const [editDate, setEditDate] = React.useState("");
+  const [editNote, setEditNote] = React.useState("");
+  const formId = `logged-${"applicationId" in subject ? subject.applicationId : subject.memberId}`;
+  const active = actions.filter((a) => !a.removed_at).length;
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (kind === "other" && !note.trim()) return;
+    add.mutate({ ...subject, kind, actionDate, note } as LoggedActionInput, {
+      onSuccess: () => { setNote(""); setKind("call"); },
+    });
+  };
+  const startEdit = (a: LoggedAction) => {
+    setEditing(a.id);
+    setEditKind(a.kind);
+    setEditDate(a.action_date);
+    setEditNote(a.note);
+    edit.reset();
+  };
+  return (
+    <Disclosure label={`Logged actions (${active})`}>
+      <div className="flex flex-col gap-3 border-t border-app-rule px-3.5 py-3.5">
+        {actions.map((a) => (
+          <div key={a.id} className={cn("flex flex-col gap-1", a.removed_at && "opacity-60")}>
+            {editing === a.id ? (
+              <form className="flex flex-col gap-2" onSubmit={(e) => {
+                e.preventDefault();
+                edit.mutate({ id: a.id, kind: editKind, actionDate: editDate, note: editNote }, { onSuccess: () => setEditing(null) });
+              }}>
+                <label htmlFor={`${formId}-edit-kind-${a.id}`} className={meta}>Type</label>
+                <select id={`${formId}-edit-kind-${a.id}`} value={editKind} onChange={(e) => setEditKind(e.currentTarget.value as LoggedActionKind)} className={fieldClass}>
+                  {LOGGED_ACTION_KINDS.map((k) => <option key={k} value={k}>{LOGGED_ACTION_LABELS[k]}</option>)}
+                </select>
+                <label htmlFor={`${formId}-edit-date-${a.id}`} className={meta}>Date</label>
+                <input id={`${formId}-edit-date-${a.id}`} type="date" required value={editDate} onChange={(e) => setEditDate(e.currentTarget.value)} className={fieldClass} />
+                <label htmlFor={`${formId}-edit-note-${a.id}`} className={meta}>Note{editKind === "other" ? " (required)" : ""}</label>
+                <textarea id={`${formId}-edit-note-${a.id}`} rows={2} maxLength={1000} value={editNote} onChange={(e) => setEditNote(e.currentTarget.value)} className={fieldClass} />
+                <div className="flex flex-wrap gap-2">
+                  <button type="submit" className={secondaryButton} disabled={edit.isPending || (editKind === "other" && !editNote.trim())}>Save</button>
+                  <button type="button" className={secondaryButton} onClick={() => setEditing(null)}>Cancel</button>
+                </div>
+                <MutationError mutation={edit} />
+              </form>
+            ) : (
+              <>
+                <p className="text-sm break-words text-ink">
+                  <span className="font-medium">{LOGGED_ACTION_LABELS[a.kind]}</span>
+                  {" · "}{a.action_date}
+                  {a.note ? ` — ${a.note}` : ""}
+                  {a.removed_at ? " (removed)" : ""}
+                </p>
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <p className={meta}>{a.author_name ?? "An admin"} · logged {formatDate(a.created_at)}</p>
+                  {!a.removed_at && (
+                    <>
+                      <button type="button" className={cn("text-[13px] text-app-muted underline", ring)} disabled={edit.isPending}
+                        aria-label={`Edit this ${LOGGED_ACTION_LABELS[a.kind]} for ${name}`} onClick={() => startEdit(a)}>
+                        Edit
+                      </button>
+                      <button type="button" className={cn("text-[13px] text-app-muted underline", ring)} disabled={remove.isPending}
+                        aria-label={`Remove this ${LOGGED_ACTION_LABELS[a.kind]} for ${name}`}
+                        onClick={() => { if (window.confirm("Remove this logged action?")) remove.mutate(a.id); }}>
+                        Remove
+                      </button>
+                    </>
+                  )}
+                  {a.removed_at && (
+                    <button type="button" className={cn("text-[13px] text-app-muted underline", ring)} disabled={restore.isPending}
+                      aria-label={`Restore this ${LOGGED_ACTION_LABELS[a.kind]} for ${name}`} onClick={() => restore.mutate(a.id)}>
+                      Restore
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        ))}
+        <form onSubmit={submit} className="flex flex-col gap-2">
+          <p className={meta}>Log something done outside the app about {name}</p>
+          <label htmlFor={`${formId}-kind`} className={meta}>Type</label>
+          <select id={`${formId}-kind`} value={kind} onChange={(e) => setKind(e.currentTarget.value as LoggedActionKind)} className={fieldClass}>
+            {LOGGED_ACTION_KINDS.map((k) => <option key={k} value={k}>{LOGGED_ACTION_LABELS[k]}</option>)}
+          </select>
+          <label htmlFor={`${formId}-date`} className={meta}>Date</label>
+          <input id={`${formId}-date`} type="date" required value={actionDate} onChange={(e) => setActionDate(e.currentTarget.value)} className={fieldClass} />
+          <label htmlFor={`${formId}-note`} className={meta}>Note{kind === "other" ? " (required)" : ""}</label>
+          <textarea id={`${formId}-note`} rows={2} maxLength={1000} value={note} onChange={(e) => setNote(e.currentTarget.value)} className={fieldClass} />
+          <div><button type="submit" className={secondaryButton} disabled={add.isPending || (kind === "other" && !note.trim())}>Log action</button></div>
+        </form>
+        <MutationError mutation={add} />
+        <MutationError mutation={remove} />
+        <MutationError mutation={restore} />
+      </div>
+    </Disclosure>
+  );
+}
 
 // ---------- Inbox ----------
 
@@ -291,6 +405,7 @@ export function ApplicationsPanel({ query = "" }: { query?: string }) {
   const apps = useQuery(adminApplicationsQuery);
   const members = useQuery(adminMembersQuery);
   const notes = useQuery(adminNotesQuery);
+  const logged = useQuery(adminLoggedActionsQuery);
   const [status, setStatus] = React.useState("");
   const all = apps.data ?? [];
   const list = all.filter((a) => (!status || (status === DUPLICATES ? a.duplicate !== null : a.status === status))
@@ -306,15 +421,21 @@ export function ApplicationsPanel({ query = "" }: { query?: string }) {
         </div>
         <NamesError members={members} />
         {notes.isError && <InlineError message="We couldn’t load notes right now." onRetry={() => void notes.refetch()} />}
+        {logged.isError && <InlineError message="We couldn’t load logged actions right now." onRetry={() => void logged.refetch()} />}
         {list.length === 0
           ? <Empty>{all.length ? "No applications match." : "No applications yet."}</Empty>
-          : list.map((app) => <ApplicationRow key={app.id} app={app} members={members.data ?? []} notes={notesFor(notes.data, "application_id", app.id)} />)}
+          : list.map((app) => (
+            <ApplicationRow key={app.id} app={app} members={members.data ?? []} notes={notesFor(notes.data, "application_id", app.id)}
+              actions={actionsFor(logged.data, "application_id", app.id)} />
+          ))}
       </QueryGate>
     </Card>
   );
 }
 
-function ApplicationRow({ app, members, notes }: { app: AdminApplication; members: AdminMember[]; notes: AdminNote[] }) {
+function ApplicationRow({ app, members, notes, actions }: {
+  app: AdminApplication; members: AdminMember[]; notes: AdminNote[]; actions: LoggedAction[];
+}) {
   const review = useReviewApplication();
   const by = reviewerName(app.reviewed_by, members);
   const answers = formatAnswers(app.answers);
@@ -341,6 +462,7 @@ function ApplicationRow({ app, members, notes }: { app: AdminApplication; member
         </Disclosure>
       )}
       <Notes subject={{ applicationId: app.id }} name={app.full_name} notes={notes} />
+      <LoggedActions subject={{ applicationId: app.id }} name={app.full_name} actions={actions} />
       <MutationError mutation={review} />
       <EmailNotice notice={review.data} />
       <Decisions
@@ -382,6 +504,7 @@ export function MembersPanel({ query = "" }: { query?: string }) {
   const links = useQuery(reviewLinkStatesQuery);
   const spotlightLinks = useQuery(spotlightLinkStatesQuery);
   const notes = useQuery(adminNotesQuery);
+  const logged = useQuery(adminLoggedActionsQuery);
   const apps = useQuery(adminApplicationsQuery);
   const [status, setStatus] = React.useState("");
   const [hood, setHood] = React.useState("");
@@ -404,6 +527,7 @@ export function MembersPanel({ query = "" }: { query?: string }) {
         {links.isError && <InlineError message="We couldn’t load review links right now." onRetry={() => void links.refetch()} />}
         {spotlightLinks.isError && <InlineError message="We couldn’t load Spotlight links right now." onRetry={() => void spotlightLinks.refetch()} />}
         {notes.isError && <InlineError message="We couldn’t load notes right now." onRetry={() => void notes.refetch()} />}
+        {logged.isError && <InlineError message="We couldn’t load logged actions right now." onRetry={() => void logged.refetch()} />}
         {apps.isError && <InlineError message="We couldn’t load applications right now." onRetry={() => void apps.refetch()} />}
         {list.length === 0 ? <Empty>{all.length ? "No members match." : "No member profiles yet."}</Empty> : (
           // `relative` contains the sr-only (absolute) caption and header, or they escape the scroll clip and widen the page.
@@ -417,7 +541,8 @@ export function MembersPanel({ query = "" }: { query?: string }) {
                 </tr>
               </thead>
               <tbody>{list.map((m) => (
-                <MemberRow key={m.id} member={m} link={links.data?.[m.id] ?? null} spotlight={spotlightLinks.data?.[m.id] ?? null} notes={notesFor(notes.data, "member_id", m.id)} app={appFor.get(m.id) ?? null} />
+                <MemberRow key={m.id} member={m} link={links.data?.[m.id] ?? null} spotlight={spotlightLinks.data?.[m.id] ?? null}
+                  notes={notesFor(notes.data, "member_id", m.id)} actions={actionsFor(logged.data, "member_id", m.id)} app={appFor.get(m.id) ?? null} />
               ))}</tbody>
             </table>
           </div>
@@ -427,8 +552,8 @@ export function MembersPanel({ query = "" }: { query?: string }) {
   );
 }
 
-function MemberRow({ member, link, spotlight, notes, app }: {
-  member: AdminMember; link: LinkState | null; spotlight: LinkState | null; notes: AdminNote[]; app: AdminApplication | null;
+function MemberRow({ member, link, spotlight, notes, actions, app }: {
+  member: AdminMember; link: LinkState | null; spotlight: LinkState | null; notes: AdminNote[]; actions: LoggedAction[]; app: AdminApplication | null;
 }) {
   const setStatus = useSetMemberStatus();
   const name = member.full_name || "Unnamed member";
@@ -454,7 +579,7 @@ function MemberRow({ member, link, spotlight, notes, app }: {
           <EmailNotice notice={setStatus.data} />
           {member.status === "approved" && <ReviewLink memberId={member.id} name={name} link={link} />}
           {member.status === "approved" && <ReviewLink purpose="spotlight" memberId={member.id} name={name} link={spotlight} />}
-          <MemberDetails member={member} name={name} app={app} />
+          <MemberDetails member={member} name={name} app={app} actions={actions} />
           <Notes subject={{ memberId: member.id }} name={name} notes={notes} />
         </div>
       </td>
@@ -466,9 +591,11 @@ const NO_HOOD = " none"; // names are saved trimmed, so this is never one
 
 /**
  * CRM-060 in the row: her neighborhood (CRM-059 — an admin's correction changes the profile, never the answer she
- * gave) and her newest application's answers, without leaving the card.
+ * gave), logged actions (CRM-057) and her newest application's answers, without leaving the card.
  */
-function MemberDetails({ member, name, app }: { member: AdminMember; name: string; app: AdminApplication | null }) {
+function MemberDetails({ member, name, app, actions }: {
+  member: AdminMember; name: string; app: AdminApplication | null; actions: LoggedAction[];
+}) {
   const save = useSetMemberNeighborhood();
   const { data: hoodList = [] } = useNeighborhoods();
   const [hood, setHood] = React.useState(member.neighborhood ?? "");
@@ -497,6 +624,9 @@ function MemberDetails({ member, name, app }: { member: AdminMember; name: strin
         {save.isSuccess && <p role="status" className={meta}>Saved</p>}
         <MutationError mutation={save} />
       </form>
+      <div className="border-t border-app-rule px-3.5 py-3.5">
+        <LoggedActions subject={{ memberId: member.id }} name={name} actions={actions} />
+      </div>
       <p className={cn(meta, "border-t border-app-rule px-3.5 py-3.5")}>
         {app
           ? `Applied ${formatDate(app.created_at)} · ${humanizeKey(app.status)} · ${applicationOrigin(app.answers)}${app.neighborhood ? ` · Neighborhood given: ${app.neighborhood}` : ""}`
@@ -504,6 +634,34 @@ function MemberDetails({ member, name, app }: { member: AdminMember; name: strin
       </p>
       {answers.length > 0 && <AnswerList entries={answers} />}
     </Disclosure>
+  );
+}
+
+// ---------- Newsletter subscribers (CRM-093) ----------
+
+/** Read-only list of newsletter_subscribers; page search filters it. No Beehiiv write from here. */
+export function NewsletterPanel({ query = "" }: { query?: string }) {
+  const subs = useQuery(adminNewsletterQuery);
+  const all = subs.data ?? [];
+  const list = all.filter((s) => matchesSearch(query, [s.email, s.full_name, s.source]));
+  return (
+    <Card id="newsletter" title="Newsletter" subtitle={subs.data ? `${shownOf(list.length, all.length)}${all.length} sign-ups · website and imported Beehiiv list` : "Newsletter sign-ups"}>
+      <QueryGate query={subs} what="newsletter subscribers">
+        {list.length === 0
+          ? <Empty>{all.length ? "No subscribers match." : "No newsletter sign-ups yet."}</Empty>
+          : list.map((s) => (
+            <article key={s.id} className={cn(pad, "border-b border-app-rule py-4 last:border-0")}>
+              <h3 className="text-[15px] font-medium break-words text-ink">{s.email}</h3>
+              <p className={cn(meta, "mt-1 break-words")}>
+                {subscriberConsentLabel(s.consent)}
+                {s.source ? ` · ${s.source === "beehiiv" ? "Beehiiv" : "Website"}` : ""}
+                {" · "}{formatDate(s.subscribed_at)}
+                {s.full_name ? ` · ${s.full_name}` : ""}
+              </p>
+            </article>
+          ))}
+      </QueryGate>
+    </Card>
   );
 }
 

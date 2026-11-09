@@ -137,3 +137,47 @@ export const adminCsvFn = createServerFn({ method: "POST" })
     const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./admin.server")]);
     return serve((c) => m.adminCsv(c, data));
   });
+
+type LoggedActionBody = {
+  kind: "headshot_invite" | "headshot_booked" | "headshot_done" | "email_sent" | "call" | "meeting" | "other";
+  actionDate: string;
+  note?: string;
+};
+
+export const adminLoggedActionsFn = createServerFn().handler(async () => {
+  const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./admin.server")]);
+  return serve(m.adminLoggedActions);
+});
+
+export const addLoggedActionFn = createServerFn({ method: "POST" })
+  .validator(pass<({ applicationId: string } | { memberId: string }) & LoggedActionBody>)
+  .handler(async ({ data }) => {
+    const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./admin.server")]);
+    return serve((c) => m.addLoggedAction(c, data));
+  });
+
+export const editLoggedActionFn = createServerFn({ method: "POST" })
+  .validator(pass<{ id: string } & LoggedActionBody>)
+  .handler(async ({ data }) => {
+    const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./admin.server")]);
+    return serve((c) => m.editLoggedAction(c, data));
+  });
+
+export const removeLoggedActionFn = createServerFn({ method: "POST" })
+  .validator(pass<{ id: string }>)
+  .handler(async ({ data }) => {
+    const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./admin.server")]);
+    return serve((c) => m.removeLoggedAction(c, data));
+  });
+
+export const restoreLoggedActionFn = createServerFn({ method: "POST" })
+  .validator(pass<{ id: string }>)
+  .handler(async ({ data }) => {
+    const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./admin.server")]);
+    return serve((c) => m.restoreLoggedAction(c, data));
+  });
+
+export const adminNewsletterSubscribersFn = createServerFn().handler(async () => {
+  const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./admin.server")]);
+  return serve(m.adminNewsletterSubscribers);
+});

@@ -15,7 +15,9 @@ import { submitApplication } from "@/features/applications/applications.server";
 import { listNeighborhoods } from "@/features/neighborhoods/neighborhoods.server";
 import { receiveMessage } from "@/features/contact/contact.server";
 import {
-  addNote, adminActions, adminApplications, adminCsv, adminEvents, adminInbox, adminMembers, adminNotes, archiveMessage, deleteNote, createEvent, createNeighborhood, deleteEvent, reviewApplication, setBookingStatus,
+  addLoggedAction, addNote, adminActions, adminApplications, adminCsv, adminEvents, adminInbox, adminLoggedActions, adminMembers,
+  adminNewsletterSubscribers, adminNotes, archiveMessage, deleteNote, createEvent, createNeighborhood, deleteEvent, editLoggedAction,
+  removeLoggedAction, restoreLoggedAction, reviewApplication, setBookingStatus,
   setMemberNeighborhood, setMemberStatus, updateEvent,
 } from "@/features/admin/admin.server";
 import { adminReviews, markReviewDone, mintReviewLink, openReview, reviewLinkStates, revokeReviewLink, submitReview } from "@/features/member-links/member-links.server";
@@ -629,6 +631,24 @@ describe("admin notes, CSV export and neighborhood correction", () => {
     expect(adminNotes(as(A)).map((n) => n.id)).toContain(note);
     deleteNote(as(A), { id: note });
     expect(adminNotes(as(A)).map((n) => n.id)).not.toContain(note);
+  });
+});
+
+describe("logged actions and newsletter subscribers", () => {
+  it("are admin-only", () => {
+    const action = addLoggedAction(as(A), { memberId: A, kind: "call", actionDate: "2026-11-09", note: "Check-in" });
+    for (const who of [anon(), as(B), as(C)]) {
+      throwsAccess(() => adminLoggedActions(who));
+      throwsAccess(() => addLoggedAction(who, { memberId: B, kind: "call", actionDate: "2026-11-09" }));
+      throwsAccess(() => editLoggedAction(who, { id: action, kind: "meeting", actionDate: "2026-11-10" }));
+      throwsAccess(() => removeLoggedAction(who, { id: action }));
+      throwsAccess(() => restoreLoggedAction(who, { id: action }));
+      throwsAccess(() => adminNewsletterSubscribers(who));
+    }
+    expect(adminLoggedActions(as(A)).some((a) => a.id === action)).toBe(true);
+    removeLoggedAction(as(A), { id: action });
+    restoreLoggedAction(as(A), { id: action });
+    expect(adminNewsletterSubscribers(as(A))).toEqual(expect.any(Array));
   });
 });
 

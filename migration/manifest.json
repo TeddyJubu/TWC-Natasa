@@ -20,16 +20,20 @@
       "source": "crm.md:Process model",
       "acceptance": "Process model: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "old-crm-process",
+      "evidence": "Retired: standalone CRM Node/Hono/better-sqlite3 process model. Rebuild is TanStack Start + node:sqlite inside the app (server.mjs)."
     },
     {
       "id": "CRM-002",
       "source": "crm.md:Both UIs are built into one image",
       "acceptance": "Both UIs are built into one image: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "one-admin-shell",
+      "evidence": "Retired: Classic + Bento dual Vite builds. Rebuild is one /admin app shell (AppShell + panels). No dist/client-v2."
     },
     {
       "id": "CRM-003",
@@ -44,8 +48,10 @@
       "source": "crm.md:Env vars read by the CRM",
       "acceptance": "Env vars read by the CRM: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "old-crm-process",
+      "evidence": "Retired: CRM_* env surface (CRM_AUTH_MODE, CRM_INTAKE_KEY, CRM_CLIENT_DIR_V2, …). App env is APP_URL / DATA_DIR / Better Auth / Beehiiv / Google — see .env and AGENTS.md."
     },
     {
       "id": "CRM-005",
@@ -76,16 +82,20 @@
       "source": "crm.md:Start-up sequence",
       "acceptance": "Start-up sequence: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "old-crm-process",
+      "evidence": "Retired: CRM start-up sequence (prefs, republish form versions, mirror pass). App opens SQLite, applies migrations via PRAGMA user_version, serves Start."
     },
     {
       "id": "CRM-009",
       "source": "crm.md:Live updates",
       "acceptance": "Live updates: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "query-refetch",
+      "evidence": "Retired: GET /api/stream SSE live updates. /admin uses TanStack Query invalidateQueries on mutation success."
     },
     {
       "id": "CRM-010",
@@ -110,95 +120,117 @@
       "owner": "data-import",
       "status": "built",
       "target": "/admin",
-      "evidence": "src/server/legacy-import.test.ts \u203a \"is re-runnable\u2026\" + scripts/import-legacy.ts: one-shot, insert-only import replaces the 5 s JSONL mirror; SQLite is the only store (retired by CRM-024)"
+      "evidence": "src/server/legacy-import.test.ts › \"is re-runnable…\" + scripts/import-legacy.ts: one-shot, insert-only import replaces the 5 s JSONL mirror; SQLite is the only store (retired by CRM-024)"
     },
     {
       "id": "CRM-013",
       "source": "crm.md:Three auth modes",
       "acceptance": "Three auth modes: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "retired": "crm"
+      "status": "built",
+      "retired": "better-auth",
+      "target": "retired",
+      "evidence": "Retired: CRM_AUTH_MODE caddy|access|password. Better Auth only (inventory already flagged retired)."
     },
     {
       "id": "CRM-014",
       "source": "crm.md:Named users, no roles",
       "acceptance": "Named users, no roles: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "better-auth",
+      "evidence": "Retired: CRM_USERS named actors with no roles. Rebuild: Better Auth members + user_roles admin; requireAdmin gates every /admin write; actor_id on admin_actions / logged_action_events."
     },
     {
       "id": "CRM-015",
       "source": "crm.md:`caddy` mode trusts `X-Auth-User`",
       "acceptance": "`caddy` mode trusts `X-Auth-User`: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "retired": "crm"
+      "status": "built",
+      "retired": "better-auth",
+      "target": "retired",
+      "evidence": "Retired: caddy mode trusting X-Auth-User (inventory already flagged retired)."
     },
     {
       "id": "CRM-016",
       "source": "crm.md:`access` mode",
       "acceptance": "`access` mode: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "retired": "crm"
+      "status": "built",
+      "retired": "better-auth",
+      "target": "retired",
+      "evidence": "Retired: Cloudflare Access JWT mode (inventory already flagged retired)."
     },
     {
       "id": "CRM-017",
       "source": "crm.md:`password` mode credentials",
       "acceptance": "`password` mode credentials: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "better-auth",
+      "evidence": "Retired: CRM password mode (scrypt CRM_PASSWORD_HASHES). Sign-in is Better Auth email+password (+ optional Google)."
     },
     {
       "id": "CRM-018",
       "source": "crm.md:Session cookie",
       "acceptance": "Session cookie: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "better-auth",
+      "evidence": "Retired: twc_crm_session HMAC cookie. Sessions are Better Auth (server-side session table)."
     },
     {
       "id": "CRM-019",
       "source": "crm.md:Sign-in page",
       "acceptance": "Sign-in page: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "better-auth",
+      "evidence": "Retired: CRM /login page + login.js. App uses the site sign-in flow (Better Auth)."
     },
     {
       "id": "CRM-020",
       "source": "crm.md:Sign-in throttle",
       "acceptance": "Sign-in throttle: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "better-auth",
+      "evidence": "Retired: CRM sign-in throttle keyed on CRM auth. Better Auth + app rate limits own the gates that remain."
     },
     {
       "id": "CRM-021",
       "source": "crm.md:API gate",
       "acceptance": "API gate: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "better-auth",
+      "evidence": "Retired: x-crm:1 API gate. Rebuild uses Start CSRF middleware (src/start.ts) + requireAdmin on server functions."
     },
     {
       "id": "CRM-022",
       "source": "crm.md:Page gate",
       "acceptance": "Page gate: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "better-auth",
+      "evidence": "Retired: CRM page gate + /api/me theme. /admin is behind _authenticated/_admin (Better Auth session + isAdmin)."
     },
     {
       "id": "CRM-023",
       "source": "crm.md:Per-person preference `theme`",
       "acceptance": "Per-person preference `theme`: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "one-admin-shell",
+      "evidence": "Retired: classic|bento user_prefs theme. One /admin design; no PUT /api/prefs/theme."
     },
     {
       "id": "CRM-024",
@@ -207,23 +239,27 @@
       "owner": "data-import",
       "status": "built",
       "target": "/admin#members",
-      "evidence": "src/server/legacy-import.ts + scripts/import-legacy.ts read the JSONL exports once; src/server/legacy-import.test.ts \u203a \"imports the fixtures\u2026\" and \"scales to the real shape: 128 applications, 120 members, 44 subscribers\". review_responses/links \u2192 members-links, spotlight_answers \u2192 members-links, custom rows \u2192 custom-forms (counted as skipped)"
+      "evidence": "src/server/legacy-import.ts + scripts/import-legacy.ts read the JSONL exports once; src/server/legacy-import.test.ts › \"imports the fixtures…\" and \"scales to the real shape: 128 applications, 120 members, 44 subscribers\". review_responses/links → members-links, spotlight_answers → members-links, custom rows → custom-forms (counted as skipped)"
     },
     {
       "id": "CRM-025",
       "source": "crm.md:SQLite schema (CRM's own)",
       "acceptance": "SQLite schema (CRM's own): behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "old-crm-process",
+      "evidence": "Retired: CRM-own mirror schema (items/people/fts/events/…). Rebuild tables are applications, profiles, inbox_messages, newsletter_subscribers, admin_notes, admin_actions, logged_actions, …"
     },
     {
       "id": "CRM-026",
       "source": "crm.md:Mirror vs history rule",
       "acceptance": "Mirror vs history rule: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "old-crm-process",
+      "evidence": "Retired: mirror vs history rebuild rule (wipe items, keep events). Rows are source of truth; no JSONL remirror."
     },
     {
       "id": "CRM-027",
@@ -240,16 +276,16 @@
       "owner": "data-import",
       "status": "built",
       "target": "/admin#members",
-      "evidence": "applications.legacy_id = app-<record_id> | app-<hash(at|email)[:12]>, newsletter_subscribers.legacy_id = newsletter-<id> (db/migrations/0003_legacy_import.sql); src/server/legacy-import.test.ts \u203a \"keeps both applications from one email (CRM-173) and ids a row with no record_id by hash (CRM-028)\". Contact/partnership ids are not kept (surrogate uuid; de-duplicated on kind+email+time)"
+      "evidence": "applications.legacy_id = app-<record_id> | app-<hash(at|email)[:12]>, newsletter_subscribers.legacy_id = newsletter-<id> (db/migrations/0003_legacy_import.sql); src/server/legacy-import.test.ts › \"keeps both applications from one email (CRM-173) and ids a row with no record_id by hash (CRM-028)\". Contact/partnership ids are not kept (surrogate uuid; de-duplicated on kind+email+time)"
     },
     {
       "id": "CRM-029",
-      "source": "crm.md:Application \u2192 item",
-      "acceptance": "Application \u2192 item: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "crm.md:Application → item",
+      "acceptance": "Application → item: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
       "status": "built",
       "target": "/admin#members",
-      "evidence": "import side only: email lower-cased, name falls back to email, area = neighborhood_city|base_area, answers kept + answers.legacy; src/server/legacy-import.test.ts \u203a \"lowercases the email, keeps the answers, labels the origin (CRM-031)\u2026\". The /admin list rendering stays with admin-inbox"
+      "evidence": "import side only: email lower-cased, name falls back to email, area = neighborhood_city|base_area, answers kept + answers.legacy; src/server/legacy-import.test.ts › \"lowercases the email, keeps the answers, labels the origin (CRM-031)…\". The /admin list rendering stays with admin-inbox"
     },
     {
       "id": "CRM-030",
@@ -258,7 +294,7 @@
       "owner": "admin-inbox",
       "status": "built",
       "target": "/admin",
-      "evidence": "Applications keep three stored statuses only (pending/approved/declined; CHECK on applications.status). Import maps archived/rejected/auto_rejected \u2192 declined and approved/approved_member \u2192 approved (applicationStatus in src/server/legacy-import.ts; legacy-import.test.ts). check_duplicate is a computed chip (CRM-072/073, phase 3), never stored. Merged rows are skipped on import, not shown as archived."
+      "evidence": "Applications keep three stored statuses only (pending/approved/declined; CHECK on applications.status). Import maps archived/rejected/auto_rejected → declined and approved/approved_member → approved (applicationStatus in src/server/legacy-import.ts; legacy-import.test.ts). check_duplicate is a computed chip (CRM-072/073, phase 3), never stored. Merged rows are skipped on import, not shown as archived."
     },
     {
       "id": "CRM-031",
@@ -267,7 +303,7 @@
       "owner": "data-import",
       "status": "verified",
       "target": "/admin",
-      "evidence": "verify-haiku 2026-11-09: legacy-import.test 'labels the origin (CRM-031)' passes | answers.legacy.origin = Old HeyForm | Imported list | Earlier form | Join form; src/server/legacy-import.test.ts \u203a \"lowercases the email, keeps the answers, labels the origin (CRM-031)\u2026\""
+      "evidence": "verify-haiku 2026-11-09: legacy-import.test 'labels the origin (CRM-031)' passes | answers.legacy.origin = Old HeyForm | Imported list | Earlier form | Join form; src/server/legacy-import.test.ts › \"lowercases the email, keeps the answers, labels the origin (CRM-031)…\""
     },
     {
       "id": "CRM-032",
@@ -276,7 +312,7 @@
       "owner": "admin-inbox",
       "status": "built",
       "target": "/admin",
-      "evidence": "formatAnswers (src/features/admin/format.ts) hides what the CRM hid \u2014 keys starting `_`, ending `_codes`, containing token or signature, and `ip` \u2014 plus the import's own `legacy` bookkeeping record; known CRM labels full_name\u2192Name, base_area\u2192Based in, goal_labels\u2192Hoping to find, coffee_chat\u2192Open to coffee chats, every other key humanised; empty values dropped (format.test.ts, src/app/admin-route.test.tsx). Improvised: only the four labels the inventory names (the CRM's other ~26 are humanised from the key); arrays show as a list instead of comma-joined."
+      "evidence": "formatAnswers (src/features/admin/format.ts) hides what the CRM hid — keys starting `_`, ending `_codes`, containing token or signature, and `ip` — plus the import's own `legacy` bookkeeping record; known CRM labels full_name→Name, base_area→Based in, goal_labels→Hoping to find, coffee_chat→Open to coffee chats, every other key humanised; empty values dropped (format.test.ts, src/app/admin-route.test.tsx). Improvised: only the four labels the inventory names (the CRM's other ~26 are humanised from the key); arrays show as a list instead of comma-joined."
     },
     {
       "id": "CRM-033",
@@ -297,8 +333,8 @@
     },
     {
       "id": "CRM-035",
-      "source": "crm.md:Site-form submissions \u2192 items",
-      "acceptance": "Site-form submissions \u2192 items: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "crm.md:Site-form submissions → items",
+      "acceptance": "Site-form submissions → items: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
       "target": "/admin#members"
@@ -310,7 +346,7 @@
       "owner": "data-import",
       "status": "built",
       "target": "/admin",
-      "evidence": "newsletter_subscribers (0003) \u2190 subscribers.jsonl + Beehiiv rows in members.jsonl + newsletter form rows; src/server/legacy-import.test.ts \u203a \"keeps the newsletter list, records consent only where a form recorded it\u2026\"; 44-row scale test"
+      "evidence": "newsletter_subscribers (0003) ← subscribers.jsonl + Beehiiv rows in members.jsonl + newsletter form rows; src/server/legacy-import.test.ts › \"keeps the newsletter list, records consent only where a form recorded it…\"; 44-row scale test"
     },
     {
       "id": "CRM-037",
@@ -344,7 +380,7 @@
       "owner": "custom-forms",
       "status": "built",
       "target": "/admin",
-      "evidence": "Import: a submissions.jsonl row with deleted:true is never an answer, and an answer whose CRM item id (sha256(at|form_id|email)[:12]) a tombstone names is skipped (importResponses in src/features/forms/import.server.ts; src/features/forms/import.test.ts \u203a \"imports the representable forms\u2026\": 'deletion marker' 1, 'deleted for good' 1). After import SQLite is the source of truth, so no file is re-read. Delete-for-good in /admin is CRM-132."
+      "evidence": "Import: a submissions.jsonl row with deleted:true is never an answer, and an answer whose CRM item id (sha256(at|form_id|email)[:12]) a tombstone names is skipped (importResponses in src/features/forms/import.server.ts; src/features/forms/import.test.ts › \"imports the representable forms…\": 'deletion marker' 1, 'deleted for good' 1). After import SQLite is the source of truth, so no file is re-read. Delete-for-good in /admin is CRM-132."
     },
     {
       "id": "CRM-041",
@@ -362,7 +398,7 @@
       "owner": "admin-inbox",
       "status": "built",
       "target": "/admin",
-      "evidence": "Neighbourhood tags are the neighborhoods table: profiles.neighborhood references neighborhoods(name), shown in a Neighborhood column on All members and filterable there (Any / each neighborhood members have / No neighborhood), set by an admin from the row's Details (CRM-059). Retired: the CRM's Brooklyn substring folding (Greenpoint/Williamsburg/Bushwick/Ridgewood, else Other) \u2014 the new list is the admin-managed Queens neighborhoods, so no geography is guessed from free text; an applicant's typed area stays visible as 'Neighborhood given' (admin-route.test.tsx)."
+      "evidence": "Neighbourhood tags are the neighborhoods table: profiles.neighborhood references neighborhoods(name), shown in a Neighborhood column on All members and filterable there (Any / each neighborhood members have / No neighborhood), set by an admin from the row's Details (CRM-059). Retired: the CRM's Brooklyn substring folding (Greenpoint/Williamsburg/Bushwick/Ridgewood, else Other) — the new list is the admin-managed Queens neighborhoods, so no geography is guessed from free text; an applicant's typed area stays visible as 'Neighborhood given' (admin-route.test.tsx)."
     },
     {
       "id": "CRM-043",
@@ -433,24 +469,30 @@
       "source": "crm.md:Eight statuses",
       "acceptance": "Eight statuses: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "three-statuses-only",
+      "evidence": "Retired: eight shared item statuses. Applications use pending/approved/declined; inbox_messages new/archived; check_duplicate is computed (CRM-072), not stored."
     },
     {
       "id": "CRM-052",
       "source": "crm.md:Status the CRM shows",
       "acceptance": "Status the CRM shows: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "three-statuses-only",
+      "evidence": "Retired: CRM effective-status overlay (file vs latest status event). Each table owns its status column; no unified items mirror."
     },
     {
       "id": "CRM-053",
       "source": "crm.md:Hand-set statuses allowed per kind",
       "acceptance": "Hand-set statuses allowed per kind: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin#members"
+      "status": "built",
+      "target": "retired",
+      "retired": "three-statuses-only",
+      "evidence": "Retired: per-kind hand-set status matrix. No unified inbox status menu; decisions set application/member status; archive is inbox-only."
     },
     {
       "id": "CRM-054",
@@ -460,7 +502,7 @@
       "status": "built",
       "target": "retired",
       "retired": "explicit-queues",
-      "evidence": "Retired: the CRM marked an item unread when the caller had not opened it AND it needed attention. On /admin the attention set is already the queue itself \u2014 the Inbox lists only new messages until archived, Applications sort pending first with a pending count (and possible duplicates counted) \u2014 so a per-admin opened mark would repeat that for a handful of admins at the cost of a table and a write on every disclosure. Who decided what is in the Admin activity card (0007_admin_actions.sql)."
+      "evidence": "Retired: the CRM marked an item unread when the caller had not opened it AND it needed attention. On /admin the attention set is already the queue itself — the Inbox lists only new messages until archived, Applications sort pending first with a pending count (and possible duplicates counted) — so a per-admin opened mark would repeat that for a handful of admins at the cost of a table and a write on every disclosure. Who decided what is in the Admin activity card (0007_admin_actions.sql)."
     },
     {
       "id": "CRM-055",
@@ -469,7 +511,7 @@
       "owner": "admin-inbox",
       "status": "built",
       "target": "/admin",
-      "evidence": "Admin notes on an application or a member: db/migrations/0006_admin_notes.sql (exactly one subject FK, cascade, body 1\u20135,000 chars), adminNotes/addNote/deleteNote with requireAdmin (src/features/admin/admin.server.ts; admin.server.test.ts, src/server/policy.test.ts), a Notes (n) panel on each application row and member row. Not editable, as in the CRM; deviation: an admin may delete one (confirm first)."
+      "evidence": "Admin notes on an application or a member: db/migrations/0006_admin_notes.sql (exactly one subject FK, cascade, body 1–5,000 chars), adminNotes/addNote/deleteNote with requireAdmin (src/features/admin/admin.server.ts; admin.server.test.ts, src/server/policy.test.ts), a Notes (n) panel on each application row and member row. Not editable, as in the CRM; deviation: an admin may delete one (confirm first)."
     },
     {
       "id": "CRM-056",
@@ -484,16 +526,18 @@
       "source": "crm.md:Logged actions",
       "acceptance": "Logged actions: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "Logged actions outside the app: db/migrations/0009_logged_actions.sql (member OR application subject, kinds headshot_*/email_sent/call/meeting/other, YYYY-MM-DD, note ≤1000, soft-remove via removed_at) + append-only logged_action_events; adminLoggedActions/add/edit/remove/restore with requireAdmin (admin.server.ts, fns.ts); UI under application rows and member Details (panels.tsx). Tests: admin.server.test.ts, policy.test.ts, admin-route.test.tsx, db.test.ts. Not folded into admin_actions (0007)."
     },
     {
       "id": "CRM-058",
       "source": "crm.md:Edit / remove / restore an action",
       "acceptance": "Edit / remove / restore an action: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "Edit / remove / restore: editLoggedAction / removeLoggedAction / restoreLoggedAction rewrite the current logged_actions row and append created|edited|removed|restored to logged_action_events (append-only triggers). Nothing changed / Already removed → AccessError 409. Soft-remove keeps history (removed_at). Tests: admin.server.test.ts, policy.test.ts, admin-route.test.tsx."
     },
     {
       "id": "CRM-059",
@@ -502,7 +546,7 @@
       "owner": "admin-inbox",
       "status": "built",
       "target": "/admin",
-      "evidence": "Details \u2192 Neighborhood on each All members row: setMemberNeighborhood (requireAdmin; src/features/admin/admin.server.ts, fns.ts) sets a listed neighborhood or none on the profile; the application's answer is never changed and stays shown as 'Neighborhood given' (admin.server.test.ts, src/server/policy.test.ts, admin-route.test.tsx). Improvised: a picker of listed neighborhoods (FK) instead of \u2264120 free-text chars; 'none' clears it rather than reverting to the form answer (profile and answer are separate fields); same value is a disabled Save rather than a 409; no history event (no events table, CRM-043)."
+      "evidence": "Details → Neighborhood on each All members row: setMemberNeighborhood (requireAdmin; src/features/admin/admin.server.ts, fns.ts) sets a listed neighborhood or none on the profile; the application's answer is never changed and stays shown as 'Neighborhood given' (admin.server.test.ts, src/server/policy.test.ts, admin-route.test.tsx). Improvised: a picker of listed neighborhoods (FK) instead of ≤120 free-text chars; 'none' clears it rather than reverting to the form answer (profile and answer are separate fields); same value is a disabled Save rather than a 409; no history event (no events table, CRM-043)."
     },
     {
       "id": "CRM-060",
@@ -511,7 +555,7 @@
       "owner": "admin-inbox",
       "status": "built",
       "target": "/admin",
-      "evidence": "Detail without leaving the card: application rows show origin (CRM-031 label), account link, every readable answer (CRM-032) and Notes; each All members row has Details with her neighborhood (editable, CRM-059), her newest linked application (date, status, origin, neighborhood given, every answer) and Notes (newestByUser/applicationOrigin in format.ts; format.test.ts, admin-route.test.tsx). Phase 3: Details opens on a summary strip \u2014 newsletter state from newsletter_subscribers (consented / no consent / imported, consent not recorded / not on it), linked application count (account or account email) and member since (adminMembers, newsletterLabel; admin.server.test.ts, admin-route.test.tsx). Not ported: upload hrefs, last seen, directory flag in the strip (it is the Listed column), logged actions (CRM-057 still todo)."
+      "evidence": "Detail without leaving the card: application rows show origin (CRM-031 label), account link, every readable answer (CRM-032) and Notes; each All members row has Details with her neighborhood (editable, CRM-059), her newest linked application (date, status, origin, neighborhood given, every answer) and Notes (newestByUser/applicationOrigin in format.ts; format.test.ts, admin-route.test.tsx). Phase 3: Details opens on a summary strip — newsletter state from newsletter_subscribers (consented / no consent / imported, consent not recorded / not on it), linked application count (account or account email) and member since (adminMembers, newsletterLabel; admin.server.test.ts, admin-route.test.tsx). Not ported: upload hrefs, last seen, directory flag in the strip (it is the Listed column), logged actions (CRM-057 still todo)."
     },
     {
       "id": "CRM-061",
@@ -559,16 +603,18 @@
       "source": "crm.md:Decision API",
       "acceptance": "Decision API: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "Decisions are domain functions reviewApplication / setMemberStatus (requireAdmin) on permanent application and profile UUIDs — no intake HTTP hop, no shared key, no record_id slice. Approve / decline / undo-decline write status (+ admin_actions) in one SQLite transaction. Evidence: admin.server.ts, policy.test.ts, admin-route.test.tsx (phases 3–4)."
     },
     {
       "id": "CRM-067",
       "source": "crm.md:Decision guards",
       "acceptance": "Decision guards: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "Decision guards: requireAdmin only; no CRM_INTAKE_KEY / 503 path. Applications identified by UUID primary keys (0001/import), never app-<hash> slices. Evidence: admin.server.ts reviewApplication/setMemberStatus; CRM-172."
     },
     {
       "id": "CRM-068",
@@ -586,7 +632,7 @@
       "owner": "admin-inbox",
       "status": "built",
       "target": "/admin",
-      "evidence": "Decline and Undo decline \u2192 pending on Applications and All members (reviewApplication / setMemberStatus; both sync the newest application). Actor logged in admin_actions (0007). No Hermes decline_undo JSON blob or auto_rejected stamp \u2014 admin_actions + status transitions only (phase 4 brief). Undo is refused implicitly for non-declined rows (button only when declined). Tests: admin.server.test.ts undo-decline, policy.test.ts, admin-route.test.tsx."
+      "evidence": "Decline and Undo decline → pending on Applications and All members (reviewApplication / setMemberStatus; both sync the newest application). Actor logged in admin_actions (0007). No Hermes decline_undo JSON blob or auto_rejected stamp — admin_actions + status transitions only (phase 4 brief). Undo is refused implicitly for non-declined rows (button only when declined). Tests: admin.server.test.ts undo-decline, policy.test.ts, admin-route.test.tsx."
     },
     {
       "id": "CRM-070",
@@ -596,7 +642,7 @@
       "status": "built",
       "target": "retired",
       "retired": "three-statuses-only",
-      "evidence": "Retired: hand-set in_progress and archived. The app uses pending/approved/declined only; check_duplicate is computed (CRM-072), not a hand status; import maps archived \u2192 declined (CRM-030). No day-to-day need for a fourth status column on /admin Applications."
+      "evidence": "Retired: hand-set in_progress and archived. The app uses pending/approved/declined only; check_duplicate is computed (CRM-072), not a hand status; import maps archived → declined (CRM-030). No day-to-day need for a fourth status column on /admin Applications."
     },
     {
       "id": "CRM-071",
@@ -623,7 +669,7 @@
       "owner": "admin-inbox",
       "status": "built",
       "target": "/admin",
-      "evidence": "Detection by email on /admin: case a (member email/account + pending application) and case b (two or more pending applications from one email, no member) via duplicatesOf; the Applications subtitle counts them and the Status filter has \"Possible duplicates\" (panels.tsx; format.test.ts, admin.server.test.ts, admin-route.test.tsx). Retired: name/phone cases c and d and the separate duplicates list/dismiss keys \u2014 they exist to feed the CRM merge (CRM-076\u2013079), which this schema has no alias/merge table for; same-name rows are found with the page search. No merge or link UI (applications.user_id is set only by a verified email claim)."
+      "evidence": "Detection by email on /admin: case a (member email/account + pending application) and case b (two or more pending applications from one email, no member) via duplicatesOf; the Applications subtitle counts them and the Status filter has \"Possible duplicates\" (panels.tsx; format.test.ts, admin.server.test.ts, admin-route.test.tsx). Retired: name/phone cases c and d and the separate duplicates list/dismiss keys — they exist to feed the CRM merge (CRM-076–079), which this schema has no alias/merge table for; same-name rows are found with the page search. No merge or link UI (applications.user_id is set only by a verified email claim)."
     },
     {
       "id": "CRM-074",
@@ -696,7 +742,7 @@
       "owner": "members-links",
       "status": "built",
       "target": "/admin#members",
-      "evidence": "/admin All members: 'Make review link' on an approved member (mintReviewLinkFn \u2192 mintReviewLink, requireAdmin; non-member \u2192 'Personal links are for approved members.'); URL shown once to copy into the admin's own message; created_by/expiry recorded, never the URL. src/features/member-links/member-links.server.ts; src/features/admin/panels.tsx ReviewLink; tests: src/features/member-links/member-links.test.ts, src/server/policy.test.ts, src/app/admin-route.test.tsx."
+      "evidence": "/admin All members: 'Make review link' on an approved member (mintReviewLinkFn → mintReviewLink, requireAdmin; non-member → 'Personal links are for approved members.'); URL shown once to copy into the admin's own message; created_by/expiry recorded, never the URL. src/features/member-links/member-links.server.ts; src/features/admin/panels.tsx ReviewLink; tests: src/features/member-links/member-links.test.ts, src/server/policy.test.ts, src/app/admin-route.test.tsx."
     },
     {
       "id": "CRM-083",
@@ -705,7 +751,7 @@
       "owner": "members-links",
       "status": "built",
       "target": "/admin#members",
-      "evidence": "'Invite to Spotlight' on every approved member's row in /admin All members (ReviewLink purpose=\"spotlight\", src/features/admin/panels.tsx): mintReviewLink with purpose 'spotlight' (requireAdmin, approved members only) stores only the SHA-256 in member_links (0003), retires her previous live Spotlight link only, returns `/spotlight?t=\u2026` once; Revoke + state line. Tests: src/features/member-links/spotlight.test.ts, src/app/admin-route.test.tsx ('Invite to Spotlight'), src/server/policy.test.ts."
+      "evidence": "'Invite to Spotlight' on every approved member's row in /admin All members (ReviewLink purpose=\"spotlight\", src/features/admin/panels.tsx): mintReviewLink with purpose 'spotlight' (requireAdmin, approved members only) stores only the SHA-256 in member_links (0003), retires her previous live Spotlight link only, returns `/spotlight?t=…` once; Revoke + state line. Tests: src/features/member-links/spotlight.test.ts, src/app/admin-route.test.tsx ('Invite to Spotlight'), src/server/policy.test.ts."
     },
     {
       "id": "CRM-084",
@@ -723,7 +769,7 @@
       "owner": "members-links",
       "status": "built",
       "target": "/admin#members",
-      "evidence": "reviewLinkStates (requireAdmin) \u2192 newest review link per member with state active|used|expired + created/expires/used; shown in the All members row. src/features/member-links/member-links.server.ts; src/app/admin-route.test.tsx."
+      "evidence": "reviewLinkStates (requireAdmin) → newest review link per member with state active|used|expired + created/expires/used; shown in the All members row. src/features/member-links/member-links.server.ts; src/app/admin-route.test.tsx."
     },
     {
       "id": "CRM-086",
@@ -732,7 +778,7 @@
       "owner": "members-links",
       "status": "built",
       "target": "/admin",
-      "evidence": "Revoke button on a live link \u2192 revokeReviewLink (requireAdmin) sets expires_at now, returns count. History event not recorded (no CRM history table yet). src/features/member-links/member-links.server.ts; tests: src/features/member-links/member-links.test.ts, src/server/policy.test.ts."
+      "evidence": "Revoke button on a live link → revokeReviewLink (requireAdmin) sets expires_at now, returns count. History event not recorded (no CRM history table yet). src/features/member-links/member-links.server.ts; tests: src/features/member-links/member-links.test.ts, src/server/policy.test.ts."
     },
     {
       "id": "CRM-087",
@@ -767,7 +813,7 @@
       "acceptance": "Agent can open the dialog but never sees the link: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
       "status": "built",
-      "evidence": "AUDIT-TASKS.md: CRM-090 retired \u2014 no WebMCP in rebuild",
+      "evidence": "AUDIT-TASKS.md: CRM-090 retired — no WebMCP in rebuild",
       "retired": "no-agent-feature"
     },
     {
@@ -793,8 +839,9 @@
       "source": "crm.md:Newsletter sign-ups",
       "acceptance": "Newsletter sign-ups: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "Newsletter card on /admin: adminNewsletterSubscribers (requireAdmin) lists newsletter_subscribers newest first — email, consent (Consented / No consent / Imported — consent unknown), source (Website / Beehiiv), subscribed_at; page search filters client-side; sidebar Admin → Newsletter. No Beehiiv write from the card. Tests: admin.server.test.ts, policy.test.ts, admin-route.test.tsx."
     },
     {
       "id": "CRM-094",
@@ -803,7 +850,7 @@
       "owner": "custom-forms",
       "status": "todo",
       "target": "/admin",
-      "evidence": "Partial: answers are stored one row per answer in custom_form_responses and listed in /admin \u203a Form responses with the question labels; historical form:\"custom\" rows of submissions.jsonl are imported by scripts/import-forms.ts (form_id, form_version, answers by that version's keys, email, created_at = at; src/features/forms/import.test.ts). Not yet: CRM items (name/business/area from marked questions, origin), file answers."
+      "evidence": "Partial: answers are stored one row per answer in custom_form_responses and listed in /admin › Form responses with the question labels; historical form:\"custom\" rows of submissions.jsonl are imported by scripts/import-forms.ts (form_id, form_version, answers by that version's keys, email, created_at = at; src/features/forms/import.test.ts). Not yet: CRM items (name/business/area from marked questions, origin), file answers."
     },
     {
       "id": "CRM-095",
@@ -829,7 +876,7 @@
       "owner": "members-links",
       "status": "built",
       "target": "/admin#spotlight",
-      "evidence": "Weekly Spotlight rebuilt: invite from /admin members (CRM-083), public form /spotlight?t= (OPS-028), answers in spotlight_answers (0008) listed in the /admin 'Spotlight answers' card (adminSpotlights, requireAdmin; sidebar Admin \u2192 Spotlight answers). No open/close switch, as in the old intake (OPS-081). src/features/member-links/spotlight.server.ts."
+      "evidence": "Weekly Spotlight rebuilt: invite from /admin members (CRM-083), public form /spotlight?t= (OPS-028), answers in spotlight_answers (0008) listed in the /admin 'Spotlight answers' card (adminSpotlights, requireAdmin; sidebar Admin → Spotlight answers). No open/close switch, as in the old intake (OPS-081). src/features/member-links/spotlight.server.ts."
     },
     {
       "id": "CRM-098",
@@ -902,7 +949,7 @@
       "owner": "custom-forms",
       "status": "todo",
       "target": "/admin",
-      "evidence": "Partial: 11 of the 22 types (short, email, phone, url, number, date, paragraph, dropdown, radio, checkboxes, yesno) with the old key/choice limits (src/features/forms/schema.ts). The importer converts scale \u2192 radio (its numbers, end words on the ends), rating \u2192 radio 1\u20135, consent \u2192 one required tick box, time \u2192 short; drops statement, hidden, total; skips forms with file, ranking, grid, address (src/features/forms/import.test.ts). Not yet as native types."
+      "evidence": "Partial: 11 of the 22 types (short, email, phone, url, number, date, paragraph, dropdown, radio, checkboxes, yesno) with the old key/choice limits (src/features/forms/schema.ts). The importer converts scale → radio (its numbers, end words on the ends), rating → radio 1–5, consent → one required tick box, time → short; drops statement, hidden, total; skips forms with file, ranking, grid, address (src/features/forms/import.test.ts). Not yet as native types."
     },
     {
       "id": "CRM-107",
@@ -1104,7 +1151,7 @@
       "owner": "custom-forms",
       "status": "todo",
       "target": "/admin",
-      "evidence": "Partial: at import, answers listed in held.json (--held) stay out of custom_form_responses (src/features/forms/import.test.ts \u203a 'removed from results (held)'). Not yet: Remove from results / Put back in /admin."
+      "evidence": "Partial: at import, answers listed in held.json (--held) stay out of custom_form_responses (src/features/forms/import.test.ts › 'removed from results (held)'). Not yet: Remove from results / Put back in /admin."
     },
     {
       "id": "CRM-132",
@@ -1137,7 +1184,7 @@
       "owner": "custom-forms",
       "status": "todo",
       "target": "/admin",
-      "evidence": "Partial: /admin \u203a Form responses lists each form (open/closed, count) and its newest 100 answers with labels. Not yet: filters, columns, Summary, Hold, delete, CSV."
+      "evidence": "Partial: /admin › Form responses lists each form (open/closed, count) and its newest 100 answers with labels. Not yet: filters, columns, Summary, Hold, delete, CSV."
     },
     {
       "id": "CRM-136",
@@ -1285,8 +1332,8 @@
     },
     {
       "id": "CRM-154",
-      "source": "crm.md:Beehiiv \u2014 site newsletter form",
-      "acceptance": "Beehiiv \u2014 site newsletter form: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "crm.md:Beehiiv — site newsletter form",
+      "acceptance": "Beehiiv — site newsletter form: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
       "target": "/admin"
@@ -1362,40 +1409,50 @@
       "source": "crm.md:Classic is the default design",
       "acceptance": "Classic is the default design: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "one-admin-shell",
+      "evidence": "Retired: Classic-default redirect to /v2. Rebuild has no second design."
     },
     {
       "id": "CRM-164",
       "source": "crm.md:Classic and Bento are one capability",
       "acceptance": "Classic and Bento are one capability: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "one-admin-shell",
+      "evidence": "Retired as a dual-UI capability: Classic and Bento were one API with two skins; rebuild is a single /admin app shell."
     },
     {
       "id": "CRM-165",
       "source": "crm.md:Design switch",
       "acceptance": "Design switch: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "retired": "crm"
+      "status": "built",
+      "retired": "one-admin-shell",
+      "target": "retired",
+      "evidence": "Retired: Classic · Bento design switch (inventory already marked retired). No theme preference in the rebuild."
     },
     {
       "id": "CRM-166",
       "source": "crm.md:Live refresh and toasts",
       "acceptance": "Live refresh and toasts: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "query-refetch",
+      "evidence": "Retired: live refresh toasts driven by SSE. Mutation onSuccess invalidates the affected admin queries."
     },
     {
       "id": "CRM-167",
       "source": "crm.md:Keyboard",
       "acceptance": "Keyboard: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "query-refetch",
+      "evidence": "Retired: Classic keyboard peek (j/k/Enter on ?peek=). No peek panel; CRM-063 left todo for spam/peek polish."
     },
     {
       "id": "CRM-168",
@@ -1423,8 +1480,8 @@
     },
     {
       "id": "CRM-171",
-      "source": "crm.md:FIX-IN-REBUILD \u2014 plaintext review-link tokens (intake-side, not CRM-side)",
-      "acceptance": "FIX-IN-REBUILD \u2014 plaintext review-link tokens (intake-side, not CRM-side): behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "crm.md:FIX-IN-REBUILD — plaintext review-link tokens (intake-side, not CRM-side)",
+      "acceptance": "FIX-IN-REBUILD — plaintext review-link tokens (intake-side, not CRM-side): behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
       "status": "verified",
       "target": "/admin#members",
@@ -1432,25 +1489,26 @@
     },
     {
       "id": "CRM-172",
-      "source": "crm.md:FIX-IN-REBUILD \u2014 wrong or missing record when `record_id` is absent",
-      "acceptance": "FIX-IN-REBUILD \u2014 wrong or missing record when `record_id` is absent: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "crm.md:FIX-IN-REBUILD — wrong or missing record when `record_id` is absent",
+      "acceptance": "FIX-IN-REBUILD — wrong or missing record when `record_id` is absent: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "FIX-IN-REBUILD done: applications.id is a permanent UUID at insert and import; approve/decline/undo use that id only (reviewApplication / setMemberStatus). No record_id slice and no newest-first list index. Evidence: db/migrations/0001_init.sql applications, admin.server.ts, scripts/import-legacy.ts."
     },
     {
       "id": "CRM-173",
-      "source": "crm.md:FIX-IN-REBUILD \u2014 item id collisions",
-      "acceptance": "FIX-IN-REBUILD \u2014 item id collisions: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "crm.md:FIX-IN-REBUILD — item id collisions",
+      "acceptance": "FIX-IN-REBUILD — item id collisions: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
       "status": "verified",
       "target": "/admin",
-      "evidence": "verify-haiku 2026-11-09: legacy-import.test 'keeps both applications from one email (CRM-173)' passes | surrogate uuid keys + legacy_id (unique) on applications and newsletter_subscribers; same-second same-email rows both import; src/server/legacy-import.test.ts \u203a \"keeps both applications from one email (CRM-173)\u2026\""
+      "evidence": "verify-haiku 2026-11-09: legacy-import.test 'keeps both applications from one email (CRM-173)' passes | surrogate uuid keys + legacy_id (unique) on applications and newsletter_subscribers; same-second same-email rows both import; src/server/legacy-import.test.ts › \"keeps both applications from one email (CRM-173)…\""
     },
     {
       "id": "CRM-174",
-      "source": "crm.md:FIX-IN-REBUILD \u2014 decline exists only in the CRM internal API",
-      "acceptance": "FIX-IN-REBUILD \u2014 decline exists only in the CRM internal API: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "crm.md:FIX-IN-REBUILD — decline exists only in the CRM internal API",
+      "acceptance": "FIX-IN-REBUILD — decline exists only in the CRM internal API: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "built",
       "target": "/admin",
@@ -1458,65 +1516,70 @@
     },
     {
       "id": "CRM-175",
-      "source": "crm.md:FIX-IN-REBUILD \u2014 old form and old admin still live",
-      "acceptance": "FIX-IN-REBUILD \u2014 old form and old admin still live: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "crm.md:FIX-IN-REBUILD — old form and old admin still live",
+      "acceptance": "FIX-IN-REBUILD — old form and old admin still live: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
       "target": "/admin",
-      "evidence": "Partly: members.*/join \u2192 new.*/join is in migration/caddy-twc-redirects.caddy (not live). admin.* and crm.* wait for CRM parity: twc_admin_cutover / twc_crm_cutover prepared, not enabled."
+      "evidence": "Partly: members.*/join → new.*/join is in migration/caddy-twc-redirects.caddy (not live). admin.* and crm.* wait for CRM parity: twc_admin_cutover / twc_crm_cutover prepared, not enabled."
     },
     {
       "id": "CRM-176",
-      "source": "crm.md:FIX-IN-REBUILD \u2014 read-modify-write without locks on shared JSON",
-      "acceptance": "FIX-IN-REBUILD \u2014 read-modify-write without locks on shared JSON: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "crm.md:FIX-IN-REBUILD — read-modify-write without locks on shared JSON",
+      "acceptance": "FIX-IN-REBUILD — read-modify-write without locks on shared JSON: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "FIX-IN-REBUILD done: admin writes use SQLite tx() (review, notes, logged actions, neighborhood, etc.) instead of JSON read-modify-write. Evidence: src/server/db.ts tx, admin.server.ts."
     },
     {
       "id": "CRM-177",
-      "source": "crm.md:RETIRE \u2014 shared-key HTTP between CRM and intake",
-      "acceptance": "RETIRE \u2014 shared-key HTTP between CRM and intake: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "crm.md:RETIRE — shared-key HTTP between CRM and intake",
+      "acceptance": "RETIRE — shared-key HTTP between CRM and intake: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
       "status": "todo",
       "retired": "crm"
     },
     {
       "id": "CRM-178",
-      "source": "crm.md:RETIRE \u2014 header-trust auth as default",
-      "acceptance": "RETIRE \u2014 header-trust auth as default: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "crm.md:RETIRE — header-trust auth as default",
+      "acceptance": "RETIRE — header-trust auth as default: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
       "retired": "crm"
     },
     {
       "id": "CRM-179",
-      "source": "crm.md:RETIRE \u2014 CSRF by custom header only",
-      "acceptance": "RETIRE \u2014 CSRF by custom header only: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "crm.md:RETIRE — CSRF by custom header only",
+      "acceptance": "RETIRE — CSRF by custom header only: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "retired": "crm"
+      "status": "built",
+      "retired": "better-auth",
+      "target": "retired",
+      "evidence": "Retired: CSRF by custom x-crm header only (inventory already flagged retired). Start csrfMiddleware covers listed API_ROUTES."
     },
     {
       "id": "CRM-180",
-      "source": "crm.md:PORT-WITH-CARE \u2014 sessions without server-side revocation",
-      "acceptance": "PORT-WITH-CARE \u2014 sessions without server-side revocation: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "crm.md:PORT-WITH-CARE — sessions without server-side revocation",
+      "acceptance": "PORT-WITH-CARE — sessions without server-side revocation: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "retired",
+      "retired": "better-auth",
+      "evidence": "Retired: CRM sessions without server-side revocation. Better Auth stores sessions in SQLite and can revoke them."
     },
     {
       "id": "CRM-181",
-      "source": "crm.md:FIX-IN-REBUILD \u2014 webhook signing secrets stored in clear text",
-      "acceptance": "FIX-IN-REBUILD \u2014 webhook signing secrets stored in clear text: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "crm.md:FIX-IN-REBUILD — webhook signing secrets stored in clear text",
+      "acceptance": "FIX-IN-REBUILD — webhook signing secrets stored in clear text: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
       "target": "/admin"
     },
     {
       "id": "CRM-182",
-      "source": "crm.md:FIX-IN-REBUILD \u2014 Beehiiv sync ignores `email_subscription_consent`",
-      "acceptance": "FIX-IN-REBUILD \u2014 Beehiiv sync ignores `email_subscription_consent`: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "crm.md:FIX-IN-REBUILD — Beehiiv sync ignores `email_subscription_consent`",
+      "acceptance": "FIX-IN-REBUILD — Beehiiv sync ignores `email_subscription_consent`: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "verified",
       "target": "/admin",
@@ -1524,32 +1587,32 @@
     },
     {
       "id": "CRM-183",
-      "source": "crm.md:FIX-IN-REBUILD \u2014 Beehiiv result lost, double opt-in wording wrong",
-      "acceptance": "FIX-IN-REBUILD \u2014 Beehiiv result lost, double opt-in wording wrong: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "crm.md:FIX-IN-REBUILD — Beehiiv result lost, double opt-in wording wrong",
+      "acceptance": "FIX-IN-REBUILD — Beehiiv result lost, double opt-in wording wrong: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
       "target": "/admin"
     },
     {
       "id": "CRM-184",
-      "source": "crm.md:FIX-IN-REBUILD \u2014 newsletter sync state in a file",
-      "acceptance": "FIX-IN-REBUILD \u2014 newsletter sync state in a file: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "crm.md:FIX-IN-REBUILD — newsletter sync state in a file",
+      "acceptance": "FIX-IN-REBUILD — newsletter sync state in a file: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
       "target": "/admin"
     },
     {
       "id": "CRM-185",
-      "source": "crm.md:PORT-WITH-CARE \u2014 hard-coded address lists",
-      "acceptance": "PORT-WITH-CARE \u2014 hard-coded address lists: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "crm.md:PORT-WITH-CARE — hard-coded address lists",
+      "acceptance": "PORT-WITH-CARE — hard-coded address lists: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
       "target": "/admin"
     },
     {
       "id": "CRM-186",
-      "source": "crm.md:GAP \u2014 no CSV of the inbox, applications or members in the CRM",
-      "acceptance": "GAP \u2014 no CSV of the inbox, applications or members in the CRM: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "crm.md:GAP — no CSV of the inbox, applications or members in the CRM",
+      "acceptance": "GAP — no CSV of the inbox, applications or members in the CRM: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "built",
       "target": "/admin",
@@ -1557,16 +1620,16 @@
     },
     {
       "id": "CRM-187",
-      "source": "crm.md:GAP \u2014 no global Notion / Beehiiv / webhook admin",
-      "acceptance": "GAP \u2014 no global Notion / Beehiiv / webhook admin: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "crm.md:GAP — no global Notion / Beehiiv / webhook admin",
+      "acceptance": "GAP — no global Notion / Beehiiv / webhook admin: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
       "target": "/admin"
     },
     {
       "id": "CRM-188",
-      "source": "crm.md:PORT-WITH-CARE \u2014 spam is advisory and mirrored",
-      "acceptance": "PORT-WITH-CARE \u2014 spam is advisory and mirrored: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "crm.md:PORT-WITH-CARE — spam is advisory and mirrored",
+      "acceptance": "PORT-WITH-CARE — spam is advisory and mirrored: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
       "target": "/admin"
@@ -1635,7 +1698,7 @@
       "owner": "vps-cutover",
       "status": "verified",
       "target": "/join",
-      "evidence": "verify-haiku 2026-11-09: live smoke-cutover 2026-11-09: join.nbwc.site, forms.nbwc.site, members.nbwc.site/review and nbwc.site/apply all 301 to the app | migration/caddy-twc-redirects.caddy (twc_nbwc_cutover): join.nbwc.site + forms.nbwc.site \u2192 301 new.*/join, members.nbwc.site/review \u2192 301 new.*{uri} (query kept), nbwc.site/apply \u2192 new.*/join; other nbwc paths unchanged (BRIEF 11). Local smoke ok. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
+      "evidence": "verify-haiku 2026-11-09: live smoke-cutover 2026-11-09: join.nbwc.site, forms.nbwc.site, members.nbwc.site/review and nbwc.site/apply all 301 to the app | migration/caddy-twc-redirects.caddy (twc_nbwc_cutover): join.nbwc.site + forms.nbwc.site → 301 new.*/join, members.nbwc.site/review → 301 new.*{uri} (query kept), nbwc.site/apply → new.*/join; other nbwc paths unchanged (BRIEF 11). Local smoke ok. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
     },
     {
       "id": "OPS-009",
@@ -1724,7 +1787,7 @@
       "owner": "members-links",
       "status": "built",
       "target": "/admin#members",
-      "evidence": "GET /review?t=<token> (src/routes/review.tsx): loader \u2192 openReviewFn \u2192 openReview; unknown/malformed/used/expired/revoked/spotlight/no-longer-approved tokens all \u2192 the same 404 invalid-link page; opening never consumes. Closed-form switch not in this slice. tests: src/features/member-links/member-links.test.ts, src/server/policy.test.ts, src/app/review-route.test.tsx."
+      "evidence": "GET /review?t=<token> (src/routes/review.tsx): loader → openReviewFn → openReview; unknown/malformed/used/expired/revoked/spotlight/no-longer-approved tokens all → the same 404 invalid-link page; opening never consumes. Closed-form switch not in this slice. tests: src/features/member-links/member-links.test.ts, src/server/policy.test.ts, src/app/review-route.test.tsx."
     },
     {
       "id": "OPS-020",
@@ -1737,7 +1800,7 @@
     },
     {
       "id": "OPS-021",
-      "source": "backoffice.md:`GET /review/thanks`: static \"Thank you \u2014 your response is saved\" page (\"This link is now closed and cannot be used agai",
+      "source": "backoffice.md:`GET /review/thanks`: static \"Thank you — your response is saved\" page (\"This link is now closed and cannot be used agai",
       "acceptance": "No separate GET /review/thanks page: thank-you replaces the form in place on /review (deliberately retired).",
       "owner": "members-links",
       "status": "verified",
@@ -1752,7 +1815,7 @@
       "owner": "members-links",
       "status": "built",
       "target": "parity",
-      "evidence": "Review form sections 01\u201304 with the verbatim \u00a72a labels/options (src/features/member-links/schema.ts), public_fields only when directory = public, 6 correction boxes + other_note (id correction_request), honeypot, 'Hello <first name>'. src/features/member-links/ReviewForm.tsx; src/app/review-route.test.tsx."
+      "evidence": "Review form sections 01–04 with the verbatim §2a labels/options (src/features/member-links/schema.ts), public_fields only when directory = public, 6 correction boxes + other_note (id correction_request), honeypot, 'Hello <first name>'. src/features/member-links/ReviewForm.tsx; src/app/review-route.test.tsx."
     },
     {
       "id": "OPS-023",
@@ -1772,8 +1835,8 @@
     },
     {
       "id": "OPS-025",
-      "source": "backoffice.md:`GET /admin/export?type=new|\u2026`",
-      "acceptance": "`GET /admin/export?type=new|\u2026`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "backoffice.md:`GET /admin/export?type=new|…`",
+      "acceptance": "`GET /admin/export?type=new|…`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
       "status": "todo",
       "target": "/join"
@@ -1972,7 +2035,7 @@
       "owner": "members-links",
       "status": "built",
       "target": "/admin#spotlight",
-      "evidence": "spotlight_answers (db/migrations/0008_spotlight_answers.sql; member_reviews rejected: its link_id/member_id are required). Historical rows: scripts/import-legacy.ts --dir \u2026 reads intake/spotlight_answers.jsonl (or --spotlight <file>), both old shapes (spotlight_submission with at/link_id, spotlight_answers with date_added), record_id kept as legacy_id (old hash rule when missing), blanks dropped, insert-only/re-runnable, counts only in logs. Fixture scripts/fixtures/legacy-spotlight.json; tests src/server/legacy-import.test.ts."
+      "evidence": "spotlight_answers (db/migrations/0008_spotlight_answers.sql; member_reviews rejected: its link_id/member_id are required). Historical rows: scripts/import-legacy.ts --dir … reads intake/spotlight_answers.jsonl (or --spotlight <file>), both old shapes (spotlight_submission with at/link_id, spotlight_answers with date_added), record_id kept as legacy_id (old hash rule when missing), blanks dropped, insert-only/re-runnable, counts only in logs. Fixture scripts/fixtures/legacy-spotlight.json; tests src/server/legacy-import.test.ts."
     },
     {
       "id": "OPS-050",
@@ -1989,7 +2052,7 @@
       "owner": "members-links",
       "status": "built",
       "target": "/admin",
-      "evidence": "links.jsonl \u2192 member_links table (0003): id, member_id, purpose review|spotlight, token_hash (sha256 hex), created_by, created_at, expires_at, used_at; revoke = expires_at now, as before. src/features/member-links/member-links.server.ts."
+      "evidence": "links.jsonl → member_links table (0003): id, member_id, purpose review|spotlight, token_hash (sha256 hex), created_by, created_at, expires_at, used_at; revoke = expires_at now, as before. src/features/member-links/member-links.server.ts."
     },
     {
       "id": "OPS-052",
@@ -2505,7 +2568,7 @@
       "owner": "members-links",
       "status": "built",
       "target": "/join",
-      "evidence": "Application form: spotlight 'yes' requires the focus answer and the publication consent box (src/features/applications/schema.ts spotlight \u2192 r.required + r.consent); tested in src/features/applications/schema.test.ts ('spotlight: yes' \u2192 publicationConsent: true)."
+      "evidence": "Application form: spotlight 'yes' requires the focus answer and the publication consent box (src/features/applications/schema.ts spotlight → r.required + r.consent); tested in src/features/applications/schema.test.ts ('spotlight: yes' → publicationConsent: true)."
     },
     {
       "id": "OPS-116",
@@ -2530,7 +2593,7 @@
       "owner": "notifications",
       "status": "verified",
       "target": "notifications",
-      "evidence": "verify-haiku 2026-11-09: beehiiv.test 'needs the newsletter yes AND the email consent' passes | src/server/beehiiv.test.ts \u203a \"newsletterConsent (applications)\": server-side gate needs newsletter yes AND email consent; the form (schema.ts) already requires the box"
+      "evidence": "verify-haiku 2026-11-09: beehiiv.test 'needs the newsletter yes AND the email consent' passes | src/server/beehiiv.test.ts › \"newsletterConsent (applications)\": server-side gate needs newsletter yes AND email consent; the form (schema.ts) already requires the box"
     },
     {
       "id": "OPS-119",
@@ -2558,8 +2621,8 @@
     },
     {
       "id": "OPS-122",
-      "source": "backoffice.md:The connection picklist has these 6 options in order, with codes `connection_live \u2026 connection_other`",
-      "acceptance": "The connection picklist has these 6 options in order, with codes `connection_live \u2026 connection_other`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "backoffice.md:The connection picklist has these 6 options in order, with codes `connection_live … connection_other`",
+      "acceptance": "The connection picklist has these 6 options in order, with codes `connection_live … connection_other`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
       "target": "parity"
@@ -2724,7 +2787,7 @@
       "owner": "members-links",
       "status": "built",
       "target": "parity",
-      "evidence": "Marked used after a successful submit, atomically with storing the review (submitReview); second submit \u2192 404. tests: src/features/member-links/member-links.test.ts, src/server/policy.test.ts."
+      "evidence": "Marked used after a successful submit, atomically with storing the review (submitReview); second submit → 404. tests: src/features/member-links/member-links.test.ts, src/server/policy.test.ts."
     },
     {
       "id": "OPS-143",
@@ -2746,8 +2809,8 @@
     },
     {
       "id": "OPS-145",
-      "source": "backoffice.md:Review membership choices are keep, leave and contact_me, with the verbatim labels in \u00a72a",
-      "acceptance": "Review membership choices are keep, leave and contact_me, with the verbatim labels in \u00a72a: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "backoffice.md:Review membership choices are keep, leave and contact_me, with the verbatim labels in §2a",
+      "acceptance": "Review membership choices are keep, leave and contact_me, with the verbatim labels in §2a: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
       "status": "built",
       "target": "/contact",
@@ -2795,7 +2858,7 @@
       "owner": "members-links",
       "status": "built",
       "target": "/spotlight",
-      "evidence": "src/features/member-links/spotlight.ts: IDENTITY (Your name required; Business name, Neighborhood optional, \u2264300) + 14 SPOTLIGHT_QUESTIONS (4 required). Tested in spotlight.test.ts."
+      "evidence": "src/features/member-links/spotlight.ts: IDENTITY (Your name required; Business name, Neighborhood optional, ≤300) + 14 SPOTLIGHT_QUESTIONS (4 required). Tested in spotlight.test.ts."
     },
     {
       "id": "OPS-151",
@@ -2821,16 +2884,16 @@
       "owner": "members-links",
       "status": "built",
       "target": "/admin#spotlight",
-      "evidence": "spotlight_answers (0008): id, link_id (one answer per link), member_id, legacy_id (old record_id), legacy_member_id, full_name/business/neighborhood, answers JSON object \u226432 KB, created_at. 'type'/'source' are implied (link_id vs legacy_id); date_added = created_at. src/server/db.test.ts (0008 checks)."
+      "evidence": "spotlight_answers (0008): id, link_id (one answer per link), member_id, legacy_id (old record_id), legacy_member_id, full_name/business/neighborhood, answers JSON object ≤32 KB, created_at. 'type'/'source' are implied (link_id vs legacy_id); date_added = created_at. src/server/db.test.ts (0008 checks)."
     },
     {
       "id": "OPS-154",
-      "source": "backoffice.md:Spotlight prefill: name \u2190 `full_name`, business \u2190 `business_practice`, neighborhood \u2190 `base_area`, else `neighborhood_ci",
-      "acceptance": "Spotlight prefill: name \u2190 `full_name`, business \u2190 `business_practice`, neighborhood \u2190 `base_area`, else `neighborhood_ci: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "backoffice.md:Spotlight prefill: name ← `full_name`, business ← `business_practice`, neighborhood ← `base_area`, else `neighborhood_ci",
+      "acceptance": "Spotlight prefill: name ← `full_name`, business ← `business_practice`, neighborhood ← `base_area`, else `neighborhood_ci: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
       "status": "built",
       "target": "/spotlight",
-      "evidence": "openSpotlight prefill via memberValues: name \u2190 profile full_name (else application), business \u2190 profile business (else application business), neighborhood \u2190 profile neighborhood, else the approved application's neighborhood (the new base_area), else basedIn. Never 'Other' literal: the new application stores the area itself. spotlight.test.ts ('prefill name, business and neighborhood')."
+      "evidence": "openSpotlight prefill via memberValues: name ← profile full_name (else application), business ← profile business (else application business), neighborhood ← profile neighborhood, else the approved application's neighborhood (the new base_area), else basedIn. Never 'Other' literal: the new application stores the area itself. spotlight.test.ts ('prefill name, business and neighborhood')."
     },
     {
       "id": "OPS-155",
@@ -2839,12 +2902,12 @@
       "owner": "vps-cutover",
       "status": "built",
       "target": "/spotlight",
-      "evidence": "Same member_links table, separated by purpose: every lookup (activeLink) filters on purpose, minting/revoking one kind never touches the other, approved members only. spotlight.test.ts ('live beside the review link', review token \u2192 404) and member-links.test.ts (spotlight token \u2192 review 404)."
+      "evidence": "Same member_links table, separated by purpose: every lookup (activeLink) filters on purpose, minting/revoking one kind never touches the other, approved members only. spotlight.test.ts ('live beside the review link', review token → 404) and member-links.test.ts (spotlight token → review 404)."
     },
     {
       "id": "OPS-156",
-      "source": "backoffice.md:Issuing a link (`/internal/members/link`) requires `purpose` \u2208 {review, spotlight} and `actor` matching `[a-z][a-z0-9_-]",
-      "acceptance": "Issuing a link (`/internal/members/link`) requires `purpose` \u2208 {review, spotlight} and `actor` matching `[a-z][a-z0-9_-]: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "backoffice.md:Issuing a link (`/internal/members/link`) requires `purpose` ∈ {review, spotlight} and `actor` matching `[a-z][a-z0-9_-]",
+      "acceptance": "Issuing a link (`/internal/members/link`) requires `purpose` ∈ {review, spotlight} and `actor` matching `[a-z][a-z0-9_-]: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
       "target": "/admin#members"
@@ -3162,7 +3225,7 @@
       "owner": "custom-forms",
       "status": "verified",
       "target": "/f/*",
-      "evidence": "verify-haiku 2026-11-09: forms.test filled honeypot gets the same 204 and nothing is stored | A filled honeypot on POST /api/forms/<slug> gets the same 204 as a real answer and nothing is stored (submitResponse in src/features/forms/forms.server.ts); the page then shows the plain /f/<slug>/thanks \u2014 no variant or redirect exists to reveal. tests: src/features/forms/forms.test.ts, src/server/policy.test.ts \u203a custom forms, src/app/form-route.test.tsx"
+      "evidence": "verify-haiku 2026-11-09: forms.test filled honeypot gets the same 204 and nothing is stored | A filled honeypot on POST /api/forms/<slug> gets the same 204 as a real answer and nothing is stored (submitResponse in src/features/forms/forms.server.ts); the page then shows the plain /f/<slug>/thanks — no variant or redirect exists to reveal. tests: src/features/forms/forms.test.ts, src/server/policy.test.ts › custom forms, src/app/form-route.test.tsx"
     },
     {
       "id": "OPS-196",
@@ -3244,7 +3307,7 @@
       "owner": "custom-forms",
       "status": "verified",
       "target": "parity",
-      "evidence": "verify-haiku 2026-11-09: forms.test 'keeps only the form's questions' passes; honeypot, form-id and status dropped | Only the form's own question keys are stored (checkAnswers in src/features/forms/schema.ts drops every other key: honeypot, form-*, anything sent); the client sends { answers, honeypot } only. tests: src/features/forms/forms.test.ts, src/server/policy.test.ts \u203a custom forms, src/app/form-route.test.tsx"
+      "evidence": "verify-haiku 2026-11-09: forms.test 'keeps only the form's questions' passes; honeypot, form-id and status dropped | Only the form's own question keys are stored (checkAnswers in src/features/forms/schema.ts drops every other key: honeypot, form-*, anything sent); the client sends { answers, honeypot } only. tests: src/features/forms/forms.test.ts, src/server/policy.test.ts › custom forms, src/app/form-route.test.tsx"
     },
     {
       "id": "OPS-206",
@@ -3381,7 +3444,7 @@
       "owner": "data-import",
       "status": "built",
       "target": "parity",
-      "evidence": "readRows/importInbox read the submissions.jsonl record shape (at, form, fields, spam, tombstones skipped OPS-225); src/server/legacy-import.test.ts \u203a \"turns contact and partnership submissions into archived inbox rows; spam, custom forms and tombstones stay out\""
+      "evidence": "readRows/importInbox read the submissions.jsonl record shape (at, form, fields, spam, tombstones skipped OPS-225); src/server/legacy-import.test.ts › \"turns contact and partnership submissions into archived inbox rows; spam, custom forms and tombstones stay out\""
     },
     {
       "id": "OPS-223",
@@ -3431,7 +3494,7 @@
       "owner": "custom-forms",
       "status": "built",
       "target": "notifications",
-      "evidence": "Published forms are rows in custom_forms (migration 0005) instead of ${CUSTOM_FORMS_DIR}/<id>.json: the 8-char [a-z0-9] id, slug rule + reserved set, 1\u201380 one-line name and JSON questions are CHECK constraints; questions are checked on write (checkQuestions, saveForm in src/features/forms/store.ts). tests: src/features/forms/forms.test.ts, src/server/policy.test.ts \u203a custom forms, src/app/form-route.test.tsx"
+      "evidence": "Published forms are rows in custom_forms (migration 0005) instead of ${CUSTOM_FORMS_DIR}/<id>.json: the 8-char [a-z0-9] id, slug rule + reserved set, 1–80 one-line name and JSON questions are CHECK constraints; questions are checked on write (checkQuestions, saveForm in src/features/forms/store.ts). tests: src/features/forms/forms.test.ts, src/server/policy.test.ts › custom forms, src/app/form-route.test.tsx"
     },
     {
       "id": "OPS-229",
@@ -3536,7 +3599,7 @@
       "owner": "custom-forms",
       "status": "verified",
       "target": "parity",
-      "evidence": "verify-haiku 2026-11-09: forms.test 'refuses a closed form (410)' passes | custom_forms.open = 0: /f/<slug> shows closed_message or the default (CLOSED) on a 200 page with no questions, and POST /api/forms/<slug> stores nothing (410 with the same words). No schedule, as before. tests: src/features/forms/forms.test.ts, src/server/policy.test.ts \u203a custom forms, src/app/form-route.test.tsx"
+      "evidence": "verify-haiku 2026-11-09: forms.test 'refuses a closed form (410)' passes | custom_forms.open = 0: /f/<slug> shows closed_message or the default (CLOSED) on a 200 page with no questions, and POST /api/forms/<slug> stores nothing (410 with the same words). No schedule, as before. tests: src/features/forms/forms.test.ts, src/server/policy.test.ts › custom forms, src/app/form-route.test.tsx"
     },
     {
       "id": "OPS-242",
@@ -3545,7 +3608,7 @@
       "owner": "custom-forms",
       "status": "built",
       "target": "parity",
-      "evidence": "Honeypot field `honeypot` (off-screen, aria-hidden, tabindex -1, as on /contact): any non-empty value is a silent 204, nothing stored. Unlike the old service the per-form limiter still counts it (it is checked before the body is read). src/features/forms/CustomForm.tsx, forms.server.ts. tests: src/features/forms/forms.test.ts, src/server/policy.test.ts \u203a custom forms, src/app/form-route.test.tsx"
+      "evidence": "Honeypot field `honeypot` (off-screen, aria-hidden, tabindex -1, as on /contact): any non-empty value is a silent 204, nothing stored. Unlike the old service the per-form limiter still counts it (it is checked before the body is read). src/features/forms/CustomForm.tsx, forms.server.ts. tests: src/features/forms/forms.test.ts, src/server/policy.test.ts › custom forms, src/app/form-route.test.tsx"
     },
     {
       "id": "OPS-243",
@@ -3562,7 +3625,7 @@
       "owner": "custom-forms",
       "status": "verified",
       "target": "parity",
-      "evidence": "verify-haiku 2026-11-09: forms.test per-visitor limit passes: 10 per 10 min per form, 11th 429 without reading the body | 10 per visitor (clientIp) per form per 10 minutes, 429 with the friendly words, checked before the body is read (formRequest, rateLimit in src/server/request.ts). Deviation: every POST counts, not only stored ones (ponytail comment). tests: src/features/forms/forms.test.ts, src/server/policy.test.ts \u203a custom forms, src/app/form-route.test.tsx"
+      "evidence": "verify-haiku 2026-11-09: forms.test per-visitor limit passes: 10 per 10 min per form, 11th 429 without reading the body | 10 per visitor (clientIp) per form per 10 minutes, 429 with the friendly words, checked before the body is read (formRequest, rateLimit in src/server/request.ts). Deviation: every POST counts, not only stored ones (ponytail comment). tests: src/features/forms/forms.test.ts, src/server/policy.test.ts › custom forms, src/app/form-route.test.tsx"
     },
     {
       "id": "OPS-245",
@@ -3603,7 +3666,7 @@
       "owner": "custom-forms",
       "status": "verified",
       "target": "notifications",
-      "evidence": "verify-haiku 2026-11-09: forms.test duplicate email \u2192 409 passes | custom_forms.one_per_email: a second answer whose first email-type answer matches (trimmed, any case) gets 409 DUPLICATE and nothing is stored; check and insert can't interleave (node:sqlite is synchronous). The email is kept in its own column (custom_form_responses.email), like every other table's email, instead of a keyed-hash side index. tests: src/features/forms/forms.test.ts, src/server/policy.test.ts \u203a custom forms, src/app/form-route.test.tsx"
+      "evidence": "verify-haiku 2026-11-09: forms.test duplicate email → 409 passes | custom_forms.one_per_email: a second answer whose first email-type answer matches (trimmed, any case) gets 409 DUPLICATE and nothing is stored; check and insert can't interleave (node:sqlite is synchronous). The email is kept in its own column (custom_form_responses.email), like every other table's email, instead of a keyed-hash side index. tests: src/features/forms/forms.test.ts, src/server/policy.test.ts › custom forms, src/app/form-route.test.tsx"
     },
     {
       "id": "OPS-250",
@@ -4275,8 +4338,8 @@
     },
     {
       "id": "OPS-333",
-      "source": "backoffice.md:Field mapping (record \u2192 property; `propertiesForRecord`, expanded_notion.mjs:439-551).",
-      "acceptance": "Field mapping (record \u2192 property; `propertiesForRecord`, expanded_notion.mjs:439-551).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "backoffice.md:Field mapping (record → property; `propertiesForRecord`, expanded_notion.mjs:439-551).",
+      "acceptance": "Field mapping (record → property; `propertiesForRecord`, expanded_notion.mjs:439-551).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
       "target": "notifications"
@@ -4947,7 +5010,7 @@
       "owner": "vps-cutover",
       "status": "built",
       "target": "/contact",
-      "evidence": "Forms service still 303s to /message-sent.html?form=\u2026; that GET now 301s to new.*/contact (or /partnerships via thanks-partnership). Local smoke ok. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
+      "evidence": "Forms service still 303s to /message-sent.html?form=…; that GET now 301s to new.*/contact (or /partnerships via thanks-partnership). Local smoke ok. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
     },
     {
       "id": "OPS-416",
@@ -4972,7 +5035,7 @@
       "owner": "custom-forms",
       "status": "built",
       "target": "/f/*",
-      "evidence": "Same slug rule ([a-z0-9], inner '-', no '--', 1\u201340) and the full reserved set as a CHECK on custom_forms.slug; id 8 [a-z0-9]; name 1\u201380, one line (migration 0005). The route is /f/$slug, so a form can't shadow an app route. tests: src/features/forms/forms.test.ts \u203a custom_forms table"
+      "evidence": "Same slug rule ([a-z0-9], inner '-', no '--', 1–40) and the full reserved set as a CHECK on custom_forms.slug; id 8 [a-z0-9]; name 1–80, one line (migration 0005). The route is /f/$slug, so a form can't shadow an app route. tests: src/features/forms/forms.test.ts › custom_forms table"
     },
     {
       "id": "OPS-419",
@@ -5029,7 +5092,7 @@
       "owner": "custom-forms",
       "status": "built",
       "target": "/f/*",
-      "evidence": "custom_form_old_slugs (migration 0005): /f/<old> and /f/<old>/thanks 301 to the current slug (src/routes/f.$slug.tsx, f.$slug_.thanks.tsx); answers posted to an old name land on the form. Embed/prefill query strings are not carried (no embed or prefill in this slice). tests: src/features/forms/forms.test.ts, src/server/policy.test.ts \u203a custom forms, src/app/form-route.test.tsx"
+      "evidence": "custom_form_old_slugs (migration 0005): /f/<old> and /f/<old>/thanks 301 to the current slug (src/routes/f.$slug.tsx, f.$slug_.thanks.tsx); answers posted to an old name land on the form. Embed/prefill query strings are not carried (no embed or prefill in this slice). tests: src/features/forms/forms.test.ts, src/server/policy.test.ts › custom forms, src/app/form-route.test.tsx"
     },
     {
       "id": "OPS-426",
@@ -5463,7 +5526,7 @@
       "owner": "custom-forms",
       "status": "verified",
       "target": "/f/*",
-      "evidence": "verify-haiku 2026-11-09: forms.test per-visitor-per-form limit passes (same as OPS-244) | Per visitor per form: rateLimit(10, 10 min) keyed by client IP + slug in formRequest (src/features/forms/forms.server.ts); in memory like the app's other limits. Every POST counts (documented deviation). tests: src/features/forms/forms.test.ts, src/server/policy.test.ts \u203a custom forms, src/app/form-route.test.tsx"
+      "evidence": "verify-haiku 2026-11-09: forms.test per-visitor-per-form limit passes (same as OPS-244) | Per visitor per form: rateLimit(10, 10 min) keyed by client IP + slug in formRequest (src/features/forms/forms.server.ts); in memory like the app's other limits. Every POST counts (documented deviation). tests: src/features/forms/forms.test.ts, src/server/policy.test.ts › custom forms, src/app/form-route.test.tsx"
     },
     {
       "id": "OPS-480",
@@ -5804,7 +5867,7 @@
       "owner": "notifications",
       "status": "built",
       "target": "/contact",
-      "evidence": "src/server/beehiiv.ts: an address is claimed in newsletter_subscribers before the call, so replayed rows, restored backups and the imported Beehiiv list (consent null) are never re-sent (tests \"already on the list\", \"replaying\u2026\", \"racing\")"
+      "evidence": "src/server/beehiiv.ts: an address is claimed in newsletter_subscribers before the call, so replayed rows, restored backups and the imported Beehiiv list (consent null) are never re-sent (tests \"already on the list\", \"replaying…\", \"racing\")"
     },
     {
       "id": "OPS-522",
@@ -5931,133 +5994,133 @@
     },
     {
       "id": "SITE-002",
-      "source": "site.md:about.html \u2192 `/about`",
-      "acceptance": "about.html \u2192 `/about`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "site.md:about.html → `/about`",
+      "acceptance": "about.html → `/about`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
       "status": "todo",
       "target": "/about"
     },
     {
       "id": "SITE-003",
-      "source": "site.md:contact.html \u2192 `/contact`",
-      "acceptance": "contact.html \u2192 `/contact`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "site.md:contact.html → `/contact`",
+      "acceptance": "contact.html → `/contact`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
       "status": "todo",
       "target": "/contact"
     },
     {
       "id": "SITE-004",
-      "source": "site.md:directory.html \u2192 `/members`",
-      "acceptance": "directory.html \u2192 `/members`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "site.md:directory.html → `/members`",
+      "acceptance": "directory.html → `/members`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "verified",
       "target": "/members",
-      "evidence": "verify-haiku 2026-11-09: live smoke-cutover 2026-11-09 (48/48 ok): /directory and /directory.html 301 to new /members | migration/caddy-twc-redirects.caddy (twc_apex_cutover) @old_directory: /directory + /directory.html \u2192 301 new.*/members; src/app/cutover-redirects.test.ts; local Caddy 2.10.2 run + scripts/smoke-cutover.ts ok. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
+      "evidence": "verify-haiku 2026-11-09: live smoke-cutover 2026-11-09 (48/48 ok): /directory and /directory.html 301 to new /members | migration/caddy-twc-redirects.caddy (twc_apex_cutover) @old_directory: /directory + /directory.html → 301 new.*/members; src/app/cutover-redirects.test.ts; local Caddy 2.10.2 run + scripts/smoke-cutover.ts ok. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
     },
     {
       "id": "SITE-005",
-      "source": "site.md:events.html \u2192 `/gatherings`",
-      "acceptance": "events.html \u2192 `/gatherings`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "site.md:events.html → `/gatherings`",
+      "acceptance": "events.html → `/gatherings`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
       "status": "todo",
       "target": "/gatherings"
     },
     {
       "id": "SITE-006",
-      "source": "site.md:fellowship.html \u2192 `/fellowship` (MISSING in new app)",
-      "acceptance": "fellowship.html \u2192 `/fellowship` (MISSING in new app): behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "site.md:fellowship.html → `/fellowship` (MISSING in new app)",
+      "acceptance": "fellowship.html → `/fellowship` (MISSING in new app): behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
       "status": "verified",
       "target": "/fellowship",
-      "evidence": "verify-haiku 2026-11-09: fellowship-partnerships-route.test passes; /fellowship route exists; fellowship(.html) 301 live | src/app/fellowship-partnerships-route.test.tsx \u203a /fellowship (all three describe.each cases) + src/routes/fellowship.tsx"
+      "evidence": "verify-haiku 2026-11-09: fellowship-partnerships-route.test passes; /fellowship route exists; fellowship(.html) 301 live | src/app/fellowship-partnerships-route.test.tsx › /fellowship (all three describe.each cases) + src/routes/fellowship.tsx"
     },
     {
       "id": "SITE-007",
-      "source": "site.md:partnerships.html \u2192 `/partnerships` (MISSING in new app)",
-      "acceptance": "partnerships.html \u2192 `/partnerships` (MISSING in new app): behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "site.md:partnerships.html → `/partnerships` (MISSING in new app)",
+      "acceptance": "partnerships.html → `/partnerships` (MISSING in new app): behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
       "status": "verified",
       "target": "/partnerships",
-      "evidence": "verify-haiku 2026-11-09: fellowship-partnerships-route.test passes; /partnerships route with PartnershipForm; partnerships(.html) 301 live | src/app/fellowship-partnerships-route.test.tsx \u203a /partnerships (describe.each + ways in) + src/routes/partnerships.tsx; form storage is SITE-056 (admin-inbox)"
+      "evidence": "verify-haiku 2026-11-09: fellowship-partnerships-route.test passes; /partnerships route with PartnershipForm; partnerships(.html) 301 live | src/app/fellowship-partnerships-route.test.tsx › /partnerships (describe.each + ways in) + src/routes/partnerships.tsx; form storage is SITE-056 (admin-inbox)"
     },
     {
       "id": "SITE-008",
-      "source": "site.md:editing.html \u2192 `/account`",
-      "acceptance": "editing.html \u2192 `/account`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "site.md:editing.html → `/account`",
+      "acceptance": "editing.html → `/account`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
       "status": "todo",
       "target": "/account"
     },
     {
       "id": "SITE-009",
-      "source": "site.md:privacy.html \u2192 `/privacy`",
-      "acceptance": "privacy.html \u2192 `/privacy`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "site.md:privacy.html → `/privacy`",
+      "acceptance": "privacy.html → `/privacy`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
       "status": "todo",
       "target": "/privacy"
     },
     {
       "id": "SITE-010",
-      "source": "site.md:terms.html \u2192 `/terms`",
-      "acceptance": "terms.html \u2192 `/terms`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "site.md:terms.html → `/terms`",
+      "acceptance": "terms.html → `/terms`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
       "status": "todo",
       "target": "/terms"
     },
     {
       "id": "SITE-011",
-      "source": "site.md:code-of-conduct.html \u2192 `/code-of-conduct`",
-      "acceptance": "code-of-conduct.html \u2192 `/code-of-conduct`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "site.md:code-of-conduct.html → `/code-of-conduct`",
+      "acceptance": "code-of-conduct.html → `/code-of-conduct`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
       "status": "todo",
       "target": "/code-of-conduct"
     },
     {
       "id": "SITE-012",
-      "source": "site.md:message-sent.html \u2192 `/contact`",
-      "acceptance": "message-sent.html \u2192 `/contact`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "site.md:message-sent.html → `/contact`",
+      "acceptance": "message-sent.html → `/contact`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
       "status": "todo",
       "target": "/contact"
     },
     {
       "id": "SITE-013",
-      "source": "site.md:subscribed.html \u2192 `/contact`",
-      "acceptance": "subscribed.html \u2192 `/contact`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "site.md:subscribed.html → `/contact`",
+      "acceptance": "subscribed.html → `/contact`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
       "status": "todo",
       "target": "/contact"
     },
     {
       "id": "SITE-014",
-      "source": "site.md:thanks-contact.html \u2192 `/contact`",
-      "acceptance": "thanks-contact.html \u2192 `/contact`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "site.md:thanks-contact.html → `/contact`",
+      "acceptance": "thanks-contact.html → `/contact`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "verified",
       "target": "/contact",
-      "evidence": "verify-haiku 2026-11-09: live smoke-cutover 2026-11-09: /thanks-contact(.html) 301 to /contact | migration/caddy-twc-redirects.caddy @old_contact: /thanks-contact(.html) \u2192 301 new.*/contact (GET/HEAD; redir runs before the @formthanks rewrite); src/app/cutover-redirects.test.ts; local smoke ok. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
+      "evidence": "verify-haiku 2026-11-09: live smoke-cutover 2026-11-09: /thanks-contact(.html) 301 to /contact | migration/caddy-twc-redirects.caddy @old_contact: /thanks-contact(.html) → 301 new.*/contact (GET/HEAD; redir runs before the @formthanks rewrite); src/app/cutover-redirects.test.ts; local smoke ok. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
     },
     {
       "id": "SITE-015",
-      "source": "site.md:thanks-newsletter.html \u2192 `/contact`",
-      "acceptance": "thanks-newsletter.html \u2192 `/contact`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "site.md:thanks-newsletter.html → `/contact`",
+      "acceptance": "thanks-newsletter.html → `/contact`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
       "target": "/contact"
     },
     {
       "id": "SITE-016",
-      "source": "site.md:thanks-partnership.html \u2192 `/partnerships`",
-      "acceptance": "thanks-partnership.html \u2192 `/partnerships`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "site.md:thanks-partnership.html → `/partnerships`",
+      "acceptance": "thanks-partnership.html → `/partnerships`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
       "status": "verified",
       "target": "/partnerships",
-      "evidence": "verify-haiku 2026-11-09: live smoke-cutover 2026-11-09: /thanks-partnership(.html) 301 to /partnerships | src/app/fellowship-partnerships-route.test.tsx \u203a /partnerships route exists; old thanks-partnership(.html) \u2192 /partnerships in migration/redirects.md"
+      "evidence": "verify-haiku 2026-11-09: live smoke-cutover 2026-11-09: /thanks-partnership(.html) 301 to /partnerships | src/app/fellowship-partnerships-route.test.tsx › /partnerships route exists; old thanks-partnership(.html) → /partnerships in migration/redirects.md"
     },
     {
       "id": "SITE-017",
-      "source": "site.md:404.html \u2192 `/404`",
-      "acceptance": "404.html \u2192 `/404`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "site.md:404.html → `/404`",
+      "acceptance": "404.html → `/404`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
       "status": "todo",
       "target": "/404"
@@ -6221,7 +6284,7 @@
       "owner": "data-import",
       "status": "built",
       "target": "/fellowship",
-      "evidence": "src/app/fellowship-partnerships-route.test.tsx \u203a /fellowship is Western Queens only; \"free to join\" dropped until fees are settled (AUDIT note in final report)"
+      "evidence": "src/app/fellowship-partnerships-route.test.tsx › /fellowship is Western Queens only; \"free to join\" dropped until fees are settled (AUDIT note in final report)"
     },
     {
       "id": "SITE-037",
@@ -6230,7 +6293,7 @@
       "owner": "public-pages",
       "status": "built",
       "target": "/about",
-      "evidence": "src/app/fellowship-partnerships-route.test.tsx \u203a /fellowship links \"See how it works\" \u2192 /about (new four-step flow lives there; old link/TTL copy not ported)"
+      "evidence": "src/app/fellowship-partnerships-route.test.tsx › /fellowship links \"See how it works\" → /about (new four-step flow lives there; old link/TTL copy not ported)"
     },
     {
       "id": "SITE-038",
@@ -6239,7 +6302,7 @@
       "owner": "public-pages",
       "status": "built",
       "target": "/fellowship",
-      "evidence": "src/app/fellowship-partnerships-route.test.tsx \u203a /fellowship states no eligibility rules, fees or review timelines (placeholder lists deliberately dropped)"
+      "evidence": "src/app/fellowship-partnerships-route.test.tsx › /fellowship states no eligibility rules, fees or review timelines (placeholder lists deliberately dropped)"
     },
     {
       "id": "SITE-039",
@@ -6248,7 +6311,7 @@
       "owner": "public-pages",
       "status": "built",
       "target": "/fellowship",
-      "evidence": "src/app/fellowship-partnerships-route.test.tsx \u203a /fellowship links \"Read the code of conduct\" \u2192 /code-of-conduct; principles copy on page"
+      "evidence": "src/app/fellowship-partnerships-route.test.tsx › /fellowship links \"Read the code of conduct\" → /code-of-conduct; principles copy on page"
     },
     {
       "id": "SITE-040",
@@ -6267,7 +6330,7 @@
       "owner": "public-pages",
       "status": "todo",
       "target": "/gatherings",
-      "evidence": "verify-haiku 2026-11-09 reverted to todo: the CTA is not on /gatherings (gatherings.tsx has no fellowship link); /fellowship links to /join and /gatherings instead | src/app/fellowship-partnerships-route.test.tsx \u203a /fellowship links \"Start your application\" \u2192 /join and \"Come to something first\" \u2192 /gatherings"
+      "evidence": "verify-haiku 2026-11-09 reverted to todo: the CTA is not on /gatherings (gatherings.tsx has no fellowship link); /fellowship links to /join and /gatherings instead | src/app/fellowship-partnerships-route.test.tsx › /fellowship links \"Start your application\" → /join and \"Come to something first\" → /gatherings"
     },
     {
       "id": "SITE-042",
@@ -6276,7 +6339,7 @@
       "owner": "public-pages",
       "status": "built",
       "target": "/partnerships",
-      "evidence": "src/app/fellowship-partnerships-route.test.tsx \u203a /partnerships shows the four ways in; copy has no prices or invented facts"
+      "evidence": "src/app/fellowship-partnerships-route.test.tsx › /partnerships shows the four ways in; copy has no prices or invented facts"
     },
     {
       "id": "SITE-043",
@@ -6285,7 +6348,7 @@
       "owner": "public-pages",
       "status": "todo",
       "target": "/partnerships",
-      "evidence": "verify-haiku 2026-11-09 reverted to todo: no current-partners block by decision; blocked on partner facts from the owner (SITE-157) | src/app/fellowship-partnerships-route.test.tsx \u203a /partnerships shows the four ways in and no current-partners block (facts not re-supplied)"
+      "evidence": "verify-haiku 2026-11-09 reverted to todo: no current-partners block by decision; blocked on partner facts from the owner (SITE-157) | src/app/fellowship-partnerships-route.test.tsx › /partnerships shows the four ways in and no current-partners block (facts not re-supplied)"
     },
     {
       "id": "SITE-044",
@@ -6294,7 +6357,7 @@
       "owner": "public-pages",
       "status": "verified",
       "target": "/partnerships",
-      "evidence": "verify-haiku 2026-11-09: fellowship-partnerships-route.test passes; 'Before you write' aside at partnerships.tsx:87 | src/app/fellowship-partnerships-route.test.tsx \u203a /partnerships \"Apply to join\" \u2192 /join in the \"Before you write\" aside"
+      "evidence": "verify-haiku 2026-11-09: fellowship-partnerships-route.test passes; 'Before you write' aside at partnerships.tsx:87 | src/app/fellowship-partnerships-route.test.tsx › /partnerships \"Apply to join\" → /join in the \"Before you write\" aside"
     },
     {
       "id": "SITE-045",
@@ -6402,7 +6465,7 @@
       "owner": "public-pages",
       "status": "verified",
       "target": "/partnerships",
-      "evidence": "verify-haiku 2026-11-09: partnership.test 'accepts every collaboration type' passes; five types in PartnershipForm | src/features/contact/partnership.test.ts \u203a accepts every collaboration type and JSON consent: true"
+      "evidence": "verify-haiku 2026-11-09: partnership.test 'accepts every collaboration type' passes; five types in PartnershipForm | src/features/contact/partnership.test.ts › accepts every collaboration type and JSON consent: true"
     },
     {
       "id": "SITE-058",
@@ -6499,7 +6562,7 @@
       "owner": "data-import",
       "status": "built",
       "target": "public-site",
-      "evidence": "contact/partnership rows \u2192 inbox_messages, newsletter rows \u2192 newsletter_subscribers, via scripts/import-legacy.ts; src/server/legacy-import.test.ts \u203a \"imports the fixtures and says what it skipped and why\""
+      "evidence": "contact/partnership rows → inbox_messages, newsletter rows → newsletter_subscribers, via scripts/import-legacy.ts; src/server/legacy-import.test.ts › \"imports the fixtures and says what it skipped and why\""
     },
     {
       "id": "SITE-070",
@@ -6573,7 +6636,7 @@
       "owner": "vps-cutover",
       "status": "built",
       "target": "/contact",
-      "evidence": "migration/caddy-twc-redirects.caddy: page redirects are GET/HEAD only, so a stale POST to /message-sent.html or /subscribed.html still reaches forms:8080 (@formpost) and is stored, then its 303 lands on new.*/contact. Local run: POST \u2192 proxied (502 locally, no forms service), not 301. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
+      "evidence": "migration/caddy-twc-redirects.caddy: page redirects are GET/HEAD only, so a stale POST to /message-sent.html or /subscribed.html still reaches forms:8080 (@formpost) and is stored, then its 303 lands on new.*/contact. Local run: POST → proxied (502 locally, no forms service), not 301. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
     },
     {
       "id": "SITE-079",
@@ -6756,7 +6819,7 @@
       "owner": "vps-cutover",
       "status": "verified",
       "target": "/about",
-      "evidence": "verify-haiku 2026-11-09: live smoke-cutover 2026-11-09: /about and /about.html both 301 to /about | migration/caddy-twc-redirects.caddy: one matcher per target lists the tidy and .html path; src/app/cutover-redirects.test.ts \u203a 'covers every page row, both URLs' (15 rows \u00d7 2); local smoke 30/30. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
+      "evidence": "verify-haiku 2026-11-09: live smoke-cutover 2026-11-09: /about and /about.html both 301 to /about | migration/caddy-twc-redirects.caddy: one matcher per target lists the tidy and .html path; src/app/cutover-redirects.test.ts › 'covers every page row, both URLs' (15 rows × 2); local smoke 30/30. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
     },
     {
       "id": "SITE-101",
@@ -6807,7 +6870,7 @@
       "owner": "vps-cutover",
       "status": "verified",
       "target": "vps:caddy-redirects",
-      "evidence": "Live 2026-11-09: migration/caddy-twc-redirects.caddy @signin/@oldmembers/@nologin; smoke-cutover ok (login\u2192/auth, members/old-page\u2192/members, apply-thank-you\u2192/)."
+      "evidence": "Live 2026-11-09: migration/caddy-twc-redirects.caddy @signin/@oldmembers/@nologin; smoke-cutover ok (login→/auth, members/old-page→/members, apply-thank-you→/)."
     },
     {
       "id": "SITE-107",
@@ -6884,7 +6947,7 @@
       "owner": "vps-cutover",
       "status": "verified",
       "target": "vps:caddy-redirects",
-      "evidence": "verify-haiku 2026-11-09: live smoke-cutover 2026-11-09: /about.html?form=x drops the query; /review?t= keeps it | migration/caddy-twc-redirects.caddy: no {query} in any page target, so queries are dropped; review rules use {uri} to keep ?t=. smoke check /about.html?form=x \u2192 new.*/about; src/app/cutover-redirects.test.ts. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
+      "evidence": "verify-haiku 2026-11-09: live smoke-cutover 2026-11-09: /about.html?form=x drops the query; /review?t= keeps it | migration/caddy-twc-redirects.caddy: no {query} in any page target, so queries are dropped; review rules use {uri} to keep ?t=. smoke check /about.html?form=x → new.*/about; src/app/cutover-redirects.test.ts. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
     },
     {
       "id": "SITE-116",
@@ -7031,7 +7094,7 @@
       "owner": "public-pages",
       "status": "verified",
       "target": "/fellowship",
-      "evidence": "fellowship-partnerships-route.test.tsx \u203a /fellowship has no FAQ block; /faq emits FAQPage JSON-LD.",
+      "evidence": "fellowship-partnerships-route.test.tsx › /fellowship has no FAQ block; /faq emits FAQPage JSON-LD.",
       "retired": "moved-to-faq"
     },
     {
@@ -7156,7 +7219,7 @@
       "owner": "public-pages",
       "status": "verified",
       "target": "/fellowship",
-      "evidence": "verify-haiku 2026-11-09: fellowship-partnerships-route.test passes; /fellowship links /faq, /about, /code-of-conduct; no eligibility copy | src/app/fellowship-partnerships-route.test.tsx \u203a /fellowship links /faq, /about, /code-of-conduct rather than duplicating; no eligibility copy"
+      "evidence": "verify-haiku 2026-11-09: fellowship-partnerships-route.test passes; /fellowship links /faq, /about, /code-of-conduct; no eligibility copy | src/app/fellowship-partnerships-route.test.tsx › /fellowship links /faq, /about, /code-of-conduct rather than duplicating; no eligibility copy"
     },
     {
       "id": "SITE-149",
@@ -7232,7 +7295,7 @@
       "owner": "public-pages",
       "status": "todo",
       "target": "public-site",
-      "evidence": "verify-haiku 2026-11-09 reverted to todo: no partners data on /partnerships; blocked on partner facts from the owner | Decision: partners left out until the owner re-supplies facts; src/app/fellowship-partnerships-route.test.tsx \u203a no current-partners block"
+      "evidence": "verify-haiku 2026-11-09 reverted to todo: no partners data on /partnerships; blocked on partner facts from the owner | Decision: partners left out until the owner re-supplies facts; src/app/fellowship-partnerships-route.test.tsx › no current-partners block"
     },
     {
       "id": "SITE-158",
@@ -7249,7 +7312,7 @@
       "owner": "public-pages",
       "status": "built",
       "target": "public-site",
-      "evidence": "src/app/fellowship-partnerships-route.test.tsx \u203a is Western Queens only: no Brooklyn place names"
+      "evidence": "src/app/fellowship-partnerships-route.test.tsx › is Western Queens only: no Brooklyn place names"
     },
     {
       "id": "SITE-160",
@@ -7285,7 +7348,7 @@
       "owner": "vps-cutover",
       "status": "verified",
       "target": "vps:caddy-redirects",
-      "evidence": "verify-haiku 2026-11-09: live smoke-cutover 2026-11-09: /members/old-page 302 to /members; /apply-thank-you 302 to / | migration/caddy-twc-redirects.caddy: old @nologin split; /members,/members/* \u2192 302 new.*/members (the app lives on new.*, so no collision with its /members/:slug). LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
+      "evidence": "verify-haiku 2026-11-09: live smoke-cutover 2026-11-09: /members/old-page 302 to /members; /apply-thank-you 302 to / | migration/caddy-twc-redirects.caddy: old @nologin split; /members,/members/* → 302 new.*/members (the app lives on new.*, so no collision with its /members/:slug). LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
     },
     {
       "id": "SITE-164",
@@ -7294,7 +7357,7 @@
       "owner": "vps-cutover",
       "status": "verified",
       "target": "vps:caddy-redirects",
-      "evidence": "verify-haiku 2026-11-09: live smoke-cutover 2026-11-09: /apply(.html) one 301 hop to new /join (also nbwc.site/apply, join.nbwc.site, forms.nbwc.site) | migration/caddy-twc-redirects.caddy @apply \u2192 new.*/join in one hop (was apex \u2192 join.* \u2192 new.*); nbwc.site/apply too (twc_nbwc_cutover); local smoke ok. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
+      "evidence": "verify-haiku 2026-11-09: live smoke-cutover 2026-11-09: /apply(.html) one 301 hop to new /join (also nbwc.site/apply, join.nbwc.site, forms.nbwc.site) | migration/caddy-twc-redirects.caddy @apply → new.*/join in one hop (was apex → join.* → new.*); nbwc.site/apply too (twc_nbwc_cutover); local smoke ok. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
     },
     {
       "id": "SITE-165",
@@ -7358,16 +7421,16 @@
     },
     {
       "id": "SITE-172",
-      "source": "site.md:`editing.html` \u2192 `/account` is a semantic oddity",
-      "acceptance": "`editing.html` \u2192 `/account` is a semantic oddity: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "site.md:`editing.html` → `/account` is a semantic oddity",
+      "acceptance": "`editing.html` → `/account` is a semantic oddity: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
       "target": "/account"
     },
     {
       "id": "SITE-173",
-      "source": "site.md:`thanks-partnership.html` \u2192 `/partnerships` depends on a page that doesn't exist",
-      "acceptance": "`thanks-partnership.html` \u2192 `/partnerships` depends on a page that doesn't exist: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "source": "site.md:`thanks-partnership.html` → `/partnerships` depends on a page that doesn't exist",
+      "acceptance": "`thanks-partnership.html` → `/partnerships` depends on a page that doesn't exist: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
       "target": "/partnerships"
