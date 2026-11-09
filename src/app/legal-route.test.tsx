@@ -22,9 +22,9 @@ const show = (route: AnyRoute) => {
 const text = () => screen.getByRole("main").textContent ?? "";
 
 const pages = [
-  ["/privacy", Privacy, "What We Hold, and Why", "Privacy Policy — The Women’s Collective"],
-  ["/terms", Terms, "The Short Version", "Terms of Membership — The Women’s Collective"],
-  ["/code-of-conduct", Conduct, "What We Expect of Each Other", "Code of Conduct — The Women’s Collective"],
+  ["/privacy", Privacy, "What we hold, and why", "Privacy Policy — The Women’s Collective"],
+  ["/terms", Terms, "The short version", "Terms of Membership — The Women’s Collective"],
+  ["/code-of-conduct", Conduct, "What we expect of each other", "Code of Conduct — The Women’s Collective"],
 ] as const;
 
 describe.each(pages)("%s", (path, route, h1, title) => {
@@ -34,26 +34,33 @@ describe.each(pages)("%s", (path, route, h1, title) => {
     expect(INDEXED.has(path)).toBe(true);
   });
 
-  it("opens with a badge over one serif h1, then numbered sections, with no skipped levels", () => {
+  it("opens with document tabs and one serif h1, then numbered sections, with no skipped levels", () => {
     show(route);
     const main = screen.getByRole("main");
     expect(main.id).toBe("main");
     expect(within(main).getByRole("heading", { level: 1 }).textContent).toBe(h1);
-    const sections = within(main).getAllByRole("heading", { level: 2 }).filter((h) => /^\d+\. /.test(h.textContent ?? ""));
+    const sections = within(main).getAllByRole("heading", { level: 2 }).filter((h) => /^\d{2} /.test(h.textContent ?? ""));
     expect(sections.map((h) => Number.parseInt(h.textContent!))).toEqual(sections.map((_, i) => i + 1));
     expectNoSkippedHeadings(main);
+  });
+
+  it("tabs between the three documents, marking this one as the current page", () => {
+    show(route);
+    const tabs = within(screen.getByRole("navigation", { name: "Legal documents" })).getAllByRole("link");
+    expect(tabs.map((a) => a.getAttribute("href"))).toEqual(["/privacy", "/terms", "/code-of-conduct"]);
+    expect(tabs.filter((a) => a.getAttribute("aria-current") === "page").map((a) => a.getAttribute("href"))).toEqual([path]);
   });
 
   it("lists every section under “On this page”, each link landing on its section", () => {
     show(route);
     const toc = screen.getByRole("navigation", { name: "On this page" });
     const links = within(toc).getAllByRole("link");
-    expect(links.length).toBe(screen.getAllByRole("heading", { level: 2 }).filter((h) => /^\d+\. /.test(h.textContent ?? "")).length);
+    expect(links.length).toBe(screen.getAllByRole("heading", { level: 2 }).filter((h) => /^\d{2} /.test(h.textContent ?? "")).length);
     for (const link of links) {
       const target = document.getElementById(link.getAttribute("href")!.replace(/^#/, ""));
       expect(target, link.textContent!).not.toBeNull();
       expect(target!.tagName).toBe("SECTION");
-      expect(target!.querySelector("h2")?.textContent).toMatch(/^\d+\. /);
+      expect(target!.querySelector("h2")?.textContent).toMatch(/^\d{2} /);
     }
   });
 
