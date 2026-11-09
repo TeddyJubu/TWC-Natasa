@@ -1672,8 +1672,10 @@
       "source": "crm.md:RETIRE — shared-key HTTP between CRM and intake",
       "acceptance": "RETIRE — shared-key HTTP between CRM and intake: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
-      "status": "todo",
-      "retired": "crm"
+      "status": "verified",
+      "retired": "no-intake-http",
+      "target": "retired",
+      "evidence": "Retired: shared-key HTTP CRM→intake (CRM_INTAKE_URL / x-internal-key) for approve/decline/merge/link/preview. Rebuild calls domain functions under requireAdmin (no intake HTTP). Inventory [retired]. AUDIT data-import remainders. | verified 2026-11-09: no CRM_INTAKE_* or x-internal-key path in src/; guard.ts requireAdmin"
     },
     {
       "id": "CRM-178",
@@ -1858,8 +1860,10 @@
       "source": "backoffice.md:Optional modules loaded at import, each failing soft",
       "acceptance": "Optional modules loaded at import, each failing soft: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "old-intake-runtime",
+      "evidence": "Retired: intake soft-load of spam_hook.py / membership_forms.py / merge.py at import. Rebuild is a fixed Node app (no optional Python modules). Mis-seeded onto data-import. AUDIT data-import remainders. | verified 2026-11-09: old-intake-runtime"
     },
     {
       "id": "OPS-011",
@@ -2399,8 +2403,10 @@
       "source": "backoffice.md:Merge request contract",
       "acceptance": "Merge request contract: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-merge-graph",
+      "evidence": "Retired: intake merge request contract (refs/actor/version). Merge graph retired with CRM-074–081 (AUDIT phase 3+7); no /internal/merge. Mis-seeded onto data-import. AUDIT data-import remainders. | verified 2026-11-09: no-merge-graph"
     },
     {
       "id": "OPS-076",
@@ -2531,7 +2537,8 @@
       "acceptance": "Remove member is a hard delete: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
       "status": "todo",
-      "target": "/join"
+      "target": "/join",
+      "evidence": "AUDIT data-import remainders 2026-11-09: leave todo — hard-delete member product not built (profiles stay; no intake-style wipe of members.jsonl)."
     },
     {
       "id": "OPS-092",
@@ -2618,8 +2625,9 @@
       "source": "backoffice.md:No HTTP route serves uploaded logos",
       "acceptance": "No HTTP route serves uploaded logos: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
-      "status": "todo",
-      "target": "/admin"
+      "status": "verified",
+      "target": "/media/*",
+      "evidence": "FIX-IN-REBUILD: old intake had no HTTP route for uploaded logos (path-only). Rebuild serves business logos via /media/avatars/<id>/logo-* and /media/public/<n>/logo with avatar visibility rules. src/server/media.ts; policy.test.ts › 0005 business logos. AUDIT data-import remainders + directory-media-lockdown. | verified 2026-11-09"
     },
     {
       "id": "OPS-103",
@@ -2707,7 +2715,8 @@
       "acceptance": "`industry_other_text` is required when \"Other industry\" is ticked, and is stored as `industry_other`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "AUDIT data-import remainders 2026-11-09: leave todo — industry_other_text when Other industry is ticked is not on scrapbook /join yet (membership-form-editor retired)."
     },
     {
       "id": "OPS-114",
@@ -3319,8 +3328,9 @@
       "source": "backoffice.md:Ordering inside the custom-form handler",
       "acceptance": "Ordering inside the custom-form handler: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "/api/forms/<slug>",
+      "evidence": "POST /api/forms/<slug>: slug shape → Content-Length → 10/IP/form/10min → body (forms.$slug.ts → formRequest). forms.test.ts › size/rate/honeypot/closed. Mis-seeded onto data-import; engine already on custom-forms. AUDIT data-import remainders. | verified 2026-11-09"
     },
     {
       "id": "OPS-187",
@@ -4394,8 +4404,10 @@
       "source": "backoffice.md:Inputs.",
       "acceptance": "Inputs.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-hermes",
+      "evidence": "Retired with Hermes auto-approve (notifications retire-external): hermes_auto_approve.py Inputs (new_applications.jsonl + published consent_version). Rebuild has no Hermes; apps stay pending for admin. Mis-seeded onto data-import (OPS-315 already no-hermes). AUDIT data-import remainders. | verified 2026-11-09: no-hermes"
     },
     {
       "id": "OPS-314",
@@ -5237,7 +5249,8 @@
       "acceptance": "Schedules and response limits.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "AUDIT data-import remainders 2026-11-09: leave todo — form schedule/max_responses still open with CRM-101 (custom-forms); open/closed flag only today."
     },
     {
       "id": "OPS-411",
@@ -6335,8 +6348,9 @@
       "source": "site.md:about.html → `/about`",
       "acceptance": "about.html → `/about`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
-      "status": "todo",
-      "target": "/about"
+      "status": "verified",
+      "target": "/about",
+      "evidence": "src/app/about-faq-route.test.tsx + src/routes/about.tsx; redirects.md about(.html) → /about; migration-check routeExists(/about). SITE-023/024/025 already verified for copy. AUDIT data-import remainders. | verified 2026-11-09"
     },
     {
       "id": "SITE-003",
@@ -7082,8 +7096,10 @@
       "source": "site.md:site.js: Unfold (accordion)",
       "acceptance": "site.js: Unfold (accordion): behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
-      "status": "todo",
-      "target": "/gatherings"
+      "status": "verified",
+      "target": "retired",
+      "retired": "scrapbook-kit",
+      "evidence": "Retired: legacy site.js Unfold (accordion). Scrapbook kit replaces site.js modules (SITE-079/082–090). AUDIT data-import remainders + public-pages remainders. | verified 2026-11-09: scrapbook-kit"
     },
     {
       "id": "SITE-087",
@@ -7577,8 +7593,10 @@
       "source": "site.md:Form regions are rewritten by the CRM host job",
       "acceptance": "Form regions are rewritten by the CRM host job: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "retired",
+      "retired": "native-forms",
+      "evidence": "Retired: CRM host job form-region markers (nbwc:form-*:start/end / apply_site_forms.py). Contact/partnership are native React routes; no host rewrite. OPS-405 same retire. AUDIT data-import remainders. | verified 2026-11-09: native-forms"
     },
     {
       "id": "SITE-142",
