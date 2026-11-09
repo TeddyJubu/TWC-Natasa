@@ -134,7 +134,7 @@ describe("/members", () => {
       viewer(true, true),
       [["directory"], [card("Rosa Diaz", 12), { ...card("Lena Ortiz", 15), neighborhood: "Sunnyside" }]],
     ]);
-    const chips = within(screen.getByRole("group", { name: /filter members by neighborhood/i })).getAllByRole("button").map((b) => b.textContent);
+    const chips = within(screen.getByRole("group", { name: /browse by neighborhood/i })).getAllByRole("radio").map((r) => r.closest("label")?.textContent);
     expect(chips).toContain("Astoria");
     expect(chips).toContain("Sunnyside");
     expect(chips).not.toContain("Rego Park");
@@ -145,7 +145,7 @@ describe("/members", () => {
       viewer(true, true),
       [["directory"], [card("Rosa Diaz", 12), { ...card("Lena Ortiz", 15), neighborhood: "" }]],
     ]);
-    const chips = within(screen.getByRole("group", { name: /filter members by neighborhood/i })).getAllByRole("button").map((b) => b.textContent);
+    const chips = within(screen.getByRole("group", { name: /browse by neighborhood/i })).getAllByRole("radio").map((r) => r.closest("label")?.textContent);
     expect(chips).not.toContain("");
     expect(chips.filter((c) => c === "Astoria")).toHaveLength(1);
     expect(screen.getByText("Lena Ortiz")).toBeTruthy();
@@ -160,6 +160,17 @@ describe("/members", () => {
     expect(main.querySelector("img[src*='hero']")).toBeNull();
     expect(screen.queryByAltText(/portrait of/i)).toBeNull();
     expect(screen.getByText("RD")).toBeTruthy();
+  });
+
+  it("filters the cards by the chosen neighborhood", () => {
+    renderWithQueries(<Page />, [
+      viewer(true, true),
+      [["directory"], [card("Rosa Diaz", 12), { ...card("Lena Ortiz", 15), neighborhood: "Sunnyside" }]],
+    ]);
+    fireEvent.click(screen.getByRole("radio", { name: "Sunnyside" }));
+    expect(screen.queryByText("Rosa Diaz")).toBeNull();
+    expect(screen.getByText("Lena Ortiz")).toBeTruthy();
+    expect(screen.getByText("01 profiles")).toBeTruthy();
   });
 
   it("counts the profiles shown", () => {
@@ -177,6 +188,7 @@ describe("/members", () => {
     fireEvent.click(screen.getByRole("button", { name: "View Rosa Diaz’s profile" }));
     const dialog = screen.getByRole("dialog", { name: "Rosa Diaz, member profile" });
     expect(within(dialog).getByText("Rosa bakes for the block.")).toBeTruthy();
+    expect(within(dialog).getByRole("link", { name: /open full page/i }).getAttribute("href")).toBe("/members/rosa-diaz-12");
     fireEvent.click(within(dialog).getByRole("button", { name: "Close" }));
     expect(screen.queryByRole("dialog")).toBeNull();
   });

@@ -4,7 +4,8 @@ import { BorderGlow } from "./border-glow";
 import { ConstellationLogo } from "./brand";
 import { ProximityText } from "./proximity-text";
 import { cva, type VariantProps } from "class-variance-authority";
-import { cn, formatCatalogueNumber, initials } from "../lib/utils";
+import { cn, formatCatalogueNumber } from "../lib/utils";
+import { PolaroidMeta, Portrait } from "./member-parts";
 import { Badge } from "./typography";
 
 const cardVariants = cva("group border border-line bg-canvas text-ink transition-[transform,box-shadow] duration-base ease-gentle hover:-translate-y-1 hover:shadow-soft motion-reduce:transform-none motion-reduce:transition-none", {
@@ -13,6 +14,8 @@ const cardVariants = cva("group border border-line bg-canvas text-ink transition
       grid: "rounded-card overflow-hidden",
       featured: "grid rounded-panel overflow-hidden md:grid-cols-[1.05fr_1fr]",
       catalogue: "tone-night rounded-panel bg-canvas text-ink hover:-translate-y-1.5",
+      // The scrapbook site's snapshot: no border, a soft paper shadow, a 12px mount around the portrait.
+      polaroid: "relative isolate flex flex-col gap-3 border-0 bg-canvas p-3 pb-[18px] shadow-[0_10px_28px_rgb(31_31_28/0.12)] hover:shadow-[0_10px_28px_rgb(31_31_28/0.2)]",
     },
   },
   defaultVariants: { variant: "grid" },
@@ -80,20 +83,9 @@ function OpenTrigger({ name, onOpen, className }: { name: string; onOpen: () => 
   );
 }
 
-/**
- * The portrait, or, without one, the member's initials on a neutral mat in the same box. The mat is
- * aria-hidden: the card heading already names the member, and initials are no portrait to describe.
- */
-function Portrait({ member, imgClassName, initialsClassName }: { member: MemberProfile; imgClassName: string; initialsClassName: string }) {
-  if (!member.image) {
-    return (
-      <div aria-hidden="true" className={cn("absolute inset-0 grid place-items-center bg-surface-strong font-display leading-none text-ink-muted select-none", initialsClassName)}>
-        {initials(member.name)}
-      </div>
-    );
-  }
-  return <img src={member.image} alt={member.imageAlt ?? ""} loading="lazy" width={768} height={1024} className={imgClassName} />;
-}
+
+const roleLine = (m: MemberProfile) => [m.role, m.business].filter(Boolean).join(" · ");
+
 
 /**
  * Use MemberCard for a public directory or a curated member preview.
@@ -101,18 +93,30 @@ function Portrait({ member, imgClassName, initialsClassName }: { member: MemberP
  * @example <MemberCard member={member} variant="featured" />
  * @example <MemberCard member={member} variant="catalogue" catalogueNumber={1} tone={{ color: "#2f9dff" }} />
  * @example <MemberCard member={member} variant="catalogue" onOpen={() => setOpen(member)} /> — opens a `MemberDialog`
- * Catalogue cards take their color signature from `tone`, exposed as the `--hood`
- * custom property; without a tone they keep the neutral catalogue look.
+ * @example <MemberCard member={member} variant="polaroid" tone={{ color: "#ff9a1f" }} onOpen={…} /> — the public site's snapshot
+ * Catalogue and polaroid cards take their color signature from `tone`, exposed as the `--hood`
+ * custom property; without a tone they keep the neutral look. A polaroid without a portrait gets its
+ * initials on a mat in that colour.
  * Avoid placing MemberCard inside another card or supplying unapproved personal details.
  */
 export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ catalogueNumber, className, member, onOpen, style, tone: toneProp, variant, ...props }, ref) => {
-  const tone = variant === "catalogue" ? toneProp : undefined;
+  const tone = variant === "catalogue" || variant === "polaroid" ? toneProp : undefined;
   const number = catalogueNumber ?? member.catalogueNumber ?? 1;
   const hoodStyle = tone ? ({ ...style, "--hood": tone.color } as React.CSSProperties) : style;
   return (
   // `isolate` keeps the z-40 trigger in the card's own stacking context, under the sticky nav.
   <article ref={ref} className={cn(cardVariants({ variant }), onOpen && variant !== "catalogue" && "relative isolate", className)} style={hoodStyle} {...props}>
-    {variant === "catalogue" ? (
+    {variant === "polaroid" ? (
+      <>
+        <div className="relative aspect-[4/5] overflow-hidden bg-paper">
+          <Portrait member={member} imgClassName="size-full object-cover" initialsClassName={cn("text-6xl text-ink", tone ? "bg-(--hood)" : "bg-paper")} />
+        </div>
+        <PolaroidMeta member={member} catalogueNumber={catalogueNumber ?? member.catalogueNumber} toned={!!tone} />
+        <h3 className="font-display text-[26px] font-normal leading-tight">{member.name}</h3>
+        {roleLine(member) && <p className="text-sm text-ink-muted">{roleLine(member)}</p>}
+        {onOpen && <OpenTrigger name={member.name} onOpen={onOpen} className="" />}
+      </>
+    ) : variant === "catalogue" ? (
       <>
         <BorderGlow key={tone?.color ?? "neutral"} className="rounded-panel" glowVar={tone ? "--hood" : "--color-sky"} glowRadius={28} fillOpacity={0.25}>
           <div className={cn("relative flex min-h-[20rem] flex-col overflow-hidden border-b border-line p-6 sm:min-h-[23rem] sm:p-8 xl:min-h-[18rem] xl:p-5", tone && "border-(--hood)")}>
@@ -174,7 +178,7 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
             <Portrait
               member={member}
               imgClassName="size-full object-cover grayscale transition-[filter,transform] duration-slow ease-gentle group-hover:scale-[1.025] group-hover:grayscale-0 motion-reduce:transform-none motion-reduce:transition-none"
-              initialsClassName="text-7xl sm:text-8xl xl:text-7xl"
+              initialsClassName="bg-surface-strong text-7xl text-ink-muted sm:text-8xl xl:text-7xl"
             />
           </div>
         </div>
@@ -197,7 +201,7 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
       <Portrait
         member={member}
         imgClassName="size-full object-cover transition-transform duration-slow ease-gentle group-hover:scale-[1.025] motion-reduce:transform-none motion-reduce:transition-none"
-        initialsClassName={variant === "featured" ? "text-8xl md:text-9xl" : "text-7xl"}
+        initialsClassName={cn("bg-surface-strong text-ink-muted", variant === "featured" ? "text-8xl md:text-9xl" : "text-7xl")}
       />
       {/* The scrim and white glass badge are for photos; on the light initials mat the badge is a soft ink pill. */}
       {member.image && <div aria-hidden className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/45 to-transparent" />}

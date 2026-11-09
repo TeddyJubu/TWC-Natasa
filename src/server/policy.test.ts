@@ -9,7 +9,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { openDb, type DB } from "./db";
 import type { Ctx } from "./context.server";
 import { mediaFile, serveMedia, writeMedia } from "./media";
-import { directory, intros, publicProfiles, removeLogo, saveProfile, uploadImage } from "@/features/members/members.server";
+import { directory, intros, memberPage, publicProfiles, removeLogo, saveProfile, uploadImage } from "@/features/members/members.server";
 import { bookHeadshot, listEvents, setRsvp } from "@/features/events/events.server";
 import { submitApplication } from "@/features/applications/applications.server";
 import { listNeighborhoods } from "@/features/neighborhoods/neighborhoods.server";
@@ -33,6 +33,7 @@ const addUser = (who: string, email: string, verified = true) =>
   run(`insert into "user" (id, name, email, emailVerified, createdAt, updatedAt) values (?, '', ?, ?, ?, ?)`, who, email, verified ? 1 : 0, now(), now());
 const file = (who: string, name: string) => writeMedia("avatars", `${who}/${name}`, PNG);
 const sees = (who: string | null, path: string) => serveMedia(db, as(who).actor, `/media/avatars/${path}`).status === 200;
+const cat = (who: string) => get<{ n: number }>("select catalogue_number as n from profiles where id = ?", who).n;
 const status = (who: string) => get<{ status: string }>("select status from profiles where id = ?", who).status;
 const app = (email: string) => get<{ id: string; user_id: string | null; status: string; reviewed_at: string | null; reviewed_by: string | null }>(
   "select * from applications where email = ?", email);
@@ -168,6 +169,31 @@ describe("access rules (ported from the RLS checks)", () => {
   it("anon can call public_profiles()", () => expect(() => publicProfiles(anon())).not.toThrow());
   it("anon can evaluate the avatar policy helpers", () => expect(serveMedia(db, null, `/media/avatars/${F}/avatar-1.png`).status).toBe(200));
   it("anon sees only public profiles", () => expect(publicProfiles(anon()).map((c) => c.name)).toEqual(["Pia"]));
+  // Member pages (/members/:slug, by catalogue number): public profiles for anyone, listed ones for insiders only.
+  it("anon reads a public member page, with no uuid in it", () => {
+    const page = memberPage(anon(), cat(F));
+    expect(page?.member.name).toBe("Pia");
+    expect(page?.audience).toBe("visitor");
+    expect(JSON.stringify(page)).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+  });
+  it("anon and pending members get no page for a listed, non-public member", () => {
+    expect(memberPage(anon(), cat(B))).toBeNull();
+    expect(memberPage(as(G), cat(B))).toBeNull();
+  });
+  it("members and admins read a listed, non-public member's page", () => {
+    expect(memberPage(as(F), cat(B))).toMatchObject({ member: { name: "Bea" }, isPublic: false, audience: "member" });
+    expect(memberPage(as(A), cat(B))?.member.name).toBe("Bea");
+  });
+  it("nobody gets a page for an unlisted member", () => {
+    expect(memberPage(as(B), cat(E))).toBeNull();
+    expect(memberPage(as(A), cat(E))).toBeNull();
+  });
+  it("member page neighbors follow the same rule", () => {
+    run("update profiles set neighborhood = 'Astoria' where id in (?, ?)", B, F);
+    expect(memberPage(anon(), cat(F))?.neighbors).toEqual([]);
+    expect(memberPage(as(A), cat(F))?.neighbors.map((m) => m.name)).toEqual(["Bea"]);
+    run("update profiles set neighborhood = null where id in (?, ?)", B, F);
+  });
   it("anon sees only public portraits", () => expect(allFiles.filter((f) => sees(null, f))).toEqual([`${F}/avatar-1.png`]));
   it("pending member sees public profiles, not herself", () => expect(publicProfiles(as(G)).map((c) => c.name)).toEqual(["Pia"]));
   it("hiding from the directory leaves the public site", () => {

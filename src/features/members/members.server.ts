@@ -27,6 +27,7 @@ const card = (row: ProfileRow, withLogo = false): MemberProfile =>
   toMemberProfile(row, { image: avatar(row.avatar_path), logo: withLogo ? avatar(row.business_logo_url) : undefined });
 
 const LISTED = "status = 'approved' and directory_visible = 1";
+const PUBLIC = `${LISTED} and public_profile = 1`;
 
 /** Approved, listed members, for approved members and admins only (public_directory()); others get an empty list. */
 export function directory({ db, actor }: Ctx): MemberProfile[] {
@@ -41,11 +42,42 @@ export function directory({ db, actor }: Ctx): MemberProfile[] {
  * server: cards are keyed by catalogue number, and the portrait is /media/public/<catalogue number>/avatar.
  */
 export function publicProfiles({ db }: Ctx): MemberProfile[] {
-  const rows = db.prepare(`select * from profiles where ${LISTED} and public_profile = 1 order by catalogue_number`).all() as ProfileRow[];
-  return rows.map((row) => ({
-    ...toMemberProfile(row, { image: row.avatar_path ? `/media/public/${row.catalogue_number}/avatar` : undefined }),
-    id: `catalogue-${row.catalogue_number}`,
-  }));
+  const rows = db.prepare(`select * from profiles where ${PUBLIC} order by catalogue_number`).all() as ProfileRow[];
+  return rows.map(publicCard);
+}
+
+const publicCard = (row: ProfileRow): MemberProfile => ({
+  ...toMemberProfile(row, { image: row.avatar_path ? `/media/public/${row.catalogue_number}/avatar` : undefined }),
+  id: `catalogue-${row.catalogue_number}`,
+});
+
+/** Who is reading a member page: decides the call to action, never what the server returns beyond `scope`. */
+export type Audience = "visitor" | "pending" | "member";
+export type MemberPage = { member: MemberProfile; neighbors: MemberProfile[]; isPublic: boolean; audience: Audience };
+const NEIGHBORS = 4;
+
+/**
+ * /members/:slug, looked up by catalogue number. Anyone (signed out, pending) sees only public profiles, as
+ * public_profiles() returns them; approved members and admins also see listed (directory-visible) members, as
+ * directory() returns them. Anything else is null (the route's 404). Up to four neighbors from her neighborhood,
+ * under the same rule. Cards carry no uuid id; insiders' image URLs are the ones the directory already gives them.
+ */
+export function memberPage({ db, actor }: Ctx, catalogueNumber: number): MemberPage | null {
+  const insider = !!actor && (isMember(db, actor.id) || isAdmin(db, actor.id));
+  const scope = insider ? LISTED : PUBLIC;
+  const row = db.prepare(`select * from profiles where ${scope} and catalogue_number = ?`).get(catalogueNumber) as ProfileRow | undefined;
+  if (!row) return null;
+  const show = (r: ProfileRow) => (insider ? { ...card(r, true), id: `catalogue-${r.catalogue_number}` } : publicCard(r));
+  const neighbors = row.neighborhood
+    ? db.prepare(`select * from profiles where ${scope} and neighborhood = ? and id <> ? order by catalogue_number limit ${NEIGHBORS}`)
+      .all(row.neighborhood, row.id) as ProfileRow[]
+    : [];
+  return {
+    member: show(row),
+    neighbors: neighbors.map(show),
+    isPublic: row.public_profile === 1,
+    audience: insider ? "member" : actor ? "pending" : "visitor",
+  };
 }
 
 /** Her own profile with image URLs, or null. */

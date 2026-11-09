@@ -1,31 +1,22 @@
 import * as React from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Badge,
-  Button,
-  Container,
-  Heading,
-  MemberCard,
-  MemberDialog,
-  type MemberProfile,
-  Section,
-  Text,
-  buttonVariants,
-  cn,
-} from "@/index";
+import { MemberCard, MemberDialog, type MemberProfile, memberDialogActionClass } from "@/index";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
+import { Scallop } from "@/app/layout/twc";
 import { useNeighborhoods } from "@/features/neighborhoods/queries";
 import { pickerNames } from "@/features/neighborhoods/options";
 import { toneFor } from "@/features/neighborhoods/tone";
-import { directoryQuery, publicProfilesQuery, viewerQuery } from "@/features/members/queries";
+import { directoryQuery, memberSlug, publicProfilesQuery, viewerQuery } from "@/features/members/queries";
+import balconyFriends from "@/assets/photography/home/balcony-friends.webp";
+import gathering from "@/assets/photography/event-800.webp";
 
 export const Route = createFileRoute("/members")({
   head: () => ({
     meta: [
-      { title: "Member Directory — The Women’s Collective" },
+      { title: "Member directory — The Women’s Collective" },
       { name: "description", content: "Meet a diverse community of women founders, creatives, professionals, and local leaders across Queens." },
-      { property: "og:title", content: "Member Directory — The Women’s Collective" },
+      { property: "og:title", content: "Member directory — The Women’s Collective" },
       { property: "og:description", content: "Discover women doing remarkable work across Queens and the connections they hope to build." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -57,104 +48,134 @@ function MembersPage() {
   const loading = viewer.isPending || (!viewer.isError && list.isPending);
   const failed = viewer.isError || list.isError;
   const retry = () => void (viewer.isError ? viewer.refetch() : list.refetch());
+  // Every listed card has a page its viewer may open: public cards for anyone, directory cards for members.
+  const openSlug = openMember ? memberSlug(openMember) : undefined;
 
   return (
     <AppPage>
       <AppNav />
 
       <main id="main" tabIndex={-1} className="outline-none">
-      <header className="overflow-hidden bg-paper pt-20 md:pt-28">
-        <Container className="grid gap-14 pb-20 md:grid-cols-[1.35fr_0.65fr] md:items-end md:pb-28">
-          <div className="flex flex-col items-start gap-7">
-            <Badge>Member directory</Badge>
-            <Heading as="h1" size="display" className="max-w-4xl">Meet the Women in Our Constellation</Heading>
+        <section className="twc-wrap flex flex-wrap items-center gap-12 pb-24 pt-18">
+          <div className="flex min-w-0 flex-[1_1_520px] flex-col gap-5">
+            <p className="twc-eyebrow-script">member directory</p>
+            <h1 className="twc-display">Meet the women in our constellation.</h1>
+            <p className="twc-lede max-w-[560px]">Founders, makers, strategists, and neighbors sharing what they know and finding new ways to work together.</p>
+            {viewer.isSuccess && audience !== "member" && (
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-3 self-start rounded-[6px] bg-sb-cream px-5 py-3.5">
+                <span className="text-sm">
+                  {audience === "visitor"
+                    ? "Showing members who share their profile publicly."
+                    : "Showing members who share their profile publicly. Your directory unlocks once you’re welcomed in."}
+                </span>
+                {audience === "visitor" && (
+                  <Link to="/auth" className="twc-link font-display text-[13px] uppercase leading-5 tracking-[1.6px] text-sb-blue-ink">
+                    Sign in to see the full directory <span aria-hidden>→</span>
+                  </Link>
+                )}
+              </div>
+            )}
           </div>
-          <Text size="lg">Founders, makers, strategists, and neighbors sharing what they know—and finding new ways to work together.</Text>
-        </Container>
-        {viewer.isSuccess && audience !== "member" && (
-          <div className="bg-sun py-3 text-center text-sm text-sun-ink">
-            {audience === "visitor"
-              ? <>Showing members who share their profile publicly. <Link to="/auth" className="underline underline-offset-4">Sign in to see the full directory</Link></>
-              : "Showing members who share their profile publicly. Your directory unlocks once you’re welcomed in."}
+          <div aria-hidden className="relative min-h-[400px] flex-[1_1_360px] max-sm:min-h-[340px]">
+            <figure className="twc-polaroid twc-polaroid--left absolute left-[8%] top-2.5 w-[230px] max-sm:left-0 max-sm:w-[190px]">
+              <img src={balconyFriends} alt="" width={800} height={1120} className="aspect-[4/5]" />
+              <figcaption>neighbors → collaborators</figcaption>
+            </figure>
+            <figure className="twc-polaroid absolute right-[4%] top-[90px] w-[210px] max-sm:right-0 max-sm:w-[180px]">
+              <img src={gathering} alt="" width={800} height={640} />
+              <figcaption>the collective, in person</figcaption>
+            </figure>
           </div>
-        )}
-      </header>
+        </section>
 
-      <Section tone="night" className="rounded-dome pt-24 md:pt-32">
-        <Container className="flex flex-col gap-12">
-          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-6 border-b border-line pb-8">
-            <div className="min-w-0">
-              <Badge variant="solid">The directory</Badge>
-              <Heading as="h2" className="mt-5 max-w-2xl">A Catalogue of Women Building Nearby</Heading>
+        <Scallop from="#fcfcfa" to="#f3f0e8" />
+        <section className="twc-band twc-band--cream pb-26 pt-18">
+          <div className="twc-wrap flex flex-col gap-9">
+            <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+              <div className="flex flex-col gap-3">
+                <span className="twc-eyebrow">The directory</span>
+                <h2 className="twc-h2">A catalogue of women building nearby.</h2>
+              </div>
+              <p aria-live="polite" className="twc-index">{list.isSuccess && `${String(members.length).padStart(2, "0")} profiles`}</p>
             </div>
-            <p aria-live="polite" className="shrink-0 pb-1 text-sm text-ink-muted">{list.isSuccess && `${String(members.length).padStart(2, "0")} profiles`}</p>
-          </div>
 
-          <div className="flex flex-col gap-5">
-            <p className="text-xs font-medium uppercase text-ink-muted">Browse by neighborhood</p>
-            <div className="flex gap-2 overflow-x-auto pb-2" role="group" aria-label="Filter members by neighborhood">
-              {neighborhoods.map((neighborhood) => {
-                const selected = activeNeighborhood === neighborhood;
-                const color = selected ? toneFor(neighborhood, hoodList)?.color : undefined;
-                return (
-                  <Button
-                    key={neighborhood}
-                    type="button"
-                    size="sm"
-                    variant={selected ? "white" : "outline"}
-                    className={cn("shrink-0", color && "bg-(--hood) hover:bg-(--hood)")}
-                    style={color ? ({ "--hood": color } as React.CSSProperties) : undefined}
-                    aria-pressed={selected}
-                    onClick={() => setActiveNeighborhood(neighborhood)}
-                  >
-                    {neighborhood}
-                  </Button>
-                );
-              })}
-            </div>
-          </div>
+            <fieldset className="m-0 flex min-w-0 flex-col gap-3 border-0 p-0">
+              <legend className="twc-eyebrow mb-3 text-sb-ink">Browse by neighborhood</legend>
+              <div className="flex flex-wrap gap-2">
+                {neighborhoods.map((neighborhood) => {
+                  const color = toneFor(neighborhood, hoodList)?.color;
+                  return (
+                    <label key={neighborhood} className="twc-choice">
+                      <input
+                        type="radio"
+                        name="neighborhood"
+                        value={neighborhood}
+                        checked={activeNeighborhood === neighborhood}
+                        onChange={() => setActiveNeighborhood(neighborhood)}
+                      />
+                      {color && <span aria-hidden className="twc-dot bg-(--hood)" style={{ "--hood": color } as React.CSSProperties} />}
+                      {neighborhood}
+                    </label>
+                  );
+                })}
+              </div>
+            </fieldset>
 
-          {failed && (
-            <div role="alert" className="flex flex-wrap items-center gap-4 text-sm text-ink-muted">
-              <p>We couldn’t load the member directory right now.</p>
-              <Button type="button" size="sm" variant="outline" onClick={retry}>Retry</Button>
-            </div>
-          )}
+            {failed && (
+              <div role="alert" className="twc-notice twc-notice--danger flex-row flex-wrap items-center gap-4 self-start">
+                <p>We couldn’t load the member directory right now.</p>
+                <button type="button" className="twc-btn twc-btn--outline twc-btn--sm" onClick={retry}>Retry</button>
+              </div>
+            )}
 
-          {loading ? (
-            <p role="status" className="text-sm text-ink-muted">Loading members…</p>
-          ) : list.isSuccess && all.length === 0 ? (
-            <div className="flex max-w-xl flex-col gap-3 border-t border-line pt-8">
-              <p className="font-display text-2xl">{audience === "member" ? "No members are listed yet." : "No one has shared a public profile yet."}</p>
-              <p className="text-sm text-ink-muted">
-                {audience === "member"
-                  ? "Switch on “Show me in the member directory” on your profile and you’ll be the first neighbor here."
-                  : "Members choose whether their card appears on the public website. Check back soon."}
-              </p>
-            </div>
-          ) : (
-            members.length === 0 ? (
-              <p className="text-sm text-ink-muted">No one from {activeNeighborhood} here yet.</p>
+            {loading ? (
+              <p role="status" className="text-sm text-sb-muted">Loading members…</p>
+            ) : list.isSuccess && all.length === 0 ? (
+              <div className="flex max-w-xl flex-col gap-3">
+                <p className="font-display text-2xl">{audience === "member" ? "No members are listed yet." : "No one has shared a public profile yet."}</p>
+                <p className="text-sm text-sb-muted">
+                  {audience === "member"
+                    ? "Switch on “Show me in the member directory” on your profile and you’ll be the first neighbor here."
+                    : "Members choose whether their card appears on the public website. Check back soon."}
+                </p>
+              </div>
+            ) : members.length === 0 ? (
+              list.isSuccess && <p className="text-sm text-sb-muted">No one from {activeNeighborhood} here yet.</p>
             ) : (
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {members.map((m) => <MemberCard key={m.id} member={m} variant="catalogue" tone={toneFor(m.neighborhood, hoodList)} catalogueNumber={m.catalogueNumber} onOpen={() => setOpenMember(m)} />)}
-            </div>
-            )
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-6">
+                {members.map((m) => (
+                  <MemberCard key={m.id} member={m} variant="polaroid" tone={toneFor(m.neighborhood, hoodList)} onOpen={() => setOpenMember(m)} />
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+        <Scallop from="#f3f0e8" to="#edd22e" />
+
+        <section className="twc-band twc-band--sun pb-26 pt-18">
+          <div className="twc-wrap flex max-w-[760px] flex-col items-center gap-4.5 text-center">
+            <p className="twc-eyebrow-script text-sb-ink">add your light</p>
+            <h2 className="twc-h3">Your work belongs in the conversation.</h2>
+            <p className="max-w-[520px] text-[17px]">Tell us about your work, the people you hope to meet, and how you want to contribute.</p>
+            <Link to="/join" className="twc-btn mt-2">Start your application <span className="twc-arrow" aria-hidden>→</span></Link>
+          </div>
+        </section>
+        <Scallop from="#edd22e" to="#fcfcfa" />
+        <div className="h-12" />
+
+        {/* Public cards carry only the fields a member chose to publish, so either audience may open one. */}
+        <MemberDialog
+          member={openMember}
+          onClose={() => setOpenMember(null)}
+          variant="polaroid"
+          tone={openMember ? toneFor(openMember.neighborhood, hoodList) : undefined}
+        >
+          {openSlug && (
+            <Link to="/members/$slug" params={{ slug: openSlug }} className={memberDialogActionClass}>
+              Open full page <span aria-hidden>→</span>
+            </Link>
           )}
-        </Container>
-      </Section>
-
-      <Section>
-        <Container className="flex flex-col items-center gap-8 text-center">
-          <Badge variant="solid">Add your light</Badge>
-          <Heading className="max-w-3xl">Your Work Belongs in the Conversation</Heading>
-          <Text className="max-w-xl">Tell us about your work, the people you hope to meet, and how you want to contribute.</Text>
-          <Link to="/join" className={buttonVariants({ variant: "white", size: "lg" })}>Start your application</Link>
-        </Container>
-      </Section>
-
-      {/* Public cards carry only the fields a member chose to publish, so either audience may open one. */}
-      <MemberDialog member={openMember} onClose={() => setOpenMember(null)} />
+        </MemberDialog>
       </main>
 
       <AppFooter />

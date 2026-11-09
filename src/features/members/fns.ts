@@ -1,6 +1,7 @@
 // Member server functions. Each handler lazy-imports its server code (kept out of the client bundle) and runs
 // it through serve(), which supplies this request's database and signed-in actor.
 import { createServerFn } from "@tanstack/react-start";
+import { catalogueFromSlug } from "./map";
 
 const pass = <T,>(input: unknown) => input as T;
 
@@ -13,6 +14,16 @@ export const publicProfilesFn = createServerFn().handler(async () => {
   const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./members.server")]);
   return serve(m.publicProfiles);
 });
+
+/** /members/:slug: a public read (the server decides who sees what); a slug without a catalogue number is null. */
+export const memberPageFn = createServerFn()
+  .validator((input: unknown) => ({ slug: typeof input === "object" && input && typeof (input as { slug?: unknown }).slug === "string" ? (input as { slug: string }).slug : "" }))
+  .handler(async ({ data }) => {
+    const n = catalogueFromSlug(data.slug);
+    if (n === null) return null;
+    const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./members.server")]);
+    return serve((c) => m.memberPage(c, n));
+  });
 
 export const ownProfileFn = createServerFn().handler(async () => {
   const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./members.server")]);
