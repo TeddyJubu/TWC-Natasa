@@ -18,6 +18,7 @@ import {
   adminApplications, adminEvents, adminInbox, adminMembers, archiveMessage, createEvent, createNeighborhood, deleteEvent, reviewApplication, setBookingStatus,
   setMemberStatus, updateEvent,
 } from "@/features/admin/admin.server";
+import { adminReviews, markReviewDone, mintReviewLink, openReview, reviewLinkStates, revokeReviewLink, submitReview } from "@/features/member-links/member-links.server";
 import { TINY } from "@/test/images";
 
 const id = (n: string) => `00000000-0000-4000-8000-${n.padStart(12, "0")}`;
@@ -542,12 +543,39 @@ describe("access rules (ported from the RLS checks)", () => {
   it("admin archive refuses a malformed id", () => expect(() => archiveMessage(as(A), { id: 42 })).toThrow(/Invalid message/));
 });
 
+// ---------- Member review links (migration 0003) ----------
+describe("member review links", () => {
+  const M = id("ml1");
+  beforeAll(() => {
+    addUser(M, "linked@x.test");
+    run("update profiles set status = 'approved' where id = ?", M);
+  });
+  it("only admins mint, list, revoke and read reviews", () => {
+    for (const who of [null, M, C]) {
+      throwsAccess(() => mintReviewLink(as(who), { member_id: M }));
+      throwsAccess(() => revokeReviewLink(as(who), { member_id: M }));
+      throwsAccess(() => reviewLinkStates(as(who)));
+      throwsAccess(() => adminReviews(as(who)));
+      throwsAccess(() => markReviewDone(as(who), { id: "x" }));
+    }
+  });
+  it("a link opens only its member's form, once, and never approves anyone", () => {
+    expect(() => mintReviewLink(as(A), { member_id: C })).toThrow(/approved members/);
+    const token = new URL(mintReviewLink(as(A), { member_id: M }).url).searchParams.get("t")!;
+    expect(openReview(anon(), { token })!.values.email).toBe("linked@x.test");
+    submitReview(anon(), { token, full_name: "Mo", email: "linked@x.test", membership: "keep" });
+    expect(openReview(anon(), { token })).toBeNull();
+    expect(status(M)).toBe("approved");
+    expect(status(C)).toBe("pending");
+  });
+});
+
 /** Every server function the browser can call, by export name. */
 async function serverFunctionNames(): Promise<string[]> {
   const modules = await Promise.all([
     import("@/features/auth/fns"), import("@/features/members/fns"), import("@/features/events/fns"),
     import("@/features/applications/fns"), import("@/features/neighborhoods/fns"), import("@/features/admin/fns"),
-    import("@/features/admin/approval-email"),
+    import("@/features/admin/approval-email"), import("@/features/member-links/fns"),
   ]);
   return modules.flatMap((m) => Object.keys(m));
 }

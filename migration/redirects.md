@@ -42,7 +42,17 @@ Source of truth for the `vps-cutover` workstream (SITE-100, SITE-162, SITE-164).
 | `join.nbwc.site`, `nbwc.site/apply`, `forms.nbwc.site` | `https://new.thewomenscollective.club/join` | Chain them straight to the new app rather than via `join.thewomenscollective.club{uri}`. |
 | `/login(.html)`, `/forgot-password(.html)`, `/set-password(.html)`, `/apply-thank-you(.html)`, `/members/*` (apex) | `/` today (`302`) | `vps-cutover` to decide: keep the `302` to `/`, or send sign-in URLs to `/auth` and `/members/*` to `/members`. Not a page decision, so left unchanged here (SITE-106). |
 
-## Not redirected
+## Host redirects (members / admin / join / crm)
+
+| Old host + path | New destination | Notes |
+|---|---|---|
+| `members.thewomenscollective.club/review?t=…` | `https://new.thewomenscollective.club/review?t=…` | **Keep the query string.** Built by members-links (`/review` + hashed tokens). |
+| `members.nbwc.site/review?t=…` | same | Same as above. |
+| `admin.thewomenscollective.club/*` | `https://new.thewomenscollective.club/admin` | After parity; session is the new app's. |
+| `crm.thewomenscollective.club/*` | `https://new.thewomenscollective.club/admin` | After CRM parity. |
+| `join.thewomenscollective.club/join` | `https://new.thewomenscollective.club/join` | Already in place. |
+
+## Not redirected yet
 
 - Static assets under `/assets/*`, `/embed.js`, favicons and `robots.txt` stay with the archived site until `vps-cutover` removes them.
-- `members.*` review links keep working until the `members-links` workstream replaces them.
+- Apex `/f/*` custom forms (OPS-518) need the custom-forms workstream before those URLs move.

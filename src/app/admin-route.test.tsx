@@ -11,6 +11,7 @@ const emailApproval = vi.fn(async (_id: string) => ({ sent: true }) as { sent: t
 vi.mock("@/features/admin/approval-email", () => ({ emailApproval: (id: string) => emailApproval(id) }));
 vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs }));
 vi.mock("@/features/auth/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
+vi.mock("@/features/member-links/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 
 import { Route as GuardRoute } from "@/routes/_authenticated/_admin/route";
 import { Route } from "@/routes/_authenticated/_admin/admin";
@@ -68,10 +69,10 @@ describe("_admin guard", () => {
 });
 
 const FETCH = Symbol("fetch");
-type AdminKey = "inbox" | "applications" | "members" | "neighborhoods" | "bookings" | "events";
+type AdminKey = "inbox" | "applications" | "members" | "neighborhoods" | "bookings" | "events" | "review-links" | "reviews";
 /** Seeds every admin read (empty lists, plus `members`) unless overridden; FETCH leaves that read to the queued fake results. */
 function renderAdmin(over: Partial<Record<AdminKey, unknown>> = {}, extra: [unknown[], unknown][] = []) {
-  const data: Record<AdminKey, unknown> = { inbox: [], applications: [], members, neighborhoods: [], bookings: [], events: [], ...over };
+  const data: Record<AdminKey, unknown> = { inbox: [], applications: [], members, neighborhoods: [], bookings: [], events: [], "review-links": {}, reviews: [], ...over };
   const seed = Object.entries(data).filter(([, v]) => v !== FETCH).map(([k, v]) => [["admin", k], v] as [unknown[], unknown]);
   return renderWithQueries(<Page />, [...seed, ...extra]);
 }
@@ -92,7 +93,7 @@ describe("/admin", () => {
 
     it("renders all six cards as anchored regions, and the sidebar marks the top one as here", () => {
       renderAdmin();
-      for (const [name, id] of [["Inbox", "inbox"], ["Applications", "applications"], ["All members", "members"], ["Neighborhoods", "neighborhoods"], ["Headshot bookings", "bookings"], ["Gatherings", "gatherings"]]) {
+      for (const [name, id] of [["Inbox", "inbox"], ["Applications", "applications"], ["All members", "members"], ["Member reviews", "reviews"], ["Neighborhoods", "neighborhoods"], ["Headshot bookings", "bookings"], ["Gatherings", "gatherings"]]) {
         expect(card(name).id).toBe(id);
       }
       const nav = screen.getAllByRole("navigation", { name: "Main" })[0];
@@ -276,6 +277,44 @@ describe("/admin", () => {
     const region = within(card("All members")).getByRole("region", { name: "Members" });
     expect(region.tabIndex).toBe(0);
     expect(within(region).getByRole("table")).toBeTruthy();
+  });
+
+  it("members: Make review link shows the URL once, to copy, and refreshes the link state", async () => {
+    renderAdmin({ members: [member("u1", "Rosa Diaz")], "review-links": {} });
+    const row = screen.getByRole("row", { name: /Rosa Diaz/ });
+    fake.results = [{ url: "https://new.example/review?t=abc", expires_at: "2026-12-09T15:00:00Z" },
+      { u1: { state: "active", created_at: "2026-11-09T15:00:00Z", expires_at: "2026-12-09T15:00:00Z", used_at: null } }];
+    fireEvent.click(within(row).getByRole("button", { name: "Make a review link for Rosa Diaz" }));
+    const url = (await within(row).findByRole("textbox", { name: /Shown once/ })) as HTMLInputElement;
+    expect(url.value).toBe("https://new.example/review?t=abc");
+    expect(url.readOnly).toBe(true);
+    expect(fake.calls[0]).toEqual(["mintReviewLinkFn", { member_id: "u1" }]);
+    await waitFor(() => expect(row.textContent).toMatch(/Review link open until/));
+    expect(within(row).getByRole("button", { name: "Revoke the review link for Rosa Diaz" })).toBeTruthy();
+  });
+
+  it("members: Revoke closes a live link; pending members get no link control", async () => {
+    const live = { state: "active", created_at: "2026-11-09T15:00:00Z", expires_at: "2026-12-09T15:00:00Z", used_at: null };
+    renderAdmin({ members: [member("u1", "Rosa Diaz"), member("u2", "Lena Ortiz", { status: "pending" })], "review-links": { u1: live } });
+    expect(within(screen.getByRole("row", { name: /Lena Ortiz/ })).queryByRole("button", { name: /review link/ })).toBeNull();
+    const row = screen.getByRole("row", { name: /Rosa Diaz/ });
+    fake.results = [1, { u1: { ...live, state: "expired" } }];
+    fireEvent.click(within(row).getByRole("button", { name: "Revoke the review link for Rosa Diaz" }));
+    await waitFor(() => expect(row.textContent).toMatch(/Review link closed/));
+    expect(fake.calls[0]).toEqual(["revokeReviewLinkFn", { member_id: "u1" }]);
+  });
+
+  it("member reviews: lists answers with their labels, and Mark handled clears one", async () => {
+    const review = { id: "r1", member_id: "u1", full_name: "Rosa Diaz", created_at: "2026-11-09T15:00:00Z",
+      answers: { full_name: "Rosa D.", email: "rosa@x.test", membership: "contact_me", correction_requests: ["req_info_correction"], other_note: "" } };
+    renderAdmin({ reviews: [review] });
+    const article = within(card("Member reviews")).getByRole("article", { name: "Rosa Diaz" });
+    expect(article.textContent).toMatch(/I am not sure; please contact me\./);
+    expect(article.textContent).toMatch(/Information correction/);
+    fake.results = [null, []];
+    fireEvent.click(within(article).getByRole("button", { name: "Mark the review from Rosa Diaz as handled" }));
+    await waitFor(() => expect(within(card("Member reviews")).queryByRole("article")).toBeNull());
+    expect(fake.calls[0]).toEqual(["markReviewDoneFn", { id: "r1" }]);
   });
 
   it("members: approve sets the profile status directly", async () => {

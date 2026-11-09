@@ -31,8 +31,8 @@ describe("database", () => {
     const dir = mkdtempSync(join(tmpdir(), "twc-mig-"));
     writeFileSync(join(dir, "0001_init.sql"), "this would fail if it ran again");
     writeFileSync(join(dir, "0002_inbox.sql"), "this would fail if it ran again");
-    writeFileSync(join(dir, "0003_ok.sql"), "create table extra (id integer);");
-    writeFileSync(join(dir, "0004_ok.sql"), "create table extra2 (id integer);");
+    writeFileSync(join(dir, "0003_member_links.sql"), "this would fail if it ran again");
+    writeFileSync(join(dir, "0004_legacy_import.sql"), "this would fail if it ran again");
     writeFileSync(join(dir, "0005_bad.sql"), "create table half (id integer); select * from missing_table;");
     expect(() => migrate(db, dir)).toThrow(/0005_bad\.sql/);
     expect(one<{ user_version: number }>(db, "pragma user_version").user_version).toBe(4);

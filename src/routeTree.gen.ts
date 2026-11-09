@@ -26,6 +26,7 @@ import { Route as NeighborhoodsRouteImport } from './routes/neighborhoods'
 import { Route as PartnershipsRouteImport } from './routes/partnerships'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as ReviewRouteImport } from './routes/review'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as TypographyRouteImport } from './routes/typography'
@@ -37,6 +38,7 @@ import { Route as ApiContactRouteImport } from './routes/api/contact'
 import { Route as ApiImagesRouteImport } from './routes/api/images'
 import { Route as ApiNeighborhoodLogosRouteImport } from './routes/api/neighborhood-logos'
 import { Route as ApiPartnershipsRouteImport } from './routes/api/partnerships'
+import { Route as ApiReviewRouteImport } from './routes/api/review'
 import { Route as MediaSplatRouteImport } from './routes/media/$'
 import { Route as MembersSlugRouteImport } from './routes/members_.$slug'
 import { Route as NeighborhoodsSlugRouteImport } from './routes/neighborhoods_.$slug'
@@ -127,6 +129,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReviewRoute = ReviewRouteImport.update({
+  id: '/review',
+  path: '/review',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -181,6 +188,11 @@ const ApiPartnershipsRoute = ApiPartnershipsRouteImport.update({
   path: '/api/partnerships',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiReviewRoute = ApiReviewRouteImport.update({
+  id: '/api/review',
+  path: '/api/review',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MediaSplatRoute = MediaSplatRouteImport.update({
   id: '/media/$',
   path: '/media/$',
@@ -224,6 +236,7 @@ export interface FileRoutesByFullPath {
   '/partnerships': typeof PartnershipsRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/review': typeof ReviewRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/typography': typeof TypographyRoute
@@ -234,6 +247,7 @@ export interface FileRoutesByFullPath {
   '/api/images': typeof ApiImagesRoute
   '/api/neighborhood-logos': typeof ApiNeighborhoodLogosRoute
   '/api/partnerships': typeof ApiPartnershipsRoute
+  '/api/review': typeof ApiReviewRoute
   '/media/$': typeof MediaSplatRoute
   '/members/$slug': typeof MembersSlugRoute
   '/neighborhoods/$slug': typeof NeighborhoodsSlugRoute
@@ -257,6 +271,7 @@ export interface FileRoutesByTo {
   '/partnerships': typeof PartnershipsRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/review': typeof ReviewRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/typography': typeof TypographyRoute
@@ -267,6 +282,7 @@ export interface FileRoutesByTo {
   '/api/images': typeof ApiImagesRoute
   '/api/neighborhood-logos': typeof ApiNeighborhoodLogosRoute
   '/api/partnerships': typeof ApiPartnershipsRoute
+  '/api/review': typeof ApiReviewRoute
   '/media/$': typeof MediaSplatRoute
   '/members/$slug': typeof MembersSlugRoute
   '/neighborhoods/$slug': typeof NeighborhoodsSlugRoute
@@ -292,6 +308,7 @@ export interface FileRoutesById {
   '/partnerships': typeof PartnershipsRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/review': typeof ReviewRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/typography': typeof TypographyRoute
@@ -303,6 +320,7 @@ export interface FileRoutesById {
   '/api/images': typeof ApiImagesRoute
   '/api/neighborhood-logos': typeof ApiNeighborhoodLogosRoute
   '/api/partnerships': typeof ApiPartnershipsRoute
+  '/api/review': typeof ApiReviewRoute
   '/media/$': typeof MediaSplatRoute
   '/members_/$slug': typeof MembersSlugRoute
   '/neighborhoods_/$slug': typeof NeighborhoodsSlugRoute
@@ -328,6 +346,7 @@ export interface FileRouteTypes {
     | '/partnerships'
     | '/privacy'
     | '/reset-password'
+    | '/review'
     | '/sitemap.xml'
     | '/terms'
     | '/typography'
@@ -338,6 +357,7 @@ export interface FileRouteTypes {
     | '/api/images'
     | '/api/neighborhood-logos'
     | '/api/partnerships'
+    | '/api/review'
     | '/media/$'
     | '/members/$slug'
     | '/neighborhoods/$slug'
@@ -361,6 +381,7 @@ export interface FileRouteTypes {
     | '/partnerships'
     | '/privacy'
     | '/reset-password'
+    | '/review'
     | '/sitemap.xml'
     | '/terms'
     | '/typography'
@@ -371,6 +392,7 @@ export interface FileRouteTypes {
     | '/api/images'
     | '/api/neighborhood-logos'
     | '/api/partnerships'
+    | '/api/review'
     | '/media/$'
     | '/members/$slug'
     | '/neighborhoods/$slug'
@@ -395,6 +417,7 @@ export interface FileRouteTypes {
     | '/partnerships'
     | '/privacy'
     | '/reset-password'
+    | '/review'
     | '/sitemap.xml'
     | '/terms'
     | '/typography'
@@ -406,6 +429,7 @@ export interface FileRouteTypes {
     | '/api/images'
     | '/api/neighborhood-logos'
     | '/api/partnerships'
+    | '/api/review'
     | '/media/$'
     | '/members_/$slug'
     | '/neighborhoods_/$slug'
@@ -431,6 +455,7 @@ export interface RootRouteChildren {
   PartnershipsRoute: typeof PartnershipsRoute
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ReviewRoute: typeof ReviewRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   TypographyRoute: typeof TypographyRoute
@@ -440,6 +465,7 @@ export interface RootRouteChildren {
   ApiImagesRoute: typeof ApiImagesRoute
   ApiNeighborhoodLogosRoute: typeof ApiNeighborhoodLogosRoute
   ApiPartnershipsRoute: typeof ApiPartnershipsRoute
+  ApiReviewRoute: typeof ApiReviewRoute
   MediaSplatRoute: typeof MediaSplatRoute
   MembersSlugRoute: typeof MembersSlugRoute
   NeighborhoodsSlugRoute: typeof NeighborhoodsSlugRoute
@@ -567,6 +593,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/review': {
+      id: '/review'
+      path: '/review'
+      fullPath: '/review'
+      preLoaderRoute: typeof ReviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -642,6 +675,13 @@ declare module '@tanstack/react-router' {
       path: '/api/partnerships'
       fullPath: '/api/partnerships'
       preLoaderRoute: typeof ApiPartnershipsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/review': {
+      id: '/api/review'
+      path: '/api/review'
+      fullPath: '/api/review'
+      preLoaderRoute: typeof ApiReviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/media/$': {
@@ -727,6 +767,7 @@ const rootRouteChildren: RootRouteChildren = {
   PartnershipsRoute: PartnershipsRoute,
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ReviewRoute: ReviewRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   TypographyRoute: TypographyRoute,
@@ -736,6 +777,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiImagesRoute: ApiImagesRoute,
   ApiNeighborhoodLogosRoute: ApiNeighborhoodLogosRoute,
   ApiPartnershipsRoute: ApiPartnershipsRoute,
+  ApiReviewRoute: ApiReviewRoute,
   MediaSplatRoute: MediaSplatRoute,
   MembersSlugRoute: MembersSlugRoute,
   NeighborhoodsSlugRoute: NeighborhoodsSlugRoute,

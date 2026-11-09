@@ -289,8 +289,9 @@
       "source": "crm.md:Member-update (\"review\") items",
       "acceptance": "Member-update (\"review\") items: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin#members"
+      "status": "built",
+      "target": "/admin#members",
+      "evidence": "Reviews stored in member_reviews (0003) and listed in the /admin 'Member reviews' card (adminReviews, requireAdmin): name from the profile, answers with verbatim labels (reviewEntries), status new until 'Mark handled'. src/features/member-links/member-links.server.ts; src/features/admin/panels.tsx MemberReviewsPanel."
     },
     {
       "id": "CRM-035",
@@ -315,7 +316,8 @@
       "acceptance": "Spotlight history: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
       "status": "todo",
-      "target": "/admin#members"
+      "target": "/admin#members",
+      "evidence": "Deferred with Spotlight: historical spotlight_answers.jsonl import + listing (AUDIT-TASKS members-links; data-import for the rows)."
     },
     {
       "id": "CRM-038",
@@ -674,8 +676,9 @@
       "source": "crm.md:Make a member update link",
       "acceptance": "Make a member update link: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin#members"
+      "status": "built",
+      "target": "/admin#members",
+      "evidence": "/admin All members: 'Make review link' on an approved member (mintReviewLinkFn → mintReviewLink, requireAdmin; non-member → 'Personal links are for approved members.'); URL shown once to copy into the admin's own message; created_by/expiry recorded, never the URL. src/features/member-links/member-links.server.ts; src/features/admin/panels.tsx ReviewLink; tests: src/features/member-links/member-links.test.ts, src/server/policy.test.ts, src/app/admin-route.test.tsx."
     },
     {
       "id": "CRM-083",
@@ -683,63 +686,71 @@
       "acceptance": "Invite to Weekly Spotlight: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
       "status": "todo",
-      "target": "/admin#members"
+      "target": "/admin#members",
+      "evidence": "Deferred: Spotlight invite (purpose 'spotlight' is already accepted by member_links in 0003, and review lookups filter on purpose). Follow-up in AUDIT-TASKS (members-links)."
     },
     {
       "id": "CRM-084",
       "source": "crm.md:One live link per kind",
       "acceptance": "One live link per kind: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "Minting retires the member's live review link in the same transaction (retire() in src/features/member-links/member-links.server.ts); test 'retires her previous live link'."
     },
     {
       "id": "CRM-085",
       "source": "crm.md:Link status",
       "acceptance": "Link status: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin#members"
+      "status": "built",
+      "target": "/admin#members",
+      "evidence": "reviewLinkStates (requireAdmin) → newest review link per member with state active|used|expired + created/expires/used; shown in the All members row. src/features/member-links/member-links.server.ts; src/app/admin-route.test.tsx."
     },
     {
       "id": "CRM-086",
       "source": "crm.md:Revoke",
       "acceptance": "Revoke: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "Revoke button on a live link → revokeReviewLink (requireAdmin) sets expires_at now, returns count. History event not recorded (no CRM history table yet). src/features/member-links/member-links.server.ts; tests: src/features/member-links/member-links.test.ts, src/server/policy.test.ts."
     },
     {
       "id": "CRM-087",
       "source": "crm.md:Links exist only while the membership engine is on",
       "acceptance": "Links exist only while the membership engine is on: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "No membership-engine flag in the rebuild: review links are always on (per the inventory note)."
     },
     {
       "id": "CRM-088",
       "source": "crm.md:Review link expiry / single use",
       "acceptance": "Review link expiry / single use: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin#members"
+      "status": "built",
+      "target": "/admin#members",
+      "evidence": "Single use (conditional update in submitReview's transaction), 30-day TTL (LINK_TTL_DAYS), opening never consumes; a review never changes the profile. src/features/member-links/member-links.server.ts; tests: src/features/member-links/member-links.test.ts, src/server/policy.test.ts."
     },
     {
       "id": "CRM-089",
       "source": "crm.md:Personal-link dialog UI",
       "acceptance": "Personal-link dialog UI: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "Inline control in the /admin All members row (no modal): state + expiry, Make/New review link, Revoke, read-only URL field with Copy. src/features/admin/panels.tsx ReviewLink; src/app/admin-route.test.tsx."
     },
     {
       "id": "CRM-090",
       "source": "crm.md:Agent can open the dialog but never sees the link",
       "acceptance": "Agent can open the dialog but never sees the link: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin#members"
+      "status": "built",
+      "evidence": "AUDIT-TASKS.md: CRM-090 retired — no WebMCP in rebuild",
+      "retired": "no-agent-feature"
     },
     {
       "id": "CRM-091",
@@ -788,8 +799,9 @@
       "source": "crm.md:Member update responses",
       "acceptance": "Member update responses: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin#members"
+      "status": "built",
+      "target": "/admin#members",
+      "evidence": "Member review responses appear in their own /admin card 'Member reviews' (#reviews, sidebar Admin group); the form has no public href, only personal links. Form open/close switch not in this slice (CRM-100, admin-inbox)."
     },
     {
       "id": "CRM-097",
@@ -797,7 +809,8 @@
       "acceptance": "Weekly Spotlight: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
       "status": "todo",
-      "target": "/admin"
+      "target": "/admin",
+      "evidence": "Deferred with Spotlight (AUDIT-TASKS members-links)."
     },
     {
       "id": "CRM-098",
@@ -1388,8 +1401,9 @@
       "source": "crm.md:FIX-IN-REBUILD — plaintext review-link tokens (intake-side, not CRM-side)",
       "acceptance": "FIX-IN-REBUILD — plaintext review-link tokens (intake-side, not CRM-side): behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin#members"
+      "status": "built",
+      "target": "/admin#members",
+      "evidence": "Only SHA-256 token_hash is stored (member_links, db/migrations/0003_member_links.sql); the URL is returned once by mintReviewLink to the minting admin and never stored, logged or listed; no staging file. src/features/member-links/member-links.server.ts; tests: src/features/member-links/member-links.test.ts, src/server/policy.test.ts."
     },
     {
       "id": "CRM-172",
@@ -1677,32 +1691,36 @@
       "source": "backoffice.md:`GET /review?t=<token>`",
       "acceptance": "`GET /review?t=<token>`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin#members"
+      "status": "built",
+      "target": "/admin#members",
+      "evidence": "GET /review?t=<token> (src/routes/review.tsx): loader → openReviewFn → openReview; unknown/malformed/used/expired/revoked/spotlight/no-longer-approved tokens all → the same 404 invalid-link page; opening never consumes. Closed-form switch not in this slice. tests: src/features/member-links/member-links.test.ts, src/server/policy.test.ts, src/app/review-route.test.tsx."
     },
     {
       "id": "OPS-020",
       "source": "backoffice.md:`POST /review?t=<token>`",
       "acceptance": "`POST /review?t=<token>`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin#members"
+      "status": "built",
+      "target": "/admin#members",
+      "evidence": "POST /api/review (src/routes/api/review.ts, in API_ROUTES/CSRF): 32 KB cap, 10/IP/10 min, honeypot (fake success, nothing stored), link check, checkReview, then one transaction stores member_reviews + marks used; 400 keeps the link open; profile untouched. reviewRequest/submitReview in src/features/member-links/member-links.server.ts; tests: src/features/member-links/member-links.test.ts, src/server/policy.test.ts."
     },
     {
       "id": "OPS-021",
       "source": "backoffice.md:`GET /review/thanks`: static \"Thank you — your response is saved\" page (\"This link is now closed and cannot be used agai",
       "acceptance": "`GET /review/thanks`: static \"Thank you — your response is saved\" page (\"This link is now closed and cannot be used agai: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "parity"
+      "status": "built",
+      "target": "parity",
+      "evidence": "Thank-you replaces the form in place (same copy: 'Thank you — your response is saved', 'This link is now closed and cannot be used again.'); no separate /review/thanks URL. src/features/member-links/ReviewForm.tsx; src/app/review-route.test.tsx."
     },
     {
       "id": "OPS-022",
       "source": "backoffice.md:Review form contents",
       "acceptance": "Review form contents: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "parity"
+      "status": "built",
+      "target": "parity",
+      "evidence": "Review form sections 01–04 with the verbatim §2a labels/options (src/features/member-links/schema.ts), public_fields only when directory = public, 6 correction boxes + other_note (id correction_request), honeypot, 'Hello <first name>'. src/features/member-links/ReviewForm.tsx; src/app/review-route.test.tsx."
     },
     {
       "id": "OPS-023",
@@ -1750,7 +1768,8 @@
       "acceptance": "`GET /spotlight?t=<token>`, `POST /spotlight?t=<token>`, `GET /spotlight/thanks`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
       "status": "todo",
-      "target": "/admin#members"
+      "target": "/admin#members",
+      "evidence": "Deferred with Spotlight (AUDIT-TASKS members-links)."
     },
     {
       "id": "OPS-029",
@@ -1758,7 +1777,8 @@
       "acceptance": "Spotlight questions: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
       "status": "todo",
-      "target": "/admin#members"
+      "target": "/admin#members",
+      "evidence": "Deferred with Spotlight (AUDIT-TASKS members-links)."
     },
     {
       "id": "OPS-030",
@@ -1918,7 +1938,8 @@
       "acceptance": "`spotlight_answers.jsonl`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
       "status": "todo",
-      "target": "/admin#members"
+      "target": "/admin#members",
+      "evidence": "Deferred with Spotlight (AUDIT-TASKS members-links)."
     },
     {
       "id": "OPS-050",
@@ -1933,8 +1954,9 @@
       "source": "backoffice.md:`links.jsonl`",
       "acceptance": "`links.jsonl`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "links.jsonl → member_links table (0003): id, member_id, purpose review|spotlight, token_hash (sha256 hex), created_by, created_at, expires_at, used_at; revoke = expires_at now, as before. src/features/member-links/member-links.server.ts."
     },
     {
       "id": "OPS-052",
@@ -2221,24 +2243,27 @@
       "source": "backoffice.md:Raw live tokens at rest",
       "acceptance": "Raw live tokens at rest: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "No file of live links: member_links keeps token_hash only, URL shown once in the /admin mint result (mintReviewLink, src/features/member-links/member-links.server.ts); tests: src/features/member-links/member-links.test.ts, src/server/policy.test.ts."
     },
     {
       "id": "OPS-088",
       "source": "backoffice.md:Non-atomic read-modify-write",
       "acceptance": "Non-atomic read-modify-write: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "Link writes are single SQL statements / one transaction (mint retires + inserts in tx; consume is a conditional update in the same tx as the insert), so concurrent writers can't overwrite each other. src/features/member-links/member-links.server.ts."
     },
     {
       "id": "OPS-089",
       "source": "backoffice.md:No review link once a member has responded",
       "acceptance": "No review link once a member has responded: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "Fixed: an admin can always make a fresh review link for an approved member, even after a response (the old dashboard hid it). Review answers are still never written back; a person applies them."
     },
     {
       "id": "OPS-090",
@@ -2446,7 +2471,8 @@
       "acceptance": "When `spotlight_interest = yes`, `spotlight_permission = yes` is required: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
       "status": "todo",
-      "target": "/admin#members"
+      "target": "/admin#members",
+      "evidence": "Deferred with Spotlight (AUDIT-TASKS members-links)."
     },
     {
       "id": "OPS-116",
@@ -2653,24 +2679,27 @@
       "source": "backoffice.md:The review form opens only through a personal link",
       "acceptance": "The review form opens only through a personal link: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "parity"
+      "status": "built",
+      "target": "parity",
+      "evidence": "The form opens only through a live, unexpired review link for an approved member (activeLink in src/features/member-links/member-links.server.ts); anything else is the invalid-link 404."
     },
     {
       "id": "OPS-142",
       "source": "backoffice.md:Review links are single use",
       "acceptance": "Review links are single use: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "parity"
+      "status": "built",
+      "target": "parity",
+      "evidence": "Marked used after a successful submit, atomically with storing the review (submitReview); second submit → 404. tests: src/features/member-links/member-links.test.ts, src/server/policy.test.ts."
     },
     {
       "id": "OPS-143",
       "source": "backoffice.md:Review prefill comes from the member record, with gaps filled from the approved application",
       "acceptance": "Review prefill comes from the member record, with gaps filled from the approved application: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/join"
+      "status": "built",
+      "target": "/join",
+      "evidence": "Prefill from the profile (name, business, role, website, neighborhood) + account email, gaps from her newest approved application (role, website/instagram, neighborhood/basedIn). openReview in src/features/member-links/member-links.server.ts; test 'fills gaps from her approved application'."
     },
     {
       "id": "OPS-144",
@@ -2685,8 +2714,9 @@
       "source": "backoffice.md:Review membership choices are keep, leave and contact_me, with the verbatim labels in §2a",
       "acceptance": "Review membership choices are keep, leave and contact_me, with the verbatim labels in §2a: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/contact"
+      "status": "built",
+      "target": "/contact",
+      "evidence": "membership radio keep | leave | contact_me with the verbatim labels; required, and (unlike the old intake) the value is checked against the options. checkReview in src/features/member-links/schema.ts; tests."
     },
     {
       "id": "OPS-146",
@@ -2701,16 +2731,18 @@
       "source": "backoffice.md:The review form's 6 correction/removal request boxes are stored as `correction_requests`, alongside free text `other_note`",
       "acceptance": "The review form's 6 correction/removal request boxes are stored as `correction_requests`, alongside free text `other_note`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "parity"
+      "status": "built",
+      "target": "parity",
+      "evidence": "correction_requests stored as an array of the six req_* codes (validated), other_note as free text (field id correction_request). src/features/member-links/schema.ts; tests."
     },
     {
       "id": "OPS-148",
       "source": "backoffice.md:The review record has `type",
       "acceptance": "The review record has `type: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "parity"
+      "status": "built",
+      "target": "parity",
+      "evidence": "A member_reviews row carries member_id, link_id (unique), form_version 1, status new|done, created_at; the token is never in the answers. consent_version not stored (the rebuild has no consent-version registry yet). db/migrations/0003_member_links.sql; tests."
     },
     {
       "id": "OPS-149",
