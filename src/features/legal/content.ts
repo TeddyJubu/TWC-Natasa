@@ -34,7 +34,7 @@ const UPDATED = "8 November 2026";
 
 export const privacy: LegalDoc = {
   badge: "Privacy",
-  title: "What We Hold, and Why",
+  title: "What we hold, and why",
   lede: "Written to be read, not to be survived. If anything here is unclear, that's a fault worth telling us about.",
   updated: UPDATED,
   version: "[1.1]",
@@ -165,7 +165,7 @@ export const privacy: LegalDoc = {
 
 export const terms: LegalDoc = {
   badge: "Terms",
-  title: "The Short Version",
+  title: "The short version",
   lede: "Be decent, don't misuse the directory, and understand that we're a community rather than a service you've bought.",
   updated: UPDATED,
   version: "[1.0]",
@@ -274,12 +274,12 @@ export const terms: LegalDoc = {
 
 export const codeOfConduct: LegalDoc = {
   badge: "Code of conduct",
-  title: "What We Expect of Each Other",
+  title: "What we expect of each other",
   lede: "Not a poster in a break room. This is the document we actually use when something goes wrong.",
   updated: UPDATED,
   version: "[1.1]",
   template: {
-    title: "TEMPLATE — NEEDS The Women's Collective'S DECISIONS.",
+    title: "TEMPLATE — NEEDS THE WOMEN’S COLLECTIVE’S DECISIONS.",
     text: "The structure and language are ready to use. What needs filling in: who sits on the review group, the reporting address, and whether the escalation path below matches what you'd actually do. An attorney should read the consequences and appeals sections before publishing.",
   },
   head: {

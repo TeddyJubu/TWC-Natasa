@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, screen } from "@testing-library/react";
+import { cleanup, fireEvent, screen, within } from "@testing-library/react";
 import { renderWithQueries } from "@/test/dom";
+import { expectNoSkippedHeadings } from "@/test/headings";
 
 const router = vi.hoisted(() => ({ invalidate: vi.fn(() => Promise.resolve()) }));
 vi.mock("@tanstack/react-router", async (orig) => ({
@@ -19,10 +20,12 @@ afterEach(() => {
 });
 
 describe("NotFound", () => {
-  it("renders a link home", () => {
+  it("renders one h1, a link home and quick links to Members, Join and Sign in", () => {
     renderWithQueries(<NotFound />);
-    expect(screen.getByRole("heading", { level: 2 })).toBeTruthy();
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("We couldn’t find that page.");
     expect(screen.getByRole("link", { name: /back to home/i }).getAttribute("href")).toBe("/");
+    const quick = within(screen.getByRole("navigation", { name: "Try instead" })).getAllByRole("link");
+    expect(quick.map((a) => [a.textContent, a.getAttribute("href")])).toEqual([["Members", "/members"], ["Join", "/join"], ["Sign in", "/account"]]);
   });
 });
 
@@ -63,6 +66,9 @@ describe("status pages landmarks", () => {
       expect(container.querySelector("a")!.getAttribute("href")).toBe("#main");
       expect(mains[0].querySelector("header")).toBeNull();
       expect(mains[0].contains(screen.getByRole("link", { name: /back to home/i }))).toBe(true);
+      expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
+      expectNoSkippedHeadings(mains[0]);
+      expect(screen.getByRole("navigation", { name: "Legal" })).toBeTruthy();
     });
   }
 });
