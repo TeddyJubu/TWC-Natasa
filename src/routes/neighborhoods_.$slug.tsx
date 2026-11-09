@@ -1,14 +1,14 @@
 import * as React from "react";
 import { Link, createFileRoute, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { MemberDialog, cn, initials, type MemberProfile } from "@/index";
+import { MemberDialog, cn, initials, memberDialogActionClass, type MemberProfile } from "@/index";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import { Icon } from "@/app/layout/twc";
-import { publicProfilesQuery, viewerQuery } from "@/features/members/queries";
+import { memberSlug, publicProfilesQuery, viewerQuery } from "@/features/members/queries";
 import { eventsQuery } from "@/features/events/queries";
 import { eventWhen } from "@/features/events/format";
 import { fetchNeighborhoods, type Neighborhood } from "@/features/neighborhoods/queries";
-import { hasColor, textOn } from "@/features/neighborhoods/tone";
+import { hasColor, textOn, toneFor } from "@/features/neighborhoods/tone";
 import { neighborhoodPhoto } from "@/features/neighborhoods/photos";
 import { HoodLogo } from "@/features/neighborhoods/HoodLogo";
 
@@ -41,6 +41,7 @@ const MAX_EVENTS = 3;
 function NeighborhoodPage() {
   const hood = Route.useLoaderData();
   const [open, setOpen] = React.useState<MemberProfile | null>(null);
+  const openSlug = open ? memberSlug(open) : undefined;
   const colored = hasColor(hood.color);
   const style = colored ? ({ "--hood": hood.color } as React.CSSProperties) : undefined;
   return (
@@ -63,7 +64,13 @@ function NeighborhoodPage() {
           </div>
         </div>
         {/* Public cards carry only what the member chose to publish. */}
-        <MemberDialog member={open} onClose={() => setOpen(null)} />
+        <MemberDialog member={open} onClose={() => setOpen(null)} variant="polaroid" tone={open ? toneFor(open.neighborhood, [hood]) : undefined}>
+          {openSlug && (
+            <Link to="/members/$slug" params={{ slug: openSlug }} className={memberDialogActionClass}>
+              Open full page <span aria-hidden>→</span>
+            </Link>
+          )}
+        </MemberDialog>
       </main>
       <AppFooter />
     </AppPage>

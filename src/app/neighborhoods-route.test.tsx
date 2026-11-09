@@ -132,6 +132,14 @@ describe("/neighborhoods/:slug", () => {
     expect(document.querySelector("dialog[open]")?.textContent).toContain("Rosa Diaz");
   });
 
+  it("links the open member to her full page, like /members", () => {
+    restoreDialog = stubDialog();
+    withLoaderData(SlugRoute, astoria);
+    renderWithQueries(<SlugPage />, [visitor, [["public-profiles"], [{ ...card("Rosa Diaz", "Astoria"), catalogueNumber: 12 }]]]);
+    fireEvent.click(screen.getByRole("button", { name: "View Rosa Diaz’s profile" }));
+    expect(screen.getByRole("link", { name: /Open full page/ }).getAttribute("href")).toBe("/members/rosa-diaz-12");
+  });
+
   it("has an empty state when no one from the neighborhood is public", () => {
     withLoaderData(SlugRoute, astoria);
     renderWithQueries(<SlugPage />, [visitor, [["public-profiles"], [card("Lena Ortiz", "Sunnyside")]]]);
