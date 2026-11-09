@@ -67,3 +67,38 @@ choices are in the **CRM SQLite** (`custom_forms`, `custom_form_slugs`, `form_ve
 
 Typecheck, lint, vitest, build pass; commit on the worktree branch only (no push/PR unless asked).
 Manifest items this slice finishes → `built`. Record any skipped live-form types as owner notes.
+
+## Built (branch `t3/ad7c244c`)
+
+- `scripts/import-forms.ts` (CLI, **Node**, `node:sqlite`) → `src/features/forms/import.server.ts` (logic) +
+  `src/features/forms/import.test.ts`. No new migration: everything fits `0005_custom_forms.sql`.
+- Synthetic fixtures: `scripts/fixtures/crm-forms.json` (a dump shaped like the CRM's `custom_forms`,
+  `custom_form_slugs`, `form_versions`; `--crm-db` accepts it as well as a real `crm.db`) and
+  `scripts/fixtures/forms-submissions.json`.
+- Rules (also in `AUDIT-TASKS.md`): definitions from the newest `form_versions` row; conversions scale/rating → radio,
+  consent → one required tick box, time → short; statement/hidden/total dropped; file/ranking/grid/address → form
+  skipped; required + show-if → optional. Answers keyed by a hash of the whole JSONL line (stored as the response id),
+  so re-runs add only new lines; tombstones and `held.json` answers stay out.
+
+### VPS one-shot (paths on the server only; no secrets)
+
+Run on the VPS from the deployed checkout, as the user that owns the app database, **after** the data-import one-shot.
+Nothing is stopped: `.backup` takes a consistent copy of the CRM's database while it runs.
+
+```sh
+cd /opt/twc-natasa                                   # the deployed repo (README: twc-natasa.service)
+DB=/var/lib/twc-natasa/data/twc.db
+STAMP=$(date +%F-%H%M)
+sqlite3 "$DB" ".backup '/var/backups/twc-natasa/pre-forms-import-$STAMP.db'"
+sqlite3 /opt/nbwc/data/crm/crm.db ".backup '/var/backups/twc-natasa/crm-copy-$STAMP.db'"   # read-only copy of the CRM
+ARGS="--crm-db /var/backups/twc-natasa/crm-copy-$STAMP.db --published-dir /opt/nbwc/data/crm/published/custom \
+  --submissions /opt/nbwc/data/submissions.jsonl --held /opt/nbwc/data/crm/held.json --db $DB"
+node --experimental-strip-types scripts/import-forms.ts $ARGS --dry-run   # read the report
+node --experimental-strip-types scripts/import-forms.ts $ARGS             # then for real
+```
+
+The report lists every form (id, slug, `imported`/`updated`/`skipped` + reason, conversions, dropped types) and the
+answer counts (`read`, `imported`, `existing`, skipped by reason); never an answer or an email. Drop `--held` if
+`held.json` is missing. Re-running is safe. **Hand the list of skipped slugs to vps-cutover**: `/f/<slug>` for those
+must keep going to the old site (or stay unrouted) until the type is supported; every imported slug and its old names
+can 301 (path + query) per `migration/redirects.md`. Record skipped live forms as owner notes in `AUDIT-TASKS.md`.

@@ -340,8 +340,9 @@
       "source": "crm.md:Tombstones",
       "acceptance": "Tombstones: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "todo",
-      "target": "/admin"
+      "status": "built",
+      "target": "/admin",
+      "evidence": "Import: a submissions.jsonl row with deleted:true is never an answer, and an answer whose CRM item id (sha256(at|form_id|email)[:12]) a tombstone names is skipped (importResponses in src/features/forms/import.server.ts; src/features/forms/import.test.ts › \"imports the representable forms…\": 'deletion marker' 1, 'deleted for good' 1). After import SQLite is the source of truth, so no file is re-read. Delete-for-good in /admin is CRM-132."
     },
     {
       "id": "CRM-041",
@@ -785,7 +786,7 @@
       "owner": "custom-forms",
       "status": "todo",
       "target": "/admin",
-      "evidence": "Partial: answers are stored one row per answer in custom_form_responses and listed in /admin › Form responses with the question labels. Not yet: CRM items (name/business/area from marked questions, origin), file answers."
+      "evidence": "Partial: answers are stored one row per answer in custom_form_responses and listed in /admin › Form responses with the question labels; historical form:\"custom\" rows of submissions.jsonl are imported by scripts/import-forms.ts (form_id, form_version, answers by that version's keys, email, created_at = at; src/features/forms/import.test.ts). Not yet: CRM items (name/business/area from marked questions, origin), file answers."
     },
     {
       "id": "CRM-095",
@@ -884,7 +885,7 @@
       "owner": "custom-forms",
       "status": "todo",
       "target": "/admin",
-      "evidence": "Partial: 11 of the 22 types (short, email, phone, url, number, date, paragraph, dropdown, radio, checkboxes, yesno) with the old key/choice limits (src/features/forms/schema.ts). Not yet: consent, statement, file, time, rating, scale, hidden, ranking, grid, address, total."
+      "evidence": "Partial: 11 of the 22 types (short, email, phone, url, number, date, paragraph, dropdown, radio, checkboxes, yesno) with the old key/choice limits (src/features/forms/schema.ts). The importer converts scale → radio (its numbers, end words on the ends), rating → radio 1–5, consent → one required tick box, time → short; drops statement, hidden, total; skips forms with file, ranking, grid, address (src/features/forms/import.test.ts). Not yet as native types."
     },
     {
       "id": "CRM-107",
@@ -1085,7 +1086,8 @@
       "acceptance": "Remove from results / Put back: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
       "status": "todo",
-      "target": "/admin"
+      "target": "/admin",
+      "evidence": "Partial: at import, answers listed in held.json (--held) stay out of custom_form_responses (src/features/forms/import.test.ts › 'removed from results (held)'). Not yet: Remove from results / Put back in /admin."
     },
     {
       "id": "CRM-132",
@@ -3174,7 +3176,8 @@
       "acceptance": "Question types the service knows:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Partial: single-value dropdown/radio/yesno and multi-value checkboxes are native (src/features/forms/schema.ts); rating and scale are imported as radio with numeric choices (src/features/forms/import.server.ts). Composites (ranking, grid, address) are not supported: such forms are skipped by the importer and stay on the old site."
     },
     {
       "id": "OPS-202",
@@ -5724,7 +5727,8 @@
       "acceptance": "Hard-coded apex URL in links people already hold.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "/f/*"
+      "target": "/f/*",
+      "evidence": "Partial (forms-import): scripts/import-forms.ts loads the CRM's live forms (choices from form_versions), old names and historical answers into SQLite, so /f/<slug> and old names resolve on the new app for every form the report lists as imported/updated. vps-cutover: run the one-shot in migration/briefs/forms-import.md, then 301 /f/* (path + query). Skipped forms, /f/media/*, event.ics, thanks-<n>, /forms and resume links are still old-site only."
     },
     {
       "id": "OPS-519",
