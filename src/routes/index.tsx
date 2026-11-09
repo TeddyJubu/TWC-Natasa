@@ -360,8 +360,8 @@ function Constellation() {
 
 function Founder() {
   return (
-    <section aria-labelledby="founder-title" className="flex flex-col items-center gap-9 bg-sb-night px-5 pb-20 pt-16 text-sb-paper lg:flex-row lg:gap-[72px] lg:px-16 lg:pb-[120px] lg:pt-[88px]">
-      <div className="relative aspect-square w-full max-w-[350px] shrink-0 lg:aspect-[560/570] lg:max-w-[560px]">
+    <section aria-labelledby="founder-title" className="flex flex-col items-center gap-9 bg-sb-night px-5 pb-20 pt-16 text-sb-paper lg:flex-row lg:gap-12 lg:px-16 lg:pb-[120px] lg:pt-[88px] xl:gap-[72px]">
+      <div className="relative aspect-square w-full max-w-[350px] shrink-0 lg:aspect-[560/570] lg:max-w-[400px] xl:max-w-[560px]">
         <Polaroid
           src={gathering}
           alt="Members of the collective together in person"

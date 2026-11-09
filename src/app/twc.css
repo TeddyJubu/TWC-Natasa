@@ -10,7 +10,7 @@
 .twc-btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   min-height: 48px; padding: 14px 24px; box-sizing: border-box;
-  border: 0; border-radius: 9999px; cursor: pointer; text-decoration: none; white-space: nowrap;
+  border: 0; border-radius: 9999px; cursor: pointer; text-decoration: none; text-align: center;
   font: 400 14px/20px var(--font-display); letter-spacing: 1.6px; text-transform: uppercase;
   background: var(--color-sb-ink); color: var(--color-sb-paper);
   transition: translate var(--duration-base) var(--ease-snap), scale var(--duration-fast) var(--ease-snap),
@@ -29,6 +29,8 @@
 .twc-btn--outline:hover { box-shadow: inset 0 0 0 1.5px currentColor, 0 12px 26px -14px rgb(31 31 28 / 0.55); }
 .twc-btn--danger { background: var(--color-sb-danger); color: var(--color-sb-paper); }
 .twc-btn--sm { min-height: 40px; padding: 10px 20px; }
+/* One line wherever it fits; the narrowest phones may wrap a long label rather than overflow. */
+@media (min-width: 400px) { .twc-btn { white-space: nowrap; } }
 .twc-link { color: inherit; text-decoration: none; padding-bottom: 2px; background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat; transition: background-size var(--duration-base) var(--ease-gentle); }
 .twc-link:hover, .twc-link:focus-visible, .twc-link[aria-current="page"] { background-size: 100% 1px; }
 .twc-link:focus-visible { outline: 2px solid var(--color-sb-blue-ink); outline-offset: 3px; border-radius: 2px; }
