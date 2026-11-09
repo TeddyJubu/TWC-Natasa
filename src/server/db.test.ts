@@ -10,7 +10,7 @@ const one = <T,>(db: ReturnType<typeof openDb>, sql: string, ...args: (string | 
 describe("database", () => {
   it("migrates a fresh database to the newest user_version, with foreign keys on", () => {
     const db = openDb(":memory:");
-    expect(one<{ user_version: number }>(db, "pragma user_version").user_version).toBe(2);
+    expect(one<{ user_version: number }>(db, "pragma user_version").user_version).toBe(3);
     expect(one<{ foreign_keys: number }>(db, "pragma foreign_keys").foreign_keys).toBe(1);
     expect(one<{ busy_timeout?: number; timeout?: number }>(db, "pragma busy_timeout")).toEqual({ timeout: 5000 });
   });
