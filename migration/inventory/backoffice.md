@@ -15,15 +15,11 @@ Environment variables are named but never valued; any secret seen in the source 
 | B | `intake/membership_forms.py`, `membership_v1.json`, published membership-application/review defs, `crm/shared/membership-v1.ts`, `memberform.ts` | 71 |
 | C | `submissions.py`, `custom_forms.py`, apex/www/crm Caddy blocks, compose `forms`/`caddy`, site form pages and thank-you pages, CRM route list | 131 |
 | E | `tools/intake/*` (Hermes auto-approve, Notion mirror, index assignment, imports), `intake-newsletter-sync.py`, `notify-applications.py`, `notify-messages.py`, `tools/notion/*`, `tools/hermes`, backup, cleanup, QA helpers | 88 |
-| **D (missing)** | `tools/forms/*.py` (apply_site_forms, connections, conn_newsletter, conn_notion, conn_webhook, custom_pages, formguard, funnel, held, resumelink, sendqueue, spamcheck, thanks_pages), `tools/forms/systemd/*`, `tools/form-connections.py`, `tools/notify-confirmations.py`, `tools/notify-resume.py` | **0** |
+| **D (done)** | `tools/forms/*.py` (apply_site_forms, connections, conn_newsletter, conn_notion, conn_webhook, custom_pages, formguard, funnel, held, resumelink, sendqueue, spamcheck, thanks_pages), `tools/forms/systemd/*`, `tools/form-connections.py`, `tools/notify-confirmations.py`, `tools/notify-resume.py` | **143** — see `ops-part-d.md` (OPS-393 to OPS-535) |
 
-**Part D is not covered.** Its reader was stopped by an automated safeguard before it wrote anything, so this
-inventory has no first-hand items for: the `twc-site-forms` timer/path unit (site form rebuild), the
-`twc-form-connections` timer (per-form Notion / Beehiiv / webhook connections, held queue, send queue), the
-`notify-confirmations` timer (submitter confirmation emails), and `notify-resume` ("finish later" emails).
-Parts C and E touch these only where the services call them (C§15, E§0, OPS-309, OPS-360, OPS-364, OPS-367): unit schedules
-come from OPS-305, and the shared Cloudflare sender is in OPS-363. **Before the move is signed off, this scope needs its
-own read.**
+**Part D is covered** in `migration/inventory/ops-part-d.md` (OPS-393 to OPS-535). Cutover notes from that pass:
+apex `/f/*` must keep working (OPS-518); CSP needs fonts/Turnstile plan (OPS-519); several FIX-IN-REBUILD
+hazards (OPS-521–OPS-524, OPS-487).
 
 ## Index by category
 

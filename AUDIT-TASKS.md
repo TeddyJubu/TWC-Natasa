@@ -270,10 +270,19 @@ Owner-authorized cutover of the old static site (`/opt/nbwc/site`), CRM (`crm.th
 
 - **CRM live UI:** both Classic (`crm/src`, default at `/`) and Bento (`crm/src-v2` at `/v2`) ship from one server; default preference is classic. Inventory treats the shared API as the parity surface; UI twins are one capability each.
 - **Local inputs:** legacy snapshot and inventories live in gitignored `.migration/` (copied from the prior session scratchpad). Tracked work lives under `migration/`.
+- **`/f/*` must survive cutover (OPS-518).** Owner archive list omitted custom-form URLs on the apex (`/f/<slug>`, thanks, `event.ics`, `/forms`, `/f/media/*`, finish-later links). They stay on the apex domain today; after coming-soon-only `/`, those paths need routes or 301s on the new app before old timers stop. Recorded as an owner decision extension below.
+- **CSP vs old form pages (OPS-519):** Google Fonts + Cloudflare Turnstile on legacy form HTML. Rebuild self-hosts fonts (scrapbook already does); Turnstile either dropped or added to CSP with a test.
+- **Newsletter consent pattern:** Part D `conn_newsletter.py` gates on an explicit tick (copy this). Application Beehiiv sync still ignores `email_subscription_consent` (OPS-357/389, CRM-182) — FIX-IN-REBUILD.
+
+### Owner decisions (added from inventory)
+
+16. **`/f/*` custom forms keep working on the public origin** (or 301 to the new app) through cutover, including resume links already in inboxes (7-day lifetime). Not in the original archive list; required by OPS-518.
 
 ### Progress
 
-- [ ] Inventories: SITE-*, CRM-*, OPS Part D (`tools/forms/*`, notify-confirmations/resume)
+- [x] Inventory OPS Part D: `ops-part-d.md` OPS-393–OPS-535 (143 items); merged `fcd8af9`
+- [x] Inventory CRM: `crm.md` CRM-001–CRM-188 (188 items); Classic default; merged `ee5f5e1`
+- [ ] Inventory SITE-* (in progress)
 - [ ] Seed `migration/manifest.json` from all inventories
 - [ ] Workstreams built and verified (public-pages, data-import, admin-inbox, members-links, custom-forms, notifications, vps-cutover)
 - [ ] `migration:check` passes; final Haiku sweep green; live smoke; old services stopped
