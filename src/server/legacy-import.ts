@@ -5,17 +5,18 @@
 //
 // What it never does: approve anyone through sign-up (members are written to `legacy_members`, claimed by a
 // verified email in the 0004 triggers), copy review tokens (members-links mints fresh hashed ones), or import
-// custom-form rows (scripts/import-forms.ts, src/features/forms/import.server.ts).
+// custom-form rows (scripts/import-forms.ts, src/features/forms/import.server.ts). Weekly Spotlight answers come in
+// as history (spotlight_answers, 0008): no link, the old ids kept, never published.
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import type { DB } from "./db";
 
 export type Row = Record<string, unknown>;
-export type Sources = { applications?: Row[]; members?: Row[]; subscribers?: Row[]; submissions?: Row[] };
+export type Sources = { applications?: Row[]; members?: Row[]; subscribers?: Row[]; submissions?: Row[]; spotlight?: Row[] };
 export type Options = { dryRun?: boolean; inboxStatus?: "new" | "archived" };
 /** `imported` = new rows; `existing` = already there (left alone); `skipped` = why a row did not come in. */
 export type Counts = { read: number; imported: number; existing: number; skipped: Record<string, number> };
-export type Report = Record<"applications" | "members" | "subscribers" | "inbox", Counts>;
+export type Report = Record<"applications" | "members" | "subscribers" | "inbox" | "spotlight", Counts>;
 
 const newCounts = (): Counts => ({ read: 0, imported: 0, existing: 0, skipped: {} });
 const skip = (c: Counts, why: string) => void (c.skipped[why] = (c.skipped[why] ?? 0) + 1);
@@ -240,6 +241,45 @@ function importInbox(db: DB, rows: Row[], status: "new" | "archived"): Counts {
   return c;
 }
 
+// ---------- Weekly Spotlight answers (OPS-049) ----------
+/**
+ * Both old shapes (A-99): `spotlight_submission` rows from the form (with `at`, `link_id`) and `spotlight_answers`
+ * rows from the sheet importer (only `date_added`). Old tokens and links are never copied. A row is tied to a profile
+ * only when that old member has already claimed her login (0004); otherwise just the old member id is kept.
+ */
+function importSpotlight(db: DB, rows: Row[]): Counts {
+  const c = newCounts();
+  const exists = db.prepare("select 1 from spotlight_answers where legacy_id = ?");
+  const profileOf = db.prepare("select l.user_id from legacy_members l join profiles p on p.id = l.user_id where l.legacy_id = ?");
+  const insert = db.prepare(
+    `insert into spotlight_answers (legacy_id, legacy_member_id, member_id, full_name, business, neighborhood, answers, created_at)
+     values (?, ?, ?, ?, ?, ?, ?, coalesce(?, strftime('%Y-%m-%dT%H:%M:%fZ', 'now')))`,
+  );
+  for (const r of rows) {
+    c.read++;
+    const name = cut(r.full_name, 300);
+    if (!name) { skip(c, "no_name"); continue; }
+    // Blank answers are left out, as the old importer did (TMF:670); every answer is a string.
+    const answers = Object.fromEntries(Object.entries(obj(r.answers)).map(([k, v]) => [k.trim().slice(0, 200), cut(v, 2000)]).filter(([k, v]) => k && v));
+    if (!Object.keys(answers).length) { skip(c, "no_answers"); continue; }
+    const day = text(r.date_added);
+    // A bare date reads as noon UTC, so it shows as the same calendar day in New York.
+    const at = iso(r.at) ?? (/^\d{4}-\d{2}-\d{2}$/.test(day) ? `${day}T12:00:00.000Z` : null);
+    // The old record_id rule (OPS-049) when a row has none.
+    const legacyId = cut(r.record_id, 80) || `spotlight-${hash(`${name.toLowerCase().replace(/[^a-z]/g, "")}|${day}|${text(r.link_id)}`)}`;
+    if (exists.get(legacyId)) { c.existing++; continue; }
+    const oldMember = cut(r.member_id, 80) || null;
+    const memberId = oldMember ? ((profileOf.get(oldMember) as { user_id: string } | undefined)?.user_id ?? null) : null;
+    try {
+      insert.run(legacyId, oldMember, memberId, name, cut(r.business, 300), cut(r.neighborhood, 300), JSON.stringify(answers), at);
+      c.imported++;
+    } catch {
+      skip(c, "rejected_by_db");
+    }
+  }
+  return c;
+}
+
 /**
  * Imports whatever sources are given in one transaction (rolled back for `dryRun`) and reports what happened.
  * Inbox rows come in `archived` by default: they were already emailed, and 100+ old messages should not look new.
@@ -255,6 +295,7 @@ export function importLegacy(db: DB, src: Sources, options: Options = {}): Repor
       members,
       subscribers: importSubscribers(db, subscriberRows, submissions.filter((r) => text(r.form) === "newsletter" && r.deleted !== true)),
       inbox: importInbox(db, submissions, options.inboxStatus ?? "archived"),
+      spotlight: importSpotlight(db, src.spotlight ?? []),
     };
     db.exec(options.dryRun ? "rollback" : "commit");
     return report;

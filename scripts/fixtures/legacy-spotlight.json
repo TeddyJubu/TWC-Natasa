@@ -1,0 +1,27 @@
+[
+ {
+  "record_id": "fx-spot-01",
+  "type": "spotlight_answers",
+  "member_id": "fx-mem-nell",
+  "full_name": "Nell Fixture",
+  "business": "Fixture Florals",
+  "neighborhood": "Greenpoint",
+  "date_added": "2026-10-01",
+  "source": "test",
+  "answers": { "What Inspired You to Start": "Flowers.", "What Are You Most Proud Of": "Our first wedding.", "Community - Never Do": "  " }
+ },
+ {
+  "type": "spotlight_submission",
+  "member_id": "fx-appr-02",
+  "full_name": "Mira Membersen",
+  "business": "Membersen Studio",
+  "neighborhood": "Ridgewood",
+  "date_added": "2026-10-20",
+  "source": "Weekly Spotlight form (personal link)",
+  "answers": { "What Inspired You to Start": "Clay.", "Older Sheet Column": "Kept under its own name." },
+  "at": "2026-10-20T15:30:00+00:00",
+  "link_id": "fx-link-01"
+ },
+ { "record_id": "fx-spot-noname", "full_name": " ", "answers": { "What Inspired You to Start": "x" } },
+ { "record_id": "fx-spot-empty", "full_name": "Hana Again", "date_added": "2026-10-02", "answers": { "What Inspired You to Start": "" } }
+]

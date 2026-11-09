@@ -70,10 +70,10 @@ describe("_admin guard", () => {
 });
 
 const FETCH = Symbol("fetch");
-type AdminKey = "inbox" | "applications" | "members" | "neighborhoods" | "bookings" | "events" | "review-links" | "reviews" | "form-responses" | "notes" | "actions";
+type AdminKey = "inbox" | "applications" | "members" | "neighborhoods" | "bookings" | "events" | "review-links" | "spotlight-links" | "reviews" | "spotlights" | "form-responses" | "notes" | "actions";
 /** Seeds every admin read (empty lists, plus `members`) unless overridden; FETCH leaves that read to the queued fake results. */
 function renderAdmin(over: Partial<Record<AdminKey, unknown>> = {}, extra: [unknown[], unknown][] = []) {
-  const data: Record<AdminKey, unknown> = { inbox: [], applications: [], members, neighborhoods: [], bookings: [], events: [], "review-links": {}, reviews: [], "form-responses": [], notes: [], actions: [], ...over };
+  const data: Record<AdminKey, unknown> = { inbox: [], applications: [], members, neighborhoods: [], bookings: [], events: [], "review-links": {}, "spotlight-links": {}, reviews: [], spotlights: [], "form-responses": [], notes: [], actions: [], ...over };
   const seed = Object.entries(data).filter(([, v]) => v !== FETCH).map(([k, v]) => [["admin", k], v] as [unknown[], unknown]);
   return renderWithQueries(<Page />, [...seed, ...extra]);
 }
@@ -94,7 +94,7 @@ describe("/admin", () => {
 
     it("renders all six cards as anchored regions, and the sidebar marks the top one as here", () => {
       renderAdmin();
-      for (const [name, id] of [["Inbox", "inbox"], ["Applications", "applications"], ["All members", "members"], ["Admin activity", "activity"], ["Member reviews", "reviews"], ["Form responses", "forms"], ["Neighborhoods", "neighborhoods"], ["Headshot bookings", "bookings"], ["Gatherings", "gatherings"]]) {
+      for (const [name, id] of [["Inbox", "inbox"], ["Applications", "applications"], ["All members", "members"], ["Admin activity", "activity"], ["Member reviews", "reviews"], ["Spotlight answers", "spotlight"], ["Form responses", "forms"], ["Neighborhoods", "neighborhoods"], ["Headshot bookings", "bookings"], ["Gatherings", "gatherings"]]) {
         expect(card(name).id).toBe(id);
       }
       const nav = screen.getAllByRole("navigation", { name: "Main" })[0];
@@ -401,7 +401,7 @@ describe("/admin", () => {
     const url = (await within(row).findByRole("textbox", { name: /Shown once/ })) as HTMLInputElement;
     expect(url.value).toBe("https://new.example/review?t=abc");
     expect(url.readOnly).toBe(true);
-    expect(fake.calls[0]).toEqual(["mintReviewLinkFn", { member_id: "u1" }]);
+    expect(fake.calls[0]).toEqual(["mintReviewLinkFn", { member_id: "u1", purpose: "review" }]);
     await waitFor(() => expect(row.textContent).toMatch(/Review link open until/));
     expect(within(row).getByRole("button", { name: "Revoke the review link for Rosa Diaz" })).toBeTruthy();
   });
@@ -414,7 +414,34 @@ describe("/admin", () => {
     fake.results = [1, { u1: { ...live, state: "expired" } }];
     fireEvent.click(within(row).getByRole("button", { name: "Revoke the review link for Rosa Diaz" }));
     await waitFor(() => expect(row.textContent).toMatch(/Review link closed/));
-    expect(fake.calls[0]).toEqual(["revokeReviewLinkFn", { member_id: "u1" }]);
+    expect(fake.calls[0]).toEqual(["revokeReviewLinkFn", { member_id: "u1", purpose: "review" }]);
+  });
+
+  it("members: Invite to Spotlight makes a separate Spotlight link, shown once (CRM-083)", async () => {
+    renderAdmin({ members: [member("u1", "Rosa Diaz")] });
+    const row = screen.getByRole("row", { name: /Rosa Diaz/ });
+    fake.results = [{ url: "https://new.example/spotlight?t=abc", expires_at: "2026-12-09T15:00:00Z" },
+      { u1: { state: "active", created_at: "2026-11-09T15:00:00Z", expires_at: "2026-12-09T15:00:00Z", used_at: null } }];
+    fireEvent.click(within(row).getByRole("button", { name: "Make a Spotlight link for Rosa Diaz" }));
+    const url = (await within(row).findByRole("textbox", { name: /Shown once/ })) as HTMLInputElement;
+    expect(url.value).toBe("https://new.example/spotlight?t=abc");
+    expect(fake.calls[0]).toEqual(["mintReviewLinkFn", { member_id: "u1", purpose: "spotlight" }]);
+    await waitFor(() => expect(row.textContent).toMatch(/Spotlight link open until/));
+    expect(within(row).getByRole("button", { name: "Make a review link for Rosa Diaz" }).textContent).toBe("Make review link");
+  });
+
+  it("Spotlight answers: lists sent and imported answers with the question's words (CRM-037, CRM-097)", () => {
+    renderAdmin({ spotlights: [
+      { id: "s1", full_name: "Rosa Diaz", business: "Rosa’s", neighborhood: "Astoria", created_at: "2026-11-09T15:00:00Z", imported: false, member_id: "u1",
+        answers: { "What Inspired You to Start": "Bread." } },
+      { id: "s2", full_name: "Nell Fixture", business: "", neighborhood: "", created_at: "2026-10-01T12:00:00Z", imported: true, member_id: null,
+        answers: { "Old Column": "Kept." } },
+    ] });
+    const panel = within(card("Spotlight answers"));
+    const sent = panel.getByRole("article", { name: "Rosa Diaz" });
+    expect(sent.textContent).toMatch(/Rosa’s · Astoria · Sent/);
+    expect(sent.textContent).toMatch(/What inspired you to start your business or practice\?Bread\./);
+    expect(panel.getByRole("article", { name: "Nell Fixture" }).textContent).toMatch(/Imported.*Old ColumnKept\./s);
   });
 
   it("member reviews: lists answers with their labels, and Mark handled clears one", async () => {

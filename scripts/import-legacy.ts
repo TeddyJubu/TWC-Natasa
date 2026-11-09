@@ -5,11 +5,13 @@
  *   node --experimental-strip-types scripts/import-legacy.ts --dir /opt/nbwc/data [--db <twc.db>] [--dry-run] [--inbox-new]
  *
  * `--dir` is the old data folder (intake/new_applications.jsonl, intake/members.jsonl, intake/subscribers.jsonl,
- * submissions.jsonl); `--applications/--members/--subscribers/--submissions <file>` override one source each (a
- * `.json` array works too, e.g. scripts/fixtures/legacy-*.json). `--db` defaults to ${DATA_DIR:-./data}/twc.db.
+ * intake/spotlight_answers.jsonl, submissions.jsonl); `--applications/--members/--subscribers/--spotlight/--submissions
+ * <file>` override one source each (a `.json` array works too, e.g. scripts/fixtures/legacy-*.json). A file missing
+ * from `--dir` is skipped with a note. `--db` defaults to ${DATA_DIR:-./data}/twc.db.
  * `--dry-run` prints the report and changes nothing. Re-running imports only what is new. Prints counts, never
  * row contents. Back the database up first (README: sqlite3 … ".backup").
  */
+import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
 import { dataDir, openDb } from "../src/server/db.ts";
@@ -22,6 +24,7 @@ const { values } = parseArgs({
     applications: { type: "string" },
     members: { type: "string" },
     subscribers: { type: "string" },
+    spotlight: { type: "string" },
     submissions: { type: "string" },
     "dry-run": { type: "boolean", default: false },
     "inbox-new": { type: "boolean", default: false },
@@ -33,16 +36,21 @@ const files = {
   applications: from(values.applications, "intake/new_applications.jsonl"),
   members: from(values.members, "intake/members.jsonl"),
   subscribers: from(values.subscribers, "intake/subscribers.jsonl"),
+  spotlight: from(values.spotlight, "intake/spotlight_answers.jsonl"),
   submissions: from(values.submissions, "submissions.jsonl"),
 };
 if (!Object.values(files).some(Boolean)) {
-  console.error("Give --dir <old data folder> or at least one of --applications/--members/--subscribers/--submissions.");
+  console.error("Give --dir <old data folder> or at least one of --applications/--members/--subscribers/--spotlight/--submissions.");
   process.exit(2);
 }
 
 const sources: Sources = {};
 for (const [name, path] of Object.entries(files)) {
   if (!path) continue;
+  if (!values[name as keyof typeof values] && !existsSync(path)) {
+    console.log(`read ${name}: no ${path}, skipped`);
+    continue;
+  }
   const { rows, bad } = readRows(path);
   sources[name as keyof Sources] = rows;
   console.log(`read ${name}: ${rows.length} rows${bad ? `, ${bad} unreadable lines dropped` : ""}`);

@@ -23,9 +23,11 @@ import {
   newsletterLabel, reviewerName, type AnswerEntry,
 } from "./format";
 import {
-  adminReviewsQuery, reviewLinkStatesQuery, useMarkReviewDone, useMintReviewLink, useRevokeReviewLink, type AdminReview, type LinkState,
+  adminReviewsQuery, adminSpotlightsQuery, reviewLinkStatesQuery, spotlightLinkStatesQuery, useMarkReviewDone, useMintReviewLink, useRevokeReviewLink,
+  type AdminReview, type AdminSpotlight, type LinkState, type Purpose,
 } from "@/features/member-links/queries";
 import { reviewEntries } from "@/features/member-links/schema";
+import { spotlightEntries } from "@/features/member-links/spotlight";
 import { adminFormResponsesQuery, type AdminForm } from "@/features/forms/queries";
 
 const errorMessage = (error: unknown) =>
@@ -364,6 +366,7 @@ const headCell = cn(cell, "twc-eyebrow py-3.5 whitespace-nowrap");
 export function MembersPanel({ query = "" }: { query?: string }) {
   const members = useQuery(adminMembersQuery);
   const links = useQuery(reviewLinkStatesQuery);
+  const spotlightLinks = useQuery(spotlightLinkStatesQuery);
   const notes = useQuery(adminNotesQuery);
   const apps = useQuery(adminApplicationsQuery);
   const [status, setStatus] = React.useState("");
@@ -385,6 +388,7 @@ export function MembersPanel({ query = "" }: { query?: string }) {
             options={[{ value: "", label: "Any neighborhood" }, ...hoods.map((n) => ({ value: n, label: n })), { value: NO_HOOD, label: "No neighborhood" }]} />
         </div>
         {links.isError && <InlineError message="We couldn’t load review links right now." onRetry={() => void links.refetch()} />}
+        {spotlightLinks.isError && <InlineError message="We couldn’t load Spotlight links right now." onRetry={() => void spotlightLinks.refetch()} />}
         {notes.isError && <InlineError message="We couldn’t load notes right now." onRetry={() => void notes.refetch()} />}
         {apps.isError && <InlineError message="We couldn’t load applications right now." onRetry={() => void apps.refetch()} />}
         {list.length === 0 ? <Empty>{all.length ? "No members match." : "No member profiles yet."}</Empty> : (
@@ -399,7 +403,7 @@ export function MembersPanel({ query = "" }: { query?: string }) {
                 </tr>
               </thead>
               <tbody>{list.map((m) => (
-                <MemberRow key={m.id} member={m} link={links.data?.[m.id] ?? null} notes={notesFor(notes.data, "member_id", m.id)} app={appFor.get(m.id) ?? null} />
+                <MemberRow key={m.id} member={m} link={links.data?.[m.id] ?? null} spotlight={spotlightLinks.data?.[m.id] ?? null} notes={notesFor(notes.data, "member_id", m.id)} app={appFor.get(m.id) ?? null} />
               ))}</tbody>
             </table>
           </div>
@@ -409,7 +413,9 @@ export function MembersPanel({ query = "" }: { query?: string }) {
   );
 }
 
-function MemberRow({ member, link, notes, app }: { member: AdminMember; link: LinkState | null; notes: AdminNote[]; app: AdminApplication | null }) {
+function MemberRow({ member, link, spotlight, notes, app }: {
+  member: AdminMember; link: LinkState | null; spotlight: LinkState | null; notes: AdminNote[]; app: AdminApplication | null;
+}) {
   const setStatus = useSetMemberStatus();
   const name = member.full_name || "Unnamed member";
   return (
@@ -433,6 +439,7 @@ function MemberRow({ member, link, notes, app }: { member: AdminMember; link: Li
           <MutationError mutation={setStatus} />
           <EmailNotice notice={setStatus.data} />
           {member.status === "approved" && <ReviewLink memberId={member.id} name={name} link={link} />}
+          {member.status === "approved" && <ReviewLink purpose="spotlight" memberId={member.id} name={name} link={spotlight} />}
           <MemberDetails member={member} name={name} app={app} />
           <Notes subject={{ memberId: member.id }} name={name} notes={notes} />
         </div>
@@ -510,32 +517,39 @@ export function ActivityPanel() {
   );
 }
 
-const LINK_STATE: Record<LinkState["state"], (l: LinkState) => string> = {
-  active: (l) => `Review link open until ${formatDate(l.expires_at)}`,
-  used: (l) => `Review link used ${formatDate(l.used_at)}`,
-  expired: (l) => `Review link closed ${formatDate(l.expires_at)}`,
+const LINK_STATE: Record<LinkState["state"], (l: LinkState, kind: string) => string> = {
+  active: (l, kind) => `${kind} open until ${formatDate(l.expires_at)}`,
+  used: (l, kind) => `${kind} used ${formatDate(l.used_at)}`,
+  expired: (l, kind) => `${kind} closed ${formatDate(l.expires_at)}`,
+};
+const LINK_WORDS: Record<Purpose, { kind: string; make: string; again: string; revoke: string }> = {
+  review: { kind: "Review link", make: "Make review link", again: "New review link", revoke: "review link" },
+  // CRM-083: the old CRM's "Invite to Spotlight".
+  spotlight: { kind: "Spotlight link", make: "Invite to Spotlight", again: "New Spotlight link", revoke: "Spotlight link" },
 };
 
 /**
- * A personal review link (CRM-082–089): its state, Make / Revoke, and the new URL shown once to copy into the
- * admin's own message. Only its hash is stored, so a lost URL means making a new one (which closes the old).
+ * A personal review or Spotlight link (CRM-082–089, CRM-083): its state, Make / Revoke, and the new URL shown once
+ * to copy into the admin's own message. Only its hash is stored, so a lost URL means making a new one (which closes the old).
  */
-function ReviewLink({ memberId, name, link }: { memberId: string; name: string; link: LinkState | null }) {
-  const mint = useMintReviewLink();
-  const revoke = useRevokeReviewLink();
+function ReviewLink({ memberId, name, link, purpose = "review" }: { memberId: string; name: string; link: LinkState | null; purpose?: Purpose }) {
+  const mint = useMintReviewLink(purpose);
+  const revoke = useRevokeReviewLink(purpose);
+  const words = LINK_WORDS[purpose];
+  const inputId = `${purpose}-link-${memberId}`;
   const [copied, setCopied] = React.useState(false);
   const busy = mint.isPending || revoke.isPending;
   const copy = (url: string) => navigator.clipboard?.writeText(url).then(() => setCopied(true), () => setCopied(false));
   return (
     <div className="flex flex-col gap-2 border-t border-app-rule pt-2">
-      {link && <p className={meta}>{LINK_STATE[link.state](link)}</p>}
+      {link && <p className={meta}>{LINK_STATE[link.state](link, words.kind)}</p>}
       <div className="flex flex-wrap gap-2.5">
-        <button type="button" className={secondaryButton} aria-label={`Make a review link for ${name}`} disabled={busy}
+        <button type="button" className={secondaryButton} aria-label={`Make a ${words.revoke} for ${name}`} disabled={busy}
           onClick={() => { setCopied(false); revoke.reset(); mint.mutate(memberId); }}>
-          {link?.state === "active" ? "New review link" : "Make review link"}
+          {link?.state === "active" ? words.again : words.make}
         </button>
         {link?.state === "active" && (
-          <button type="button" className={secondaryButton} aria-label={`Revoke the review link for ${name}`} disabled={busy}
+          <button type="button" className={secondaryButton} aria-label={`Revoke the ${words.revoke} for ${name}`} disabled={busy}
             onClick={() => { mint.reset(); revoke.mutate(memberId); }}>
             Revoke
           </button>
@@ -545,9 +559,9 @@ function ReviewLink({ memberId, name, link }: { memberId: string; name: string; 
       <MutationError mutation={revoke} />
       {mint.data && (
         <div className="flex flex-col gap-1.5">
-          <label htmlFor={`link-${memberId}`} className={meta}>Shown once — copy it into your own message to {name}. Opens one time, until {formatDate(mint.data.expires_at)}.</label>
+          <label htmlFor={inputId} className={meta}>Shown once — copy it into your own message to {name}. Opens one time, until {formatDate(mint.data.expires_at)}.</label>
           <div className="flex gap-2">
-            <input id={`link-${memberId}`} readOnly value={mint.data.url} className={cn(fieldClass, "min-w-0 flex-1")} onFocus={(e) => e.currentTarget.select()} />
+            <input id={inputId} readOnly value={mint.data.url} className={cn(fieldClass, "min-w-0 flex-1")} onFocus={(e) => e.currentTarget.select()} />
             <button type="button" className={secondaryButton} onClick={() => copy(mint.data.url)}>Copy</button>
           </div>
           {copied && <p role="status" className={meta}>Copied</p>}
@@ -595,6 +609,40 @@ function ReviewRow({ review: r }: { review: AdminReview }) {
           Mark handled
         </button>
       </div>
+    </Item>
+  );
+}
+
+// ---------- Spotlight answers ----------
+
+/** CRM-037 / CRM-097: every Weekly Spotlight answer, sent through a link or imported from the old sheet. Nothing is published from here. */
+export function SpotlightPanel() {
+  const spotlights = useQuery(adminSpotlightsQuery);
+  const list = spotlights.data ?? [];
+  return (
+    <Card id="spotlight" title="Spotlight answers" subtitle={spotlights.data ? `${list.length} answers · from personal Spotlight links and the old sheet` : "Answers from personal Spotlight links"}>
+      <QueryGate query={spotlights} what="Spotlight answers">
+        {list.length === 0 ? <Empty>No Spotlight answers yet.</Empty> : list.map((s) => <SpotlightRow key={s.id} spotlight={s} />)}
+      </QueryGate>
+    </Card>
+  );
+}
+
+function SpotlightRow({ spotlight: s }: { spotlight: AdminSpotlight }) {
+  const entries = spotlightEntries(s.answers);
+  const about = [s.business, s.neighborhood].filter(Boolean).join(" · ");
+  return (
+    <Item
+      headingId={`spotlight-${s.id}`} title={s.full_name} status={s.imported ? "imported" : "sent"}
+      details={<p className={meta}>{about && `${about} · `}{s.imported ? "Added" : "Sent"} {formatDate(s.created_at)}</p>}
+    >
+      <details className="group rounded-md bg-app-sunken">
+        <summary className={cn("flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-md px-3.5 text-sm font-medium text-ink [&::-webkit-details-marker]:hidden", ring)}>
+          <Icon name="chevron-down" className="size-3.25 -rotate-90 text-app-muted transition-transform group-open:rotate-0 motion-reduce:transition-none" />
+          Answers ({entries.length})
+        </summary>
+        <AnswerList entries={entries} />
+      </details>
     </Item>
   );
 }

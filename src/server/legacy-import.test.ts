@@ -12,6 +12,7 @@ import { importLegacy, readRows, type Row, type Sources } from "./legacy-import"
 const fixture = (name: string) => readRows(`scripts/fixtures/legacy-${name}.json`).rows;
 const sources = (): Sources => ({
   applications: fixture("applications"), members: fixture("members"), subscribers: fixture("subscribers"), submissions: fixture("submissions"),
+  spotlight: fixture("spotlight"),
 });
 
 const get = <T,>(db: DB, sql: string, ...args: (string | number | null)[]) => db.prepare(sql).get(...args) as T;
@@ -66,7 +67,7 @@ describe("import counts", () => {
     db.prepare("update applications set status = 'declined' where legacy_id = 'app-fx-pend-01'").run();
     db.prepare("update newsletter_subscribers set full_name = 'Renamed' where legacy_id = 'newsletter-fx-sub-01'").run();
     const again = importLegacy(db, sources());
-    expect(Object.values(again).map((c) => c.imported)).toEqual([0, 0, 0, 0]);
+    expect(Object.values(again).map((c) => c.imported)).toEqual([0, 0, 0, 0, 0]);
     expect(get<{ status: string }>(db, "select status from applications where legacy_id = 'app-fx-pend-01'").status).toBe("declined");
     expect(get<{ full_name: string }>(db, "select full_name from newsletter_subscribers where legacy_id = 'newsletter-fx-sub-01'").full_name).toBe("Renamed");
   });
@@ -254,5 +255,32 @@ describe("link on sign-up", () => {
     importLegacy(db, sources());
     expect(profile(db, id).status).toBe("pending");           // nothing re-runs for an already-verified account
     expect(get<{ user_id: string | null }>(db, "select user_id from legacy_members where legacy_id = 'fx-mem-nell'").user_id).toBeNull();
+  });
+});
+
+describe("Weekly Spotlight history (OPS-049)", () => {
+  const rows = (db: DB) => all<{ legacy_id: string; legacy_member_id: string | null; member_id: string | null; link_id: string | null; full_name: string; answers: string; created_at: string }>(
+    db, "select * from spotlight_answers order by created_at");
+
+  it("takes both old shapes, keeps the old ids, drops blanks, and never makes a link", () => {
+    const { db, report } = imported();
+    expect(report.spotlight).toEqual({ read: 4, imported: 2, existing: 0, skipped: { no_name: 1, no_answers: 1 } });
+    const [nell, mira] = rows(db);
+    expect(nell).toMatchObject({ legacy_id: "fx-spot-01", legacy_member_id: "fx-mem-nell", member_id: null, link_id: null, created_at: "2026-10-01T12:00:00.000Z" });
+    expect(JSON.parse(nell!.answers)).toEqual({ "What Inspired You to Start": "Flowers.", "What Are You Most Proud Of": "Our first wedding." });
+    // no record_id: the old rule, "spotlight-" + 12 hex of sha256(letters of name | date | link id)
+    expect(mira).toMatchObject({ legacy_id: expect.stringMatching(/^spotlight-[0-9a-f]{12}$/), created_at: "2026-10-20T15:30:00.000Z" });
+    expect(JSON.parse(mira!.answers)).toHaveProperty("Older Sheet Column");
+    expect(count(db, "member_links")).toBe(0);
+  });
+
+  it("is re-runnable, and ties a row to her profile once she has claimed her old member record", () => {
+    const db = openDb(":memory:");
+    importLegacy(db, { members: fixture("members") });
+    const nell = addUser(db, "nell.fixture@example.com", false);
+    verify(db, nell);
+    importLegacy(db, sources());
+    expect(rows(db)[0]).toMatchObject({ legacy_member_id: "fx-mem-nell", member_id: nell });
+    expect(importLegacy(db, sources()).spotlight).toMatchObject({ imported: 0, existing: 2 });
   });
 });

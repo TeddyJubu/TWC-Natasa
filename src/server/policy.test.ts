@@ -19,6 +19,7 @@ import {
   setMemberNeighborhood, setMemberStatus, updateEvent,
 } from "@/features/admin/admin.server";
 import { adminReviews, markReviewDone, mintReviewLink, openReview, reviewLinkStates, revokeReviewLink, submitReview } from "@/features/member-links/member-links.server";
+import { adminSpotlights, openSpotlight, submitSpotlight } from "@/features/member-links/spotlight.server";
 import { adminFormResponses, openForm, submitResponse } from "@/features/forms/forms.server";
 import { saveForm } from "@/features/forms/store";
 import { DEMO_FORMS } from "@/features/forms/fixtures";
@@ -560,7 +561,21 @@ describe("member review links", () => {
       throwsAccess(() => reviewLinkStates(as(who)));
       throwsAccess(() => adminReviews(as(who)));
       throwsAccess(() => markReviewDone(as(who), { id: "x" }));
+      throwsAccess(() => mintReviewLink(as(who), { member_id: M, purpose: "spotlight" }));
+      throwsAccess(() => revokeReviewLink(as(who), { member_id: M, purpose: "spotlight" }));
+      throwsAccess(() => reviewLinkStates(as(who), { purpose: "spotlight" }));
+      throwsAccess(() => adminSpotlights(as(who)));
     }
+  });
+  it("a Spotlight link opens only the Spotlight form, once, and never approves anyone", () => {
+    const token = new URL(mintReviewLink(as(A), { member_id: M, purpose: "spotlight" }).url).searchParams.get("t")!;
+    expect(openReview(anon(), { token })).toBeNull();
+    expect(openSpotlight(anon(), { token })).not.toBeNull();
+    const story = { q_what_inspired_you_to_start: "a", q_what_are_you_currently_focused_on: "b", q_what_are_you_most_proud_of: "c", q_one_fact_others_should_know: "d" };
+    submitSpotlight(anon(), { token, full_name: "Mo", ...story, status: "approved", member_id: C });
+    expect(openSpotlight(anon(), { token })).toBeNull();
+    expect(adminSpotlights(as(A)).find((s) => s.full_name === "Mo")).toMatchObject({ member_id: M, imported: false });
+    expect(status(C)).toBe("pending");
   });
   it("a link opens only its member's form, once, and never approves anyone", () => {
     expect(() => mintReviewLink(as(A), { member_id: C })).toThrow(/approved members/);

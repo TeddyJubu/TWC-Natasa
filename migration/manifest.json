@@ -316,9 +316,9 @@
       "source": "crm.md:Spotlight history",
       "acceptance": "Spotlight history: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin#members",
-      "evidence": "Deferred with Spotlight: historical spotlight_answers.jsonl import + listing (AUDIT-TASKS members-links; data-import for the rows)."
+      "status": "built",
+      "target": "/admin#spotlight",
+      "evidence": "Spotlight history = the /admin 'Spotlight answers' card: every sent and imported answer, newest first, with name/business/neighborhood, Sent/Imported chip and the questions' own words (spotlightEntries; an old sheet column shows under its own name). Historical rows come from scripts/import-legacy.ts (spotlight source, OPS-049). src/features/admin/panels.tsx SpotlightPanel; tests in src/app/admin-route.test.tsx and src/server/legacy-import.test.ts."
     },
     {
       "id": "CRM-038",
@@ -697,9 +697,9 @@
       "source": "crm.md:Invite to Weekly Spotlight",
       "acceptance": "Invite to Weekly Spotlight: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
+      "status": "built",
       "target": "/admin#members",
-      "evidence": "Deferred: Spotlight invite (purpose 'spotlight' is already accepted by member_links in 0003, and review lookups filter on purpose). Follow-up in AUDIT-TASKS (members-links)."
+      "evidence": "'Invite to Spotlight' on every approved member's row in /admin All members (ReviewLink purpose=\"spotlight\", src/features/admin/panels.tsx): mintReviewLink with purpose 'spotlight' (requireAdmin, approved members only) stores only the SHA-256 in member_links (0003), retires her previous live Spotlight link only, returns `/spotlight?t=\u2026` once; Revoke + state line. Tests: src/features/member-links/spotlight.test.ts, src/app/admin-route.test.tsx ('Invite to Spotlight'), src/server/policy.test.ts."
     },
     {
       "id": "CRM-084",
@@ -821,9 +821,9 @@
       "source": "crm.md:Weekly Spotlight",
       "acceptance": "Weekly Spotlight: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin",
-      "evidence": "Deferred with Spotlight (AUDIT-TASKS members-links)."
+      "status": "built",
+      "target": "/admin#spotlight",
+      "evidence": "Weekly Spotlight rebuilt: invite from /admin members (CRM-083), public form /spotlight?t= (OPS-028), answers in spotlight_answers (0008) listed in the /admin 'Spotlight answers' card (adminSpotlights, requireAdmin; sidebar Admin \u2192 Spotlight answers). No open/close switch, as in the old intake (OPS-081). src/features/member-links/spotlight.server.ts."
     },
     {
       "id": "CRM-098",
@@ -1792,18 +1792,18 @@
       "source": "backoffice.md:`GET /spotlight?t=<token>`, `POST /spotlight?t=<token>`, `GET /spotlight/thanks`",
       "acceptance": "`GET /spotlight?t=<token>`, `POST /spotlight?t=<token>`, `GET /spotlight/thanks`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin#members",
-      "evidence": "Deferred with Spotlight (AUDIT-TASKS members-links)."
+      "status": "built",
+      "target": "/spotlight",
+      "evidence": "src/routes/spotlight.tsx + POST /api/spotlight (src/routes/api/spotlight.ts, in API_ROUTES/CSRF): token-only, noindex, no-referrer, Disallow in robots.txt; any token that doesn't open it (review tokens, used, expired, revoked, not-approved) gets one neutral 404 with the old words; 32 KB cap + 10/IP/10 min checked before the body is read; honeypot = success with nothing stored; success uses the link up in the same transaction and shows the old thanks text inline (no separate /spotlight/thanks page, like /review). Tests: src/features/member-links/spotlight.test.ts, src/app/spotlight-route.test.tsx, src/app/security-headers.test.ts."
     },
     {
       "id": "OPS-029",
       "source": "backoffice.md:Spotlight questions",
       "acceptance": "Spotlight questions: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin#members",
-      "evidence": "Deferred with Spotlight (AUDIT-TASKS members-links)."
+      "status": "built",
+      "target": "/spotlight",
+      "evidence": "src/features/member-links/spotlight.ts SPOTLIGHT_QUESTIONS: the 14 questions with verbatim labels/help, stored under the old Google Form column keys, POST names q_<snake> (fieldName); 4 required, Yes/No and http(s) reel checks with the old messages; identity fields capped at 300. checkSpotlight runs in the form and on the server. Tests: spotlight.test.ts (checkSpotlight)."
     },
     {
       "id": "OPS-030",
@@ -1962,9 +1962,9 @@
       "source": "backoffice.md:`spotlight_answers.jsonl`",
       "acceptance": "`spotlight_answers.jsonl`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin#members",
-      "evidence": "Deferred with Spotlight (AUDIT-TASKS members-links)."
+      "status": "built",
+      "target": "/admin#spotlight",
+      "evidence": "spotlight_answers (db/migrations/0008_spotlight_answers.sql; member_reviews rejected: its link_id/member_id are required). Historical rows: scripts/import-legacy.ts --dir \u2026 reads intake/spotlight_answers.jsonl (or --spotlight <file>), both old shapes (spotlight_submission with at/link_id, spotlight_answers with date_added), record_id kept as legacy_id (old hash rule when missing), blanks dropped, insert-only/re-runnable, counts only in logs. Fixture scripts/fixtures/legacy-spotlight.json; tests src/server/legacy-import.test.ts."
     },
     {
       "id": "OPS-050",
@@ -2495,9 +2495,9 @@
       "source": "backoffice.md:When `spotlight_interest = yes`, `spotlight_permission = yes` is required",
       "acceptance": "When `spotlight_interest = yes`, `spotlight_permission = yes` is required: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin#members",
-      "evidence": "Deferred with Spotlight (AUDIT-TASKS members-links)."
+      "status": "built",
+      "target": "/join",
+      "evidence": "Application form: spotlight 'yes' requires the focus answer and the publication consent box (src/features/applications/schema.ts spotlight \u2192 r.required + r.consent); tested in src/features/applications/schema.test.ts ('spotlight: yes' \u2192 publicationConsent: true)."
     },
     {
       "id": "OPS-116",
@@ -2783,16 +2783,18 @@
       "source": "backoffice.md:Spotlight has 3 identity fields",
       "acceptance": "Spotlight has 3 identity fields: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin#members"
+      "status": "built",
+      "target": "/spotlight",
+      "evidence": "src/features/member-links/spotlight.ts: IDENTITY (Your name required; Business name, Neighborhood optional, \u2264300) + 14 SPOTLIGHT_QUESTIONS (4 required). Tested in spotlight.test.ts."
     },
     {
       "id": "OPS-151",
       "source": "backoffice.md:Spotlight answers are stored under the old Google Form column names",
       "acceptance": "Spotlight answers are stored under the old Google Form column names: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin#members"
+      "status": "built",
+      "target": "/admin#spotlight",
+      "evidence": "checkSpotlight stores answers keyed by the old column names, blanks left out; the import keeps the same keys. spotlight.test.ts ('store one set of answers under the old column names')."
     },
     {
       "id": "OPS-152",
@@ -2807,24 +2809,27 @@
       "source": "backoffice.md:Spotlight record shape",
       "acceptance": "Spotlight record shape: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin#members"
+      "status": "built",
+      "target": "/admin#spotlight",
+      "evidence": "spotlight_answers (0008): id, link_id (one answer per link), member_id, legacy_id (old record_id), legacy_member_id, full_name/business/neighborhood, answers JSON object \u226432 KB, created_at. 'type'/'source' are implied (link_id vs legacy_id); date_added = created_at. src/server/db.test.ts (0008 checks)."
     },
     {
       "id": "OPS-154",
       "source": "backoffice.md:Spotlight prefill: name \u2190 `full_name`, business \u2190 `business_practice`, neighborhood \u2190 `base_area`, else `neighborhood_ci",
       "acceptance": "Spotlight prefill: name \u2190 `full_name`, business \u2190 `business_practice`, neighborhood \u2190 `base_area`, else `neighborhood_ci: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin#members"
+      "status": "built",
+      "target": "/spotlight",
+      "evidence": "openSpotlight prefill via memberValues: name \u2190 profile full_name (else application), business \u2190 profile business (else application business), neighborhood \u2190 profile neighborhood, else the approved application's neighborhood (the new base_area), else basedIn. Never 'Other' literal: the new application stores the area itself. spotlight.test.ts ('prefill name, business and neighborhood')."
     },
     {
       "id": "OPS-155",
       "source": "backoffice.md:Spotlight links are separate from review links",
       "acceptance": "Spotlight links are separate from review links: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/admin#members"
+      "status": "built",
+      "target": "/spotlight",
+      "evidence": "Same member_links table, separated by purpose: every lookup (activeLink) filters on purpose, minting/revoking one kind never touches the other, approved members only. spotlight.test.ts ('live beside the review link', review token \u2192 404) and member-links.test.ts (spotlight token \u2192 review 404)."
     },
     {
       "id": "OPS-156",
@@ -4432,8 +4437,9 @@
       "source": "backoffice.md:`import_spotlight_answers.py <csv>`.",
       "acceptance": "`import_spotlight_answers.py <csv>`.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
-      "target": "/admin#members"
+      "status": "built",
+      "target": "/admin#spotlight",
+      "evidence": "Not ported as a CSV importer: the sheet was already turned into spotlight_answers.jsonl by the old tool, and that file is what scripts/import-legacy.ts reads (OPS-049). Re-reading the sheet would re-run its name matching, which the rebuild does not trust."
     },
     {
       "id": "OPS-355",
