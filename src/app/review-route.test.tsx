@@ -7,6 +7,7 @@ import { expectNoSkippedHeadings } from "@/test/headings";
 import { fake } from "@/test/fake-fns";
 
 vi.mock("@/features/member-links/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
+vi.mock("@/features/forms-state/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 vi.mock("@/app/api", async () => (await import("@/test/fake-fns")).fakeApi);
 vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs }));
 
@@ -23,8 +24,8 @@ const prefill = { firstName: "Rosa", values: {
 } };
 type Loader = (ctx: { deps: { t?: string } }) => Promise<unknown>;
 const load = (t?: string) => (Route.options.loader as unknown as Loader)({ deps: { t } });
-const show = () => {
-  vi.spyOn(Route, "useLoaderData").mockReturnValue({ token: TOKEN, prefill } as never);
+const show = (closed: string | null = null) => {
+  vi.spyOn(Route, "useLoaderData").mockReturnValue({ token: TOKEN, prefill, closed } as never);
   const Page = Route.options.component as React.ComponentType;
   return renderWithQueries(<Page />);
 };
@@ -42,6 +43,15 @@ describe("/review", () => {
     fake.results = [null];
     expect(isNotFound(await load(TOKEN).catch((e: unknown) => e))).toBe(true);
     expect(fake.calls).toEqual([["openReviewFn", { token: TOKEN }]]);
+  });
+
+  it("keeps a valid link on 200 with closed words when reviews are paused", async () => {
+    fake.results = [prefill, { kind: "review", open: false, closed: "Reviews paused." }];
+    await expect(load(TOKEN)).resolves.toEqual({ token: TOKEN, prefill, closed: "Reviews paused." });
+    show("Reviews paused.");
+    expect(screen.getByRole("heading", { name: "Member reviews are paused" })).toBeTruthy();
+    expect(screen.getByText("Reviews paused.")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /Submit my review/ })).toBeNull();
   });
 
   it("greets her by first name with her details prefilled, and nothing preselected", () => {

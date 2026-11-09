@@ -1,12 +1,17 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { Link, createFileRoute, notFound } from "@tanstack/react-router";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import { StatusPage } from "@/app/layout/StatusPages";
+import { Icon } from "@/app/layout/twc";
+import { CLOSED_TITLE } from "@/features/forms-state/constants";
+import { publicFormStateFn } from "@/features/forms-state/fns";
+import { paragraphs } from "@/features/forms/schema";
 import { openReviewFn } from "@/features/member-links/fns";
 import { ReviewForm } from "@/features/member-links/ReviewForm";
 
 /**
  * /review?t=<token>: a member's personal, single-use review link (OPS-019–022). The token is the credential: no
  * sign-in. Any token that doesn't open the form gets the same 404 (OPS-027). Opening never uses the link up.
+ * When reviews are closed (OPS-081), a still-valid link resolves to 200 with closed words (not a 404).
  */
 export const Route = createFileRoute("/review")({
   validateSearch: (search: Record<string, unknown>): { t?: string } => (typeof search.t === "string" ? { t: search.t } : {}),
@@ -14,7 +19,8 @@ export const Route = createFileRoute("/review")({
   loader: async ({ deps }) => {
     const prefill = deps.t ? await openReviewFn({ data: { token: deps.t } }) : null;
     if (!prefill) throw notFound();
-    return { token: deps.t!, prefill };
+    const state = await publicFormStateFn({ data: { kind: "review" } });
+    return { token: deps.t!, prefill, closed: state.closed };
   },
   // Loaded once: after the review is sent the link is used, and a reload (e.g. on sign-in) would swap the thank-you for a 404.
   shouldReload: false,
@@ -44,7 +50,16 @@ function InvalidLink() {
 }
 
 function ReviewPage() {
-  const { token, prefill } = Route.useLoaderData();
+  const { token, prefill, closed } = Route.useLoaderData();
+  if (closed) {
+    const [first = "", ...rest] = paragraphs(closed);
+    return (
+      <StatusPage script="closed for now" tilt="-rotate-2" title={CLOSED_TITLE.review} intro={first}>
+        {rest.map((p, i) => <p key={i} className="max-w-[40ch] text-sb-muted">{p}</p>)}
+        <Link to="/" className="twc-btn mt-2">Back to The Women’s Collective <Icon name="arrow" className="twc-arrow" /></Link>
+      </StatusPage>
+    );
+  }
   return (
     <AppPage>
       <AppNav />

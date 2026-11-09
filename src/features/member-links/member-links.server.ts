@@ -3,6 +3,7 @@
 // Only the token's SHA-256 is stored and the URL is returned once, to the minting admin (FIX-IN-REBUILD CRM-171).
 // Bad, used, expired, revoked and not-a-member tokens all look the same (OPS-027), so links can't be probed.
 import { createHash, randomBytes } from "node:crypto";
+import { assertFormOpen } from "@/features/forms-state/forms-state.server";
 import type { Ctx } from "@/server/context.server";
 import { now, tx, type DB } from "@/server/db";
 import { appUrl } from "@/server/email";
@@ -153,6 +154,7 @@ export const isBot = (input: Record<string, unknown>) => input.honeypot !== unde
 export function submitReview({ db }: Ctx, input: unknown): string | null {
   if (!isObject(input)) throw bad("review");
   if (isBot(input)) return null;
+  assertFormOpen(db, "review");
   const link = activeLink(db, input.token);
   if (!link) throw invalidLink();
   const checked = checkReview(input);

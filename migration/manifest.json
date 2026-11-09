@@ -2590,9 +2590,9 @@
       "source": "backoffice.md:The forms_state closed switch also applies under the engine",
       "acceptance": "The forms_state closed switch also applies under the engine: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "todo",
+      "status": "built",
       "target": "/join",
-      "evidence": "Product gap: forms_state closed switch for /join and /review under the engine is not built; links/forms always on (CRM-087; AUDIT review form switch). Custom-forms open/close is separate (CRM-100). Spotlight never had a switch (OPS-028). Leave todo. AUDIT members-links product-gaps."
+      "evidence": "forms_state table (0010): application + review rows; /admin Join & review card (setMembershipFormOpen, requireAdmin); closed GET = 200 closed words on /join and /review (valid review links still resolve); POST /api/applications and /api/review refuse with 410 and store nothing. Spotlight has no switch. Missing row = open. tests: forms-state.test.ts, policy.test.ts, join-route, review-route, admin-route, db.test.ts"
     },
     {
       "id": "OPS-082",
@@ -3151,9 +3151,9 @@
       "source": "backoffice.md:Forms closed in the CRM",
       "acceptance": "Forms closed in the CRM: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "todo",
-      "target": "parity",
-      "evidence": "Open/close for custom forms is built (CRM-100); this intake FORMS_STATE join close switch still open with members-links OPS-081. Genuine product gap \u2014 leave todo. AUDIT admin-inbox remainders-2 2026-11-10."
+      "status": "built",
+      "target": "/admin#membership-forms",
+      "evidence": "Admin toggle for /join and /review via forms_state (0010) + Join & review card; closed discards POSTs (assertFormOpen). Twin of OPS-081. Custom forms remain CRM-100. Spotlight always-on. tests: forms-state.test.ts, policy.test.ts, admin-route"
     },
     {
       "id": "OPS-141",

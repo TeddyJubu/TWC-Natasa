@@ -2,12 +2,17 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/index";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
+import { StatusPage } from "@/app/layout/StatusPages";
 import { Icon } from "@/app/layout/twc";
 import { ApplicationForm } from "@/features/applications/ApplicationForm";
 import { useSubmitApplication } from "@/features/applications/mutations";
 import { applicantQuery } from "@/features/applications/queries";
+import { CLOSED_TITLE } from "@/features/forms-state/constants";
+import { publicFormStateFn } from "@/features/forms-state/fns";
+import { paragraphs } from "@/features/forms/schema";
 
 export const Route = createFileRoute("/join")({
+  loader: async () => publicFormStateFn({ data: { kind: "application" } }),
   head: () => ({
     meta: [
       { title: "Join The Women’s Collective — Membership application" },
@@ -24,9 +29,19 @@ export const Route = createFileRoute("/join")({
 const sections = ["About", "Work", "Community", "WhatsApp", "Spotlight", "Directory", "Headshot", "Events", "Contact", "Guidelines", "Finish"];
 
 function JoinPage() {
+  const state = Route.useLoaderData();
   const { mutateAsync: submit } = useSubmitApplication();
   // Prefill is a convenience: while it loads, or if it fails, the form simply starts empty.
   const { data: applicant } = useQuery(applicantQuery);
+  if (state.closed) {
+    const [first = "", ...rest] = paragraphs(state.closed);
+    return (
+      <StatusPage script="closed for now" tilt="-rotate-2" title={CLOSED_TITLE.application} intro={first}>
+        {rest.map((p, i) => <p key={i} className="max-w-[40ch] text-sb-muted">{p}</p>)}
+        <Link to="/" className="twc-btn mt-2">Back to The Women’s Collective <Icon name="arrow" className="twc-arrow" /></Link>
+      </StatusPage>
+    );
+  }
   return (
     <AppPage>
       <AppNav />

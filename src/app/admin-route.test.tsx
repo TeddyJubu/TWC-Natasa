@@ -13,6 +13,7 @@ vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), 
 vi.mock("@/features/auth/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 vi.mock("@/features/member-links/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 vi.mock("@/features/forms/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
+vi.mock("@/features/forms-state/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 
 import { Route as GuardRoute } from "@/routes/_authenticated/_admin/route";
 import { Route } from "@/routes/_authenticated/_admin/admin";
@@ -70,10 +71,14 @@ describe("_admin guard", () => {
 });
 
 const FETCH = Symbol("fetch");
-type AdminKey = "inbox" | "applications" | "members" | "neighborhoods" | "bookings" | "events" | "review-links" | "spotlight-links" | "reviews" | "spotlights" | "form-responses" | "notes" | "actions" | "logged-actions" | "newsletter";
+type AdminKey = "inbox" | "applications" | "members" | "neighborhoods" | "bookings" | "events" | "review-links" | "spotlight-links" | "reviews" | "spotlights" | "forms-state" | "form-responses" | "notes" | "actions" | "logged-actions" | "newsletter";
+const formsState = [
+  { kind: "application", open: true, message: "", updated_at: "2026-11-10T00:00:00Z", updated_by: null },
+  { kind: "review", open: true, message: "", updated_at: "2026-11-10T00:00:00Z", updated_by: null },
+];
 /** Seeds every admin read (empty lists, plus `members`) unless overridden; FETCH leaves that read to the queued fake results. */
 function renderAdmin(over: Partial<Record<AdminKey, unknown>> = {}, extra: [unknown[], unknown][] = []) {
-  const data: Record<AdminKey, unknown> = { inbox: [], applications: [], members, neighborhoods: [], bookings: [], events: [], "review-links": {}, "spotlight-links": {}, reviews: [], spotlights: [], "form-responses": [], notes: [], actions: [], "logged-actions": [], newsletter: [], ...over };
+  const data: Record<AdminKey, unknown> = { inbox: [], applications: [], members, neighborhoods: [], bookings: [], events: [], "review-links": {}, "spotlight-links": {}, reviews: [], spotlights: [], "forms-state": formsState, "form-responses": [], notes: [], actions: [], "logged-actions": [], newsletter: [], ...over };
   const seed = Object.entries(data).filter(([, v]) => v !== FETCH).map(([k, v]) => [["admin", k], v] as [unknown[], unknown]);
   return renderWithQueries(<Page />, [...seed, ...extra]);
 }
@@ -99,7 +104,7 @@ describe("/admin", () => {
 
     it("renders all six cards as anchored regions, and the sidebar marks the top one as here", () => {
       renderAdmin();
-      for (const [name, id] of [["Inbox", "inbox"], ["Applications", "applications"], ["All members", "members"], ["Newsletter", "newsletter"], ["Admin activity", "activity"], ["Member reviews", "reviews"], ["Spotlight answers", "spotlight"], ["Form responses", "forms"], ["Neighborhoods", "neighborhoods"], ["Headshot bookings", "bookings"], ["Gatherings", "gatherings"]]) {
+      for (const [name, id] of [["Inbox", "inbox"], ["Applications", "applications"], ["All members", "members"], ["Newsletter", "newsletter"], ["Admin activity", "activity"], ["Member reviews", "reviews"], ["Spotlight answers", "spotlight"], ["Join & review", "membership-forms"], ["Form responses", "forms"], ["Neighborhoods", "neighborhoods"], ["Headshot bookings", "bookings"], ["Gatherings", "gatherings"]]) {
         expect(card(name).id).toBe(id);
       }
       const nav = screen.getAllByRole("navigation", { name: "Main" })[0];
@@ -535,6 +540,27 @@ describe("/admin", () => {
     fireEvent.click(within(article).getByRole("button", { name: "Mark the review from Rosa Diaz as handled" }));
     await waitFor(() => expect(within(card("Member reviews")).queryByRole("article")).toBeNull());
     expect(fake.calls[0]).toEqual(["markReviewDoneFn", { id: "r1" }]);
+  });
+
+  it("join & review: lists both switches and Close posts open:false with the message", async () => {
+    renderAdmin({ "forms-state": [
+      { kind: "application", open: true, message: "", updated_at: "2026-11-10T00:00:00Z", updated_by: null },
+      { kind: "review", open: false, message: "Reviews paused.", updated_at: "2026-11-10T00:00:00Z", updated_by: "admin1" },
+    ] });
+    const join = within(card("Join & review")).getByRole("article", { name: "Membership application" });
+    expect(within(join).getByRole("link", { name: "/join" }).getAttribute("href")).toBe("/join");
+    expect(join.textContent).toMatch(/Open/);
+    const review = within(card("Join & review")).getByRole("article", { name: "Member review" });
+    expect(review.textContent).toMatch(/Closed/);
+    expect(within(review).getByRole("button", { name: "Open Member review" })).toBeTruthy();
+    fireEvent.change(within(join).getByLabelText("Closed message"), { target: { value: "Paused until spring." } });
+    fake.results = [null, [
+      { kind: "application", open: false, message: "Paused until spring.", updated_at: "2026-11-10T01:00:00Z", updated_by: "admin1" },
+      { kind: "review", open: false, message: "Reviews paused.", updated_at: "2026-11-10T00:00:00Z", updated_by: "admin1" },
+    ]];
+    fireEvent.click(within(join).getByRole("button", { name: "Close Membership application" }));
+    expect(confirm).toHaveBeenCalled();
+    await waitFor(() => expect(fake.calls[0]).toEqual(["setMembershipFormOpenFn", { kind: "application", open: false, message: "Paused until spring." }]));
   });
 
   it("form responses: each form with its count, link, newest date and answers under question labels", () => {

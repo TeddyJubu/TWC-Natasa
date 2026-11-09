@@ -10,7 +10,7 @@ const one = <T,>(db: ReturnType<typeof openDb>, sql: string, ...args: (string | 
 describe("database", () => {
   it("migrates a fresh database to the newest user_version, with foreign keys on", () => {
     const db = openDb(":memory:");
-    expect(one<{ user_version: number }>(db, "pragma user_version").user_version).toBe(9);
+    expect(one<{ user_version: number }>(db, "pragma user_version").user_version).toBe(10);
     expect(one<{ foreign_keys: number }>(db, "pragma foreign_keys").foreign_keys).toBe(1);
     expect(one<{ busy_timeout?: number; timeout?: number }>(db, "pragma busy_timeout")).toEqual({ timeout: 5000 });
   });
@@ -38,11 +38,23 @@ describe("database", () => {
     writeFileSync(join(dir, "0007_admin_actions.sql"), "this would fail if it ran again");
     writeFileSync(join(dir, "0008_spotlight_answers.sql"), "this would fail if it ran again");
     writeFileSync(join(dir, "0009_logged_actions.sql"), "this would fail if it ran again");
-    writeFileSync(join(dir, "0010_bad.sql"), "create table half (id integer); select * from missing_table;");
-    expect(() => migrate(db, dir)).toThrow(/0010_bad\.sql/);
-    expect(one<{ user_version: number }>(db, "pragma user_version").user_version).toBe(9);
+    writeFileSync(join(dir, "0010_forms_state.sql"), "this would fail if it ran again");
+    writeFileSync(join(dir, "0011_bad.sql"), "create table half (id integer); select * from missing_table;");
+    expect(() => migrate(db, dir)).toThrow(/0011_bad\.sql/);
+    expect(one<{ user_version: number }>(db, "pragma user_version").user_version).toBe(10);
     expect(one(db, "select name from sqlite_master where name = 'half'")).toBeUndefined();
-    expect(() => migrate(db, dir)).toThrow(/0010/);
+    expect(() => migrate(db, dir)).toThrow(/0011/);
+  });
+
+  it("0010: seeds application and review open; only those kinds; message ≤ 1,000", () => {
+    const db = openDb(":memory:");
+    const rows = db.prepare("select kind, open, message from forms_state order by kind").all();
+    expect(rows).toEqual([
+      { kind: "application", open: 1, message: "" },
+      { kind: "review", open: 1, message: "" },
+    ]);
+    expect(() => db.prepare("insert into forms_state (kind) values ('spotlight')").run()).toThrow(/CHECK/);
+    expect(() => db.prepare("update forms_state set message = ? where kind = 'application'").run("x".repeat(1001))).toThrow(/CHECK/);
   });
 
   it("0009: a logged action needs exactly one subject, a known kind and a calendar date shape", () => {
