@@ -68,3 +68,85 @@ route (see redirects.md "Not redirected yet").
 
 Typecheck/lint/tests/build still pass if code changed; commit on the worktree branch.
 Cutover is reversible via the timestamped Caddy/compose backups.
+
+## Built (branch `t3/4e10b192`) — repo side only; **not applied on the VPS**
+
+This run had no Hostinger/SSH access to the TWC VPS, so nothing below has been run there yet.
+Repo pieces:
+
+- `migration/caddy-twc-redirects.caddy`: the rules, as one `(snippet)` per TWC block, each saying which
+  lines it replaces. Enabled: `twc_apex_cutover`, `twc_members_cutover`, `twc_nbwc_cutover`.
+  Prepared but **not enabled**: `twc_forms_cutover` (apex `/f/*`, waits for forms-import),
+  `twc_admin_cutover` / `twc_crm_cutover` (wait for CRM parity).
+- `src/app/cutover-redirects.test.ts`: the snippet matches `migration/redirects.md` row for row (tidy
+  + `.html`, one 301 hop, GET/HEAD only), `/` untouched, no `/f/*`, review query kept.
+- `scripts/smoke-cutover.ts`: GET-only smoke of every mapped URL and host redirect (`bun`), from any
+  machine; `--form <slug>` adds a live `/f/<slug>` that must still be a 200 on the apex.
+- Checked locally with Caddy 2.10.2: the legacy Caddyfile with the three snippets pasted passes
+  `caddy validate`, and a local run of the three blocks passes every smoke check (47/47; the 48th is
+  the app's own `/review` 404, which only the live host can answer).
+
+### Runbook (on the VPS, as root; paths only, no secrets)
+
+0. **Pre-flight (read-only).**
+   ```sh
+   cd /opt/nbwc && docker compose ps && systemctl list-timers --all | grep -Ei 'twc|nbwc|notify|intake|notion|hermes'
+   bun scripts/smoke-cutover.ts        # (from a checkout anywhere) baseline: the page rows FAIL with 200s today
+   ```
+   Pick one live form slug from `/opt/nbwc/site/f/` for `--form`.
+
+1. **Backups (timestamped, before any edit).**
+   ```sh
+   TS=$(date +%Y%m%d-%H%M%S)
+   cp -p /opt/nbwc/Caddyfile   /opt/nbwc/backups/Caddyfile.before-twc-cutover-$TS
+   cp -p /opt/nbwc/compose.yaml /opt/nbwc/backups/compose.yaml.before-twc-cutover-$TS   # unchanged by this step; kept for rollback
+   ```
+
+2. **Archive the old pages (never delete, BRIEF 2; SITE-175/176).** One tarball of the served folder as
+   it is, next to the server's other archives:
+   ```sh
+   tar -C /opt/nbwc -czf /opt/nbwc/backups/twc-site-archive-$TS.tar.gz site && sha256sum /opt/nbwc/backups/twc-site-archive-$TS.tar.gz
+   ```
+   The files **stay in `/opt/nbwc/site`**: the redirects make the pages unreachable, `index.html`,
+   `404.html`, `assets/`, `embed.js`, `robots.txt` are still served, and `twc-site-forms` keeps writing
+   `/f/*` there. Rollback is then the Caddyfile alone.
+
+3. **Edit the Caddyfile on a copy**, `cp /opt/nbwc/Caddyfile /opt/nbwc/Caddyfile.next`, and in it:
+   - `thewomenscollective.club {` — delete the `@nologin`/`redir @nologin` and `@apply`/`redir @apply`
+     lines; paste the body of `twc_apex_cutover` at the top of the block.
+   - `join.thewomenscollective.club, members.thewomenscollective.club {` — replace `@joinform { … }` and
+     its `redir` with the body of `twc_members_cutover`.
+   - `nbwc.site, … {` — delete `@join`/`redir @join` and the HeyForm comment + `@forms`/`redir @forms`;
+     paste the body of `twc_nbwc_cutover` at the top of the block. Leave `@members`, `@admin` and the
+     catch-all as they are.
+   - Nothing else. `diff -u /opt/nbwc/Caddyfile /opt/nbwc/Caddyfile.next` must show only those three blocks.
+
+4. **Install, validate, reload.** The container bind-mounts the single file read-only, so overwrite it
+   **in place** (same inode — `mv`, `sed -i` or an editor that renames would leave the container on the
+   old file):
+   ```sh
+   cat /opt/nbwc/Caddyfile.next > /opt/nbwc/Caddyfile
+   docker compose -f /opt/nbwc/compose.yaml exec -T caddy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile \
+     && docker compose -f /opt/nbwc/compose.yaml exec -T caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile \
+     || cat /opt/nbwc/backups/Caddyfile.before-twc-cutover-$TS > /opt/nbwc/Caddyfile   # invalid: put the old file back, nothing was reloaded
+   ```
+
+5. **Smoke.** `bun scripts/smoke-cutover.ts --form <live-slug>` must print `smoke-cutover: ok`. It is
+   GET-only, so it never stores a submission. By hand, once: open a live `/f/<slug>` and a live
+   members review link in a browser.
+
+6. **Legacy import** (BRIEF 10), if `sqlite3 /var/lib/twc-natasa/data/twc.db "select count(*) from legacy_members"`
+   is 0: run the one-shot in `migration/briefs/data-import.md` (backup, `--dry-run`, then for real).
+   Record **counts only** in `AUDIT-TASKS.md`.
+
+7. **Stop nothing yet** (decision in `AUDIT-TASKS.md`): no timer or container is fully replaced by this
+   step. Each one's release condition is listed there.
+
+**Rollback:** `cat /opt/nbwc/backups/Caddyfile.before-twc-cutover-$TS > /opt/nbwc/Caddyfile` then the
+same `caddy reload`. Note that 301s are cached by browsers, so a rollback won't reach a visitor whose browser already cached one.
+
+**Later, `/f/*`** (after forms-import is deployed and its report shows every live form imported): paste
+the body of `twc_forms_cutover` into the apex block (any skipped form → list the imported slugs instead
+of the regexp), validate, reload, and smoke `/f/<slug>` → 301 `new.*/f/<slug>`. Old forms pieces
+(`twc-site-forms`, `forms`, `twc-form-connections`, `notify-confirmations`) keep running for
+`thanks-*`, waitlist, `event.ics`, `/f/media/*`, `/forms`, places/beacon/resume and stale POSTs.

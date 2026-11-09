@@ -1442,7 +1442,8 @@
       "acceptance": "FIX-IN-REBUILD — old form and old admin still live: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "/admin"
+      "target": "/admin",
+      "evidence": "Partly: members.*/join → new.*/join is in migration/caddy-twc-redirects.caddy (not live). admin.* and crm.* wait for CRM parity: twc_admin_cutover / twc_crm_cutover prepared, not enabled."
     },
     {
       "id": "CRM-176",
@@ -1602,16 +1603,18 @@
       "source": "backoffice.md:**Applications have already moved off intake on `join",
       "acceptance": "**Applications have already moved off intake on `join: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/join"
+      "status": "built",
+      "target": "/join",
+      "evidence": "migration/caddy-twc-redirects.caddy (twc_members_cutover) @joinform now covers members.thewomenscollective.club/join too (GET/HEAD; /join/thanks and POSTs stay on intake); src/app/cutover-redirects.test.ts; local smoke ok. NOT live: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
     },
     {
       "id": "OPS-008",
       "source": "backoffice.md:Legacy-domain redirects that land on intake",
       "acceptance": "Legacy-domain redirects that land on intake: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/join"
+      "status": "built",
+      "target": "/join",
+      "evidence": "migration/caddy-twc-redirects.caddy (twc_nbwc_cutover): join.nbwc.site + forms.nbwc.site → 301 new.*/join, members.nbwc.site/review → 301 new.*{uri} (query kept), nbwc.site/apply → new.*/join; other nbwc paths unchanged (BRIEF 11). Local smoke ok. NOT live: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
     },
     {
       "id": "OPS-009",
@@ -3069,8 +3072,9 @@
       "source": "backoffice.md:Per-form thank-you pages through Caddy.",
       "acceptance": "Per-form thank-you pages through Caddy.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/contact"
+      "status": "built",
+      "target": "/contact",
+      "evidence": "Superseded like SITE-110: GET thank-you URLs 301 before the @formthanks rewrite. NOT live: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
     },
     {
       "id": "OPS-189",
@@ -3776,8 +3780,9 @@
       "source": "backoffice.md:Tidy URLs:",
       "acceptance": "Tidy URLs:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/about"
+      "status": "built",
+      "target": "/about",
+      "evidence": "migration/caddy-twc-redirects.caddy: try_files stays for the kept files; every tidy page URL 301s before it; local smoke ok. NOT live: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
     },
     {
       "id": "OPS-276",
@@ -4898,8 +4903,9 @@
       "source": "ops-part-d.md:Redirect target.",
       "acceptance": "Redirect target.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/contact"
+      "status": "built",
+      "target": "/contact",
+      "evidence": "Forms service still 303s to /message-sent.html?form=…; that GET now 301s to new.*/contact (or /partnerships via thanks-partnership). Local smoke ok. NOT live: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
     },
     {
       "id": "OPS-416",
@@ -5728,7 +5734,7 @@
       "owner": "vps-cutover",
       "status": "todo",
       "target": "/f/*",
-      "evidence": "Partial (forms-import): scripts/import-forms.ts loads the CRM's live forms (choices from form_versions), old names and historical answers into SQLite, so /f/<slug> and old names resolve on the new app for every form the report lists as imported/updated. vps-cutover: run the one-shot in migration/briefs/forms-import.md, then 301 /f/* (path + query). Skipped forms, /f/media/*, event.ics, thanks-<n>, /forms and resume links are still old-site only."
+      "evidence": "Partial: forms-import loads CRM definitions + answers into SQLite after the VPS one-shot; twc_forms_cutover in migration/caddy-twc-redirects.caddy is prepared but NOT enabled until that import reports which slugs landed (skipped file/ranking/grid/address, /f/media/*, event.ics, thanks-<n>, /forms stay on the old site)."
     },
     {
       "id": "OPS-519",
@@ -5899,8 +5905,9 @@
       "source": "site.md:directory.html → `/members`",
       "acceptance": "directory.html → `/members`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/members"
+      "status": "built",
+      "target": "/members",
+      "evidence": "migration/caddy-twc-redirects.caddy (twc_apex_cutover) @old_directory: /directory + /directory.html → 301 new.*/members; src/app/cutover-redirects.test.ts; local Caddy 2.10.2 run + scripts/smoke-cutover.ts ok. NOT live: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
     },
     {
       "id": "SITE-005",
@@ -5981,8 +5988,9 @@
       "source": "site.md:thanks-contact.html → `/contact`",
       "acceptance": "thanks-contact.html → `/contact`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/contact"
+      "status": "built",
+      "target": "/contact",
+      "evidence": "migration/caddy-twc-redirects.caddy @old_contact: /thanks-contact(.html) → 301 new.*/contact (GET/HEAD; redir runs before the @formthanks rewrite); src/app/cutover-redirects.test.ts; local smoke ok. NOT live: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
     },
     {
       "id": "SITE-015",
@@ -6490,8 +6498,9 @@
       "source": "site.md:Thank-you pages are reached only by the POST flow",
       "acceptance": "Thank-you pages are reached only by the POST flow: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:caddy-redirects"
+      "status": "built",
+      "target": "vps:caddy-redirects",
+      "evidence": "migration/caddy-twc-redirects.caddy @old_contact/@old_partnerships: every thanks-*, message-sent, subscribed URL (tidy + .html) 301s to its new page; src/app/cutover-redirects.test.ts; local smoke ok. NOT live: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
     },
     {
       "id": "SITE-077",
@@ -6506,8 +6515,9 @@
       "source": "site.md:A stale open form that POSTs after the cutover loses its data",
       "acceptance": "A stale open form that POSTs after the cutover loses its data: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/contact"
+      "status": "built",
+      "target": "/contact",
+      "evidence": "migration/caddy-twc-redirects.caddy: page redirects are GET/HEAD only, so a stale POST to /message-sent.html or /subscribed.html still reaches forms:8080 (@formpost) and is stored, then its 303 lands on new.*/contact. Local run: POST → proxied (502 locally, no forms service), not 301. NOT live: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
     },
     {
       "id": "SITE-079",
@@ -6682,8 +6692,9 @@
       "source": "site.md:Tidy URLs",
       "acceptance": "Tidy URLs: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/about"
+      "status": "built",
+      "target": "/about",
+      "evidence": "migration/caddy-twc-redirects.caddy: one matcher per target lists the tidy and .html path; src/app/cutover-redirects.test.ts › 'covers every page row, both URLs' (15 rows × 2); local smoke 30/30. NOT live: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
     },
     {
       "id": "SITE-101",
@@ -6730,16 +6741,18 @@
       "source": "site.md:Legacy login URLs go to the homepage with a 302",
       "acceptance": "Legacy login URLs go to the homepage with a 302: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:caddy-redirects"
+      "status": "built",
+      "target": "vps:caddy-redirects",
+      "evidence": "Decided: migration/caddy-twc-redirects.caddy @signin /login,/forgot-password,/set-password(.html) → 302 new.*/auth; @oldmembers /members,/members/* → 302 new.*/members; /apply-thank-you(.html) → 302 / (unchanged). redirects.md updated; AUDIT-TASKS vps-cutover decisions; local smoke ok. NOT live: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
     },
     {
       "id": "SITE-107",
       "source": "site.md:`/apply` and `/apply.html` 301 to `join.thewomenscollective.club/join`",
       "acceptance": "`/apply` and `/apply.html` 301 to `join.thewomenscollective.club/join`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:caddy-redirects"
+      "status": "built",
+      "target": "vps:caddy-redirects",
+      "evidence": "migration/caddy-twc-redirects.caddy @apply: /apply + /apply.html → 301 https://new.thewomenscollective.club/join (one hop); src/app/cutover-redirects.test.ts; local smoke ok. NOT live: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
     },
     {
       "id": "SITE-108",
@@ -6762,8 +6775,9 @@
       "source": "site.md:Per-form thank-you rewrite",
       "acceptance": "Per-form thank-you rewrite: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:caddy-redirects"
+      "status": "built",
+      "target": "vps:caddy-redirects",
+      "evidence": "Superseded: migration/caddy-twc-redirects.caddy redirects GET /message-sent.html and /subscribed.html (any ?form=) before the @formthanks rewrite runs, so the per-form thank-you files are no longer reachable; local smoke ok. NOT live: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
     },
     {
       "id": "SITE-111",
@@ -6771,7 +6785,8 @@
       "acceptance": "**Custom forms `/f/*`**: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "vps:caddy-redirects"
+      "target": "vps:caddy-redirects",
+      "evidence": "Unchanged on purpose: /f/* stays on the old stack (forms-import gate); twc_forms_cutover prepared, not enabled."
     },
     {
       "id": "SITE-112",
@@ -6794,16 +6809,18 @@
       "source": "site.md:Constraints for the cutover edit",
       "acceptance": "Constraints for the cutover edit: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:caddy-redirects"
+      "status": "built",
+      "target": "vps:caddy-redirects",
+      "evidence": "Runbook migration/briefs/vps-cutover.md: only the three TWC blocks change (diff check), timestamped backups in /opt/nbwc/backups first, caddy validate before reload, in-place write for the :ro bind mount, rollback step. NOT live: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
     },
     {
       "id": "SITE-115",
       "source": "site.md:Query strings",
       "acceptance": "Query strings: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:caddy-redirects"
+      "status": "built",
+      "target": "vps:caddy-redirects",
+      "evidence": "migration/caddy-twc-redirects.caddy: no {query} in any page target, so queries are dropped; review rules use {uri} to keep ?t=. smoke check /about.html?form=x → new.*/about; src/app/cutover-redirects.test.ts. NOT live: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
     },
     {
       "id": "SITE-116",
@@ -7110,16 +7127,18 @@
       "source": "site.md:Redirect mechanism for old URLs, MISSING",
       "acceptance": "Redirect mechanism for old URLs, MISSING: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:caddy-redirects"
+      "status": "built",
+      "target": "vps:caddy-redirects",
+      "evidence": "Redirect mechanism = Caddy on the VPS: migration/caddy-twc-redirects.caddy + src/app/cutover-redirects.test.ts (snippet matches redirects.md) + scripts/smoke-cutover.ts (live check). NOT live: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
     },
     {
       "id": "SITE-154",
       "source": "site.md:Thank-you routes, N/A",
       "acceptance": "Thank-you routes, N/A: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:caddy-redirects"
+      "status": "built",
+      "target": "vps:caddy-redirects",
+      "evidence": "migration/caddy-twc-redirects.caddy: thanks-*, message-sent, subscribed need no page; each 301s to /contact or /partnerships (redirects.md). NOT live: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
     },
     {
       "id": "SITE-155",
@@ -7184,24 +7203,27 @@
       "source": "site.md:Two URLs per page and `.html`-canonical tags",
       "acceptance": "Two URLs per page and `.html`-canonical tags: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:caddy-redirects"
+      "status": "built",
+      "target": "vps:caddy-redirects",
+      "evidence": "migration/caddy-twc-redirects.caddy: every row has both /x and /x.html in one matcher; src/app/cutover-redirects.test.ts asserts both; local smoke ok. NOT live: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
     },
     {
       "id": "SITE-163",
       "source": "site.md:`@nologin` rule collides with the new `/members` route",
       "acceptance": "`@nologin` rule collides with the new `/members` route: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:caddy-redirects"
+      "status": "built",
+      "target": "vps:caddy-redirects",
+      "evidence": "migration/caddy-twc-redirects.caddy: old @nologin split; /members,/members/* → 302 new.*/members (the app lives on new.*, so no collision with its /members/:slug). NOT live: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
     },
     {
       "id": "SITE-164",
       "source": "site.md:Redirect chain for Apply",
       "acceptance": "Redirect chain for Apply: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:caddy-redirects"
+      "status": "built",
+      "target": "vps:caddy-redirects",
+      "evidence": "migration/caddy-twc-redirects.caddy @apply → new.*/join in one hop (was apex → join.* → new.*); nbwc.site/apply too (twc_nbwc_cutover); local smoke ok. NOT live: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
     },
     {
       "id": "SITE-165",
@@ -7232,8 +7254,9 @@
       "source": "site.md:Stale-form data loss on a 301",
       "acceptance": "Stale-form data loss on a 301: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:caddy-redirects"
+      "status": "built",
+      "target": "vps:caddy-redirects",
+      "evidence": "Same as SITE-078: GET/HEAD-only redirects, POSTs keep reaching forms:8080 / intake; members.*/join and /review too (CRM-175). NOT live: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
     },
     {
       "id": "SITE-169",
@@ -7292,7 +7315,8 @@
       "acceptance": "No source for the page templates: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "vps:caddy-redirects"
+      "target": "vps:caddy-redirects",
+      "evidence": "Decided: archive the served folder as-is, one tarball /opt/nbwc/backups/twc-site-archive-<YYYYmmdd-HHMMSS>.tar.gz (runbook step 2). Not run yet (no VPS access)."
     },
     {
       "id": "SITE-176",
@@ -7300,7 +7324,8 @@
       "acceptance": "Hostinger/VPS paths are not in the snapshot: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "vps:caddy-redirects"
+      "target": "vps:caddy-redirects",
+      "evidence": "Decided: archive location /opt/nbwc/backups/twc-site-archive-<ts>.tar.gz (next to the server's other archives); files stay in /opt/nbwc/site. Not run yet."
     },
     {
       "id": "SITE-177",
