@@ -389,6 +389,7 @@ Owner-authorized cutover of the old static site (`/opt/nbwc/site`), CRM (`crm.th
 - [x] Inventory SITE: `site.md` SITE-001–SITE-179 (179 items); merged
 - [x] Seed `migration/manifest.json` from all inventories (902 items)
 - [x] public-pages: `/fellowship`, `/partnerships`, `migration/redirects.md` (merged)
+- [x] public-pages remainders (2026-11-09): flipped already-true SITE/OPS/CRM scrapbook items to `verified` (routes, redirects map evidence, noindex/robots/sitemap, chrome, contact topics, honeypot, partnership form, closed-form words); retired apex-coming-soon leftovers (SITE-080/085), legacy `site.js`/chrome markers, Notion past/partners splice, Pexels, form-logic.js, static directory cards, stale snapshot facts, and partner-block (SITE-043/157, AUDIT improvisation). Left SITE-160 alone (hidden apex newsletter). Left `todo`: CRM-109 preview/share; intake directory-field picklists (OPS-109/116/125); custom-forms engine parity still open (thank-you variants/redirect, composites, look, `/forms` list, embed, file guard — OPS-161/165/192/193/203/208/211/215/414/419/420/426/430/431).
 - [x] admin-inbox: `0002_inbox.sql`, `/api/contact` + `/api/partnerships` store then email, `/admin` Inbox card; consent + honeypot (merged)
 - [x] data-import: `scripts/import-legacy.ts`, `0004_legacy_import.sql`, link-on-verify triggers, fixtures + tests
 - [x] members-links: `0003_member_links.sql` (hashed single-use review links + `member_reviews`), `/admin` mint/revoke/status + "Member reviews" card, public `/review?t=` + `POST /api/review`; 24 items `built`
