@@ -2,6 +2,15 @@
 
 The Women’s Collective is warm, direct, and editorial: full-bleed sky photography, an elegant serif (Gilda Display) over a clean sans (Inter), soft grey pill badges, and dramatic shifts into pure black "night" sections with a domed top edge. The uploaded halftone constellation is the canonical logo. Its seven neighborhood colors express distinct local identities while the central star represents where the community meets. Sunflower yellow appears only as a small highlight (ribbons).
 
+## Live public site (scrapbook)
+The public pages (`/`, `/about`, `/members`, `/members/:slug`, `/gatherings`, `/neighborhoods`, `/faq`, `/contact`, `/join`, `/auth`, legal and status pages) follow the scrapbook design canvas, not the component rules below. Those rules still govern the design-system components themselves and the `/components` showcase.
+- Kit: `src/app/twc.css` (`twc-*` classes on the `sb-*` tokens) and `src/app/layout/twc.tsx`; chrome is the prop-less `AppNav`/`AppFooter`. Reference page: `src/routes/index.tsx`.
+- Type: Gilda Display for headings in **sentence case** (never bold), a lowercase Caveat line above many of them (`twc-eyebrow-script`), Instrument Serif italic for stamp and value titles, Geist for body, Fragment Mono for indexes and ticket meta.
+- Colour: paper `#fcfcfa` ground; cream, sun, night, mint and lilac bands joined by `Scallop` dividers; stamp cards in olive, mustard, rose, shell and terracotta; neighborhood colours only through `--hood`. Small blue text is `sb-blue-ink`; `sb-blue` only at 24px and up.
+- Shapes: pill buttons and chips (`twc-btn`, `twc-chip`), polaroids, arched and disc photos, wavy-edged stamps, the admit-ticket CTA, 6px cards and fields.
+- Motion: CSS only, every looping animation has a pause control (`TwcRibbon`, the home page's pause button) and stops under reduced motion.
+- Facts: a `[BRACKETED]` placeholder on a board is an unknown fact — drop the element rather than invent one. No stand-in photos: members without a portrait get an initials mat; neighborhoods without a photo get a colour + logo tile. Stock photography lives in `src/assets/photography/site/` with `CREDITS.md`.
+
 ## Setup
 - Import `src/design-system/styles/theme.css` right after `@import "tailwindcss";`.
 - Fonts are self-hosted in `src/design-system/assets/fonts` and loaded by the canonical theme file.
@@ -45,4 +54,4 @@ Signed-in pages (`/account`, `/admin`, and any new page behind sign-in) are a qu
 - Associate hints and errors with their controls using `aria-describedby`; mark invalid controls with `aria-invalid`.
 
 ## Voice
-Warm, direct, and full of personality. Speak like a neighbor inviting someone into a conversation. Celebrate women’s work, make introductions generously, and give members a reason to participate. Keep headlines short and use Title Case.
+Warm, direct, and full of personality. Speak like a neighbor inviting someone into a conversation. Celebrate women’s work, make introductions generously, and give members a reason to participate. Keep headlines short: Title Case inside design-system components, sentence case on the live public site.
