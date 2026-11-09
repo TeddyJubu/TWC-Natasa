@@ -18,10 +18,12 @@ import { Route as ColorsRouteImport } from './routes/colors'
 import { Route as ComponentsRouteImport } from './routes/components'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as FaqRouteImport } from './routes/faq'
+import { Route as FellowshipRouteImport } from './routes/fellowship'
 import { Route as GatheringsRouteImport } from './routes/gatherings'
 import { Route as JoinRouteImport } from './routes/join'
 import { Route as MembersRouteImport } from './routes/members'
 import { Route as NeighborhoodsRouteImport } from './routes/neighborhoods'
+import { Route as PartnershipsRouteImport } from './routes/partnerships'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
@@ -34,6 +36,7 @@ import { Route as ApiApplicationsRouteImport } from './routes/api/applications'
 import { Route as ApiContactRouteImport } from './routes/api/contact'
 import { Route as ApiImagesRouteImport } from './routes/api/images'
 import { Route as ApiNeighborhoodLogosRouteImport } from './routes/api/neighborhood-logos'
+import { Route as ApiPartnershipsRouteImport } from './routes/api/partnerships'
 import { Route as MediaSplatRouteImport } from './routes/media/$'
 import { Route as MembersSlugRouteImport } from './routes/members_.$slug'
 import { Route as NeighborhoodsSlugRouteImport } from './routes/neighborhoods_.$slug'
@@ -84,6 +87,11 @@ const FaqRoute = FaqRouteImport.update({
   path: '/faq',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FellowshipRoute = FellowshipRouteImport.update({
+  id: '/fellowship',
+  path: '/fellowship',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GatheringsRoute = GatheringsRouteImport.update({
   id: '/gatherings',
   path: '/gatherings',
@@ -102,6 +110,11 @@ const MembersRoute = MembersRouteImport.update({
 const NeighborhoodsRoute = NeighborhoodsRouteImport.update({
   id: '/neighborhoods',
   path: '/neighborhoods',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PartnershipsRoute = PartnershipsRouteImport.update({
+  id: '/partnerships',
+  path: '/partnerships',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -163,6 +176,11 @@ const ApiNeighborhoodLogosRoute = ApiNeighborhoodLogosRouteImport.update({
   path: '/api/neighborhood-logos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPartnershipsRoute = ApiPartnershipsRouteImport.update({
+  id: '/api/partnerships',
+  path: '/api/partnerships',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MediaSplatRoute = MediaSplatRouteImport.update({
   id: '/media/$',
   path: '/media/$',
@@ -198,10 +216,12 @@ export interface FileRoutesByFullPath {
   '/components': typeof ComponentsRoute
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
+  '/fellowship': typeof FellowshipRoute
   '/gatherings': typeof GatheringsRoute
   '/join': typeof JoinRoute
   '/members': typeof MembersRoute
   '/neighborhoods': typeof NeighborhoodsRoute
+  '/partnerships': typeof PartnershipsRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -213,6 +233,7 @@ export interface FileRoutesByFullPath {
   '/api/contact': typeof ApiContactRoute
   '/api/images': typeof ApiImagesRoute
   '/api/neighborhood-logos': typeof ApiNeighborhoodLogosRoute
+  '/api/partnerships': typeof ApiPartnershipsRoute
   '/media/$': typeof MediaSplatRoute
   '/members/$slug': typeof MembersSlugRoute
   '/neighborhoods/$slug': typeof NeighborhoodsSlugRoute
@@ -228,10 +249,12 @@ export interface FileRoutesByTo {
   '/components': typeof ComponentsRoute
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
+  '/fellowship': typeof FellowshipRoute
   '/gatherings': typeof GatheringsRoute
   '/join': typeof JoinRoute
   '/members': typeof MembersRoute
   '/neighborhoods': typeof NeighborhoodsRoute
+  '/partnerships': typeof PartnershipsRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -243,6 +266,7 @@ export interface FileRoutesByTo {
   '/api/contact': typeof ApiContactRoute
   '/api/images': typeof ApiImagesRoute
   '/api/neighborhood-logos': typeof ApiNeighborhoodLogosRoute
+  '/api/partnerships': typeof ApiPartnershipsRoute
   '/media/$': typeof MediaSplatRoute
   '/members/$slug': typeof MembersSlugRoute
   '/neighborhoods/$slug': typeof NeighborhoodsSlugRoute
@@ -260,10 +284,12 @@ export interface FileRoutesById {
   '/components': typeof ComponentsRoute
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
+  '/fellowship': typeof FellowshipRoute
   '/gatherings': typeof GatheringsRoute
   '/join': typeof JoinRoute
   '/members': typeof MembersRoute
   '/neighborhoods': typeof NeighborhoodsRoute
+  '/partnerships': typeof PartnershipsRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -276,6 +302,7 @@ export interface FileRoutesById {
   '/api/contact': typeof ApiContactRoute
   '/api/images': typeof ApiImagesRoute
   '/api/neighborhood-logos': typeof ApiNeighborhoodLogosRoute
+  '/api/partnerships': typeof ApiPartnershipsRoute
   '/media/$': typeof MediaSplatRoute
   '/members_/$slug': typeof MembersSlugRoute
   '/neighborhoods_/$slug': typeof NeighborhoodsSlugRoute
@@ -293,10 +320,12 @@ export interface FileRouteTypes {
     | '/components'
     | '/contact'
     | '/faq'
+    | '/fellowship'
     | '/gatherings'
     | '/join'
     | '/members'
     | '/neighborhoods'
+    | '/partnerships'
     | '/privacy'
     | '/reset-password'
     | '/sitemap.xml'
@@ -308,6 +337,7 @@ export interface FileRouteTypes {
     | '/api/contact'
     | '/api/images'
     | '/api/neighborhood-logos'
+    | '/api/partnerships'
     | '/media/$'
     | '/members/$slug'
     | '/neighborhoods/$slug'
@@ -323,10 +353,12 @@ export interface FileRouteTypes {
     | '/components'
     | '/contact'
     | '/faq'
+    | '/fellowship'
     | '/gatherings'
     | '/join'
     | '/members'
     | '/neighborhoods'
+    | '/partnerships'
     | '/privacy'
     | '/reset-password'
     | '/sitemap.xml'
@@ -338,6 +370,7 @@ export interface FileRouteTypes {
     | '/api/contact'
     | '/api/images'
     | '/api/neighborhood-logos'
+    | '/api/partnerships'
     | '/media/$'
     | '/members/$slug'
     | '/neighborhoods/$slug'
@@ -354,10 +387,12 @@ export interface FileRouteTypes {
     | '/components'
     | '/contact'
     | '/faq'
+    | '/fellowship'
     | '/gatherings'
     | '/join'
     | '/members'
     | '/neighborhoods'
+    | '/partnerships'
     | '/privacy'
     | '/reset-password'
     | '/sitemap.xml'
@@ -370,6 +405,7 @@ export interface FileRouteTypes {
     | '/api/contact'
     | '/api/images'
     | '/api/neighborhood-logos'
+    | '/api/partnerships'
     | '/media/$'
     | '/members_/$slug'
     | '/neighborhoods_/$slug'
@@ -387,10 +423,12 @@ export interface RootRouteChildren {
   ComponentsRoute: typeof ComponentsRoute
   ContactRoute: typeof ContactRoute
   FaqRoute: typeof FaqRoute
+  FellowshipRoute: typeof FellowshipRoute
   GatheringsRoute: typeof GatheringsRoute
   JoinRoute: typeof JoinRoute
   MembersRoute: typeof MembersRoute
   NeighborhoodsRoute: typeof NeighborhoodsRoute
+  PartnershipsRoute: typeof PartnershipsRoute
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -401,6 +439,7 @@ export interface RootRouteChildren {
   ApiContactRoute: typeof ApiContactRoute
   ApiImagesRoute: typeof ApiImagesRoute
   ApiNeighborhoodLogosRoute: typeof ApiNeighborhoodLogosRoute
+  ApiPartnershipsRoute: typeof ApiPartnershipsRoute
   MediaSplatRoute: typeof MediaSplatRoute
   MembersSlugRoute: typeof MembersSlugRoute
   NeighborhoodsSlugRoute: typeof NeighborhoodsSlugRoute
@@ -472,6 +511,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FaqRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/fellowship': {
+      id: '/fellowship'
+      path: '/fellowship'
+      fullPath: '/fellowship'
+      preLoaderRoute: typeof FellowshipRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/gatherings': {
       id: '/gatherings'
       path: '/gatherings'
@@ -498,6 +544,13 @@ declare module '@tanstack/react-router' {
       path: '/neighborhoods'
       fullPath: '/neighborhoods'
       preLoaderRoute: typeof NeighborhoodsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/partnerships': {
+      id: '/partnerships'
+      path: '/partnerships'
+      fullPath: '/partnerships'
+      preLoaderRoute: typeof PartnershipsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -584,6 +637,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiNeighborhoodLogosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/partnerships': {
+      id: '/api/partnerships'
+      path: '/api/partnerships'
+      fullPath: '/api/partnerships'
+      preLoaderRoute: typeof ApiPartnershipsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/media/$': {
       id: '/media/$'
       path: '/media/$'
@@ -659,10 +719,12 @@ const rootRouteChildren: RootRouteChildren = {
   ComponentsRoute: ComponentsRoute,
   ContactRoute: ContactRoute,
   FaqRoute: FaqRoute,
+  FellowshipRoute: FellowshipRoute,
   GatheringsRoute: GatheringsRoute,
   JoinRoute: JoinRoute,
   MembersRoute: MembersRoute,
   NeighborhoodsRoute: NeighborhoodsRoute,
+  PartnershipsRoute: PartnershipsRoute,
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
@@ -673,6 +735,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiContactRoute: ApiContactRoute,
   ApiImagesRoute: ApiImagesRoute,
   ApiNeighborhoodLogosRoute: ApiNeighborhoodLogosRoute,
+  ApiPartnershipsRoute: ApiPartnershipsRoute,
   MediaSplatRoute: MediaSplatRoute,
   MembersSlugRoute: MembersSlugRoute,
   NeighborhoodsSlugRoute: NeighborhoodsSlugRoute,
