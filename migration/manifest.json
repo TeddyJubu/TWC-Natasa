@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "updated": "2026-11-09",
-  "notes": "Seeded from migration/inventory/*.md. status starts as todo; builders flip to built, Haiku to verified. vps-cutover remainders 2026-11-09: flipped 23 already-true cutover/redirect items to verified; retired 72 Classic host/path leftovers; left OPS-518/SITE-111/OPS-156/crm-test + 24 stop/timer todos with stop-readiness note. No live Caddy/container change.",
+  "updated": "2026-11-10",
+  "notes": "Seeded from migration/inventory/*.md. status starts as todo; builders flip to built, Haiku to verified. public-pages remainders-2 2026-11-10: flipped OPS-109/203; retired CRM-109 + OPS-161/165/208/414/419/420 Classic leftovers; left OPS-116/125/192/193/211/215/426/430/431 product gaps (SITE-160 stays vps-cutover; SITE-027/062/065/071 stay admin-inbox).",
   "counts": {
     "total": 902,
     "byOwner": {
@@ -1042,8 +1042,10 @@
       "source": "crm.md:Preview and share card",
       "acceptance": "Preview and share card: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/admin#members"
+      "status": "verified",
+      "target": "retired",
+      "retired": "classic-share-panel",
+      "evidence": "Retired: Classic website-form Preview and share card (true-to-site preview shell, og Share panel). Contact/partnership/custom forms render natively; CRM-108/124 already retired splice/Share. | public-pages remainders-2 2026-11-10"
     },
     {
       "id": "CRM-110",
@@ -2829,8 +2831,9 @@
       "source": "backoffice.md:Phone numbers (`phone_number`, `whatsapp_phone`, `public_directory_phone`) are stored as typed. There is no format check",
       "acceptance": "Phone numbers (`phone_number`, `whatsapp_phone`, `public_directory_phone`) are stored as typed. There is no format check: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/members"
+      "status": "verified",
+      "target": "/join",
+      "evidence": "Phones on /join stored as typed via Reader.text/required (phone, whatsapp-number, directory-phone) — trim only, no format check or normalisation. schema.ts. | public-pages remainders-2 2026-11-10"
     },
     {
       "id": "OPS-110",
@@ -2892,7 +2895,8 @@
       "acceptance": "When `directory = public`, all of these apply: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
       "status": "todo",
-      "target": "/members"
+      "target": "/members",
+      "evidence": "Product gap (directory=public conditional rules: ≥1 public_fields, conditional email/phone/website permission, headshot fee): scrapbook /join directory=yes makes public-fields optional and does not gate email/phone on ticks. Leave todo. AUDIT public-pages remainders-2 2026-11-10."
     },
     {
       "id": "OPS-117",
@@ -2972,7 +2976,8 @@
       "acceptance": "The public-listing field picklist has 12 options and is shared by both forms: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (public-listing picklist 12 options shared by application+review): scrapbook directoryOptions has 11 labels; review form not the same list. Leave todo. AUDIT public-pages remainders-2 2026-11-10."
     },
     {
       "id": "OPS-126",
@@ -3297,8 +3302,10 @@
       "source": "backoffice.md:Records carry `form_version`",
       "acceptance": "Records carry `form_version`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-membership-form-editor",
+      "evidence": "Retired: Classic membership-engine form_version hidden field / published int on /join|/review. Scrapbook /join has fixed schema; custom_form_responses.form_version covers /f/* only. Membership editor retired (CRM-110–116). | public-pages remainders-2 2026-11-10"
     },
     {
       "id": "OPS-162",
@@ -3335,8 +3342,10 @@
       "source": "backoffice.md:Stored shape is frozen",
       "acceptance": "Stored shape is frozen: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-membership-form-editor",
+      "evidence": "Retired: Classic membership-engine frozen saveAs/store/htmlId shape rules. No membership form editor in rebuild (CRM-110–116 / OPS-073/074). | public-pages remainders-2 2026-11-10"
     },
     {
       "id": "OPS-166",
@@ -3598,7 +3607,8 @@
       "acceptance": "Thank-you variants: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (thank-you variants): custom-forms-owned (OPS-422). Leave todo. AUDIT public-pages remainders-2 2026-11-10."
     },
     {
       "id": "OPS-193",
@@ -3606,7 +3616,8 @@
       "acceptance": "Thank-you redirect validation:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (thank-you redirect validation): custom-forms-owned (OPS-423). Leave todo. AUDIT public-pages remainders-2 2026-11-10."
     },
     {
       "id": "OPS-194",
@@ -3697,8 +3708,9 @@
       "source": "backoffice.md:Custom-form parsing",
       "acceptance": "Custom-form parsing: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "/f/*",
+      "evidence": "checkAnswers drops empty checkbox lists (only stores when picked.length); non-form keys dropped (OPS-205). src/features/forms/schema.ts. | public-pages remainders-2 2026-11-10"
     },
     {
       "id": "OPS-204",
@@ -3743,8 +3755,10 @@
       "source": "backoffice.md:Refusal messages, verbatim",
       "acceptance": "Refusal messages, verbatim: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "scrapbook-refusal-copy",
+      "evidence": "Retired: Classic verbatim HTML 400 refusal pages. Rebuild returns scrapbook JSON/field messages (Please answer/check “…”) via applications schema + forms checkAnswers — not the old HTML titles. | public-pages remainders-2 2026-11-10"
     },
     {
       "id": "OPS-209",
@@ -3770,7 +3784,8 @@
       "acceptance": "Composite questions: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
       "status": "todo",
-      "target": "/join"
+      "target": "/join",
+      "evidence": "Product gap (composite questions ranking/grid/address): not in QUESTION_TYPES 11; custom-forms-owned (OPS-212–214). Leave todo. AUDIT public-pages remainders-2 2026-11-10."
     },
     {
       "id": "OPS-212",
@@ -3805,7 +3820,8 @@
       "acceptance": "Composites from an older form version are never refused.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (composites from older form version never refused): depends on composites (OPS-211). Leave todo. AUDIT public-pages remainders-2 2026-11-10."
     },
     {
       "id": "OPS-216",
@@ -5702,8 +5718,10 @@
       "source": "ops-part-d.md:Allowed thank-you markup.",
       "acceptance": "Allowed thank-you markup.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-host-html",
+      "evidence": "Retired: host thanks_pages.py allowed thank-you markup whitelist. Website thank-yous are in-app; custom-form thanks are plain text paragraphs (no HTML sanitizer). OPS-413 already retired host thanks HTML. | public-pages remainders-2 2026-11-10"
     },
     {
       "id": "OPS-415",
@@ -5748,16 +5766,20 @@
       "source": "ops-part-d.md:Link-name claims.",
       "acceptance": "Link-name claims.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-host-html",
+      "evidence": "Retired: Classic host-job disputed slug claims across published files. Rebuild enforces one slug via UNIQUE/CHECK + custom_form_old_slugs (OPS-418/425). | public-pages remainders-2 2026-11-10"
     },
     {
       "id": "OPS-420",
       "source": "ops-part-d.md:\"Make it look ours\" (G4).",
       "acceptance": "\"Make it look ours\" (G4).: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "classic-look-panel",
+      "evidence": "Retired: Classic “Make it look ours” look tokens / Google Fonts sets / contrast gate on host pages. /f/* uses scrapbook chrome (CRM-120/OPS-421 retired). | public-pages remainders-2 2026-11-10"
     },
     {
       "id": "OPS-421",
@@ -5811,7 +5833,8 @@
       "acceptance": "Forms list page.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (/forms list page for listed open forms): custom-forms follow-up; /f/* stays noindex until listed. Leave todo. AUDIT public-pages remainders-2 2026-11-10."
     },
     {
       "id": "OPS-427",
@@ -5847,7 +5870,8 @@
       "acceptance": "Embedding in other websites.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (embed.js / ?embed=1 framing): deferred with Classic embed loader (OPS-266 retired). Leave todo. AUDIT public-pages remainders-2 2026-11-10."
     },
     {
       "id": "OPS-431",
@@ -5855,7 +5879,8 @@
       "acceptance": "File-size guard.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
       "status": "todo",
-      "target": "parity"
+      "target": "parity",
+      "evidence": "Product gap (client file-size guard / data-max-mb): no file questions yet (CRM-095). Leave todo. AUDIT public-pages remainders-2 2026-11-10."
     },
     {
       "id": "OPS-432",
