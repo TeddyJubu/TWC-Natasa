@@ -37,3 +37,20 @@ export function toMemberProfile(row: MemberRow, opts: { image?: string; logo?: s
     logo: opts.logo,
   };
 }
+
+/**
+ * The /members/:slug path segment: her name, then her catalogue number ("Rosa Díaz", 12 → "rosa-diaz-12"). The
+ * number is the stable key (no migration, survives a name change: the route redirects to the current slug); the
+ * name is only for people reading the URL. No catalogue number (not approved) → no page → undefined.
+ */
+export function memberSlug(member: { name: string; catalogueNumber?: number }): string | undefined {
+  if (member.catalogueNumber === undefined) return undefined;
+  const name = member.name.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  return name ? `${name}-${member.catalogueNumber}` : String(member.catalogueNumber);
+}
+
+/** The catalogue number at the end of a slug, or null when there is none. */
+export function catalogueFromSlug(slug: string): number | null {
+  const match = /(?:^|-)(\d{1,9})$/.exec(slug);
+  return match ? Number(match[1]) : null;
+}

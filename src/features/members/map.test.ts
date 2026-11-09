@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { toMemberProfile, type MemberRow } from "./map";
+import { catalogueFromSlug, memberSlug, toMemberProfile, type MemberRow } from "./map";
 
 const row: MemberRow = {
   id: "u1",
@@ -71,5 +71,18 @@ describe("toMemberProfile", () => {
     const m = toMemberProfile(blank, { image: "https://img/me.jpg", placeholders: true });
     expect([m.name, m.role, m.business, m.specialty]).toEqual(["Your name", "Your role", "Your business", "Your specialty"]);
     expect(m.imageAlt).toBe("Portrait of member");
+  });
+});
+
+describe("memberSlug", () => {
+  it("is her name, then her catalogue number, and parses back to the number", () => {
+    expect(memberSlug({ name: "Rosa Díaz-O’Neill", catalogueNumber: 12 })).toBe("rosa-diaz-o-neill-12");
+    expect(catalogueFromSlug("rosa-diaz-o-neill-12")).toBe(12);
+    expect(memberSlug({ name: "  ", catalogueNumber: 7 })).toBe("7");
+    expect(catalogueFromSlug("7")).toBe(7);
+    expect(memberSlug({ name: "Rosa" })).toBeUndefined();
+  });
+  it("finds no number in a slug without one", () => {
+    for (const s of ["rosa", "", "rosa-12x", "12-rosa", "-", "rosa-1234567890"]) expect(catalogueFromSlug(s)).toBeNull();
   });
 });

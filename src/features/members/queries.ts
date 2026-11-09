@@ -3,7 +3,8 @@ import type { MemberProfile } from "@/index";
 import { viewerFn } from "@/features/auth/fns";
 import { directoryFn, introsFn, ownProfileFn, publicProfilesFn } from "./fns";
 
-export type { Profile, ProfileData } from "./members.server";
+export type { Audience, MemberPage, Profile, ProfileData } from "./members.server";
+export { memberSlug } from "./map";
 export type { Viewer } from "@/features/auth/viewer.server";
 
 /** Approved, listed members with portrait and logo URLs (members and admins; the server checks). */

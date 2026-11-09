@@ -177,3 +177,8 @@ textarea.twc-input { min-height: 132px; resize: vertical; }
   .twc-ribbon__track { animation: none; }
   .twc-btn:hover, .twc-polaroid:hover { translate: none; scale: none; }
 }
+
+/* ---- Members (/members, /members/:slug) ----
+   The design-system polaroid MemberCard/MemberDialog set their index line in `font-mono`; on the public site
+   that is Fragment Mono. Scoped to the page so nothing else's monospace changes. */
+.twc-page { --font-mono: var(--font-fragment); }
