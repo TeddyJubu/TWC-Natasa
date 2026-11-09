@@ -116,8 +116,10 @@
       "source": "crm.md:Hand-off files the host jobs read",
       "acceptance": "Hand-off files the host jobs read: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/admin"
+      "status": "verified",
+      "target": "retired",
+      "retired": "sqlite-source",
+      "evidence": "Retired: Classic host hand-off files (published/*.json, notify_settings.json, connections.json, status JSON). Rebuild: SQLite tables + in-process notifyAdmins/confirmSubmitter/subscribeIfConsented. Per-form notify_settings UI stays todo (CRM-139). AUDIT notifications remainders. | verified 2026-11-09: sqlite-source"
     },
     {
       "id": "CRM-012",
@@ -1294,7 +1296,8 @@
       "acceptance": "Alert routing per form: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "/admin"
+      "target": "/admin",
+      "evidence": "Product gap: per-form alert routing UI (notify_settings alerts email/whatsapp/inbox). Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "CRM-137",
@@ -1311,7 +1314,8 @@
       "acceptance": "Test confirmation email: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "/admin"
+      "target": "/admin",
+      "evidence": "Product gap: test confirmation email UI (POST confirmation-test). Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "CRM-139",
@@ -1319,7 +1323,8 @@
       "acceptance": "`notify_settings.json` contract: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "/admin"
+      "target": "/admin",
+      "evidence": "Product gap: notify_settings.json contract / per-form on-off + since + editable confirmation words. Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "CRM-140",
@@ -1336,7 +1341,8 @@
       "acceptance": "Custom-form confirmation email: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "/admin"
+      "target": "/admin",
+      "evidence": "Product gap: custom-form confirmation email (CRM-125/OPS-503). Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "CRM-142",
@@ -1344,15 +1350,17 @@
       "acceptance": "Settings UI: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "/admin"
+      "target": "/admin",
+      "evidence": "Product gap: notify Settings UI / after-submit panel. Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "CRM-143",
       "source": "crm.md:Alerts the CRM does not send",
       "acceptance": "Alerts the CRM does not send: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/admin"
+      "status": "verified",
+      "target": "notifications",
+      "evidence": "Rebuild sends admin alerts in-process via notifyAdmins/sendEmail (contact, partnership, application, review, Spotlight) — Classic CRM sent none (OPS-055 drafts). Tests: contact.test.ts, application-alert.test.ts, review-alert.test.ts, spotlight-alert.test.ts. | verified 2026-11-09"
     },
     {
       "id": "CRM-144",
@@ -1440,15 +1448,18 @@
       "acceptance": "Newsletter box on custom forms: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "/admin"
+      "target": "/admin",
+      "evidence": "Product gap: newsletter box on custom forms → Beehiiv. Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "CRM-153",
       "source": "crm.md:Agent-safe status",
       "acceptance": "Agent-safe status: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/admin"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-webhooks",
+      "evidence": "Retired: agent-safe GET connections/status. No connections.json / webhook secrets UI. AUDIT notifications retire-external. | verified 2026-11-09: no-webhooks"
     },
     {
       "id": "CRM-154",
@@ -1456,7 +1467,8 @@
       "acceptance": "Beehiiv — site newsletter form: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "/admin"
+      "target": "/admin",
+      "evidence": "Product gap: Beehiiv site newsletter form (public subscribe page). Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "CRM-155",
@@ -1737,7 +1749,8 @@
       "acceptance": "FIX-IN-REBUILD — Beehiiv result lost, double opt-in wording wrong: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "/admin"
+      "target": "/admin",
+      "evidence": "Product gap: FIX-IN-REBUILD site-newsletter Beehiiv result surfacing + double opt-in thank-you wording. Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "CRM-184",
@@ -1745,15 +1758,17 @@
       "acceptance": "FIX-IN-REBUILD — newsletter sync state in a file: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "/admin"
+      "target": "/admin",
+      "evidence": "Product gap: FIX-IN-REBUILD bulk Beehiiv list sync / newsletter_sync_state replacement beyond per-subscriber claim. Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "CRM-185",
       "source": "crm.md:PORT-WITH-CARE — hard-coded address lists",
       "acceptance": "PORT-WITH-CARE — hard-coded address lists: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/admin"
+      "status": "verified",
+      "target": "notifications",
+      "evidence": "PORT-WITH-CARE fixed: alert destinations are admin user emails from user_roles (notify.ts adminAddresses), not a hard-coded allow-list; sender uses CF_EMAIL_ACCOUNT_ID/CF_EMAIL_API_TOKEN + EMAIL_FROM (email.ts). No OWN_INBOX/CONFIRM_FROM constants in src/. | verified 2026-11-09"
     },
     {
       "id": "CRM-186",
@@ -1911,8 +1926,10 @@
       "source": "backoffice.md:`GET /`: `render_home()` (`intake.py:2952-2979`). On a public host: a \"Membership\" landing page with a card linking to `",
       "acceptance": "`GET /`: `render_home()` (`intake.py:2952-2979`). On a public host: a \"Membership\" landing page with a card linking to `: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "apex-coming-soon",
+      "evidence": "Retired: Intake public GET / membership landing (render_home). Apex / is coming-soon (BRIEF decision 1); /join is scrapbook application. SITE-001/080. | verified 2026-11-09: apex-coming-soon"
     },
     {
       "id": "OPS-016",
@@ -2053,8 +2070,10 @@
       "source": "backoffice.md:Open/close switch read on every request",
       "acceptance": "Open/close switch read on every request: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-forms-state-file",
+      "evidence": "Retired: Intake FORMS_STATE open/close file for application/review/contact. /join and /review|/spotlight links have no Classic open switch; custom forms use forms.open (CRM-100). AUDIT notifications remainders. | verified 2026-11-09: no-forms-state-file"
     },
     {
       "id": "OPS-032",
@@ -2071,24 +2090,27 @@
       "source": "backoffice.md:Application cards",
       "acceptance": "Application cards: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "/admin",
+      "evidence": "/admin Applications card lists pending applications (adminApplications, requireAdmin); Details + approve/decline/undo. CRM-041/068 verified. AUDIT notifications remainders. | verified 2026-11-09"
     },
     {
       "id": "OPS-034",
       "source": "backoffice.md:Approve flow (admin)",
       "acceptance": "Approve flow (admin): behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "/admin",
+      "evidence": "Approve/decline/undo-decline on Applications and Members (reviewApplication/setMemberStatus); welcome email on approve only (approval-email.server.ts). CRM-068/069/071 verified. | verified 2026-11-09"
     },
     {
       "id": "OPS-035",
       "source": "backoffice.md:Member cards",
       "acceptance": "Member cards: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "/admin#members",
+      "evidence": "/admin All members card (adminMembers); newsletter chip from newsletter_subscribers; no beehiiv_newsletter source filter — Beehiiv-only rows live on Newsletter card (CRM-093). | verified 2026-11-09"
     },
     {
       "id": "OPS-036",
@@ -2103,16 +2125,18 @@
       "source": "backoffice.md:CSV export columns",
       "acceptance": "CSV export columns: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "/admin",
+      "evidence": "adminCsv/toCsv (BOM, CRLF, formula guard) for applications + members Download CSV; requireAdmin. CRM-041 verified. | verified 2026-11-09"
     },
     {
       "id": "OPS-038",
       "source": "backoffice.md:Subscriber cards",
       "acceptance": "Subscriber cards: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "/admin",
+      "evidence": "Newsletter card lists newsletter_subscribers (adminNewsletterSubscribers); page search filters it; no Beehiiv write. CRM-093 verified. | verified 2026-11-09"
     },
     {
       "id": "OPS-039",
@@ -2171,16 +2195,20 @@
       "source": "backoffice.md:`new_applications.jsonl`",
       "acceptance": "`new_applications.jsonl`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "sqlite-source",
+      "evidence": "Retired: new_applications.jsonl as live store. applications table + one-shot import-legacy. CRM-024 verified. | verified 2026-11-09: sqlite-source"
     },
     {
       "id": "OPS-046",
       "source": "backoffice.md:`review_responses.jsonl`",
       "acceptance": "`review_responses.jsonl`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/admin"
+      "status": "verified",
+      "target": "retired",
+      "retired": "sqlite-source",
+      "evidence": "Retired: review_responses.jsonl as live store. member_reviews (0003) + import. OPS-049/members-links. | verified 2026-11-09: sqlite-source"
     },
     {
       "id": "OPS-047",
@@ -2213,8 +2241,10 @@
       "source": "backoffice.md:`subscribers.jsonl`",
       "acceptance": "`subscribers.jsonl`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "sqlite-source",
+      "evidence": "Retired: subscribers.jsonl as live store. newsletter_subscribers + import (CRM-036). Newsletter card CRM-093. | verified 2026-11-09: sqlite-source"
     },
     {
       "id": "OPS-051",
@@ -2258,8 +2288,10 @@
       "source": "backoffice.md:Email drafts, never sent",
       "acceptance": "Email drafts, never sent: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/admin"
+      "status": "verified",
+      "target": "retired",
+      "retired": "live-sendEmail",
+      "evidence": "Retired: Intake email drafts that were never sent. Rebuild sendEmail() delivers alerts + confirmations + welcome when CF_EMAIL_* set. notify.ts / email.ts. | verified 2026-11-09: live-sendEmail"
     },
     {
       "id": "OPS-056",
@@ -2346,16 +2378,18 @@
       "source": "backoffice.md:Review validation is minimal",
       "acceptance": "Review validation is minimal: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "/review",
+      "evidence": "checkReview validates membership review answers against options (member-links); full_name/email/membership required. members-links tests. OPS-020 verified. | verified 2026-11-09"
     },
     {
       "id": "OPS-066",
       "source": "backoffice.md:Consent invariants",
       "acceptance": "Consent invariants: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "/join",
+      "evidence": "Consent invariants: optional newsletter/consent never preselected; blank optionals absent via compact(); required guidelines + final-confirmation must be explicit (parseApplication/schema.test.ts). | verified 2026-11-09"
     },
     {
       "id": "OPS-067",
@@ -2446,8 +2480,10 @@
       "source": "backoffice.md:Preview then apply, with an optimistic version",
       "acceptance": "Preview then apply, with an optimistic version: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-merge",
+      "evidence": "Retired: Intake merge preview/version. CRM merge/aliases retired (CRM-074–081). AUDIT phase 7 / notifications remainders. | verified 2026-11-09: no-merge"
     },
     {
       "id": "OPS-077",
@@ -2463,8 +2499,10 @@
       "source": "backoffice.md:Merge effects by case",
       "acceptance": "Merge effects by case: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-merge",
+      "evidence": "Retired: Intake merge apply effects. CRM merge retired. AUDIT notifications remainders. | verified 2026-11-09: no-merge"
     },
     {
       "id": "OPS-079",
@@ -2495,8 +2533,10 @@
       "source": "backoffice.md:WebMCP layer, engine only",
       "acceptance": "WebMCP layer, engine only: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-webmcp",
+      "evidence": "Retired: WebMCP layer on forms. Rebuild has no navigator.model / form-webmcp (CRM-090/156–160). AUDIT notifications remainders. | verified 2026-11-09: no-webmcp"
     },
     {
       "id": "OPS-083",
@@ -2579,8 +2619,10 @@
       "source": "backoffice.md:`member_id` reuses the application `record_id`",
       "acceptance": "`member_id` reuses the application `record_id`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "better-auth-uuids",
+      "evidence": "Retired: member_id reuses application record_id. Profiles are Better Auth user UUIDs; applications link via user_id / email claim-on-verify. AUDIT notifications remainders. | verified 2026-11-09: better-auth-uuids"
     },
     {
       "id": "OPS-093",
@@ -2646,8 +2688,10 @@
       "source": "backoffice.md:External agents mutate the same files",
       "acceptance": "External agents mutate the same files: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "sqlite-source",
+      "evidence": "Retired: external agents mutating shared JSONL files. SQLite + requireAdmin server functions only. AUDIT notifications remainders. | verified 2026-11-09: sqlite-source"
     },
     {
       "id": "OPS-101",
@@ -2671,16 +2715,19 @@
       "source": "backoffice.md:The application has 10 sections, in this order",
       "acceptance": "The application has 10 sections, in this order: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-membership-form-editor",
+      "evidence": "Retired: Classic 10-section membership engine ordering. Scrapbook /join is fixed React ApplicationForm. CRM-110–116. | verified 2026-11-09: no-membership-form-editor"
     },
     {
       "id": "OPS-104",
       "source": "backoffice.md:The application's server-required fields",
       "acceptance": "The application's server-required fields: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "/join",
+      "evidence": "parseApplication requires scrapbook fields (full-name, email, phone, neighborhood, industry, business, guidelines, …); schema.test.ts. Field set is scrapbook, not Classic intake keys. | verified 2026-11-09"
     },
     {
       "id": "OPS-105",
@@ -2696,8 +2743,9 @@
       "source": "backoffice.md:All 9 community-guideline confirmations must be ticked",
       "acceptance": "All 9 community-guideline confirmations must be ticked: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "/join",
+      "evidence": "Every GUIDELINES entry must be ticked (6 scrapbook commitments in schema.ts); schema.test.ts rejects any missing one. Classic's 9 labels not ported verbatim. | verified 2026-11-09"
     },
     {
       "id": "OPS-107",
@@ -2705,7 +2753,8 @@
       "acceptance": "Email is stripped, lower-cased and must match `^[^@\\s]+@[^@\\s]+\\: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "notifications"
+      "target": "notifications",
+      "evidence": "Product gap: application email lower-casing on store (trim+regex exist; beehiiv lowercases subscribe path only). Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "OPS-108",
@@ -2880,8 +2929,10 @@
       "source": "backoffice.md:Consent / agreement texts must be kept verbatim",
       "acceptance": "Consent / agreement texts must be kept verbatim: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/admin#members"
+      "status": "verified",
+      "target": "retired",
+      "retired": "scrapbook-consent-copy",
+      "evidence": "Retired: Classic membership-editor consent texts kept verbatim. Scrapbook /join ships fixed ApplicationForm consent/guideline copy (schema.ts GUIDELINES + final-confirmation). AUDIT notifications remainders. | verified 2026-11-09: scrapbook-consent-copy"
     },
     {
       "id": "OPS-128",
@@ -2923,8 +2974,9 @@
       "source": "backoffice.md:Checkboxes post one name per option",
       "acceptance": "Checkboxes post one name per option: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "/join",
+      "evidence": "Checkbox groups use FormData getAll (Reader.list/requiredList) — one name per option. schema.ts. | verified 2026-11-09"
     },
     {
       "id": "OPS-133",
@@ -3199,8 +3251,10 @@
       "source": "backoffice.md:CORE questions (45 application, 5 review; MF:279-292) can be reworded and moved, but not removed, retyped, made optional",
       "acceptance": "CORE questions (45 application, 5 review; MF:279-292) can be reworded and moved, but not removed, retyped, made optional: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-membership-form-editor",
+      "evidence": "Retired: CORE question lock from membership form editor. Required fields enforced in parseApplication; no CRM membership definition. CRM-112. | verified 2026-11-09: no-membership-form-editor"
     },
     {
       "id": "OPS-164",
@@ -3340,8 +3394,10 @@
       "source": "backoffice.md:Website forms accepted:",
       "acceptance": "Website forms accepted:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "native-website-forms",
+      "evidence": "Retired: Classic host-accepted website form POST shapes to submissions.jsonl. /api/contact + /api/partnerships + /api/applications store in SQLite. AUDIT notifications remainders. | verified 2026-11-09: native-website-forms"
     },
     {
       "id": "OPS-179",
@@ -3389,8 +3445,10 @@
       "source": "backoffice.md:What gets JSON and what gets HTML.",
       "acceptance": "What gets JSON and what gets HTML.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "parity"
+      "status": "verified",
+      "target": "retired",
+      "retired": "native-website-forms",
+      "evidence": "Retired: Classic JSON-vs-HTML accept negotiation for website forms. App routes return Start/JSON responses only. AUDIT notifications remainders. | verified 2026-11-09: native-website-forms"
     },
     {
       "id": "OPS-185",
@@ -3416,8 +3474,9 @@
       "source": "backoffice.md:Website-form success:",
       "acceptance": "Website-form success:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "/contact",
+      "evidence": "Contact/partnership POST succeed with 204 after store + notify + confirm; honeypot same success with nothing stored. contact.test.ts. SITE-053/169. | verified 2026-11-09"
     },
     {
       "id": "OPS-188",
@@ -3515,15 +3574,18 @@
       "acceptance": "Newsletter form: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "/contact"
+      "target": "/contact",
+      "evidence": "Product gap: dedicated public newsletter form (apex hidden form SITE-160; thanks → /contact only). Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "OPS-199",
       "source": "backoffice.md:Every form is a WebMCP declarative tool.",
       "acceptance": "Every form is a WebMCP declarative tool.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-webmcp",
+      "evidence": "Retired: Every form as WebMCP declarative tool. No WebMCP on rebuild forms. CRM-160/OPS-173. | verified 2026-11-09: no-webmcp"
     },
     {
       "id": "OPS-200",
@@ -3594,8 +3656,10 @@
       "source": "backoffice.md:Which version gets which rules",
       "acceptance": "Which version gets which rules: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-membership-form-editor",
+      "evidence": "Retired: Classic which-version-gets-which-rules for membership engine. Fixed scrapbook + custom-form definitions in SQLite. AUDIT notifications remainders. | verified 2026-11-09: no-membership-form-editor"
     },
     {
       "id": "OPS-208",
@@ -3610,8 +3674,9 @@
       "source": "backoffice.md:Email validation is not the same everywhere.",
       "acceptance": "Email validation is not the same everywhere.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "parity",
+      "evidence": "Shared EMAIL regex ^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$ on applications (schema.ts) and contact/partnership (contact/schema.ts); trim on read. Classic per-form divergence retired. | verified 2026-11-09"
     },
     {
       "id": "OPS-210",
@@ -3751,8 +3816,10 @@
       "source": "backoffice.md:Tombstones.",
       "acceptance": "Tombstones.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "retired",
+      "retired": "forms-import-tombstones",
+      "evidence": "Retired: Classic submissions.jsonl tombstones as live delete markers. Import skips deleted; Form responses hold answers. CRM-040/forms-import. | verified 2026-11-09: forms-import-tombstones"
     },
     {
       "id": "OPS-226",
@@ -3769,8 +3836,10 @@
       "source": "backoffice.md:Published website form files `${PUBLISHED_DIR}/<form>.json`",
       "acceptance": "Published website form files `${PUBLISHED_DIR}/<form>.json`: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "retired",
+      "retired": "native-website-forms",
+      "evidence": "Retired: published/<form>.json website form files spliced by apply_site_forms. Native React routes render forms. AUDIT notifications remainders. | verified 2026-11-09: native-website-forms"
     },
     {
       "id": "OPS-228",
@@ -3841,7 +3910,8 @@
       "acceptance": "Hidden answers are dropped before storing; logic never refuses a submission: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "notifications"
+      "target": "notifications",
+      "evidence": "Product gap: custom-form show/hide logic dropping hidden answers (custom-forms-owned engine). Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "OPS-236",
@@ -4029,8 +4099,9 @@
       "source": "backoffice.md:Newsletter to beehiiv, synchronously in the request.",
       "acceptance": "Newsletter to beehiiv, synchronously in the request.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "/join",
+      "evidence": "Application Beehiiv opt-in is synchronous in POST /api/applications via optInApplicant → subscribeIfConsented after store; failure logs only. beehiiv.test.ts / application path. | verified 2026-11-09"
     },
     {
       "id": "OPS-257",
@@ -4267,8 +4338,10 @@
       "source": "backoffice.md:CRM routes, website forms:",
       "acceptance": "CRM routes, website forms:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "retired",
+      "retired": "native-website-forms",
+      "evidence": "Retired: Classic CRM routes that wrote website-form published JSON. Admin edits custom forms via saveForm; contact/join are code. AUDIT notifications remainders. | verified 2026-11-09: native-website-forms"
     },
     {
       "id": "OPS-284",
@@ -4312,8 +4385,10 @@
       "source": "backoffice.md:Testdata field names differ from the live markup.",
       "acceptance": "Testdata field names differ from the live markup.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/partnerships"
+      "status": "verified",
+      "target": "retired",
+      "retired": "classic-testdata",
+      "evidence": "Retired: Classic testdata field-name quirks vs live markup. Rebuild tests use app schemas (contact.test.ts, schema.test.ts). AUDIT notifications remainders. | verified 2026-11-09: classic-testdata"
     },
     {
       "id": "OPS-289",
@@ -4384,7 +4459,8 @@
       "acceptance": "Beehiiv is synchronous and its result is lost.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "notifications"
+      "target": "notifications",
+      "evidence": "Product gap: site-newsletter Beehiiv result lost / UX (paired CRM-183); application path logs only. Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "OPS-297",
@@ -4408,8 +4484,10 @@
       "source": "backoffice.md:The one-per-email docstring is wrong.",
       "acceptance": "The one-per-email docstring is wrong.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "retired",
+      "retired": "classic-docstring-bug",
+      "evidence": "Retired: Classic one-per-email docstring wrong. subscribeIfConsented claims newsletter_subscribers before call (already-known). beehiiv.test.ts. | verified 2026-11-09: classic-docstring-bug"
     },
     {
       "id": "OPS-300",
@@ -4442,7 +4520,8 @@
       "acceptance": "The thank-you page wording contradicts beehiiv's double opt-in.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "notifications"
+      "target": "notifications",
+      "evidence": "Product gap: newsletter thank-you vs Beehiiv double opt-in wording (paired CRM-183). Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "OPS-304",
@@ -4553,16 +4632,20 @@
       "source": "backoffice.md:Hard gate before the LLM.",
       "acceptance": "Hard gate before the LLM.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-hermes",
+      "evidence": "Retired: Hermes/LLM hard gate auto-reject before model. Approve/decline are human /admin only. AUDIT notifications retire-external / remainders. | verified 2026-11-09: no-hermes"
     },
     {
       "id": "OPS-317",
       "source": "backoffice.md:What the model sees (PII-minimised payload).",
       "acceptance": "What the model sees (PII-minimised payload).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-hermes",
+      "evidence": "Retired: Hermes model_payload PII-minimised LLM input. No auto-approve model in Node app. AUDIT notifications remainders. | verified 2026-11-09: no-hermes"
     },
     {
       "id": "OPS-318",
@@ -4691,8 +4774,10 @@
       "source": "backoffice.md:Retry policy",
       "acceptance": "Retry policy: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-notion-mirror",
+      "evidence": "Retired: Notion sync retry policy. No Notion client. AUDIT notifications retire-external. | verified 2026-11-09: no-notion-mirror"
     },
     {
       "id": "OPS-332",
@@ -4794,8 +4879,10 @@
       "source": "backoffice.md:Rendering (render.mjs).",
       "acceptance": "Rendering (render.mjs).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-notion-mirror",
+      "evidence": "Retired: Notion render.mjs event/partner rendering. Scrapbook pages are code; no Notion splice. AUDIT notifications remainders. | verified 2026-11-09: no-notion-mirror"
     },
     {
       "id": "OPS-343",
@@ -4852,8 +4939,10 @@
       "source": "backoffice.md:Tests and fixtures.",
       "acceptance": "Tests and fixtures.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-notion-mirror",
+      "evidence": "Retired: Notion build.test fixtures. No Notion in src/. AUDIT notifications remainders. | verified 2026-11-09: no-notion-mirror"
     },
     {
       "id": "OPS-349",
@@ -4878,8 +4967,10 @@
       "source": "backoffice.md:`import_master_members.py <csv>` (source: Google Sheet export \"NBWC_Master_Field_Map - Members.csv\", default name line 32).",
       "acceptance": "`import_master_members.py <csv>` (source: Google Sheet export \"NBWC_Master_Field_Map - Members.csv\", default name line 32).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/admin#members"
+      "status": "verified",
+      "target": "retired",
+      "retired": "classic-import-tools",
+      "evidence": "Retired: import_master_members.py CSV tool. Rebuild uses scripts/import-legacy.ts. data-import verified. | verified 2026-11-09: classic-import-tools"
     },
     {
       "id": "OPS-352",
@@ -4894,8 +4985,10 @@
       "source": "backoffice.md:`import_heyform_applications.py <csv>`.",
       "acceptance": "`import_heyform_applications.py <csv>`.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "classic-import-tools",
+      "evidence": "Retired: import_heyform_applications.py. Rebuild import-legacy / applications table. AUDIT notifications remainders. | verified 2026-11-09: classic-import-tools"
     },
     {
       "id": "OPS-354",
@@ -4920,7 +5013,8 @@
       "acceptance": "Behaviour.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "/join"
+      "target": "/join",
+      "evidence": "Product gap: bulk Beehiiv sync job behaviour (paired CRM-184); application subscribeIfConsented is separate. Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "OPS-357",
@@ -4945,7 +5039,8 @@
       "acceptance": "Failure handling.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "notifications"
+      "target": "notifications",
+      "evidence": "Product gap: bulk Beehiiv sync failure/watermark handling (paired CRM-184). Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "OPS-360",
@@ -4953,7 +5048,8 @@
       "acceptance": "Inline website newsletter subscribe (patched by `tools/patch-beehiiv.py`, now in `submissions.py:786-839`).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "notifications"
+      "target": "notifications",
+      "evidence": "Product gap: inline website newsletter subscribe on newsletter form POST (no public newsletter form yet). Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "OPS-361",
@@ -4968,8 +5064,10 @@
       "source": "backoffice.md:`tools/verify_beehiiv_three.py` (one-off proof).",
       "acceptance": "`tools/verify_beehiiv_three.py` (one-off proof).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "classic-one-off",
+      "evidence": "Retired: tools/verify_beehiiv_three.py one-off. Consent covered by beehiiv.test.ts. AUDIT notifications remainders. | verified 2026-11-09: classic-one-off"
     },
     {
       "id": "OPS-363",
@@ -4986,7 +5084,8 @@
       "acceptance": "Per-form alert routing (`tools/forms/notify_settings.py`, read by both notify jobs).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "/join"
+      "target": "/join",
+      "evidence": "Product gap: per-form notify_settings alert routing (paired CRM-136/139/142). Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "OPS-365",
@@ -5012,7 +5111,8 @@
       "acceptance": "Pitch heuristic (`notify_settings.PITCH_HINTS` / `spamcheck.looks_like_pitch`).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "notifications"
+      "target": "notifications",
+      "evidence": "Product gap: pitch heuristic looks_like_pitch on alerts. Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "OPS-368",
@@ -5096,8 +5196,10 @@
       "source": "backoffice.md:`tools/set-watermark.py` (related, outside the listed scope).",
       "acceptance": "`tools/set-watermark.py` (related, outside the listed scope).: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "retired",
+      "retired": "sync-confirm",
+      "evidence": "Retired: tools/set-watermark.py notify_state watermarks. In-request alerts/confirmations; no watermark files. OPS-506/507. | verified 2026-11-09: sync-confirm"
     },
     {
       "id": "OPS-378",
@@ -5120,8 +5222,10 @@
       "source": "backoffice.md:`tools/qa/membership-parity.py`.",
       "acceptance": "`tools/qa/membership-parity.py`.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-membership-form-editor",
+      "evidence": "Retired: tools/qa/membership-parity.py offline engine gate. No membership form engine. CRM-110–116. | verified 2026-11-09: no-membership-form-editor"
     },
     {
       "id": "OPS-381",
@@ -5136,8 +5240,10 @@
       "source": "backoffice.md:Positional line watermarks everywhere.",
       "acceptance": "Positional line watermarks everywhere.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "sync-confirm",
+      "evidence": "Retired: positional line watermarks (notify_state, newsletter_sync_state, notion_sync_state, …). SQLite rows + in-request mail; no line cursors. AUDIT notifications remainders. | verified 2026-11-09: sync-confirm"
     },
     {
       "id": "OPS-383",
@@ -5217,8 +5323,10 @@
       "source": "backoffice.md:HeyForm import quirks.",
       "acceptance": "HeyForm import quirks.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "classic-import-tools",
+      "evidence": "Retired: HeyForm import column quirks. Not applicable to import-legacy field map. AUDIT notifications remainders. | verified 2026-11-09: classic-import-tools"
     },
     {
       "id": "OPS-392",
@@ -5538,7 +5646,8 @@
       "acceptance": "Event and calendar block (wave 4).: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "notifications"
+      "target": "notifications",
+      "evidence": "Product gap: custom-form event/calendar block (custom-forms follow-up). Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "OPS-428",
@@ -5690,15 +5799,17 @@
       "acceptance": "Who is subscribed.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "/contact"
+      "target": "/contact",
+      "evidence": "Product gap: Beehiiv queue who-is-subscribed from custom-form newsletter=yes (bulk/custom-form box). Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "OPS-444",
       "source": "ops-part-d.md:The Beehiiv request.",
       "acceptance": "The Beehiiv request.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "notifications",
+      "evidence": "Same Beehiiv request as OPS-358: subscribeIfConsented POST body/headers (utm nbwc.site/membership/membership-optin), 8s timeout, reactivate_existing:false. beehiiv.ts + beehiiv.test.ts. | verified 2026-11-09"
     },
     {
       "id": "OPS-445",
@@ -5706,7 +5817,8 @@
       "acceptance": "Queue and retries.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "notifications"
+      "target": "notifications",
+      "evidence": "Product gap: Beehiiv queue retries (bulk path; subscribeIfConsented has no retry queue). Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "OPS-446",
@@ -5714,7 +5826,8 @@
       "acceptance": "Give-up rules.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "notifications"
+      "target": "notifications",
+      "evidence": "Product gap: Beehiiv give-up rules (bulk path). Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "OPS-447",
@@ -5730,8 +5843,9 @@
       "source": "ops-part-d.md:No key.",
       "acceptance": "No key.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "notifications",
+      "evidence": "Without BEEHIIV_API_KEY/BEEHIIV_PUBLICATION_ID subscribeIfConsented returns {subscribed:false, reason:'not-configured'}; no queue. beehiiv.test.ts. | verified 2026-11-09"
     },
     {
       "id": "OPS-449",
@@ -5748,17 +5862,19 @@
       "source": "ops-part-d.md:Consent gate: what is visible in this part.",
       "acceptance": "Consent gate: what is visible in this part.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "built",
+      "status": "verified",
       "target": "/join",
-      "evidence": "src/server/beehiiv.ts: one subscribeIfConsented() for applications (both answers), site newsletter form and custom-form box (callers pass explicit consent === true); only the application caller is wired so far"
+      "evidence": "src/server/beehiiv.ts subscribeIfConsented + beehiiv.test.ts consent table (only exactly true); applications wire via newsletterConsent/optInApplicant (newsletter AND emailConsent). Site newsletter form + custom-form box still call the same helper when built (AUDIT ceiling). Peers CRM-182/OPS-520/521 verified. | verified 2026-11-09"
     },
     {
       "id": "OPS-451",
       "source": "ops-part-d.md:Settings per form.",
       "acceptance": "Settings per form.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-webhooks",
+      "evidence": "Retired: conn_webhook per-form settings. No webhook dispatcher. AUDIT notifications retire-external. | verified 2026-11-09: no-webhooks"
     },
     {
       "id": "OPS-452",
@@ -5785,8 +5901,10 @@
       "source": "ops-part-d.md:Delivery semantics.",
       "acceptance": "Delivery semantics.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-webhooks",
+      "evidence": "Retired: webhook delivery semantics/retries. No outbound webhooks. AUDIT notifications retire-external. | verified 2026-11-09: no-webhooks"
     },
     {
       "id": "OPS-455",
@@ -5821,16 +5939,20 @@
       "source": "ops-part-d.md:Status per form.",
       "acceptance": "Status per form.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-webhooks",
+      "evidence": "Retired: webhook status per form. No connections status UI. AUDIT notifications retire-external. | verified 2026-11-09: no-webhooks"
     },
     {
       "id": "OPS-459",
       "source": "ops-part-d.md:Settings and credentials.",
       "acceptance": "Settings and credentials.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-notion-mirror",
+      "evidence": "Retired: conn_notion settings/credentials. No Notion client. AUDIT notifications retire-external. | verified 2026-11-09: no-notion-mirror"
     },
     {
       "id": "OPS-460",
@@ -5847,24 +5969,30 @@
       "source": "ops-part-d.md:How an answer becomes a page.",
       "acceptance": "How an answer becomes a page.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-notion-mirror",
+      "evidence": "Retired: Notion answer→page mapping. Applications/members in SQLite + /admin. AUDIT notifications retire-external. | verified 2026-11-09: no-notion-mirror"
     },
     {
       "id": "OPS-462",
       "source": "ops-part-d.md:Never twice, never lost.",
       "acceptance": "Never twice, never lost.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-notion-mirror",
+      "evidence": "Retired: Notion never-twice page state. No Notion mirror. AUDIT notifications retire-external. | verified 2026-11-09: no-notion-mirror"
     },
     {
       "id": "OPS-463",
       "source": "ops-part-d.md:Error codes.",
       "acceptance": "Error codes.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-notion-mirror",
+      "evidence": "Retired: Notion error codes. No Notion client. AUDIT notifications retire-external. | verified 2026-11-09: no-notion-mirror"
     },
     {
       "id": "OPS-464",
@@ -5901,8 +6029,10 @@
       "source": "ops-part-d.md:Turning a stored answer into labelled answers.",
       "acceptance": "Turning a stored answer into labelled answers.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-webhooks",
+      "evidence": "Retired: sendqueue labelled-answer delivery helper for webhook/Notion. Forms store in SQLite only. AUDIT notifications remainders. | verified 2026-11-09: no-webhooks"
     },
     {
       "id": "OPS-468",
@@ -6021,16 +6151,20 @@
       "source": "ops-part-d.md:Too-many page.",
       "acceptance": "Too-many page.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "retired",
+      "retired": "json-rate-limit",
+      "evidence": "Retired: Classic HTML too-many page. Rebuild rateLimit() returns HTTP 429 JSON on API routes (request.ts). AUDIT notifications remainders. | verified 2026-11-09: json-rate-limit"
     },
     {
       "id": "OPS-481",
       "source": "ops-part-d.md:Turnstile.",
       "acceptance": "Turnstile.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-turnstile",
+      "evidence": "Retired: Cloudflare Turnstile on forms. Honeypot + IP rate limits only (CRM-126). AUDIT notifications remainders. | verified 2026-11-09: no-turnstile"
     },
     {
       "id": "OPS-482",
@@ -6045,32 +6179,40 @@
       "source": "ops-part-d.md:Contract.",
       "acceptance": "Contract.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "retired",
+      "retired": "archive-only-inbox",
+      "evidence": "Retired: spamcheck.py contract. No spam verdict pipeline; archive-only inbox (CRM-047/188). Pitch heuristic stays todo (OPS-367). AUDIT notifications remainders. | verified 2026-11-09: archive-only-inbox"
     },
     {
       "id": "OPS-484",
       "source": "ops-part-d.md:Scoring.",
       "acceptance": "Scoring.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "archive-only-inbox",
+      "evidence": "Retired: spamcheck scoring (hidden field/Turnstile/links). Honeypot drops bots; no score. AUDIT spam-retire-archive-only. | verified 2026-11-09: archive-only-inbox"
     },
     {
       "id": "OPS-485",
       "source": "ops-part-d.md:What counts as free text.",
       "acceptance": "What counts as free text.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "retired",
+      "retired": "archive-only-inbox",
+      "evidence": "Retired: spamcheck free-text key filters. Not ported. AUDIT notifications remainders. | verified 2026-11-09: archive-only-inbox"
     },
     {
       "id": "OPS-486",
       "source": "ops-part-d.md:Duplicate-message check.",
       "acceptance": "Duplicate-message check.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "retired",
+      "retired": "archive-only-inbox",
+      "evidence": "Retired: spamcheck duplicate-message check. Not ported. AUDIT notifications remainders. | verified 2026-11-09: archive-only-inbox"
     },
     {
       "id": "OPS-487",
@@ -6086,7 +6228,8 @@
       "acceptance": "The older pitch heuristic is still in use.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "notifications"
+      "target": "notifications",
+      "evidence": "Product gap: older pitch heuristic still in use / substring false positives. Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "OPS-489",
@@ -6140,7 +6283,8 @@
       "acceptance": "What may travel.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "notifications"
+      "target": "notifications",
+      "evidence": "Product gap: finish-later resume payload what-may-travel. Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "OPS-495",
@@ -6157,7 +6301,8 @@
       "acceptance": "Queue and limits.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "notifications"
+      "target": "notifications",
+      "evidence": "Product gap: finish-later resume queue + limits. Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "OPS-497",
@@ -6165,7 +6310,8 @@
       "acceptance": "One person, one inbox, keyed hashes.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "notifications"
+      "target": "notifications",
+      "evidence": "Product gap: finish-later keyed address hashes / one inbox. Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "OPS-498",
@@ -6173,7 +6319,8 @@
       "acceptance": "Alert routing: already covered by OPS-364 to OPS-367.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "/join"
+      "target": "/join",
+      "evidence": "Product gap: notify_settings alert routing defaults file (paired CRM-136/OPS-364). Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "OPS-499",
@@ -6181,7 +6328,8 @@
       "acceptance": "Confirmation settings.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "notifications"
+      "target": "notifications",
+      "evidence": "Product gap: confirmation settings in notify_settings (on/since/words). Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "OPS-500",
@@ -6207,8 +6355,10 @@
       "source": "ops-part-d.md:Website-form record key and skips.",
       "acceptance": "Website-form record key and skips.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "retired",
+      "retired": "sync-confirm",
+      "evidence": "Retired: website-form confirmation record keys/skips in notify_confirm_state. In-request confirmSubmitter once per successful store. OPS-500/506. | verified 2026-11-09: sync-confirm"
     },
     {
       "id": "OPS-503",
@@ -6234,7 +6384,8 @@
       "acceptance": "Test emails.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "notifications"
+      "target": "notifications",
+      "evidence": "Product gap: test confirmation emails from CRM. Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "OPS-506",
@@ -6270,8 +6421,9 @@
       "source": "ops-part-d.md:Sender.",
       "acceptance": "Sender.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "/join",
+      "evidence": "Confirmations + alerts share sendEmail() (notify.ts confirmSubmitter/notifyAdmins); from EMAIL_FROM default info@…. email.test.ts, notify.test.ts. | verified 2026-11-09"
     },
     {
       "id": "OPS-510",
@@ -6297,7 +6449,8 @@
       "acceptance": "What it does.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "notifications"
+      "target": "notifications",
+      "evidence": "Product gap: finish-later notify-resume what-it-does. Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "OPS-513",
@@ -6305,7 +6458,8 @@
       "acceptance": "The one fixed wording.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "notifications"
+      "target": "notifications",
+      "evidence": "Product gap: finish-later fixed email wording. Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "OPS-514",
@@ -6313,7 +6467,8 @@
       "acceptance": "Limits and rules.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "notifications"
+      "target": "notifications",
+      "evidence": "Product gap: finish-later send caps/rules. Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "OPS-515",
@@ -6330,7 +6485,8 @@
       "acceptance": "State `data/notify_resume_state.json` (0600).: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "notifications"
+      "target": "notifications",
+      "evidence": "Product gap: notify_resume_state.json finish-later state. Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "OPS-517",
@@ -6431,15 +6587,18 @@
       "acceptance": "Two pitch detectors disagree.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
       "status": "todo",
-      "target": "notifications"
+      "target": "notifications",
+      "evidence": "Product gap: two pitch detectors disagree. Leave todo. AUDIT notifications remainders."
     },
     {
       "id": "OPS-528",
       "source": "ops-part-d.md:Unsalted address hashes.",
       "acceptance": "Unsalted address hashes.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "notifications"
+      "status": "verified",
+      "target": "retired",
+      "retired": "sync-confirm",
+      "evidence": "Retired: unsalted sha256 confirmation/newsletter address hashes in state files. No confirmation watermark; newsletter_subscribers stores the address. AUDIT notifications remainders. | verified 2026-11-09: sync-confirm"
     },
     {
       "id": "OPS-529",
@@ -6465,8 +6624,10 @@
       "source": "ops-part-d.md:First-run asymmetry.",
       "acceptance": "First-run asymmetry.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-webhooks",
+      "evidence": "Retired: webhook/Notion first-run asymmetry (start at EOF). No webhook/Notion jobs. AUDIT notifications retire-external. | verified 2026-11-09: no-webhooks"
     },
     {
       "id": "OPS-532",
@@ -6483,8 +6644,9 @@
       "source": "ops-part-d.md:Sender account.",
       "acceptance": "Sender account.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/join"
+      "status": "verified",
+      "target": "/join",
+      "evidence": "All app mail uses Cloudflare Email Sending via sendEmail() (CF_EMAIL_ACCOUNT_ID/CF_EMAIL_API_TOKEN). AGENTS.md; email.ts. | verified 2026-11-09"
     },
     {
       "id": "OPS-534",
@@ -6636,8 +6798,9 @@
       "source": "site.md:thanks-newsletter.html → `/contact`",
       "acceptance": "thanks-newsletter.html → `/contact`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "/contact",
+      "evidence": "migration/redirects.md: /thanks-newsletter.html → /contact (no newsletter sign-up page). cutover-redirects / smoke. Peer SITE-013/074. | verified 2026-11-09"
     },
     {
       "id": "SITE-016",
@@ -6682,8 +6845,10 @@
       "source": "site.md:Dead homepage sections inside the kept file",
       "acceptance": "Dead homepage sections inside the kept file: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/about"
+      "status": "verified",
+      "target": "retired",
+      "retired": "apex-coming-soon",
+      "evidence": "Retired: dead homepage sections hidden in Classic index.html. Apex / is coming-soon; scrapbook home is AppPage content. SITE-001. | verified 2026-11-09: apex-coming-soon"
     },
     {
       "id": "SITE-021",
@@ -6922,8 +7087,9 @@
       "source": "site.md:privacy.html makes factual claims about the OLD system",
       "acceptance": "privacy.html makes factual claims about the OLD system: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/about"
+      "status": "verified",
+      "target": "/privacy",
+      "evidence": "Privacy rewritten for rebuild (src/features/legal/content.ts): Hostinger SQLite + Cloudflare Email Sending thank-yous/welcome; legal-route.test.tsx asserts old Google Fonts/Pexels/export claims gone. | verified 2026-11-09"
     },
     {
       "id": "SITE-047",
@@ -7027,8 +7193,10 @@
       "source": "site.md:Hidden plumbing inputs on every site form",
       "acceptance": "Hidden plumbing inputs on every site form: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "retired",
+      "retired": "native-website-forms",
+      "evidence": "Retired: Classic hidden plumbing inputs on every site form (form-started stamps, Turnstile, splice markers). Contact/join use React fields + honeypot only. AUDIT notifications remainders. | verified 2026-11-09: native-website-forms"
     },
     {
       "id": "SITE-059",
@@ -7054,8 +7222,9 @@
       "source": "site.md:Consent checkbox",
       "acceptance": "Consent checkbox: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "/contact",
+      "evidence": "Contact + partnership require explicit consent tick (checkContact/checkPartnership); only true/\"on\". contact.test.ts / partnership.test.ts. SITE-054 verified fields. | verified 2026-11-09"
     },
     {
       "id": "SITE-062",
@@ -7113,8 +7282,10 @@
       "source": "site.md:Server-side behaviour to re-create or retire (cross-ref only)",
       "acceptance": "Server-side behaviour to re-create or retire (cross-ref only): behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "public-site"
+      "status": "verified",
+      "target": "retired",
+      "retired": "inventory-cross-ref",
+      "evidence": "Retired as inventory cross-ref only: server behaviour covered by contact/applications/Beehiiv/notify items. No separate SITE deliverable. AUDIT notifications remainders. | verified 2026-11-09: inventory-cross-ref"
     },
     {
       "id": "SITE-069",
@@ -7165,8 +7336,9 @@
       "source": "site.md:Newsletter thank-you",
       "acceptance": "Newsletter thank-you: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/fellowship"
+      "status": "verified",
+      "target": "/contact",
+      "evidence": "Newsletter thank-you URLs (/subscribed, /thanks-newsletter) 301 to /contact per redirects.md — no dedicated newsletter thanks page. | verified 2026-11-09"
     },
     {
       "id": "SITE-075",
@@ -7619,8 +7791,9 @@
       "source": "site.md:No analytics, no cookies",
       "acceptance": "No analytics, no cookies: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "public-site"
+      "status": "verified",
+      "target": "public-site",
+      "evidence": "No analytics/pixel/cookie consent banner in app routes; session is better-auth.session_token only (privacy copy + legal-route.test.tsx). No nbwc-theme localStorage. | verified 2026-11-09"
     },
     {
       "id": "SITE-124",
@@ -7771,8 +7944,10 @@
       "source": "site.md:Region markers",
       "acceptance": "Region markers: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "todo",
-      "target": "/gatherings"
+      "status": "verified",
+      "target": "retired",
+      "retired": "no-notion-mirror",
+      "evidence": "Retired: Notion-synced region markers on gatherings. Scrapboard gatherings copy is code; no Notion regions. AUDIT notifications remainders. | verified 2026-11-09: no-notion-mirror"
     },
     {
       "id": "SITE-141",
