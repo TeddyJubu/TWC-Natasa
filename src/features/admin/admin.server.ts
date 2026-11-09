@@ -1,7 +1,7 @@
 // Server-only: /admin. Every function starts with requireAdmin (the old is_admin() policies).
 import type { Ctx } from "@/server/context.server";
 import { tx } from "@/server/db";
-import { requireAdmin } from "@/server/guard";
+import { AccessError, requireAdmin } from "@/server/guard";
 import { checkImage, removeMedia, writeMedia } from "@/server/media";
 import { bad, isObject, oneOf, str, type Json } from "@/server/validate";
 import { checkSize, fileBytes, readForm, respond } from "@/server/request";
@@ -10,7 +10,10 @@ import type { Booking, EventRow } from "@/features/events/events.server";
 import { EVENT_KINDS } from "@/features/events/format";
 import { neighborhoodRows, type NeighborhoodRow } from "@/features/neighborhoods/neighborhoods.server";
 import { mediaUrl } from "@/server/media";
-import { attachEmails, duplicatesOf, sortApplications, toCsv, validateNeighborhood, type ActionKind, type Duplicate } from "./format";
+import {
+  attachEmails, duplicatesOf, isCalendarDate, LOGGED_ACTION_KINDS, sortApplications, toCsv, validateNeighborhood,
+  type ActionKind, type Duplicate, type LoggedActionKind,
+} from "./format";
 import { sendApprovalEmail, type ApprovalEmailResult } from "./approval-email.server";
 
 
@@ -362,4 +365,118 @@ export function adminCsv(c: Ctx, input: unknown): CsvExport {
     m.full_name, m.status, yesNo(m.directory_visible), yesNo(m.public_profile), m.catalogue_number, m.email, m.business, m.neighborhood, m.member_since,
   ]);
   return { filename, csv: toCsv(["Name", "Status", "Listed", "Public", "Catalogue", "Email", "Business", "Neighborhood", "Member since"], rows) };
+}
+
+// ---------- Logged actions (migration 0009, CRM-057 / CRM-058): outside-the-app work, not admin_actions ----------
+
+export type LoggedAction = {
+  id: string; application_id: string | null; member_id: string | null; kind: LoggedActionKind; action_date: string;
+  note: string; removed_at: string | null; author_name: string | null; created_at: string; updated_at: string;
+};
+
+type ActionFields = { kind: LoggedActionKind; action_date: string; note: string };
+
+function parseLoggedFields(input: Record<string, unknown>): ActionFields {
+  const kind = oneOf(input.kind, LOGGED_ACTION_KINDS, "action");
+  const action_date = str(input.actionDate ?? input.action_date, "date", 10);
+  if (!isCalendarDate(action_date)) throw bad("date");
+  const note = str(input.note ?? "", "note", 1000).trim();
+  if (kind === "other" && !note) throw bad("note");
+  return { kind, action_date, note };
+}
+
+function appendLoggedEvent(db: Ctx["db"], actionId: string, actorId: string, event: "created" | "edited" | "removed" | "restored", fields: ActionFields): void {
+  db.prepare("insert into logged_action_events (action_id, actor_id, event, kind, action_date, note) values (?, ?, ?, ?, ?, ?)")
+    .run(actionId, actorId, event, fields.kind, fields.action_date, fields.note);
+}
+
+/** Every logged action (including soft-removed), newest action_date first; the page groups by subject. */
+export function adminLoggedActions({ db, actor }: Ctx): LoggedAction[] {
+  requireAdmin(db, actor);
+  return db.prepare(
+    `select a.id, a.application_id, a.member_id, a.kind, a.action_date, a.note, a.removed_at, a.created_at, a.updated_at,
+       nullif(trim(coalesce(p.full_name, u.name, '')), '') as author_name
+     from logged_actions a left join "user" u on u.id = a.author_id left join profiles p on p.id = a.author_id
+     order by a.action_date desc, a.created_at desc, a.rowid desc`,
+  ).all() as LoggedAction[];
+}
+
+/** `{ applicationId | memberId, kind, actionDate, note? }` on a row that exists. Returns the new id. */
+export function addLoggedAction({ db, actor }: Ctx, input: unknown): string {
+  const me = requireAdmin(db, actor);
+  if (!isObject(input)) throw bad("action");
+  const fields = parseLoggedFields(input);
+  const [column, table] = input.applicationId !== undefined ? ["application_id", "applications"] : ["member_id", "profiles"];
+  const subject = str(input.applicationId ?? input.memberId, "action", 64);
+  if (!db.prepare(`select 1 from ${table} where id = ?`).get(subject)) throw bad("action");
+  return tx(db, () => {
+    const id = (db.prepare(`insert into logged_actions (${column}, author_id, kind, action_date, note) values (?, ?, ?, ?, ?) returning id`)
+      .get(subject, me.id, fields.kind, fields.action_date, fields.note) as { id: string }).id;
+    appendLoggedEvent(db, id, me.id, "created", fields);
+    return id;
+  });
+}
+
+/** Edit kind / date / note. "Nothing changed" and edits on a removed row are 409. */
+export function editLoggedAction({ db, actor }: Ctx, input: unknown): void {
+  const me = requireAdmin(db, actor);
+  if (!isObject(input)) throw bad("action");
+  const id = str(input.id, "action", 64);
+  const fields = parseLoggedFields(input);
+  tx(db, () => {
+    const row = db.prepare("select kind, action_date, note, removed_at from logged_actions where id = ?").get(id) as
+      | { kind: LoggedActionKind; action_date: string; note: string; removed_at: string | null } | undefined;
+    if (!row) throw bad("action");
+    if (row.removed_at) throw new AccessError("Already removed.", 409);
+    if (row.kind === fields.kind && row.action_date === fields.action_date && row.note === fields.note) {
+      throw new AccessError("Nothing changed.", 409);
+    }
+    db.prepare("update logged_actions set kind = ?, action_date = ?, note = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') where id = ?")
+      .run(fields.kind, fields.action_date, fields.note, id);
+    appendLoggedEvent(db, id, me.id, "edited", fields);
+  });
+}
+
+/** Soft-remove (sets removed_at). Already removed → 409. */
+export function removeLoggedAction({ db, actor }: Ctx, input: unknown): void {
+  const me = requireAdmin(db, actor);
+  if (!isObject(input)) throw bad("action");
+  const id = str(input.id, "action", 64);
+  tx(db, () => {
+    const row = db.prepare("select kind, action_date, note, removed_at from logged_actions where id = ?").get(id) as
+      | { kind: LoggedActionKind; action_date: string; note: string; removed_at: string | null } | undefined;
+    if (!row) throw bad("action");
+    if (row.removed_at) throw new AccessError("Already removed.", 409);
+    db.prepare("update logged_actions set removed_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now'), updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') where id = ?").run(id);
+    appendLoggedEvent(db, id, me.id, "removed", { kind: row.kind, action_date: row.action_date, note: row.note });
+  });
+}
+
+/** Clear removed_at. Already active → 409. */
+export function restoreLoggedAction({ db, actor }: Ctx, input: unknown): void {
+  const me = requireAdmin(db, actor);
+  if (!isObject(input)) throw bad("action");
+  const id = str(input.id, "action", 64);
+  tx(db, () => {
+    const row = db.prepare("select kind, action_date, note, removed_at from logged_actions where id = ?").get(id) as
+      | { kind: LoggedActionKind; action_date: string; note: string; removed_at: string | null } | undefined;
+    if (!row) throw bad("action");
+    if (!row.removed_at) throw new AccessError("Nothing changed.", 409);
+    db.prepare("update logged_actions set removed_at = null, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') where id = ?").run(id);
+    appendLoggedEvent(db, id, me.id, "restored", { kind: row.kind, action_date: row.action_date, note: row.note });
+  });
+}
+
+// ---------- Newsletter subscribers (CRM-093): read-only list for /admin ----------
+
+export type NewsletterSubscriber = {
+  id: string; email: string; full_name: string; source: "beehiiv" | "website"; consent: 0 | 1 | null; subscribed_at: string;
+};
+
+/** Newest first. No Beehiiv write from this card. */
+export function adminNewsletterSubscribers({ db, actor }: Ctx): NewsletterSubscriber[] {
+  requireAdmin(db, actor);
+  return db.prepare(
+    "select id, email, full_name, source, consent, subscribed_at from newsletter_subscribers order by subscribed_at desc, rowid desc",
+  ).all() as NewsletterSubscriber[];
 }

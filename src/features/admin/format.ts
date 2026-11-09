@@ -199,6 +199,36 @@ export function newsletterLabel(row: { consent: 0 | 1 | null } | null): string {
   return row.consent ? "Newsletter (consented)" : "Newsletter (no consent)";
 }
 
+/** CRM-093 card: consent column for a newsletter_subscribers row (not the member-summary chip). */
+export function subscriberConsentLabel(consent: 0 | 1 | null): string {
+  if (consent === null) return "Imported — consent unknown";
+  return consent ? "Consented" : "No consent";
+}
+
+/** CRM-057 kinds: things done outside the app. */
+export const LOGGED_ACTION_KINDS = [
+  "headshot_invite", "headshot_booked", "headshot_done", "email_sent", "call", "meeting", "other",
+] as const;
+export type LoggedActionKind = (typeof LOGGED_ACTION_KINDS)[number];
+
+export const LOGGED_ACTION_LABELS: Record<LoggedActionKind, string> = {
+  headshot_invite: "Headshot invite",
+  headshot_booked: "Headshot booked",
+  headshot_done: "Headshot done",
+  email_sent: "Email sent",
+  call: "Call",
+  meeting: "Meeting",
+  other: "Other",
+};
+
+/** A real calendar day as YYYY-MM-DD (past or future); rejects Feb 30 and non-dates. */
+export function isCalendarDate(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const [y, m, d] = value.split("-").map(Number) as [number, number, number];
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  return dt.getUTCFullYear() === y && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === d;
+}
+
 export type ActionKind = "approved" | "declined" | "pending" | "note_added" | "note_deleted" | "neighborhood";
 
 /** One line of the activity card, after the admin's name: "approved Nia's application". */

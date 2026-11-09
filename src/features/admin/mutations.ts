@@ -6,9 +6,11 @@ import { checkLogo, validateNeighborhood } from "./format";
 import { emailApproval, type ApprovalNotice } from "./approval-email";
 import { postApi } from "@/app/api";
 import {
-  addNoteFn, adminCsvFn, archiveMessageFn, createEventFn, deleteNoteFn, createNeighborhoodFn, deleteEventFn, reviewApplicationFn, setBookingStatusFn, setMemberNeighborhoodFn, setMemberStatusFn, updateEventFn,
-  updateNeighborhoodFn,
+  addLoggedActionFn, addNoteFn, adminCsvFn, archiveMessageFn, createEventFn, deleteNoteFn, createNeighborhoodFn, deleteEventFn,
+  editLoggedActionFn, removeLoggedActionFn, restoreLoggedActionFn, reviewApplicationFn, setBookingStatusFn,
+  setMemberNeighborhoodFn, setMemberStatusFn, updateEventFn, updateNeighborhoodFn,
 } from "./fns";
+import type { LoggedActionKind } from "./format";
 
 export type Review = { id: string; status: MembershipStatus };
 export type BookingReview = { id: string; status: "confirmed" | "declined" };
@@ -197,3 +199,38 @@ export const useArchiveMessage = () => useMutation(archiveMessageMutation(useQue
 export const useAddNote = () => useMutation(addNoteMutation(useQueryClient()));
 export const useDeleteNote = () => useMutation(deleteNoteMutation(useQueryClient()));
 export const useDownloadCsv = () => useMutation({ mutationFn: downloadCsv });
+
+export type LoggedActionInput = {
+  kind: LoggedActionKind;
+  actionDate: string;
+  note?: string;
+} & ({ applicationId: string } | { memberId: string });
+
+export type LoggedActionEdit = { id: string; kind: LoggedActionKind; actionDate: string; note?: string };
+
+const LOGGED_KEYS: QueryKey[] = [["admin", "logged-actions"]];
+
+export const addLoggedActionMutation = (qc: QueryClient) => ({
+  mutationFn: (data: LoggedActionInput) => addLoggedActionFn({ data }),
+  onSuccess: () => invalidate(qc, LOGGED_KEYS),
+});
+
+export const editLoggedActionMutation = (qc: QueryClient) => ({
+  mutationFn: (data: LoggedActionEdit) => editLoggedActionFn({ data }),
+  onSuccess: () => invalidate(qc, LOGGED_KEYS),
+});
+
+export const removeLoggedActionMutation = (qc: QueryClient) => ({
+  mutationFn: (id: string) => removeLoggedActionFn({ data: { id } }),
+  onSuccess: () => invalidate(qc, LOGGED_KEYS),
+});
+
+export const restoreLoggedActionMutation = (qc: QueryClient) => ({
+  mutationFn: (id: string) => restoreLoggedActionFn({ data: { id } }),
+  onSuccess: () => invalidate(qc, LOGGED_KEYS),
+});
+
+export const useAddLoggedAction = () => useMutation(addLoggedActionMutation(useQueryClient()));
+export const useEditLoggedAction = () => useMutation(editLoggedActionMutation(useQueryClient()));
+export const useRemoveLoggedAction = () => useMutation(removeLoggedActionMutation(useQueryClient()));
+export const useRestoreLoggedAction = () => useMutation(restoreLoggedActionMutation(useQueryClient()));

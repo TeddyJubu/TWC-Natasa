@@ -1,8 +1,14 @@
 // Admin reads (§2.7): server functions that start with requireAdmin.
 import { queryOptions } from "@tanstack/react-query";
-import { adminActionsFn, adminApplicationsFn, adminBookingsFn, adminEventsFn, adminInboxFn, adminMembersFn, adminNeighborhoodsFn, adminNotesFn } from "./fns";
+import {
+  adminActionsFn, adminApplicationsFn, adminBookingsFn, adminEventsFn, adminInboxFn, adminLoggedActionsFn,
+  adminMembersFn, adminNeighborhoodsFn, adminNewsletterSubscribersFn, adminNotesFn,
+} from "./fns";
 
-export type { AdminAction, AdminApplication, AdminBooking, AdminEvent, AdminGuest, AdminMember, AdminNeighborhood, AdminNote, InboxMessage } from "./admin.server";
+export type {
+  AdminAction, AdminApplication, AdminBooking, AdminEvent, AdminGuest, AdminMember, AdminNeighborhood, AdminNote,
+  InboxMessage, LoggedAction, NewsletterSubscriber,
+} from "./admin.server";
 
 /** Pending first, then newest. */
 export const adminApplicationsQuery = queryOptions({
@@ -50,4 +56,16 @@ export const adminNotesQuery = queryOptions({
 export const adminActionsQuery = queryOptions({
   queryKey: ["admin", "actions"],
   queryFn: () => adminActionsFn(),
+});
+
+/** Logged actions done outside the app (0009 / CRM-057): every subject, including soft-removed. */
+export const adminLoggedActionsQuery = queryOptions({
+  queryKey: ["admin", "logged-actions"],
+  queryFn: () => adminLoggedActionsFn(),
+});
+
+/** Newsletter sign-ups (CRM-093): newest first; page search filters client-side. */
+export const adminNewsletterQuery = queryOptions({
+  queryKey: ["admin", "newsletter"],
+  queryFn: () => adminNewsletterSubscribersFn(),
 });

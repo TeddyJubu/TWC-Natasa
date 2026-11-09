@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
-  LOGO_MAX_BYTES, applicationOrigin, attachEmails, checkLogo, describeAction, duplicatesOf, formatAnswers, newsletterLabel, humanizeKey, logoPath, matchesSearch, newestByUser, reviewerName, sortApplications, toCsv,
-  validateNeighborhood,
+  LOGO_MAX_BYTES, applicationOrigin, attachEmails, checkLogo, describeAction, duplicatesOf, formatAnswers, isCalendarDate,
+  newsletterLabel, humanizeKey, logoPath, matchesSearch, newestByUser, reviewerName, sortApplications, subscriberConsentLabel,
+  toCsv, validateNeighborhood,
 } from "./format";
 
 const app = (id: string, status: "pending" | "approved" | "declined", created_at: string) => ({ id, status, created_at });
@@ -222,6 +223,20 @@ describe("newsletterLabel", () => {
     expect([{ consent: 1 as const }, { consent: 0 as const }, { consent: null }, null].map(newsletterLabel)).toEqual([
       "Newsletter (consented)", "Newsletter (no consent)", "Newsletter (imported, consent not recorded)", "Not on the newsletter",
     ]);
+  });
+});
+
+describe("subscriberConsentLabel / isCalendarDate (CRM-093 / CRM-057)", () => {
+  it("labels newsletter consent for the subscribers card", () => {
+    expect([subscriberConsentLabel(1), subscriberConsentLabel(0), subscriberConsentLabel(null)]).toEqual([
+      "Consented", "No consent", "Imported — consent unknown",
+    ]);
+  });
+  it("accepts real YYYY-MM-DD days and rejects impossible ones", () => {
+    expect(isCalendarDate("2026-11-09")).toBe(true);
+    expect(isCalendarDate("2026-02-30")).toBe(false);
+    expect(isCalendarDate("2026-13-01")).toBe(false);
+    expect(isCalendarDate("9 Nov 2026")).toBe(false);
   });
 });
 

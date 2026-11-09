@@ -70,10 +70,10 @@ describe("_admin guard", () => {
 });
 
 const FETCH = Symbol("fetch");
-type AdminKey = "inbox" | "applications" | "members" | "neighborhoods" | "bookings" | "events" | "review-links" | "spotlight-links" | "reviews" | "spotlights" | "form-responses" | "notes" | "actions";
+type AdminKey = "inbox" | "applications" | "members" | "neighborhoods" | "bookings" | "events" | "review-links" | "spotlight-links" | "reviews" | "spotlights" | "form-responses" | "notes" | "actions" | "logged-actions" | "newsletter";
 /** Seeds every admin read (empty lists, plus `members`) unless overridden; FETCH leaves that read to the queued fake results. */
 function renderAdmin(over: Partial<Record<AdminKey, unknown>> = {}, extra: [unknown[], unknown][] = []) {
-  const data: Record<AdminKey, unknown> = { inbox: [], applications: [], members, neighborhoods: [], bookings: [], events: [], "review-links": {}, "spotlight-links": {}, reviews: [], spotlights: [], "form-responses": [], notes: [], actions: [], ...over };
+  const data: Record<AdminKey, unknown> = { inbox: [], applications: [], members, neighborhoods: [], bookings: [], events: [], "review-links": {}, "spotlight-links": {}, reviews: [], spotlights: [], "form-responses": [], notes: [], actions: [], "logged-actions": [], newsletter: [], ...over };
   const seed = Object.entries(data).filter(([, v]) => v !== FETCH).map(([k, v]) => [["admin", k], v] as [unknown[], unknown]);
   return renderWithQueries(<Page />, [...seed, ...extra]);
 }
@@ -99,7 +99,7 @@ describe("/admin", () => {
 
     it("renders all six cards as anchored regions, and the sidebar marks the top one as here", () => {
       renderAdmin();
-      for (const [name, id] of [["Inbox", "inbox"], ["Applications", "applications"], ["All members", "members"], ["Admin activity", "activity"], ["Member reviews", "reviews"], ["Spotlight answers", "spotlight"], ["Form responses", "forms"], ["Neighborhoods", "neighborhoods"], ["Headshot bookings", "bookings"], ["Gatherings", "gatherings"]]) {
+      for (const [name, id] of [["Inbox", "inbox"], ["Applications", "applications"], ["All members", "members"], ["Newsletter", "newsletter"], ["Admin activity", "activity"], ["Member reviews", "reviews"], ["Spotlight answers", "spotlight"], ["Form responses", "forms"], ["Neighborhoods", "neighborhoods"], ["Headshot bookings", "bookings"], ["Gatherings", "gatherings"]]) {
         expect(card(name).id).toBe(id);
       }
       const nav = screen.getAllByRole("navigation", { name: "Main" })[0];
@@ -157,7 +157,7 @@ describe("/admin", () => {
   describe("search, notes and CSV (CRM-041, CRM-055, CRM-186)", () => {
     it("one search box filters applications and members by name, email or business", async () => {
       renderAdmin({ applications: [application("a1", "Pia Baker", { answers: { business: "Crumb Co" } }), application("a2", "Lu Smith")] });
-      const search = screen.getByRole("searchbox", { name: "Search messages, applications and members" });
+      const search = screen.getByRole("searchbox", { name: "Search messages, applications, members and newsletter" });
       fireEvent.change(search, { target: { value: "crumb" } });
       expect(within(card("Applications")).getByRole("heading", { name: "Pia Baker" })).toBeTruthy();
       expect(within(card("Applications")).queryByRole("heading", { name: "Lu Smith" })).toBeNull();
@@ -263,6 +263,46 @@ describe("/admin", () => {
         "Natasa set Rosa Diaz’s neighborhood to Astoria · Nov 2, 2026",
         "A removed admin approved a removed application · Nov 1, 2026",
       ]);
+    });
+  });
+
+  describe("logged actions and newsletter (CRM-057/058/093)", () => {
+    it("shows a logged action on an application and lets an admin add another", async () => {
+      renderAdmin({
+        applications: [application("a1", "Pia Baker")],
+        "logged-actions": [{
+          id: "la1", application_id: "a1", member_id: null, kind: "call", action_date: "2026-11-01", note: "Intro",
+          removed_at: null, author_name: "Natasa", created_at: "2026-11-02T10:00:00Z", updated_at: "2026-11-02T10:00:00Z",
+        }],
+      });
+      const row = within(card("Applications")).getByRole("article", { name: "Pia Baker" });
+      expect(within(row).getByText((_, el) => el?.textContent === "Call · 2026-11-01 — Intro")).toBeTruthy();
+      expect(within(row).getByText("Logged actions (1)")).toBeTruthy();
+      fireEvent.change(within(row).getByLabelText("Type"), { target: { value: "meeting" } });
+      fireEvent.change(within(row).getByLabelText("Date"), { target: { value: "2026-11-09" } });
+      fake.results = ["la2", [{
+        id: "la1", application_id: "a1", member_id: null, kind: "call", action_date: "2026-11-01", note: "Intro",
+        removed_at: null, author_name: "Natasa", created_at: "2026-11-02T10:00:00Z", updated_at: "2026-11-02T10:00:00Z",
+      }, {
+        id: "la2", application_id: "a1", member_id: null, kind: "meeting", action_date: "2026-11-09", note: "",
+        removed_at: null, author_name: "Natasa", created_at: "2026-11-09T10:00:00Z", updated_at: "2026-11-09T10:00:00Z",
+      }]];
+      fireEvent.click(within(row).getByRole("button", { name: "Log action" }));
+      await waitFor(() => expect(fake.calls[0]).toEqual(["addLoggedActionFn", { applicationId: "a1", kind: "meeting", actionDate: "2026-11-09", note: "" }]));
+    });
+
+    it("lists newsletter subscribers and filters them with the page search", async () => {
+      renderAdmin({ newsletter: [
+        { id: "n1", email: "new@x.test", full_name: "New", source: "website", consent: 1, subscribed_at: "2026-11-01T00:00:00Z" },
+        { id: "n2", email: "old@x.test", full_name: "", source: "beehiiv", consent: null, subscribed_at: "2025-01-01T00:00:00Z" },
+      ] });
+      const panel = card("Newsletter");
+      expect(within(panel).getByText("new@x.test")).toBeTruthy();
+      expect(within(panel).getByText(/Consented · Website/)).toBeTruthy();
+      expect(within(panel).getByText(/Imported — consent unknown · Beehiiv/)).toBeTruthy();
+      fireEvent.change(screen.getByRole("searchbox", { name: "Search messages, applications, members and newsletter" }), { target: { value: "old@" } });
+      expect(within(panel).queryByText("new@x.test")).toBeNull();
+      expect(within(panel).getByText("old@x.test")).toBeTruthy();
     });
   });
 
