@@ -264,9 +264,9 @@
       "source": "crm.md:Application origin labels",
       "acceptance": "Application origin labels: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "answers.legacy.origin = Old HeyForm | Imported list | Earlier form | Join form; src/server/legacy-import.test.ts \u203a \"lowercases the email, keeps the answers, labels the origin (CRM-031)\u2026\""
+      "evidence": "verify-haiku 2026-11-09: legacy-import.test 'labels the origin (CRM-031)' passes | answers.legacy.origin = Old HeyForm | Imported list | Earlier form | Join form; src/server/legacy-import.test.ts \u203a \"lowercases the email, keeps the answers, labels the origin (CRM-031)\u2026\""
     },
     {
       "id": "CRM-032",
@@ -695,9 +695,9 @@
       "source": "crm.md:One live link per kind",
       "acceptance": "One live link per kind: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "Minting retires the member's live review link in the same transaction (retire() in src/features/member-links/member-links.server.ts); test 'retires her previous live link'."
+      "evidence": "verify-haiku 2026-11-09: member-links.test 'retires her previous live link' passes | Minting retires the member's live review link in the same transaction (retire() in src/features/member-links/member-links.server.ts); test 'retires her previous live link'."
     },
     {
       "id": "CRM-085",
@@ -1407,9 +1407,9 @@
       "source": "crm.md:FIX-IN-REBUILD \u2014 plaintext review-link tokens (intake-side, not CRM-side)",
       "acceptance": "FIX-IN-REBUILD \u2014 plaintext review-link tokens (intake-side, not CRM-side): behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "/admin#members",
-      "evidence": "Only SHA-256 token_hash is stored (member_links, db/migrations/0003_member_links.sql); the URL is returned once by mintReviewLink to the minting admin and never stored, logged or listed; no staging file. src/features/member-links/member-links.server.ts; tests: src/features/member-links/member-links.test.ts, src/server/policy.test.ts."
+      "evidence": "verify-haiku 2026-11-09: member-links.test 'stores only the token's SHA-256' passes; member_links keeps token_hash only | Only SHA-256 token_hash is stored (member_links, db/migrations/0003_member_links.sql); the URL is returned once by mintReviewLink to the minting admin and never stored, logged or listed; no staging file. src/features/member-links/member-links.server.ts; tests: src/features/member-links/member-links.test.ts, src/server/policy.test.ts."
     },
     {
       "id": "CRM-172",
@@ -1424,9 +1424,9 @@
       "source": "crm.md:FIX-IN-REBUILD \u2014 item id collisions",
       "acceptance": "FIX-IN-REBUILD \u2014 item id collisions: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "surrogate uuid keys + legacy_id (unique) on applications and newsletter_subscribers; same-second same-email rows both import; src/server/legacy-import.test.ts \u203a \"keeps both applications from one email (CRM-173)\u2026\""
+      "evidence": "verify-haiku 2026-11-09: legacy-import.test 'keeps both applications from one email (CRM-173)' passes | surrogate uuid keys + legacy_id (unique) on applications and newsletter_subscribers; same-second same-email rows both import; src/server/legacy-import.test.ts \u203a \"keeps both applications from one email (CRM-173)\u2026\""
     },
     {
       "id": "CRM-174",
@@ -1498,9 +1498,9 @@
       "source": "crm.md:FIX-IN-REBUILD \u2014 Beehiiv sync ignores `email_subscription_consent`",
       "acceptance": "FIX-IN-REBUILD \u2014 Beehiiv sync ignores `email_subscription_consent`: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "src/server/beehiiv.ts subscribeIfConsented + src/features/applications/applications.server.ts newsletterConsent/optInApplicant; src/server/beehiiv.test.ts: applications subscribe only when newsletter AND email consent are both true (form already requires the box). Consent version is not stored (consent=1 + subscribed_at only)."
+      "evidence": "verify-haiku 2026-11-09: beehiiv.test consent table passes; subscribeIfConsented sends only when consent === true | src/server/beehiiv.ts subscribeIfConsented + src/features/applications/applications.server.ts newsletterConsent/optInApplicant; src/server/beehiiv.test.ts: applications subscribe only when newsletter AND email consent are both true (form already requires the box). Consent version is not stored (consent=1 + subscribed_at only)."
     },
     {
       "id": "CRM-183",
@@ -1605,16 +1605,16 @@
       "owner": "vps-cutover",
       "status": "built",
       "target": "/join",
-      "evidence": "migration/caddy-twc-redirects.caddy (twc_members_cutover) @joinform now covers members.thewomenscollective.club/join too (GET/HEAD; /join/thanks and POSTs stay on intake); src/app/cutover-redirects.test.ts; local smoke ok. LIVE 2026-11-09: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
+      "evidence": "migration/caddy-twc-redirects.caddy (twc_members_cutover) @joinform now covers members.thewomenscollective.club/join too (GET/HEAD; /join/thanks and POSTs stay on intake); src/app/cutover-redirects.test.ts; local smoke ok. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
     },
     {
       "id": "OPS-008",
       "source": "backoffice.md:Legacy-domain redirects that land on intake",
       "acceptance": "Legacy-domain redirects that land on intake: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "built",
+      "status": "verified",
       "target": "/join",
-      "evidence": "migration/caddy-twc-redirects.caddy (twc_nbwc_cutover): join.nbwc.site + forms.nbwc.site \u2192 301 new.*/join, members.nbwc.site/review \u2192 301 new.*{uri} (query kept), nbwc.site/apply \u2192 new.*/join; other nbwc paths unchanged (BRIEF 11). Local smoke ok. LIVE 2026-11-09: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
+      "evidence": "verify-haiku 2026-11-09: live smoke-cutover 2026-11-09: join.nbwc.site, forms.nbwc.site, members.nbwc.site/review and nbwc.site/apply all 301 to the app | migration/caddy-twc-redirects.caddy (twc_nbwc_cutover): join.nbwc.site + forms.nbwc.site \u2192 301 new.*/join, members.nbwc.site/review \u2192 301 new.*{uri} (query kept), nbwc.site/apply \u2192 new.*/join; other nbwc paths unchanged (BRIEF 11). Local smoke ok. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
     },
     {
       "id": "OPS-009",
@@ -2253,9 +2253,9 @@
       "source": "backoffice.md:Raw live tokens at rest",
       "acceptance": "Raw live tokens at rest: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "/admin",
-      "evidence": "No file of live links: member_links keeps token_hash only, URL shown once in the /admin mint result (mintReviewLink, src/features/member-links/member-links.server.ts); tests: src/features/member-links/member-links.test.ts, src/server/policy.test.ts."
+      "evidence": "verify-haiku 2026-11-09: member-links.test passes; no file of live links, hash only (same as CRM-171) | No file of live links: member_links keeps token_hash only, URL shown once in the /admin mint result (mintReviewLink, src/features/member-links/member-links.server.ts); tests: src/features/member-links/member-links.test.ts, src/server/policy.test.ts."
     },
     {
       "id": "OPS-088",
@@ -2505,9 +2505,9 @@
       "source": "backoffice.md:When `newsletter = yes`, `email_subscription_consent = yes` is required",
       "acceptance": "When `newsletter = yes`, `email_subscription_consent = yes` is required: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "built",
+      "status": "verified",
       "target": "notifications",
-      "evidence": "src/server/beehiiv.test.ts \u203a \"newsletterConsent (applications)\": server-side gate needs newsletter yes AND email consent; the form (schema.ts) already requires the box"
+      "evidence": "verify-haiku 2026-11-09: beehiiv.test 'needs the newsletter yes AND the email consent' passes | src/server/beehiiv.test.ts \u203a \"newsletterConsent (applications)\": server-side gate needs newsletter yes AND email consent; the form (schema.ts) already requires the box"
     },
     {
       "id": "OPS-119",
@@ -2708,9 +2708,9 @@
       "source": "backoffice.md:Review prefill comes from the member record, with gaps filled from the approved application",
       "acceptance": "Review prefill comes from the member record, with gaps filled from the approved application: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "members-links",
-      "status": "built",
+      "status": "verified",
       "target": "/join",
-      "evidence": "Prefill from the profile (name, business, role, website, neighborhood) + account email, gaps from her newest approved application (role, website/instagram, neighborhood/basedIn). openReview in src/features/member-links/member-links.server.ts; test 'fills gaps from her approved application'."
+      "evidence": "verify-haiku 2026-11-09: member-links.test 'fills gaps from her approved application' passes | Prefill from the profile (name, business, role, website, neighborhood) + account email, gaps from her newest approved application (role, website/instagram, neighborhood/basedIn). openReview in src/features/member-links/member-links.server.ts; test 'fills gaps from her approved application'."
     },
     {
       "id": "OPS-144",
@@ -3074,7 +3074,7 @@
       "owner": "vps-cutover",
       "status": "built",
       "target": "/contact",
-      "evidence": "Superseded like SITE-110: GET thank-you URLs 301 before the @formthanks rewrite. LIVE 2026-11-09: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
+      "evidence": "Superseded like SITE-110: GET thank-you URLs 301 before the @formthanks rewrite. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
     },
     {
       "id": "OPS-189",
@@ -3130,9 +3130,9 @@
       "source": "backoffice.md:Bots get a plain success.",
       "acceptance": "Bots get a plain success.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "built",
+      "status": "verified",
       "target": "/f/*",
-      "evidence": "A filled honeypot on POST /api/forms/<slug> gets the same 204 as a real answer and nothing is stored (submitResponse in src/features/forms/forms.server.ts); the page then shows the plain /f/<slug>/thanks \u2014 no variant or redirect exists to reveal. tests: src/features/forms/forms.test.ts, src/server/policy.test.ts \u203a custom forms, src/app/form-route.test.tsx"
+      "evidence": "verify-haiku 2026-11-09: forms.test filled honeypot gets the same 204 and nothing is stored | A filled honeypot on POST /api/forms/<slug> gets the same 204 as a real answer and nothing is stored (submitResponse in src/features/forms/forms.server.ts); the page then shows the plain /f/<slug>/thanks \u2014 no variant or redirect exists to reveal. tests: src/features/forms/forms.test.ts, src/server/policy.test.ts \u203a custom forms, src/app/form-route.test.tsx"
     },
     {
       "id": "OPS-196",
@@ -3212,9 +3212,9 @@
       "source": "backoffice.md:Plumbing fields that are never stored:",
       "acceptance": "Plumbing fields that are never stored:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "built",
+      "status": "verified",
       "target": "parity",
-      "evidence": "Only the form's own question keys are stored (checkAnswers in src/features/forms/schema.ts drops every other key: honeypot, form-*, anything sent); the client sends { answers, honeypot } only. tests: src/features/forms/forms.test.ts, src/server/policy.test.ts \u203a custom forms, src/app/form-route.test.tsx"
+      "evidence": "verify-haiku 2026-11-09: forms.test 'keeps only the form's questions' passes; honeypot, form-id and status dropped | Only the form's own question keys are stored (checkAnswers in src/features/forms/schema.ts drops every other key: honeypot, form-*, anything sent); the client sends { answers, honeypot } only. tests: src/features/forms/forms.test.ts, src/server/policy.test.ts \u203a custom forms, src/app/form-route.test.tsx"
     },
     {
       "id": "OPS-206",
@@ -3504,9 +3504,9 @@
       "source": "backoffice.md:Closing custom forms.",
       "acceptance": "Closing custom forms.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "built",
+      "status": "verified",
       "target": "parity",
-      "evidence": "custom_forms.open = 0: /f/<slug> shows closed_message or the default (CLOSED) on a 200 page with no questions, and POST /api/forms/<slug> stores nothing (410 with the same words). No schedule, as before. tests: src/features/forms/forms.test.ts, src/server/policy.test.ts \u203a custom forms, src/app/form-route.test.tsx"
+      "evidence": "verify-haiku 2026-11-09: forms.test 'refuses a closed form (410)' passes | custom_forms.open = 0: /f/<slug> shows closed_message or the default (CLOSED) on a 200 page with no questions, and POST /api/forms/<slug> stores nothing (410 with the same words). No schedule, as before. tests: src/features/forms/forms.test.ts, src/server/policy.test.ts \u203a custom forms, src/app/form-route.test.tsx"
     },
     {
       "id": "OPS-242",
@@ -3530,9 +3530,9 @@
       "source": "backoffice.md:Per-form, per-visitor limit",
       "acceptance": "Per-form, per-visitor limit: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "built",
+      "status": "verified",
       "target": "parity",
-      "evidence": "10 per visitor (clientIp) per form per 10 minutes, 429 with the friendly words, checked before the body is read (formRequest, rateLimit in src/server/request.ts). Deviation: every POST counts, not only stored ones (ponytail comment). tests: src/features/forms/forms.test.ts, src/server/policy.test.ts \u203a custom forms, src/app/form-route.test.tsx"
+      "evidence": "verify-haiku 2026-11-09: forms.test per-visitor limit passes: 10 per 10 min per form, 11th 429 without reading the body | 10 per visitor (clientIp) per form per 10 minutes, 429 with the friendly words, checked before the body is read (formRequest, rateLimit in src/server/request.ts). Deviation: every POST counts, not only stored ones (ponytail comment). tests: src/features/forms/forms.test.ts, src/server/policy.test.ts \u203a custom forms, src/app/form-route.test.tsx"
     },
     {
       "id": "OPS-245",
@@ -3571,9 +3571,9 @@
       "source": "backoffice.md:One answer per email",
       "acceptance": "One answer per email: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "built",
+      "status": "verified",
       "target": "notifications",
-      "evidence": "custom_forms.one_per_email: a second answer whose first email-type answer matches (trimmed, any case) gets 409 DUPLICATE and nothing is stored; check and insert can't interleave (node:sqlite is synchronous). The email is kept in its own column (custom_form_responses.email), like every other table's email, instead of a keyed-hash side index. tests: src/features/forms/forms.test.ts, src/server/policy.test.ts \u203a custom forms, src/app/form-route.test.tsx"
+      "evidence": "verify-haiku 2026-11-09: forms.test duplicate email \u2192 409 passes | custom_forms.one_per_email: a second answer whose first email-type answer matches (trimmed, any case) gets 409 DUPLICATE and nothing is stored; check and insert can't interleave (node:sqlite is synchronous). The email is kept in its own column (custom_form_responses.email), like every other table's email, instead of a keyed-hash side index. tests: src/features/forms/forms.test.ts, src/server/policy.test.ts \u203a custom forms, src/app/form-route.test.tsx"
     },
     {
       "id": "OPS-250",
@@ -3782,7 +3782,7 @@
       "owner": "vps-cutover",
       "status": "built",
       "target": "/about",
-      "evidence": "migration/caddy-twc-redirects.caddy: try_files stays for the kept files; every tidy page URL 301s before it; local smoke ok. LIVE 2026-11-09: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
+      "evidence": "migration/caddy-twc-redirects.caddy: try_files stays for the kept files; every tidy page URL 301s before it; local smoke ok. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
     },
     {
       "id": "OPS-276",
@@ -4905,7 +4905,7 @@
       "owner": "vps-cutover",
       "status": "built",
       "target": "/contact",
-      "evidence": "Forms service still 303s to /message-sent.html?form=\u2026; that GET now 301s to new.*/contact (or /partnerships via thanks-partnership). Local smoke ok. LIVE 2026-11-09: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
+      "evidence": "Forms service still 303s to /message-sent.html?form=\u2026; that GET now 301s to new.*/contact (or /partnerships via thanks-partnership). Local smoke ok. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
     },
     {
       "id": "OPS-416",
@@ -5419,9 +5419,9 @@
       "source": "ops-part-d.md:Rate limits per visitor per form.",
       "acceptance": "Rate limits per visitor per form.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "built",
+      "status": "verified",
       "target": "/f/*",
-      "evidence": "Per visitor per form: rateLimit(10, 10 min) keyed by client IP + slug in formRequest (src/features/forms/forms.server.ts); in memory like the app's other limits. Every POST counts (documented deviation). tests: src/features/forms/forms.test.ts, src/server/policy.test.ts \u203a custom forms, src/app/form-route.test.tsx"
+      "evidence": "verify-haiku 2026-11-09: forms.test per-visitor-per-form limit passes (same as OPS-244) | Per visitor per form: rateLimit(10, 10 min) keyed by client IP + slug in formRequest (src/features/forms/forms.server.ts); in memory like the app's other limits. Every POST counts (documented deviation). tests: src/features/forms/forms.test.ts, src/server/policy.test.ts \u203a custom forms, src/app/form-route.test.tsx"
     },
     {
       "id": "OPS-480",
@@ -5741,18 +5741,18 @@
       "source": "ops-part-d.md:External origins that the new CSP does not allow.",
       "acceptance": "External origins that the new CSP does not allow.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "custom-forms",
-      "status": "built",
+      "status": "verified",
       "target": "parity",
-      "evidence": "Retired: the rebuilt /f/* pages load nothing from outside (scrapbook kit, self-hosted fonts); the Google Fonts look sets and Turnstile are not ported, so the same-origin CSP is unchanged. Smoke test: no googleapis/gstatic/challenges.cloudflare in the /f/salon-rsvp HTML; src/app/security-headers.test.ts."
+      "evidence": "verify-haiku 2026-11-09: security-headers.ts CSP is same-origin only (no Google Fonts or Turnstile origins) | Retired: the rebuilt /f/* pages load nothing from outside (scrapbook kit, self-hosted fonts); the Google Fonts look sets and Turnstile are not ported, so the same-origin CSP is unchanged. Smoke test: no googleapis/gstatic/challenges.cloudflare in the /f/salon-rsvp HTML; src/app/security-headers.test.ts."
     },
     {
       "id": "OPS-520",
       "source": "ops-part-d.md:The consent-bug cross-reference (Beehiiv).",
       "acceptance": "The consent-bug cross-reference (Beehiiv).: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "notifications",
-      "status": "built",
+      "status": "verified",
       "target": "/join",
-      "evidence": "Same fix as OPS-450 (src/server/beehiiv.test.ts consent table: only exactly true subscribes)"
+      "evidence": "verify-haiku 2026-11-09: beehiiv.test consent table passes; only exactly true subscribes | Same fix as OPS-450 (src/server/beehiiv.test.ts consent table: only exactly true subscribes)"
     },
     {
       "id": "OPS-521",
@@ -5905,9 +5905,9 @@
       "source": "site.md:directory.html \u2192 `/members`",
       "acceptance": "directory.html \u2192 `/members`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "built",
+      "status": "verified",
       "target": "/members",
-      "evidence": "migration/caddy-twc-redirects.caddy (twc_apex_cutover) @old_directory: /directory + /directory.html \u2192 301 new.*/members; src/app/cutover-redirects.test.ts; local Caddy 2.10.2 run + scripts/smoke-cutover.ts ok. LIVE 2026-11-09: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
+      "evidence": "verify-haiku 2026-11-09: live smoke-cutover 2026-11-09 (48/48 ok): /directory and /directory.html 301 to new /members | migration/caddy-twc-redirects.caddy (twc_apex_cutover) @old_directory: /directory + /directory.html \u2192 301 new.*/members; src/app/cutover-redirects.test.ts; local Caddy 2.10.2 run + scripts/smoke-cutover.ts ok. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
     },
     {
       "id": "SITE-005",
@@ -5922,18 +5922,18 @@
       "source": "site.md:fellowship.html \u2192 `/fellowship` (MISSING in new app)",
       "acceptance": "fellowship.html \u2192 `/fellowship` (MISSING in new app): behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "built",
+      "status": "verified",
       "target": "/fellowship",
-      "evidence": "src/app/fellowship-partnerships-route.test.tsx \u203a /fellowship (all three describe.each cases) + src/routes/fellowship.tsx"
+      "evidence": "verify-haiku 2026-11-09: fellowship-partnerships-route.test passes; /fellowship route exists; fellowship(.html) 301 live | src/app/fellowship-partnerships-route.test.tsx \u203a /fellowship (all three describe.each cases) + src/routes/fellowship.tsx"
     },
     {
       "id": "SITE-007",
       "source": "site.md:partnerships.html \u2192 `/partnerships` (MISSING in new app)",
       "acceptance": "partnerships.html \u2192 `/partnerships` (MISSING in new app): behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "data-import",
-      "status": "built",
+      "status": "verified",
       "target": "/partnerships",
-      "evidence": "src/app/fellowship-partnerships-route.test.tsx \u203a /partnerships (describe.each + ways in) + src/routes/partnerships.tsx; form storage is SITE-056 (admin-inbox)"
+      "evidence": "verify-haiku 2026-11-09: fellowship-partnerships-route.test passes; /partnerships route with PartnershipForm; partnerships(.html) 301 live | src/app/fellowship-partnerships-route.test.tsx \u203a /partnerships (describe.each + ways in) + src/routes/partnerships.tsx; form storage is SITE-056 (admin-inbox)"
     },
     {
       "id": "SITE-008",
@@ -5988,9 +5988,9 @@
       "source": "site.md:thanks-contact.html \u2192 `/contact`",
       "acceptance": "thanks-contact.html \u2192 `/contact`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "built",
+      "status": "verified",
       "target": "/contact",
-      "evidence": "migration/caddy-twc-redirects.caddy @old_contact: /thanks-contact(.html) \u2192 301 new.*/contact (GET/HEAD; redir runs before the @formthanks rewrite); src/app/cutover-redirects.test.ts; local smoke ok. LIVE 2026-11-09: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
+      "evidence": "verify-haiku 2026-11-09: live smoke-cutover 2026-11-09: /thanks-contact(.html) 301 to /contact | migration/caddy-twc-redirects.caddy @old_contact: /thanks-contact(.html) \u2192 301 new.*/contact (GET/HEAD; redir runs before the @formthanks rewrite); src/app/cutover-redirects.test.ts; local smoke ok. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
     },
     {
       "id": "SITE-015",
@@ -6005,9 +6005,9 @@
       "source": "site.md:thanks-partnership.html \u2192 `/partnerships`",
       "acceptance": "thanks-partnership.html \u2192 `/partnerships`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "built",
+      "status": "verified",
       "target": "/partnerships",
-      "evidence": "src/app/fellowship-partnerships-route.test.tsx \u203a /partnerships route exists; old thanks-partnership(.html) \u2192 /partnerships in migration/redirects.md"
+      "evidence": "verify-haiku 2026-11-09: live smoke-cutover 2026-11-09: /thanks-partnership(.html) 301 to /partnerships | src/app/fellowship-partnerships-route.test.tsx \u203a /partnerships route exists; old thanks-partnership(.html) \u2192 /partnerships in migration/redirects.md"
     },
     {
       "id": "SITE-017",
@@ -6211,9 +6211,9 @@
       "source": "site.md:Fellowship CTA",
       "acceptance": "Fellowship CTA: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "built",
+      "status": "todo",
       "target": "/gatherings",
-      "evidence": "src/app/fellowship-partnerships-route.test.tsx \u203a /fellowship links \"Start your application\" \u2192 /join and \"Come to something first\" \u2192 /gatherings"
+      "evidence": "verify-haiku 2026-11-09 reverted to todo: the CTA is not on /gatherings (gatherings.tsx has no fellowship link); /fellowship links to /join and /gatherings instead | src/app/fellowship-partnerships-route.test.tsx \u203a /fellowship links \"Start your application\" \u2192 /join and \"Come to something first\" \u2192 /gatherings"
     },
     {
       "id": "SITE-042",
@@ -6229,18 +6229,18 @@
       "source": "site.md:Current partners block (Notion-written)",
       "acceptance": "Current partners block (Notion-written): behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "built",
+      "status": "todo",
       "target": "/partnerships",
-      "evidence": "src/app/fellowship-partnerships-route.test.tsx \u203a /partnerships shows the four ways in and no current-partners block (facts not re-supplied)"
+      "evidence": "verify-haiku 2026-11-09 reverted to todo: no current-partners block by decision; blocked on partner facts from the owner (SITE-157) | src/app/fellowship-partnerships-route.test.tsx \u203a /partnerships shows the four ways in and no current-partners block (facts not re-supplied)"
     },
     {
       "id": "SITE-044",
       "source": "site.md:\"Before you write\" aside",
       "acceptance": "\"Before you write\" aside: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "built",
+      "status": "verified",
       "target": "/partnerships",
-      "evidence": "src/app/fellowship-partnerships-route.test.tsx \u203a /partnerships \"Apply to join\" \u2192 /join in the \"Before you write\" aside"
+      "evidence": "verify-haiku 2026-11-09: fellowship-partnerships-route.test passes; 'Before you write' aside at partnerships.tsx:87 | src/app/fellowship-partnerships-route.test.tsx \u203a /partnerships \"Apply to join\" \u2192 /join in the \"Before you write\" aside"
     },
     {
       "id": "SITE-045",
@@ -6335,18 +6335,18 @@
       "source": "site.md:Partnership form",
       "acceptance": "Partnership form: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "/partnerships",
-      "evidence": "src/features/contact/contact.test.ts + admin Inbox"
+      "evidence": "verify-haiku 2026-11-09: contact.test and partnership.test pass; partnership inquiries stored to the inbox via /api/partnerships | src/features/contact/contact.test.ts + admin Inbox"
     },
     {
       "id": "SITE-057",
       "source": "site.md:Partnership collaboration types (5)",
       "acceptance": "Partnership collaboration types (5): behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "built",
+      "status": "verified",
       "target": "/partnerships",
-      "evidence": "src/features/contact/partnership.test.ts \u203a accepts every collaboration type and JSON consent: true"
+      "evidence": "verify-haiku 2026-11-09: partnership.test 'accepts every collaboration type' passes; five types in PartnershipForm | src/features/contact/partnership.test.ts \u203a accepts every collaboration type and JSON consent: true"
     },
     {
       "id": "SITE-058",
@@ -6500,7 +6500,7 @@
       "owner": "vps-cutover",
       "status": "built",
       "target": "vps:caddy-redirects",
-      "evidence": "migration/caddy-twc-redirects.caddy @old_contact/@old_partnerships: every thanks-*, message-sent, subscribed URL (tidy + .html) 301s to its new page; src/app/cutover-redirects.test.ts; local smoke ok. LIVE 2026-11-09: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
+      "evidence": "migration/caddy-twc-redirects.caddy @old_contact/@old_partnerships: every thanks-*, message-sent, subscribed URL (tidy + .html) 301s to its new page; src/app/cutover-redirects.test.ts; local smoke ok. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
     },
     {
       "id": "SITE-077",
@@ -6517,7 +6517,7 @@
       "owner": "vps-cutover",
       "status": "built",
       "target": "/contact",
-      "evidence": "migration/caddy-twc-redirects.caddy: page redirects are GET/HEAD only, so a stale POST to /message-sent.html or /subscribed.html still reaches forms:8080 (@formpost) and is stored, then its 303 lands on new.*/contact. Local run: POST \u2192 proxied (502 locally, no forms service), not 301. LIVE 2026-11-09: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
+      "evidence": "migration/caddy-twc-redirects.caddy: page redirects are GET/HEAD only, so a stale POST to /message-sent.html or /subscribed.html still reaches forms:8080 (@formpost) and is stored, then its 303 lands on new.*/contact. Local run: POST \u2192 proxied (502 locally, no forms service), not 301. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
     },
     {
       "id": "SITE-079",
@@ -6692,9 +6692,9 @@
       "source": "site.md:Tidy URLs",
       "acceptance": "Tidy URLs: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "built",
+      "status": "verified",
       "target": "/about",
-      "evidence": "migration/caddy-twc-redirects.caddy: one matcher per target lists the tidy and .html path; src/app/cutover-redirects.test.ts \u203a 'covers every page row, both URLs' (15 rows \u00d7 2); local smoke 30/30. LIVE 2026-11-09: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
+      "evidence": "verify-haiku 2026-11-09: live smoke-cutover 2026-11-09: /about and /about.html both 301 to /about | migration/caddy-twc-redirects.caddy: one matcher per target lists the tidy and .html path; src/app/cutover-redirects.test.ts \u203a 'covers every page row, both URLs' (15 rows \u00d7 2); local smoke 30/30. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
     },
     {
       "id": "SITE-101",
@@ -6743,7 +6743,7 @@
       "owner": "vps-cutover",
       "status": "built",
       "target": "vps:caddy-redirects",
-      "evidence": "Decided: migration/caddy-twc-redirects.caddy @signin /login,/forgot-password,/set-password(.html) \u2192 302 new.*/auth; @oldmembers /members,/members/* \u2192 302 new.*/members; /apply-thank-you(.html) \u2192 302 / (unchanged). redirects.md updated; AUDIT-TASKS vps-cutover decisions; local smoke ok. LIVE 2026-11-09: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
+      "evidence": "Decided: migration/caddy-twc-redirects.caddy @signin /login,/forgot-password,/set-password(.html) \u2192 302 new.*/auth; @oldmembers /members,/members/* \u2192 302 new.*/members; /apply-thank-you(.html) \u2192 302 / (unchanged). redirects.md updated; AUDIT-TASKS vps-cutover decisions; local smoke ok. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
     },
     {
       "id": "SITE-107",
@@ -6752,7 +6752,7 @@
       "owner": "vps-cutover",
       "status": "built",
       "target": "vps:caddy-redirects",
-      "evidence": "migration/caddy-twc-redirects.caddy @apply: /apply + /apply.html \u2192 301 https://new.thewomenscollective.club/join (one hop); src/app/cutover-redirects.test.ts; local smoke ok. LIVE 2026-11-09: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
+      "evidence": "migration/caddy-twc-redirects.caddy @apply: /apply + /apply.html \u2192 301 https://new.thewomenscollective.club/join (one hop); src/app/cutover-redirects.test.ts; local smoke ok. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
     },
     {
       "id": "SITE-108",
@@ -6777,7 +6777,7 @@
       "owner": "vps-cutover",
       "status": "built",
       "target": "vps:caddy-redirects",
-      "evidence": "Superseded: migration/caddy-twc-redirects.caddy redirects GET /message-sent.html and /subscribed.html (any ?form=) before the @formthanks rewrite runs, so the per-form thank-you files are no longer reachable; local smoke ok. LIVE 2026-11-09: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
+      "evidence": "Superseded: migration/caddy-twc-redirects.caddy redirects GET /message-sent.html and /subscribed.html (any ?form=) before the @formthanks rewrite runs, so the per-form thank-you files are no longer reachable; local smoke ok. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
     },
     {
       "id": "SITE-111",
@@ -6811,16 +6811,16 @@
       "owner": "vps-cutover",
       "status": "built",
       "target": "vps:caddy-redirects",
-      "evidence": "Runbook migration/briefs/vps-cutover.md: only the three TWC blocks change (diff check), timestamped backups in /opt/nbwc/backups first, caddy validate before reload, in-place write for the :ro bind mount, rollback step. LIVE 2026-11-09: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
+      "evidence": "Runbook migration/briefs/vps-cutover.md: only the three TWC blocks change (diff check), timestamped backups in /opt/nbwc/backups first, caddy validate before reload, in-place write for the :ro bind mount, rollback step. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
     },
     {
       "id": "SITE-115",
       "source": "site.md:Query strings",
       "acceptance": "Query strings: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "built",
+      "status": "verified",
       "target": "vps:caddy-redirects",
-      "evidence": "migration/caddy-twc-redirects.caddy: no {query} in any page target, so queries are dropped; review rules use {uri} to keep ?t=. smoke check /about.html?form=x \u2192 new.*/about; src/app/cutover-redirects.test.ts. LIVE 2026-11-09: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
+      "evidence": "verify-haiku 2026-11-09: live smoke-cutover 2026-11-09: /about.html?form=x drops the query; /review?t= keeps it | migration/caddy-twc-redirects.caddy: no {query} in any page target, so queries are dropped; review rules use {uri} to keep ?t=. smoke check /about.html?form=x \u2192 new.*/about; src/app/cutover-redirects.test.ts. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
     },
     {
       "id": "SITE-116",
@@ -7085,9 +7085,9 @@
       "source": "site.md:/fellowship, MISSING",
       "acceptance": "/fellowship, MISSING: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "built",
+      "status": "verified",
       "target": "/fellowship",
-      "evidence": "src/app/fellowship-partnerships-route.test.tsx \u203a /fellowship links /faq, /about, /code-of-conduct rather than duplicating; no eligibility copy"
+      "evidence": "verify-haiku 2026-11-09: fellowship-partnerships-route.test passes; /fellowship links /faq, /about, /code-of-conduct; no eligibility copy | src/app/fellowship-partnerships-route.test.tsx \u203a /fellowship links /faq, /about, /code-of-conduct rather than duplicating; no eligibility copy"
     },
     {
       "id": "SITE-149",
@@ -7127,9 +7127,9 @@
       "source": "site.md:Redirect mechanism for old URLs, MISSING",
       "acceptance": "Redirect mechanism for old URLs, MISSING: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "built",
+      "status": "verified",
       "target": "vps:caddy-redirects",
-      "evidence": "Redirect mechanism = Caddy on the VPS: migration/caddy-twc-redirects.caddy + src/app/cutover-redirects.test.ts (snippet matches redirects.md) + scripts/smoke-cutover.ts (live check). LIVE 2026-11-09: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
+      "evidence": "verify-haiku 2026-11-09: live smoke-cutover 2026-11-09: every page row (tidy and .html) redirects; cutover-redirects.test 4/4 | Redirect mechanism = Caddy on the VPS: migration/caddy-twc-redirects.caddy + src/app/cutover-redirects.test.ts (snippet matches redirects.md) + scripts/smoke-cutover.ts (live check). LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
     },
     {
       "id": "SITE-154",
@@ -7138,7 +7138,7 @@
       "owner": "vps-cutover",
       "status": "built",
       "target": "vps:caddy-redirects",
-      "evidence": "migration/caddy-twc-redirects.caddy: thanks-*, message-sent, subscribed need no page; each 301s to /contact or /partnerships (redirects.md). LIVE 2026-11-09: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
+      "evidence": "migration/caddy-twc-redirects.caddy: thanks-*, message-sent, subscribed need no page; each 301s to /contact or /partnerships (redirects.md). LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
     },
     {
       "id": "SITE-155",
@@ -7161,9 +7161,9 @@
       "source": "site.md:Partners data, MISSING",
       "acceptance": "Partners data, MISSING: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
-      "status": "built",
+      "status": "todo",
       "target": "public-site",
-      "evidence": "Decision: partners left out until the owner re-supplies facts; src/app/fellowship-partnerships-route.test.tsx \u203a no current-partners block"
+      "evidence": "verify-haiku 2026-11-09 reverted to todo: no partners data on /partnerships; blocked on partner facts from the owner | Decision: partners left out until the owner re-supplies facts; src/app/fellowship-partnerships-route.test.tsx \u203a no current-partners block"
     },
     {
       "id": "SITE-158",
@@ -7203,27 +7203,27 @@
       "source": "site.md:Two URLs per page and `.html`-canonical tags",
       "acceptance": "Two URLs per page and `.html`-canonical tags: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "built",
+      "status": "verified",
       "target": "vps:caddy-redirects",
-      "evidence": "migration/caddy-twc-redirects.caddy: every row has both /x and /x.html in one matcher; src/app/cutover-redirects.test.ts asserts both; local smoke ok. LIVE 2026-11-09: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
+      "evidence": "verify-haiku 2026-11-09: live smoke-cutover 2026-11-09: tidy and .html both 301 for all 15 page rows | migration/caddy-twc-redirects.caddy: every row has both /x and /x.html in one matcher; src/app/cutover-redirects.test.ts asserts both; local smoke ok. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
     },
     {
       "id": "SITE-163",
       "source": "site.md:`@nologin` rule collides with the new `/members` route",
       "acceptance": "`@nologin` rule collides with the new `/members` route: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "built",
+      "status": "verified",
       "target": "vps:caddy-redirects",
-      "evidence": "migration/caddy-twc-redirects.caddy: old @nologin split; /members,/members/* \u2192 302 new.*/members (the app lives on new.*, so no collision with its /members/:slug). LIVE 2026-11-09: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
+      "evidence": "verify-haiku 2026-11-09: live smoke-cutover 2026-11-09: /members/old-page 302 to /members; /apply-thank-you 302 to / | migration/caddy-twc-redirects.caddy: old @nologin split; /members,/members/* \u2192 302 new.*/members (the app lives on new.*, so no collision with its /members/:slug). LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
     },
     {
       "id": "SITE-164",
       "source": "site.md:Redirect chain for Apply",
       "acceptance": "Redirect chain for Apply: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "built",
+      "status": "verified",
       "target": "vps:caddy-redirects",
-      "evidence": "migration/caddy-twc-redirects.caddy @apply \u2192 new.*/join in one hop (was apex \u2192 join.* \u2192 new.*); nbwc.site/apply too (twc_nbwc_cutover); local smoke ok. LIVE 2026-11-09: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
+      "evidence": "verify-haiku 2026-11-09: live smoke-cutover 2026-11-09: /apply(.html) one 301 hop to new /join (also nbwc.site/apply, join.nbwc.site, forms.nbwc.site) | migration/caddy-twc-redirects.caddy @apply \u2192 new.*/join in one hop (was apex \u2192 join.* \u2192 new.*); nbwc.site/apply too (twc_nbwc_cutover); local smoke ok. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
     },
     {
       "id": "SITE-165",
@@ -7256,34 +7256,34 @@
       "owner": "vps-cutover",
       "status": "built",
       "target": "vps:caddy-redirects",
-      "evidence": "Same as SITE-078: GET/HEAD-only redirects, POSTs keep reaching forms:8080 / intake; members.*/join and /review too (CRM-175). LIVE 2026-11-09: repo-ready, not yet applied on the VPS (no access this run; runbook migration/briefs/vps-cutover.md)."
+      "evidence": "Same as SITE-078: GET/HEAD-only redirects, POSTs keep reaching forms:8080 / intake; members.*/join and /review too (CRM-175). LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
     },
     {
       "id": "SITE-169",
       "source": "site.md:Contact messages are not stored in the new app",
       "acceptance": "Contact messages are not stored in the new app: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "/contact",
-      "evidence": "Messages stored in inbox_messages (db/migrations/0002_inbox.sql) before admins are emailed; a failed email still succeeds (the inbox has it). receiveMessage in src/features/contact/contact.server.ts; /admin Inbox card (src/features/admin/panels.tsx InboxPanel). Tests: src/features/contact/contact.test.ts, src/server/policy.test.ts (Inbox)"
+      "evidence": "verify-haiku 2026-11-09: contact.test 'stores the message for the inbox' passes; inbox_messages then email | Messages stored in inbox_messages (db/migrations/0002_inbox.sql) before admins are emailed; a failed email still succeeds (the inbox has it). receiveMessage in src/features/contact/contact.server.ts; /admin Inbox card (src/features/admin/panels.tsx InboxPanel). Tests: src/features/contact/contact.test.ts, src/server/policy.test.ts (Inbox)"
     },
     {
       "id": "SITE-170",
       "source": "site.md:Spam defences regress on `/contact`",
       "acceptance": "Spam defences regress on `/contact`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "/contact",
-      "evidence": "Honeypot (fake 204, nothing stored or sent), required consent, 5-per-IP-per-10-min limit per form, 16 KB cap; /api/partnerships added to API_ROUTES (src/start.ts) with a CSRF test in src/app/security-headers.test.ts. Turnstile skipped (AUDIT-TASKS). Tests: src/features/contact/contact.test.ts"
+      "evidence": "verify-haiku 2026-11-09: contact.test and contact-route tests pass: honeypot 204, required consent, 5 per IP per 10 min | Honeypot (fake 204, nothing stored or sent), required consent, 5-per-IP-per-10-min limit per form, 16 KB cap; /api/partnerships added to API_ROUTES (src/start.ts) with a CSRF test in src/app/security-headers.test.ts. Turnstile skipped (AUDIT-TASKS). Tests: src/features/contact/contact.test.ts"
     },
     {
       "id": "SITE-171",
       "source": "site.md:Partnership inquiry fields are a superset of contact",
       "acceptance": "Partnership inquiry fields are a superset of contact: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "admin-inbox",
-      "status": "built",
+      "status": "verified",
       "target": "/contact",
-      "evidence": "One inbox table with kind contact|partnership; partnership adds business (optional) and collaboration_type (host|teach|supply|support|other, DB CHECK). POST /api/partnerships (src/routes/api/partnerships.ts) takes the brief's JSON contract; checkPartnership in src/features/contact/schema.ts. Tests: src/features/contact/contact.test.ts"
+      "evidence": "verify-haiku 2026-11-09: partnership.test passes: one inbox table, kind contact|partnership, business optional | One inbox table with kind contact|partnership; partnership adds business (optional) and collaboration_type (host|teach|supply|support|other, DB CHECK). POST /api/partnerships (src/routes/api/partnerships.ts) takes the brief's JSON contract; checkPartnership in src/features/contact/schema.ts. Tests: src/features/contact/contact.test.ts"
     },
     {
       "id": "SITE-172",
@@ -7314,18 +7314,18 @@
       "source": "site.md:No source for the page templates",
       "acceptance": "No source for the page templates: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
+      "status": "built",
       "target": "vps:caddy-redirects",
-      "evidence": "Decided: archive the served folder as-is, one tarball /opt/nbwc/backups/twc-site-archive-<YYYYmmdd-HHMMSS>.tar.gz (runbook step 2). Not run yet (no VPS access)."
+      "evidence": "Decided: archive the served folder as-is, one tarball /opt/nbwc/backups/twc-site-archive-<YYYYmmdd-HHMMSS>.tar.gz (runbook step 2). Run 2026-11-09 per AUDIT-TASKS (archive twc-site-archive-20261109-151319.tar.gz); not re-checked in the verify sweep."
     },
     {
       "id": "SITE-176",
       "source": "site.md:Hostinger/VPS paths are not in the snapshot",
       "acceptance": "Hostinger/VPS paths are not in the snapshot: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
+      "status": "built",
       "target": "vps:caddy-redirects",
-      "evidence": "Decided: archive location /opt/nbwc/backups/twc-site-archive-<ts>.tar.gz (next to the server's other archives); files stay in /opt/nbwc/site. Not run yet."
+      "evidence": "Decided: archive location /opt/nbwc/backups/twc-site-archive-<ts>.tar.gz (next to the server's other archives); files stay in /opt/nbwc/site. Run 2026-11-09 per AUDIT-TASKS (archive twc-site-archive-20261109-151319.tar.gz); not re-checked in the verify sweep."
     },
     {
       "id": "SITE-177",
