@@ -1,20 +1,41 @@
 // Server-only: membership applications. Anyone may apply (0001 "Anyone applies"): anonymously (unlinked) or
 // signed in (linked to herself). Applicants can't arrive pre-reviewed or link to someone else.
+import { subscribeIfConsented } from "@/server/beehiiv";
 import type { Ctx } from "@/server/context.server";
+import type { DB } from "@/server/db";
 import { bad, isObject, str } from "@/server/validate";
 import { checkSize, clientIp, HttpError, rateLimit, respond } from "@/server/request";
 
 export type Applicant = { email: string; fullName: string };
 
-export function submitApplication({ db, actor }: Ctx, input: unknown): void {
+export type Stored = Applicant & { answers: Record<string, unknown> };
+
+/** Stores the application; returns what was stored so the caller can act on it (the newsletter opt-in). */
+export function submitApplication({ db, actor }: Ctx, input: unknown): Stored {
   if (!isObject(input) || !isObject(input.answers)) throw bad("application");
+  const stored = { email: str(input.email, "email", 254), fullName: str(input.fullName, "name", 120), answers: input.answers };
   db.prepare("insert into applications (email, full_name, neighborhood, answers, user_id) values (?, ?, ?, ?, ?)").run(
-    str(input.email, "email", 254),
-    str(input.fullName, "name", 120),
-    str(input.neighborhood ?? "", "neighborhood", 60),
-    JSON.stringify(input.answers),
-    actor?.id ?? null,
+    stored.email, stored.fullName, str(input.neighborhood ?? "", "neighborhood", 60), JSON.stringify(stored.answers), actor?.id ?? null,
   );
+  return stored;
+}
+
+/**
+ * Did she explicitly opt in to email? Both must hold (OPS-118/357, CRM-182): she asked for the newsletter AND ticked the
+ * email-consent box. The form's shape is { newsletter: { subscribe: true, emailConsent: true } }; imported legacy
+ * answers use `newsletter: "yes"` + `email_subscription_consent: "yes"`. Anything else — "no", missing, half — is no.
+ */
+export function newsletterConsent(answers: Record<string, unknown>): boolean {
+  const n = answers.newsletter;
+  if (isObject(n)) return n.subscribe === true && n.emailConsent === true;
+  return n === "yes" && answers.email_subscription_consent === "yes";
+}
+
+/** After the application is stored: the opt-in goes to Beehiiv only with consent. A failure never touches the application. */
+export async function optInApplicant(db: DB, { email, fullName, answers }: Stored): Promise<void> {
+  await subscribeIfConsented(db, {
+    email, name: fullName, consent: newsletterConsent(answers), utm: { source: "nbwc.site", medium: "membership", campaign: "membership-optin" },
+  }).catch(() => console.warn("[newsletter] application stored, but the newsletter opt-in failed"));
 }
 
 /** The signed-in applicant's name and email for prefilling /join; null when signed out. */
@@ -40,6 +61,6 @@ export function submitApplicationRequest(c: Ctx, request: Request): Promise<Resp
     } catch {
       throw bad("application");
     }
-    submitApplication(c, input);
+    await optInApplicant(c.db, submitApplication(c, input));
   });
 }

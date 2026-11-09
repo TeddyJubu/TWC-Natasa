@@ -4,7 +4,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-const SECRET_NAMES = "BETTER_AUTH_SECRET|CF_EMAIL_API_TOKEN|GOOGLE_CLIENT_SECRET";
+const SECRET_NAMES = "BETTER_AUTH_SECRET|CF_EMAIL_API_TOKEN|GOOGLE_CLIENT_SECRET|BEEHIIV_API_KEY";
 // A value assigned to a secret name in any env/YAML/JSON/TOML/shell form (`KEY=v`, `KEY: v`, `"KEY": "v"`).
 // Not a value: empty, `$VAR`/`${VAR}`, `<placeholder>`, `process.env…` reads, `: string` type annotations, a comment.
 const SECRET_VALUE = new RegExp(`(?:${SECRET_NAMES})["']?[ \\t]*[:=][ \\t]*["']?(?![\\s$<"'#]|process\\b|string\\b)[^\\s"'#$<]`);
