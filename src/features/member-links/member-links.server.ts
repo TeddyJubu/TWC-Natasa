@@ -30,46 +30,58 @@ const memberIdOf = (input: unknown) => {
   return str(input.member_id, "member", 64);
 };
 
+/** Which kind of personal link: the member review (default) or the Weekly Spotlight (OPS-028). */
+export type Purpose = "review" | "spotlight";
+const purposeOf = (input: unknown): Purpose => {
+  const p = isObject(input) ? input.purpose : undefined;
+  if (p === undefined || p === "review") return "review";
+  if (p === "spotlight") return p;
+  throw bad("link");
+};
+
 // ---------- Admin ----------
 
 /**
- * A new review link for an approved member, valid LINK_TTL_DAYS. Any live review link she has is retired first
- * (one live link per kind, CRM-084). The raw token exists only in the returned URL.
+ * A new review (or, with `purpose: "spotlight"`, Spotlight) link for an approved member, valid LINK_TTL_DAYS. Any
+ * live link of that kind she has is retired first (one live link per kind, CRM-084). The raw token exists only in
+ * the returned URL: /review?t=… or /spotlight?t=… (the old intake's paths, so cutover redirects keep the query).
  */
 export function mintReviewLink({ db, actor }: Ctx, input: unknown): MintedLink {
   const me = requireAdmin(db, actor);
   const memberId = memberIdOf(input);
+  const purpose = purposeOf(input);
   if (!isMember(db, memberId)) throw new AccessError("Personal links are for approved members.", 400);
   const token = randomBytes(32).toString("base64url");
   const at = now();
   const expires_at = new Date(Date.now() + LINK_TTL_DAYS * 86_400_000).toISOString();
   tx(db, () => {
-    retire(db, memberId, at);
-    db.prepare("insert into member_links (member_id, purpose, token_hash, created_by, created_at, expires_at) values (?, 'review', ?, ?, ?, ?)")
-      .run(memberId, hashToken(token), me.id, at, expires_at);
+    retire(db, memberId, purpose, at);
+    db.prepare("insert into member_links (member_id, purpose, token_hash, created_by, created_at, expires_at) values (?, ?, ?, ?, ?, ?)")
+      .run(memberId, purpose, hashToken(token), me.id, at, expires_at);
   });
-  return { url: `${appUrl()}/review?t=${token}`, expires_at };
+  return { url: `${appUrl()}/${purpose}?t=${token}`, expires_at };
 }
 
-/** Ends her live review link now (CRM-086); returns how many were live (0 or 1). */
+/** Ends her live link of that kind now (CRM-086); returns how many were live (0 or 1). */
 export function revokeReviewLink({ db, actor }: Ctx, input: unknown): number {
   requireAdmin(db, actor);
-  return retire(db, memberIdOf(input), now());
+  return retire(db, memberIdOf(input), purposeOf(input), now());
 }
 
-const retire = (db: DB, memberId: string, at: string) => Number(
-  db.prepare("update member_links set expires_at = ? where member_id = ? and purpose = 'review' and used_at is null and expires_at > ?")
-    .run(at, memberId, at).changes,
+const retire = (db: DB, memberId: string, purpose: Purpose, at: string) => Number(
+  db.prepare("update member_links set expires_at = ? where member_id = ? and purpose = ? and used_at is null and expires_at > ?")
+    .run(at, memberId, purpose, at).changes,
 );
 
 export const linkState = (row: Omit<LinkState, "state">, at = now()): LinkState["state"] =>
   row.used_at ? "used" : row.expires_at > at ? "active" : "expired";
 
-/** Each member's newest review link and its state (CRM-085); members who never had one are absent. */
-export function reviewLinkStates({ db, actor }: Ctx): Record<string, LinkState> {
+/** Each member's newest link of that kind and its state (CRM-085); members who never had one are absent. */
+export function reviewLinkStates({ db, actor }: Ctx, input?: unknown): Record<string, LinkState> {
   requireAdmin(db, actor);
-  const rows = db.prepare(`select member_id, created_at, expires_at, used_at from member_links l where purpose = 'review'
-    and rowid = (select max(rowid) from member_links where member_id = l.member_id and purpose = 'review')`).all() as
+  const purpose = purposeOf(input);
+  const rows = db.prepare(`select member_id, created_at, expires_at, used_at from member_links l where purpose = ?
+    and rowid = (select max(rowid) from member_links where member_id = l.member_id and purpose = l.purpose)`).all(purpose) as
     (Omit<LinkState, "state"> & { member_id: string })[];
   const at = now();
   return Object.fromEntries(rows.map(({ member_id, ...row }) => [member_id, { ...row, state: linkState(row, at) }]));
@@ -91,12 +103,12 @@ export function markReviewDone({ db, actor }: Ctx, input: unknown): void {
 
 // ---------- The token holder ----------
 
-/** The live review link behind a token, for a member who is still approved; undefined for anything else. */
-function activeLink(db: DB, token: unknown): { id: string; member_id: string } | undefined {
+/** The live link of that kind behind a token, for a member who is still approved; undefined for anything else. */
+export function activeLink(db: DB, token: unknown, purpose: Purpose = "review"): { id: string; member_id: string } | undefined {
   if (typeof token !== "string" || !TOKEN.test(token)) return undefined;
   return db.prepare(`select l.id, l.member_id from member_links l join profiles p on p.id = l.member_id
-    where l.token_hash = ? and l.purpose = 'review' and l.used_at is null and l.expires_at > ? and p.status = 'approved'`)
-    .get(hashToken(token), now()) as { id: string; member_id: string } | undefined;
+    where l.token_hash = ? and l.purpose = ? and l.used_at is null and l.expires_at > ? and p.status = 'approved'`)
+    .get(hashToken(token), purpose, now()) as { id: string; member_id: string } | undefined;
 }
 
 /**
@@ -106,10 +118,16 @@ function activeLink(db: DB, token: unknown): { id: string; member_id: string } |
 export function openReview({ db }: Ctx, input: unknown): ReviewPrefill | null {
   const link = activeLink(db, isObject(input) ? input.token : undefined);
   if (!link) return null;
+  const values = memberValues(db, link.member_id);
+  return { firstName: values.full_name.split(/\s+/)[0] || "there", values };
+}
+
+/** Her details from the profile, gaps filled from her newest approved application; each capped at 300 characters. */
+export function memberValues(db: DB, memberId: string): Record<InfoField, string> {
   const p = db.prepare(`select p.full_name, p.business, p.role_title, p.website, p.neighborhood, u.email from profiles p join "user" u on u.id = p.id
-    where p.id = ?`).get(link.member_id) as { full_name: string; business: string; role_title: string; website: string; neighborhood: string | null; email: string };
+    where p.id = ?`).get(memberId) as { full_name: string; business: string; role_title: string; website: string; neighborhood: string | null; email: string };
   const app = db.prepare(`select full_name, neighborhood, answers from applications where user_id = ? and status = 'approved'
-    order by created_at desc limit 1`).get(link.member_id) as { full_name: string; neighborhood: string; answers: string } | undefined;
+    order by created_at desc limit 1`).get(memberId) as { full_name: string; neighborhood: string; answers: string } | undefined;
   const a = (app ? JSON.parse(app.answers) : {}) as Record<string, unknown>;
   const s = (v: unknown) => (typeof v === "string" ? v.trim() : "");
   const values: Record<InfoField, string> = {
@@ -122,10 +140,10 @@ export function openReview({ db }: Ctx, input: unknown): ReviewPrefill | null {
     interests: "",
   };
   for (const { name } of INFO_FIELDS) values[name] = values[name].slice(0, 300);
-  return { firstName: values.full_name.split(/\s+/)[0] || "there", values };
+  return values;
 }
 
-const isBot = (input: Record<string, unknown>) => input.honeypot !== undefined && input.honeypot !== "" && input.honeypot !== null;
+export const isBot = (input: Record<string, unknown>) => input.honeypot !== undefined && input.honeypot !== "" && input.honeypot !== null;
 
 /**
  * Stores her review and uses the link up, in one transaction: the conditional update is the single-use check, so

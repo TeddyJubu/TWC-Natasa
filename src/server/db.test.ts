@@ -10,7 +10,7 @@ const one = <T,>(db: ReturnType<typeof openDb>, sql: string, ...args: (string | 
 describe("database", () => {
   it("migrates a fresh database to the newest user_version, with foreign keys on", () => {
     const db = openDb(":memory:");
-    expect(one<{ user_version: number }>(db, "pragma user_version").user_version).toBe(7);
+    expect(one<{ user_version: number }>(db, "pragma user_version").user_version).toBe(8);
     expect(one<{ foreign_keys: number }>(db, "pragma foreign_keys").foreign_keys).toBe(1);
     expect(one<{ busy_timeout?: number; timeout?: number }>(db, "pragma busy_timeout")).toEqual({ timeout: 5000 });
   });
@@ -36,11 +36,12 @@ describe("database", () => {
     writeFileSync(join(dir, "0005_custom_forms.sql"), "this would fail if it ran again");
     writeFileSync(join(dir, "0006_admin_notes.sql"), "this would fail if it ran again");
     writeFileSync(join(dir, "0007_admin_actions.sql"), "this would fail if it ran again");
-    writeFileSync(join(dir, "0008_bad.sql"), "create table half (id integer); select * from missing_table;");
-    expect(() => migrate(db, dir)).toThrow(/0008_bad\.sql/);
-    expect(one<{ user_version: number }>(db, "pragma user_version").user_version).toBe(7);
+    writeFileSync(join(dir, "0008_spotlight_answers.sql"), "this would fail if it ran again");
+    writeFileSync(join(dir, "0009_bad.sql"), "create table half (id integer); select * from missing_table;");
+    expect(() => migrate(db, dir)).toThrow(/0009_bad\.sql/);
+    expect(one<{ user_version: number }>(db, "pragma user_version").user_version).toBe(8);
     expect(one(db, "select name from sqlite_master where name = 'half'")).toBeUndefined();
-    expect(() => migrate(db, dir)).toThrow(/0008/);
+    expect(() => migrate(db, dir)).toThrow(/0009/);
   });
 
   it("enforces foreign keys and CHECK constraints", () => {
@@ -48,6 +49,18 @@ describe("database", () => {
     expect(() => db.prepare("insert into profiles (id) values ('nobody')").run()).toThrow(/FOREIGN KEY/);
     expect(() => db.prepare("insert into neighborhoods (slug, name, color) values ('Bad Slug', 'X', '#000000')").run()).toThrow(/CHECK/);
     expect(() => db.prepare("insert into neighborhoods (slug, name, color) values ('ok', 'X', 'red')").run()).toThrow(/CHECK/);
+  });
+
+  it("0008: a Spotlight answer needs a link or an old record id, a name and an object of answers", () => {
+    const db = openDb(":memory:");
+    const add = (legacy: string | null, name: string, answers: string) =>
+      db.prepare("insert into spotlight_answers (legacy_id, full_name, answers) values (?, ?, ?)").run(legacy, name, answers);
+    expect(() => add(null, "Bea", "{}")).toThrow(/CHECK/);
+    expect(() => add("old-1", "", "{}")).toThrow(/CHECK/);
+    expect(() => add("old-1", "Bea", "[]")).toThrow(/CHECK/);
+    add("old-1", "Bea", "{}");
+    expect(() => add("old-1", "Bea", "{}")).toThrow(/UNIQUE/);
+    expect(() => db.prepare("insert into spotlight_answers (link_id, full_name, answers) values ('nope', 'Bea', '{}')").run()).toThrow(/FOREIGN KEY/);
   });
 
   it("tx commits, or rolls back on error", () => {

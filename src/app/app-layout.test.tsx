@@ -188,10 +188,10 @@ describe("account-access pages use the site chrome", () => {
 describe("robots.txt", () => {
   const robots = () => readFileSync(resolve(process.cwd(), "public/robots.txt"), "utf8");
 
-  it("applies to every crawler and disallows the showcase and preview paths and personal review links", () => {
+  it("applies to every crawler and disallows the showcase and preview paths and personal review and Spotlight links", () => {
     const lines = robots().split("\n").map((l) => l.trim());
     expect(lines).toContain("User-agent: *");
     const disallowed = lines.filter((l) => l.startsWith("Disallow:")).map((l) => l.slice("Disallow:".length).trim());
-    expect(disallowed.sort()).toEqual(["/colors", "/components", "/review", "/typography"]);
+    expect(disallowed.sort()).toEqual(["/colors", "/components", "/review", "/spotlight", "/typography"]);
   });
 });
