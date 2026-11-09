@@ -41,7 +41,8 @@
       "acceptance": "Mounts and what the CRM may write: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "/admin"
+      "target": "/admin",
+      "evidence": "AUDIT 2026-11-09: old CRM mounts still in compose (crm still running). Retire when twc_crm_cutover enabled and crm container stopped."
     },
     {
       "id": "CRM-004",
@@ -59,7 +60,8 @@
       "acceptance": "Production host `crm.thewomenscollective.club`: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "/admin"
+      "target": "/admin",
+      "evidence": "AUDIT 2026-11-09: twc_crm_cutover prepared in migration/caddy-twc-redirects.caddy, NOT enabled. Blocks: CRM spam (CRM-047/048/188) + remaining CRM todos; integrator enables after parity."
     },
     {
       "id": "CRM-006",
@@ -67,7 +69,8 @@
       "acceptance": "Test copy: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "/admin"
+      "target": "/admin",
+      "evidence": "AUDIT 2026-11-09: CRM test copy host unchanged; twc_crm_cutover not enabled (same gate as CRM-005)."
     },
     {
       "id": "CRM-007",
@@ -75,7 +78,8 @@
       "acceptance": "Health: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "/admin"
+      "target": "/admin",
+      "evidence": "AUDIT 2026-11-09: old CRM /health still on crm.*; cutover to new /admin waits on twc_crm_cutover (CRM-005)."
     },
     {
       "id": "CRM-008",
@@ -129,10 +133,10 @@
       "source": "crm.md:Three auth modes",
       "acceptance": "Three auth modes: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "built",
+      "status": "verified",
       "retired": "better-auth",
       "target": "retired",
-      "evidence": "Retired: CRM_AUTH_MODE caddy|access|password. Better Auth only (inventory already flagged retired)."
+      "evidence": "Retired: CRM_AUTH_MODE caddy|access|password. Better Auth only. Inventory flagged retired; rebuild has no CRM_AUTH_MODE."
     },
     {
       "id": "CRM-014",
@@ -149,10 +153,10 @@
       "source": "crm.md:`caddy` mode trusts `X-Auth-User`",
       "acceptance": "`caddy` mode trusts `X-Auth-User`: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "built",
+      "status": "verified",
       "retired": "better-auth",
       "target": "retired",
-      "evidence": "Retired: caddy mode trusting X-Auth-User (inventory already flagged retired)."
+      "evidence": "Retired: caddy mode trusting X-Auth-User. Better Auth only. Inventory flagged retired."
     },
     {
       "id": "CRM-016",
@@ -924,7 +928,8 @@
       "acceptance": "Membership application card: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "/admin"
+      "target": "/admin",
+      "evidence": "AUDIT 2026-11-09: Membership application card is /admin Applications (crm-admin-parity). Host cutover (crm.*→/admin) still waits on twc_crm_cutover — leave until admin/crm cutover."
     },
     {
       "id": "CRM-099",
@@ -1582,9 +1587,9 @@
       "source": "crm.md:FIX-IN-REBUILD — old form and old admin still live",
       "acceptance": "FIX-IN-REBUILD — old form and old admin still live: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
+      "status": "built",
       "target": "/admin",
-      "evidence": "Partly: members.*/join → new.*/join is in migration/caddy-twc-redirects.caddy (not live). admin.* and crm.* wait for CRM parity: twc_admin_cutover / twc_crm_cutover prepared, not enabled."
+      "evidence": "GET/HEAD members.*/join + /review + /spotlight 301 to new.* live 2026-11-09 (smoke-cutover ok); POSTs and /join/thanks|/review/thanks stay on intake. admin.* / crm.* still serve old dashboards — twc_admin_cutover / twc_crm_cutover NOT enabled. intake/crm/forms containers still running (AUDIT-TASKS). Full FIX (301 every host + stop old services) still open."
     },
     {
       "id": "CRM-176",
@@ -1606,10 +1611,12 @@
     {
       "id": "CRM-178",
       "source": "crm.md:RETIRE — header-trust auth as default",
-      "acceptance": "RETIRE — header-trust auth as default: behaviour from crm.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "acceptance": "RETIRE — header-trust auth as default: deliberately retired; Better Auth only.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "retired": "crm"
+      "status": "verified",
+      "retired": "better-auth",
+      "evidence": "Retired: CRM_AUTH_MODE=caddy header-trust default never ported (CRM-013/015/016). Better Auth only.",
+      "target": "retired"
     },
     {
       "id": "CRM-179",
@@ -1703,7 +1710,8 @@
       "acceptance": "Process model: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "vps:cutover"
+      "target": "vps:cutover",
+      "evidence": "AUDIT 2026-11-09: nothing stopped — intake process model still running. Release after twc_forms_cutover (forms) and/or twc_admin_cutover/twc_crm_cutover (intake/crm)."
     },
     {
       "id": "OPS-002",
@@ -1735,7 +1743,8 @@
       "acceptance": "Caddy, admin host: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "/admin"
+      "target": "/admin",
+      "evidence": "AUDIT 2026-11-09: twc_admin_cutover prepared, NOT enabled. admin.* still proxies intake/CRM admin. Gate: CRM parity leftovers + spam."
     },
     {
       "id": "OPS-006",
@@ -2973,7 +2982,8 @@
       "acceptance": "Issuing a link (`/internal/members/link`) requires `purpose` ∈ {review, spotlight} and `actor` matching `[a-z][a-z0-9_-]: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "/admin#members"
+      "target": "/admin#members",
+      "evidence": "AUDIT 2026-11-09: old intake /internal/members/link still on running intake until stop. New mint is /admin members-links (review+spotlight). Retire/stop with intake when twc_admin_cutover lands."
     },
     {
       "id": "OPS-157",
@@ -3117,7 +3127,8 @@
       "acceptance": "One stdlib Python process.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "vps:cutover"
+      "target": "vps:cutover",
+      "evidence": "AUDIT 2026-11-09: nothing stopped — forms stdlib process still running. Release after twc_forms_cutover (forms) and/or twc_admin_cutover/twc_crm_cutover (intake/crm)."
     },
     {
       "id": "OPS-175",
@@ -3226,11 +3237,12 @@
     {
       "id": "OPS-188",
       "source": "backoffice.md:Per-form thank-you pages through Caddy.",
-      "acceptance": "Per-form thank-you pages through Caddy.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "acceptance": "Per-form thank-you pages through Caddy superseded by GET/HEAD 301s to new.*/contact|/partnerships (deliberately retired).",
       "owner": "vps-cutover",
-      "status": "built",
-      "target": "/contact",
-      "evidence": "Superseded like SITE-110: GET thank-you URLs 301 before the @formthanks rewrite. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
+      "status": "verified",
+      "target": "retired",
+      "evidence": "Superseded like SITE-110: GET thank-you URLs 301 before @formthanks. AUDIT-TASKS vps-cutover 2026-11-09 (ts 20261109-151319): twc_apex_cutover / twc_members_cutover / twc_nbwc_cutover live; backups Caddyfile.before-twc-cutover-…; bun scripts/smoke-cutover.ts → ok (48/48).",
+      "retired": "get-head-301"
     },
     {
       "id": "OPS-189",
@@ -3938,17 +3950,18 @@
       "source": "backoffice.md:Tidy URLs:",
       "acceptance": "Tidy URLs:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "built",
+      "status": "verified",
       "target": "/about",
-      "evidence": "migration/caddy-twc-redirects.caddy: try_files stays for the kept files; every tidy page URL 301s before it; local smoke ok. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
+      "evidence": "Tidy page URLs 301 before try_files (same as SITE-100). AUDIT-TASKS vps-cutover 2026-11-09 (ts 20261109-151319): twc_apex_cutover / twc_members_cutover / twc_nbwc_cutover live; backups Caddyfile.before-twc-cutover-…; bun scripts/smoke-cutover.ts → ok (48/48)."
     },
     {
       "id": "OPS-276",
       "source": "backoffice.md:Error pages:",
       "acceptance": "Error pages:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/404"
+      "status": "verified",
+      "target": "/404",
+      "evidence": "Same as SITE-112: apex error pages kept; explicit /404 request is 404. AUDIT-TASKS vps-cutover 2026-11-09 (ts 20261109-151319): twc_apex_cutover / twc_members_cutover / twc_nbwc_cutover live; backups Caddyfile.before-twc-cutover-…; bun scripts/smoke-cutover.ts → ok (48/48)."
     },
     {
       "id": "OPS-277",
@@ -3964,7 +3977,8 @@
       "acceptance": "CRM host `crm.thewomenscollective.club`:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "vps:cutover"
+      "target": "vps:cutover",
+      "evidence": "AUDIT 2026-11-09: crm.thewomenscollective.club still reverse-proxies crm:3000; twc_crm_cutover not enabled."
     },
     {
       "id": "OPS-279",
@@ -3972,7 +3986,8 @@
       "acceptance": "CRM test copy `crm.srv1881521.hstgr.cloud`:: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "vps:cutover"
+      "target": "vps:cutover",
+      "evidence": "AUDIT 2026-11-09: CRM test copy host unchanged; twc_crm_cutover not enabled."
     },
     {
       "id": "OPS-280",
@@ -3980,7 +3995,8 @@
       "acceptance": "What the CRM is.: behaviour from backoffice.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "vps:cutover"
+      "target": "vps:cutover",
+      "evidence": "AUDIT 2026-11-09: nothing stopped — what the CRM is still running. Release after twc_forms_cutover (forms) and/or twc_admin_cutover/twc_crm_cutover (intake/crm)."
     },
     {
       "id": "OPS-281",
@@ -4897,7 +4913,8 @@
       "acceptance": "`twc-site-forms.path`.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "vps:cutover"
+      "target": "vps:cutover",
+      "evidence": "AUDIT 2026-11-09: nothing stopped — twc-site-forms.path still running. Release after twc_forms_cutover (forms) and/or twc_admin_cutover/twc_crm_cutover (intake/crm)."
     },
     {
       "id": "OPS-394",
@@ -4905,7 +4922,8 @@
       "acceptance": "`twc-site-forms.timer`.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "vps:cutover"
+      "target": "vps:cutover",
+      "evidence": "AUDIT 2026-11-09: nothing stopped — twc-site-forms.timer still running. Release after twc_forms_cutover (forms) and/or twc_admin_cutover/twc_crm_cutover (intake/crm)."
     },
     {
       "id": "OPS-395",
@@ -4913,7 +4931,8 @@
       "acceptance": "`twc-site-forms.service`.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "vps:cutover"
+      "target": "vps:cutover",
+      "evidence": "AUDIT 2026-11-09: nothing stopped — twc-site-forms.service still running. Release after twc_forms_cutover (forms) and/or twc_admin_cutover/twc_crm_cutover (intake/crm)."
     },
     {
       "id": "OPS-396",
@@ -4929,7 +4948,8 @@
       "acceptance": "`twc-form-connections.timer`.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "vps:cutover"
+      "target": "vps:cutover",
+      "evidence": "AUDIT 2026-11-09: nothing stopped — twc-form-connections.timer still running. Release after twc_forms_cutover (forms) and/or twc_admin_cutover/twc_crm_cutover (intake/crm)."
     },
     {
       "id": "OPS-398",
@@ -4937,7 +4957,8 @@
       "acceptance": "`twc-form-connections.service`.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "vps:cutover"
+      "target": "vps:cutover",
+      "evidence": "AUDIT 2026-11-09: nothing stopped — twc-form-connections.service still running. Release after twc_forms_cutover (forms) and/or twc_admin_cutover/twc_crm_cutover (intake/crm)."
     },
     {
       "id": "OPS-399",
@@ -5072,9 +5093,9 @@
       "source": "ops-part-d.md:Redirect target.",
       "acceptance": "Redirect target.: behaviour from ops-part-d.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "built",
+      "status": "verified",
       "target": "/contact",
-      "evidence": "Forms service still 303s to /message-sent.html?form=…; that GET now 301s to new.*/contact (or /partnerships via thanks-partnership). Local smoke ok. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
+      "evidence": "Forms 303 → /message-sent.html?form=… then GET 301 → new.*/contact (or /partnerships). AUDIT-TASKS vps-cutover 2026-11-09 (ts 20261109-151319): twc_apex_cutover / twc_members_cutover / twc_nbwc_cutover live; backups Caddyfile.before-twc-cutover-…; bun scripts/smoke-cutover.ts → ok (48/48)."
     },
     {
       "id": "OPS-416",
@@ -5910,7 +5931,7 @@
       "owner": "vps-cutover",
       "status": "todo",
       "target": "/f/*",
-      "evidence": "Partial: VPS Caddy page/host redirects LIVE 2026-11-09; twc_forms_cutover still held. Live CRM has 0 custom_forms (forms-import ready 0/0). Enable /f/* 301 after a real form is published+imported."
+      "evidence": "AUDIT 2026-11-09: twc_forms_cutover held. Live CRM custom_forms=0; forms-import ready 0/0. Keep apex /f/* on old stack until a real form is published+imported."
     },
     {
       "id": "OPS-519",
@@ -6298,7 +6319,8 @@
       "acceptance": "Directory data is personal data on a hand-built page: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "/members"
+      "target": "/members",
+      "evidence": "AUDIT 2026-11-09: page redirects; personal directory HTML archived in twc-site-archive-20261109-151319.tar.gz but still on disk for /f/* writer. Image path restriction still open (SITE-167/118)."
     },
     {
       "id": "SITE-030",
@@ -6664,8 +6686,9 @@
       "source": "site.md:Contact / partnership thank-you",
       "acceptance": "Contact / partnership thank-you: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "/contact",
+      "evidence": "Old contact/partnership thank-you URLs 301 to /contact|/partnerships; new pages use in-place success (SITE-014/016). AUDIT-TASKS vps-cutover 2026-11-09 (ts 20261109-151319): twc_apex_cutover / twc_members_cutover / twc_nbwc_cutover live; backups Caddyfile.before-twc-cutover-…; bun scripts/smoke-cutover.ts → ok (48/48)."
     },
     {
       "id": "SITE-074",
@@ -6678,36 +6701,39 @@
     {
       "id": "SITE-075",
       "source": "site.md:Per-form thank-you rewrite",
-      "acceptance": "Per-form thank-you rewrite: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "acceptance": "Per-form thank-you rewrite superseded by GET/HEAD 301s (deliberately retired).",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/contact"
+      "status": "verified",
+      "target": "retired",
+      "evidence": "Superseded like SITE-110/OPS-188: per-form rewrite unreachable after GET 301s. AUDIT-TASKS vps-cutover 2026-11-09 (ts 20261109-151319): twc_apex_cutover / twc_members_cutover / twc_nbwc_cutover live; backups Caddyfile.before-twc-cutover-…; bun scripts/smoke-cutover.ts → ok (48/48).",
+      "retired": "get-head-301"
     },
     {
       "id": "SITE-076",
       "source": "site.md:Thank-you pages are reached only by the POST flow",
       "acceptance": "Thank-you pages are reached only by the POST flow: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "built",
+      "status": "verified",
       "target": "vps:caddy-redirects",
-      "evidence": "migration/caddy-twc-redirects.caddy @old_contact/@old_partnerships: every thanks-*, message-sent, subscribed URL (tidy + .html) 301s to its new page; src/app/cutover-redirects.test.ts; local smoke ok. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
+      "evidence": "Thank-you GETs 301 to /contact or /partnerships (migration/caddy-twc-redirects.caddy @old_contact/@old_partnerships; redirects.md). AUDIT-TASKS vps-cutover 2026-11-09 (ts 20261109-151319): twc_apex_cutover / twc_members_cutover / twc_nbwc_cutover live; backups Caddyfile.before-twc-cutover-…; bun scripts/smoke-cutover.ts → ok (48/48)."
     },
     {
       "id": "SITE-077",
       "source": "site.md:404 page content and trigger",
       "acceptance": "404 page content and trigger: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/404"
+      "status": "verified",
+      "target": "/404",
+      "evidence": "/404 and /404.html answer 404 via error @old_404; handle_errors still renders 404.html. migration/caddy-twc-redirects.caddy; smoke checks both. AUDIT-TASKS vps-cutover 2026-11-09 (ts 20261109-151319): twc_apex_cutover / twc_members_cutover / twc_nbwc_cutover live; backups Caddyfile.before-twc-cutover-…; bun scripts/smoke-cutover.ts → ok (48/48)."
     },
     {
       "id": "SITE-078",
       "source": "site.md:A stale open form that POSTs after the cutover loses its data",
       "acceptance": "A stale open form that POSTs after the cutover loses its data: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "built",
+      "status": "verified",
       "target": "/contact",
-      "evidence": "migration/caddy-twc-redirects.caddy: page redirects are GET/HEAD only, so a stale POST to /message-sent.html or /subscribed.html still reaches forms:8080 (@formpost) and is stored, then its 303 lands on new.*/contact. Local run: POST → proxied (502 locally, no forms service), not 301. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
+      "evidence": "GET/HEAD-only page redirects; POSTs still reach forms:8080 (@formpost) / intake (CRM-175). migration/caddy-twc-redirects.caddy; redirects.md. AUDIT-TASKS vps-cutover 2026-11-09 (ts 20261109-151319): twc_apex_cutover / twc_members_cutover / twc_nbwc_cutover live; backups Caddyfile.before-twc-cutover-…; bun scripts/smoke-cutover.ts → ok (48/48)."
     },
     {
       "id": "SITE-079",
@@ -6957,8 +6983,9 @@
       "source": "site.md:`www` redirect",
       "acceptance": "`www` redirect: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:caddy-redirects"
+      "status": "verified",
+      "target": "vps:caddy-redirects",
+      "evidence": "www.thewomenscollective.club → apex stays (BRIEF 11 leaves www blocks alone). AUDIT-TASKS 2026-11-09: known extra hop www→apex→new.* for page URLs; deliberately unchanged."
     },
     {
       "id": "SITE-109",
@@ -6971,11 +6998,12 @@
     {
       "id": "SITE-110",
       "source": "site.md:Per-form thank-you rewrite",
-      "acceptance": "Per-form thank-you rewrite: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "acceptance": "Per-form thank-you rewrite superseded: GET thank-you URLs 301 to new pages before @formthanks (deliberately retired).",
       "owner": "vps-cutover",
-      "status": "built",
-      "target": "vps:caddy-redirects",
-      "evidence": "Superseded: migration/caddy-twc-redirects.caddy redirects GET /message-sent.html and /subscribed.html (any ?form=) before the @formthanks rewrite runs, so the per-form thank-you files are no longer reachable; local smoke ok. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
+      "status": "verified",
+      "target": "retired",
+      "evidence": "Superseded: GET /message-sent.html and /subscribed.html 301 before @formthanks rewrite. AUDIT-TASKS vps-cutover 2026-11-09 (ts 20261109-151319): twc_apex_cutover / twc_members_cutover / twc_nbwc_cutover live; backups Caddyfile.before-twc-cutover-…; bun scripts/smoke-cutover.ts → ok (48/48).",
+      "retired": "get-head-301"
     },
     {
       "id": "SITE-111",
@@ -6984,32 +7012,34 @@
       "owner": "vps-cutover",
       "status": "todo",
       "target": "vps:caddy-redirects",
-      "evidence": "Unchanged on purpose: /f/* stays on the old stack (forms-import gate); twc_forms_cutover prepared, not enabled."
+      "evidence": "AUDIT 2026-11-09: /f/* unchanged on purpose (forms-import gate); twc_forms_cutover prepared, not enabled. Same as OPS-518."
     },
     {
       "id": "SITE-112",
       "source": "site.md:Error page",
       "acceptance": "Error page: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/404"
+      "status": "verified",
+      "target": "/404",
+      "evidence": "Apex handle_errors → 404.html kept; /404|/404.html themselves return 404 (SITE-077). AUDIT-TASKS vps-cutover 2026-11-09 (ts 20261109-151319): twc_apex_cutover / twc_members_cutover / twc_nbwc_cutover live; backups Caddyfile.before-twc-cutover-…; bun scripts/smoke-cutover.ts → ok (48/48)."
     },
     {
       "id": "SITE-113",
       "source": "site.md:Other hosts that link to or depend on the apex pages",
       "acceptance": "Other hosts that link to or depend on the apex pages: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:caddy-redirects"
+      "status": "verified",
+      "target": "vps:caddy-redirects",
+      "evidence": "Absolute new.* targets: join.*/members.*/nbwc hosts → new.*/join|/review|/spotlight (OPS-007/008 verified; smoke). AUDIT-TASKS vps-cutover 2026-11-09 (ts 20261109-151319): twc_apex_cutover / twc_members_cutover / twc_nbwc_cutover live; backups Caddyfile.before-twc-cutover-…; bun scripts/smoke-cutover.ts → ok (48/48)."
     },
     {
       "id": "SITE-114",
       "source": "site.md:Constraints for the cutover edit",
       "acceptance": "Constraints for the cutover edit: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "built",
+      "status": "verified",
       "target": "vps:caddy-redirects",
-      "evidence": "Runbook migration/briefs/vps-cutover.md: only the three TWC blocks change (diff check), timestamped backups in /opt/nbwc/backups first, caddy validate before reload, in-place write for the :ro bind mount, rollback step. LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
+      "evidence": "Cutover edit constraints met: only three TWC blocks changed; timestamped backups + caddy validate/reload recorded. AUDIT-TASKS vps-cutover 2026-11-09 (ts 20261109-151319): twc_apex_cutover / twc_members_cutover / twc_nbwc_cutover live; backups Caddyfile.before-twc-cutover-…; bun scripts/smoke-cutover.ts → ok (48/48). Runbook migration/briefs/vps-cutover.md."
     },
     {
       "id": "SITE-115",
@@ -7042,7 +7072,8 @@
       "acceptance": "Directory images: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "/members"
+      "target": "/members",
+      "evidence": "AUDIT 2026-11-09: same as SITE-167 — directory portraits remain under /opt/nbwc/site/assets/img/directory/ after archive; not restricted yet."
     },
     {
       "id": "SITE-119",
@@ -7213,8 +7244,9 @@
       "source": "site.md:Nav label vs route naming",
       "acceptance": "Nav label vs route naming: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "vps:caddy-redirects"
+      "status": "verified",
+      "target": "vps:caddy-redirects",
+      "evidence": "Vocabulary shifts live in redirects.md + twc_apex_cutover: /directory→/members, /events→/gatherings, Apply→/join. AUDIT-TASKS vps-cutover 2026-11-09 (ts 20261109-151319): twc_apex_cutover / twc_members_cutover / twc_nbwc_cutover live; backups Caddyfile.before-twc-cutover-…; bun scripts/smoke-cutover.ts → ok (48/48)."
     },
     {
       "id": "SITE-140",
@@ -7314,8 +7346,9 @@
       "source": "site.md:/account, HAVE for the editing.html redirect",
       "acceptance": "/account, HAVE for the editing.html redirect: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/account"
+      "status": "verified",
+      "target": "/account",
+      "evidence": "/editing and /editing.html 301 → new.*/account (redirects.md page row; smoke pageRows). Route exists behind sign-in. AUDIT-TASKS vps-cutover 2026-11-09 (ts 20261109-151319): twc_apex_cutover / twc_members_cutover / twc_nbwc_cutover live; backups Caddyfile.before-twc-cutover-…; bun scripts/smoke-cutover.ts → ok (48/48)."
     },
     {
       "id": "SITE-152",
@@ -7337,11 +7370,12 @@
     {
       "id": "SITE-154",
       "source": "site.md:Thank-you routes, N/A",
-      "acceptance": "Thank-you routes, N/A: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
+      "acceptance": "Thank-you routes N/A: new app uses in-place success; old thank-you URLs only 301 (deliberately retired as pages).",
       "owner": "vps-cutover",
-      "status": "built",
-      "target": "vps:caddy-redirects",
-      "evidence": "migration/caddy-twc-redirects.caddy: thanks-*, message-sent, subscribed need no page; each 301s to /contact or /partnerships (redirects.md). LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
+      "status": "verified",
+      "target": "retired",
+      "evidence": "Thank-you routes N/A on the app: thanks-*, message-sent, subscribed 301 only (redirects.md). AUDIT-TASKS vps-cutover 2026-11-09 (ts 20261109-151319): twc_apex_cutover / twc_members_cutover / twc_nbwc_cutover live; backups Caddyfile.before-twc-cutover-…; bun scripts/smoke-cutover.ts → ok (48/48).",
+      "retired": "inplace-thanks"
     },
     {
       "id": "SITE-155",
@@ -7452,16 +7486,17 @@
       "acceptance": "Real member data in `directory.html` and `assets/img/directory/`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "todo",
-      "target": "/members"
+      "target": "/members",
+      "evidence": "AUDIT 2026-11-09: directory.html 301s to /members, but files stay in /opt/nbwc/site including assets/img/directory/ (still publicly fetchable). Restrict or move images still open."
     },
     {
       "id": "SITE-168",
       "source": "site.md:Stale-form data loss on a 301",
       "acceptance": "Stale-form data loss on a 301: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "built",
+      "status": "verified",
       "target": "vps:caddy-redirects",
-      "evidence": "Same as SITE-078: GET/HEAD-only redirects, POSTs keep reaching forms:8080 / intake; members.*/join and /review too (CRM-175). LIVE 2026-11-09: applied on the VPS; smoke-cutover ok (AUDIT-TASKS vps-cutover; rechecked 2026-11-09)."
+      "evidence": "Same as SITE-078: GET/HEAD-only; stale POSTs keep landing on old services. AUDIT-TASKS vps-cutover 2026-11-09 (ts 20261109-151319): twc_apex_cutover / twc_members_cutover / twc_nbwc_cutover live; backups Caddyfile.before-twc-cutover-…; bun scripts/smoke-cutover.ts → ok (48/48)."
     },
     {
       "id": "SITE-169",
@@ -7503,8 +7538,9 @@
       "source": "site.md:`thanks-partnership.html` → `/partnerships` depends on a page that doesn't exist",
       "acceptance": "`thanks-partnership.html` → `/partnerships` depends on a page that doesn't exist: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
-      "status": "todo",
-      "target": "/partnerships"
+      "status": "verified",
+      "target": "/partnerships",
+      "evidence": "Gap closed: /partnerships exists (SITE-007); /thanks-partnership(.html) 301 → /partnerships (smoke; SITE-016). AUDIT-TASKS vps-cutover 2026-11-09 (ts 20261109-151319): twc_apex_cutover / twc_members_cutover / twc_nbwc_cutover live; backups Caddyfile.before-twc-cutover-…; bun scripts/smoke-cutover.ts → ok (48/48)."
     },
     {
       "id": "SITE-174",
