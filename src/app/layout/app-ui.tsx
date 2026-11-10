@@ -68,7 +68,7 @@ export type ChipTone = "pending" | "ok" | "gel" | "no" | "muted";
 const TONE: Record<ChipTone, string> = {
   pending: "bg-app-pending text-ink",
   ok: "bg-app-ok text-ink",
-  gel: "twc-gel",
+  gel: "twc-gel group-hover:bg-none group-hover:bg-app-gel",
   no: "bg-app-sunken text-danger",
   muted: "text-app-muted",
 };
