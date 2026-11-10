@@ -55,6 +55,21 @@
 }
 @media (hover: hover) { .group:hover .twc-gel { --gel-glow-y: -8%; --gel-core-y: 90%; } }
 @media (prefers-reduced-motion: reduce) { .twc-gel { transition: none; } }
+/* Glitter from a clicked app-shell button (sparkles.ts): a four-point star that pops out, flies a few px and fades. */
+.twc-spark {
+  position: fixed; z-index: 100; width: var(--spark-size, 6px); height: var(--spark-size, 6px); margin: calc(var(--spark-size, 6px) / -2);
+  pointer-events: none; background: var(--color-app-pending);
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  animation: twc-spark 550ms var(--ease-snap) forwards;
+}
+.twc-spark--blue { background: var(--color-app-gel); }
+.twc-spark--ink { background: var(--color-ink); }
+@keyframes twc-spark {
+  0% { opacity: 0; transform: translate(0, 0) scale(0) rotate(0deg); }
+  30% { opacity: 1; transform: translate(calc(var(--spark-x) * 0.6), calc(var(--spark-y) * 0.6)) scale(1.2) rotate(45deg); }
+  100% { opacity: 0; transform: translate(var(--spark-x), var(--spark-y)) scale(0.4) rotate(90deg); }
+}
+@media (prefers-reduced-motion: reduce) { .twc-spark { display: none; } }
 .twc-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; display: inline-block; }
 
 /* Eyebrows */

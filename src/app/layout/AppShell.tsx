@@ -6,6 +6,7 @@ import { ConstellationLogo, cn, initials } from "@/index";
 import { Icon, type IconName } from "./icons";
 import { ring } from "./app-classes";
 import { useSignOut } from "./sign-out";
+import { useButtonSparkles } from "./sparkles";
 
 /** The internal pages: each renders `AppShell` with its own path. */
 /** `/admin/forms/edit` stands for any one form's edit page: no sidebar card is "here" on it. */
@@ -221,6 +222,7 @@ function MobileBar(props: { page: ShellPage; admin: boolean; active: string; onS
 export function AppShell({ page, admin, children }: { page: ShellPage; admin: boolean; children: React.ReactNode }) {
   const { signOut, error } = useSignOut();
   const active = useActiveSection(page);
+  useButtonSparkles();
   return (
     <div className="min-h-screen bg-app-sunken text-ink lg:flex">
       <MobileBar page={page} admin={admin} active={active} onSignOut={signOut} />
