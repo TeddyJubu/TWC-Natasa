@@ -14,3 +14,9 @@ export function formatCatalogueNumber(n: number): string {
 export function initials(name: string): string {
   return name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase()).join("") || "TWC";
 }
+
+/** Only absolute http(s) URLs become links; anything else (e.g. `javascript:`) stays plain text. */
+export function safeHref(url: string): string | undefined {
+  const trimmed = url.trim();
+  return /^https?:\/\/\S+$/i.test(trimmed) ? trimmed : undefined;
+}

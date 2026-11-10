@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { cn, initials, type MemberProfile } from "@/index";
+import { cn, initials, safeHref, type MemberProfile } from "@/index";
 import { AppPage } from "@/app/layout/AppLayout";
 import { EmptySlot, InlineError } from "@/app/layout/app-ui";
 import { fieldClass, redButton, ring, secondaryButton } from "@/app/layout/app-classes";
@@ -178,6 +178,8 @@ function Stamp({ member: m, out, onTear }: { member: MemberProfile; out: boolean
 /** The torn-out member's pass: only the facts she published, never a placeholder. */
 function Pass({ member: m, ref }: { member: MemberProfile | null; ref: React.Ref<HTMLElement> }) {
   const slug = m ? memberSlug(m) : undefined;
+  // Websites are free text: only an http(s) URL becomes a link (never javascript: and the like).
+  const website = m?.website ? safeHref(m.website) : undefined;
   return (
     <aside ref={ref} aria-live="polite" aria-label="Torn-out member" className={cn("air-dir-pass", !m && "is-empty")}>
       {!m ? (
@@ -205,7 +207,7 @@ function Pass({ member: m, ref }: { member: MemberProfile | null; ref: React.Ref
             {m.lookingFor && <div className="mt-4"><span className="air-lbl">Looking to meet</span><p className="border-b-[1.5px] border-air-rule pb-2 text-[13px]/[1.45] font-semibold">{m.lookingFor}</p></div>}
             <div className="mt-5 flex flex-col gap-2">
               {slug && <Link to="/members/$slug" params={{ slug }} className={cn(redButton, "w-full")}>Open her page<Icon name="arrow-right" /></Link>}
-              {m.website && <a href={m.website} target="_blank" rel="noopener noreferrer" className={cn(secondaryButton, "w-full")}>Visit her website<Icon name="external-link" /><span className="sr-only"> (opens in a new tab)</span></a>}
+              {website && <a href={website} target="_blank" rel="noopener noreferrer" className={cn(secondaryButton, "w-full")}>Visit her website<Icon name="external-link" /><span className="sr-only"> (opens in a new tab)</span></a>}
             </div>
             {m.catalogueNumber !== undefined && (
               <div aria-hidden className="mt-5 flex items-end gap-3"><div className="air-dir-bars" /><span className="font-plex text-[11px] tracking-[0.1em]">WC-{no4(m.catalogueNumber)}</span></div>

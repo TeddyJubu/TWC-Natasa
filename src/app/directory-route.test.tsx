@@ -52,6 +52,17 @@ describe("/directory", () => {
     expect(within(pass).getByRole("heading", { name: "Nothing torn out" })).toBeTruthy();
   });
 
+  it("links her website only when it is an http(s) URL", () => {
+    const withSite = (website: string) => [...seed.slice(0, 2), [["directory"], [{ ...MEMBERS[0], website }]]] as [unknown[], unknown][];
+    renderWithQueries(<Page />, withSite("javascript:alert(1)"));
+    fireEvent.click(screen.getByRole("button", { name: /^Lucía Ferreira/ }));
+    expect(screen.queryByRole("link", { name: /Visit her website/ })).toBeNull();
+    cleanup();
+    renderWithQueries(<Page />, withSite("https://cortado.example"));
+    fireEvent.click(screen.getByRole("button", { name: /^Lucía Ferreira/ }));
+    expect(screen.getByRole("link", { name: /Visit her website/ }).getAttribute("href")).toBe("https://cortado.example");
+  });
+
   it("filters by neighborhood and by an accent-free search", () => {
     renderWithQueries(<Page />, seed);
     fireEvent.click(screen.getByRole("button", { name: "Woodside 1" }));
