@@ -580,6 +580,61 @@ textarea.twc-input { min-height: 132px; resize: vertical; }
   .air-savebar { padding: 16px 14px 12px 22px; }
   .air-saved { padding-left: 0; }
 }
+/* Member directory (/directory; DESIGN.md "Member directory"): a sheet of stamps sharing their perforations, and the
+   torn-out member's pass beside it. A torn-out stamp lifts off the sheet and leaves a dashed spot. */
+.air-dir-intro { display: grid; gap: 24px; margin-top: 32px; }
+.air-dir-intro h1 { margin-top: 14px; font: 700 clamp(76px, 14vw, 150px)/0.8 var(--font-gilda); letter-spacing: -0.03em; }
+.air-dir-lede { font-size: 17px; line-height: 1.5; color: var(--bl-air-muted); }
+.air-dir-lede b { color: var(--bl-air-navy); font-weight: 600; }
+.air-dir-stats { display: flex; flex-wrap: wrap; gap: 16px 32px; margin-top: 22px; padding-top: 16px; border-top: 2px dashed var(--bl-air-line); }
+.air-dir-stats div { display: flex; flex-direction: column-reverse; gap: 7px; }
+.air-dir-stats dd { font: 400 26px/1 var(--font-gilda); }
+.air-dir-stats dt { font: 500 9.5px var(--font-plex); letter-spacing: 0.16em; text-transform: uppercase; color: var(--bl-air-muted); }
+.air-dir-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 24px; margin-top: 40px; }
+.air-dir-search { flex: 1 1 220px; max-width: 280px; }
+.air-filter { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 14px; border-radius: 999px; box-shadow: inset 0 0 0 1.5px var(--bl-air-line); font-size: 13px; font-weight: 600; color: var(--bl-air-muted); white-space: nowrap; transition: background-color var(--duration-fast), color var(--duration-fast); }
+.air-filter:hover { color: var(--bl-air-navy); }
+.air-filter span { font: 500 11px var(--font-plex); }
+.air-filter[aria-pressed="true"] { background: var(--bl-air-navy); color: var(--bl-air-paper); box-shadow: none; }
+.air-dir-split { display: grid; gap: 40px; margin-top: 40px; }
+.air-dir-pass { border-radius: var(--bl-air-radius-card); background: var(--air-fiber), var(--bl-air-paper); box-shadow: var(--bl-air-shadow-card); scroll-margin-top: 16px; }
+.air-dir-pass h2 { font: 700 30px/0.95 var(--font-gilda); letter-spacing: -0.015em; }
+.air-dir-pass.is-empty h2 { font-size: 24px; }
+.air-dir-pass-head { padding: 22px 24px 20px; }
+.air-dir-pass-head h2 { margin-top: 16px; }
+.air-dir-perf { margin: 0 24px; border-top: 2px dashed var(--bl-air-line); }
+.air-dir-bars { flex: 1; height: 26px; background: repeating-linear-gradient(90deg, currentColor 0 2px, transparent 2px 5px, currentColor 5px 9px, transparent 9px 11px, currentColor 11px 12px, transparent 12px 16px); }
+.air-dir-hint { display: flex; gap: 10px; margin-top: 18px; padding: 0 4px; font-size: 12.5px; line-height: 1.5; color: var(--bl-air-muted); }
+.air-dir-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; margin-top: 32px; font-size: 13px; font-weight: 500; color: var(--bl-air-muted); }
+.air-dir-foot .air-icon-btn:disabled { opacity: 0.35; cursor: default; }
+/* The sheet's shadow is on the sheet: a filter on a masked stamp would be masked away with it. */
+.air-sheet { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); filter: drop-shadow(0 24px 22px rgb(28 44 94 / 0.22)) drop-shadow(0 1px 1.5px rgb(28 44 94 / 0.3)); }
+.air-slot { position: relative; display: block; aspect-ratio: 196 / 266; text-align: left; border-radius: 4px; --tx: -10px; --rot: -6deg; }
+.air-slot:nth-child(even) { --tx: 10px; --rot: 6deg; }
+.air-slot.is-out { z-index: 2; }
+.air-slot-stamp { position: absolute; inset: 0; display: flex; flex-direction: column; padding: 13px 13px 12px; background: var(--air-fiber), #fff; -webkit-mask: var(--air-perf-edge); mask: var(--air-perf-edge); -webkit-mask-composite: source-in; mask-composite: intersect; transform-origin: 50% 62%; transition: transform 0.45s var(--ease-snap); }
+.air-slot.is-out .air-slot-stamp { transform: translate(var(--tx), -32%) rotate(var(--rot)) scale(1.06); }
+.air-slot-ghost { position: absolute; inset: 12px; display: flex; align-items: flex-end; justify-content: center; padding: 0 6px 14px; border: 1.5px dashed var(--bl-air-line); border-radius: 3px; text-align: center; font: 500 8.5px/1.4 var(--font-plex); letter-spacing: 0.12em; text-transform: uppercase; color: var(--bl-air-muted); opacity: 0; transition: opacity var(--duration-base); }
+.air-slot.is-out .air-slot-ghost { opacity: 1; }
+.air-slot-top { display: flex; align-items: baseline; justify-content: space-between; min-height: 16px; font: 500 10px var(--font-plex); letter-spacing: 0.1em; }
+.air-slot-top b { font-weight: 600; color: var(--bl-air-red); }
+.air-slot-top i { font-style: normal; color: var(--bl-air-muted); }
+.air-slot-ph { display: grid; place-items: center; height: 59%; margin-top: 8px; overflow: hidden; background: var(--bl-air-navy); }
+.air-slot-ph img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 24%; }
+.air-slot-ph > span { color: var(--bl-air-paper); font: 400 44px/1 var(--font-gilda); }
+.air-slot-foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; margin-top: auto; padding-top: 8px; }
+.air-slot-foot strong { display: block; font-size: 14px; font-weight: 800; line-height: 1.05; letter-spacing: -0.01em; text-transform: uppercase; overflow-wrap: anywhere; }
+.air-slot-foot small { display: block; margin-top: 4px; overflow: hidden; font-size: 10.5px; font-weight: 500; color: var(--bl-air-muted); white-space: nowrap; text-overflow: ellipsis; }
+.air-slot-foot em { flex-shrink: 0; writing-mode: vertical-rl; rotate: 180deg; font: 400 15px/1 var(--font-gilda); font-style: normal; }
+@media (hover: hover) { .air-slot:not(.is-out):hover .air-slot-stamp { transform: translateY(-3px) rotate(-0.5deg); } }
+@media (min-width: 640px) { .air-sheet { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 1024px) {
+  .air-dir-intro { grid-template-columns: minmax(0, 1fr) 392px; align-items: end; gap: 48px; margin-top: 56px; }
+  .air-dir-split { grid-template-columns: 304px minmax(0, 1fr); align-items: start; gap: 56px; margin-top: 104px; }
+  .air-dir-split > :first-child { position: sticky; top: 24px; }
+}
+@media (min-width: 1280px) { .air-sheet { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (prefers-reduced-motion: reduce) { .air-slot-stamp, .air-slot-ghost, .air-filter { transition: none; } }
 @media (prefers-reduced-motion: reduce) { .air-btn, .air-menu a, .air-stamp-face img { transition: none; } .air-btn:hover:not(:disabled) { translate: none; } }
 
 /* Member pass: "View public card" on /account. A die-cut postage pass in her chosen colour (`pass--*`), portrait

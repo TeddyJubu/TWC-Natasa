@@ -9,8 +9,9 @@ import { Icon } from "@/app/layout/icons";
 import { useSignOut } from "@/app/layout/sign-out";
 import { useButtonSparkles } from "@/app/layout/sparkles";
 
-export function AirShell({ admin, name, avatar, catalogueNumber, children }: {
-  admin: boolean; name: string; avatar?: string; catalogueNumber: number | null; children: React.ReactNode;
+/** `page` is where she is: the menu's sections are in-page anchors on /account and links back to it elsewhere. */
+export function AirShell({ page = "/account", admin, name, avatar, catalogueNumber, children }: {
+  page?: "/account" | "/directory"; admin: boolean; name: string; avatar?: string; catalogueNumber: number | null; children: React.ReactNode;
 }) {
   const { signOut, error } = useSignOut();
   const active = useActiveSection("/account");
@@ -23,7 +24,7 @@ export function AirShell({ admin, name, avatar, catalogueNumber, children }: {
             <ConstellationLogo variant="ink" alt="" className="w-6.5 lg:w-7.5" />The Women’s Collective
           </Link>
           <div className="air-who">
-            <AccountMenu admin={admin} active={active} name={name} avatar={avatar} catalogueNumber={catalogueNumber} />
+            <AccountMenu page={page} admin={admin} active={page === "/account" ? active : null} name={name} avatar={avatar} catalogueNumber={catalogueNumber} />
             <button type="button" onClick={signOut} aria-label="Sign out" className={cn("air-icon-btn", ring)}>
               <Icon name="log-out" className="size-4" />
             </button>
@@ -40,8 +41,8 @@ export function AirShell({ admin, name, avatar, catalogueNumber, children }: {
  * Her name and avatar open the account menu: on hover with a mouse, and on click or Enter for touch and keyboard.
  * Escape, a click outside or picking a section closes it.
  */
-function AccountMenu({ admin, active, name, avatar, catalogueNumber }: {
-  admin: boolean; active: string | null; name: string; avatar?: string; catalogueNumber: number | null;
+function AccountMenu({ page, admin, active, name, avatar, catalogueNumber }: {
+  page: "/account" | "/directory"; admin: boolean; active: string | null; name: string; avatar?: string; catalogueNumber: number | null;
 }) {
   const [open, setOpen] = React.useState(false);
   const root = React.useRef<HTMLDivElement>(null);
@@ -75,11 +76,20 @@ function AccountMenu({ admin, active, name, avatar, catalogueNumber }: {
         <ul>
           {MY_ACCOUNT.map((item) => (
             <li key={item.hash}>
-              <a href={`#${item.hash}`} aria-current={item.hash === active ? "location" : undefined} onClick={close} className={ring}>
-                <Icon name={item.icon} className="size-4" />{item.label}
-              </a>
+              {page === "/account" ? (
+                <a href={`#${item.hash}`} aria-current={item.hash === active ? "location" : undefined} onClick={close} className={ring}>
+                  <Icon name={item.icon} className="size-4" />{item.label}
+                </a>
+              ) : (
+                <Link to="/account" hash={item.hash} className={ring}><Icon name={item.icon} className="size-4" />{item.label}</Link>
+              )}
             </li>
           ))}
+          <li>
+            <Link to="/directory" aria-current={page === "/directory" ? "page" : undefined} onClick={close} className={ring}>
+              <Icon name="users" className="size-4" />Member directory
+            </Link>
+          </li>
           {/* UX only: /admin's guard and every admin server function check again. */}
           {admin && <li><Link to="/admin" className={ring}><Icon name="shield-check" className="size-4" />Admin</Link></li>}
         </ul>
