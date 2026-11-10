@@ -58,7 +58,7 @@ function Booking({ userId }: { userId: string }) {
   if (booking) {
     const copy = bookingCopy(booking.status);
     return (
-      <div className="air-ticket">
+      <div className="air-tickets"><div className="air-ticket">
         <TicketDate when={dayParts(booking.preferred_date)} tone={copy.tone} />
         <div className="air-t-body">
         <h3>{copy.title}</h3>
@@ -75,7 +75,7 @@ function Booking({ userId }: { userId: string }) {
           Change request
         </button>
         </div>
-      </div>
+      </div></div>
     );
   }
 
