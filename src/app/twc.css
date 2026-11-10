@@ -356,6 +356,7 @@ textarea.twc-input { min-height: 132px; resize: vertical; }
 /* Public card: a customs-declaration form */
 .air-form { display: grid; border: 1.5px solid var(--bl-air-navy); border-radius: 10px; overflow: hidden; }
 .air-cell { min-width: 0; padding: 12px 15px 13px; border-bottom: 1px solid var(--air-line); }
+.air-form > .air-cell:last-child { border-bottom: 0; }
 .air-cell--wide { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; border: 0; background: rgb(28 44 94 / 0.035); }
 .air-cell--wide .air-lbl { margin: 0; }
 .air-val { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; overflow-wrap: anywhere; }
@@ -532,6 +533,9 @@ textarea.twc-input { min-height: 132px; resize: vertical; }
   .air-form { grid-template-columns: 1fr 1fr 1.35fr; }
   .air-cell { padding: 15px 18px 16px; border-right: 1px solid var(--air-line); }
   .air-form > .air-cell:nth-child(3n) { border-right: 0; }
+  /* In a half-width letter three columns crush the values, so the form stays one column there. */
+  .air-span-5 .air-form, .air-span-7 .air-form { grid-template-columns: 1fr; }
+  .air-span-5 .air-cell, .air-span-7 .air-cell { border-right: 0; }
   .air-cell--wide { grid-column: 1 / -1; gap: 20px; border: 0; }
   .air-cell--wide .air-lbl { width: 120px; }
   .air-val { font-size: 15.5px; }

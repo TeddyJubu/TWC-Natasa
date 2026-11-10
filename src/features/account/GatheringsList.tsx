@@ -14,7 +14,7 @@ import { AirCard, EmptySlot, Locked, TicketDate } from "./shared";
 /** Upcoming gatherings with her RSVPs; applicants see what unlocks. */
 export function GatheringsList({ userId, approved, applied, hoodList }: { userId: string; approved: boolean; applied: boolean; hoodList: Neighborhood[] }) {
   return (
-    <AirCard id="gatherings" span={7} no={7} title="Gatherings" subtitle="Save your seat at what’s coming up">
+    <AirCard id="gatherings" no={7} title="Gatherings" subtitle="Save your seat at what’s coming up">
       {approved ? <Events userId={userId} hoodList={hoodList} /> : <Locked applied={applied} />}
     </AirCard>
   );
@@ -40,7 +40,7 @@ function Events({ userId, hoodList }: { userId: string; hoodList: Neighborhood[]
         <EmptySlot icon="calendar-days"><p>No gatherings on the calendar yet. We’ll post the next one here.</p></EmptySlot>
       )}
       {events.length > 0 && (
-        <ol className="air-tickets">
+        <ol className="air-tickets lg:grid-cols-2">
           {events.map((ev) => {
             const when = eventWhen(ev.starts_at);
             const going = rsvps.has(ev.id);

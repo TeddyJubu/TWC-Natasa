@@ -23,7 +23,7 @@ export function IntroductionsSection({
   const intros = introsState.data ?? [];
 
   return (
-    <AirCard id="introductions" span={5} no={8} title="Introductions" subtitle={n ? `Neighbors from ${n} first, then across the constellation.` : "Neighbors from across the constellation."}>
+    <AirCard id="introductions" no={8} title="Introductions" subtitle={n ? `Neighbors from ${n} first, then across the constellation.` : "Neighbors from across the constellation."}>
       {!approved ? <Locked applied={applied} /> : (
         <>
           {introsState.isError && <InlineError message="We couldn’t load your introductions." onRetry={() => void introsState.refetch()} />}
@@ -31,8 +31,9 @@ export function IntroductionsSection({
             <EmptySlot><p>No introductions yet. As more neighbors join the directory, they’ll appear here.</p></EmptySlot>
           ) : intros.length > 0 && (
             <div>
-              <div className="grid grid-cols-1 gap-x-5 gap-y-7 rounded-xl bg-black px-4 py-6 sm:grid-cols-2 sm:px-6 sm:pt-7 sm:pb-8">
-                {intros.map((m) => <MemberCard key={m.id} member={m} variant="catalogue" tone={toneFor(m.neighborhood, hoodList)} catalogueNumber={m.catalogueNumber} onOpen={() => onOpen(m)} />)}
+              {/* The contact sheet hugs its cards (up to four), so one introduction isn't lost in an empty black panel. */}
+              <div className="flex flex-wrap gap-x-5 gap-y-7 rounded-xl bg-black px-4 py-6 sm:w-fit sm:px-6 sm:pt-7 sm:pb-8">
+                {intros.map((m) => <MemberCard key={m.id} member={m} variant="catalogue" tone={toneFor(m.neighborhood, hoodList)} catalogueNumber={m.catalogueNumber} onOpen={() => onOpen(m)} className="w-full sm:w-[300px] lg:w-[236px]" />)}
               </div>
             </div>
           )}

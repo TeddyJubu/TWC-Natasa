@@ -36,7 +36,7 @@ const ALREADY_EXISTS = ["USER_ALREADY_EXISTS", "USER_ALREADY_EXISTS_USE_ANOTHER_
 const PASSWORD_RULES = ["PASSWORD_TOO_SHORT", "PASSWORD_TOO_LONG"];
 
 const COPY: Record<Mode, { script: string; title: string; lede: string; submit: string }> = {
-  signin: { script: "welcome back", title: "Welcome back, neighbor.", lede: "Sign in to update your profile and see what’s happening nearby.", submit: "Sign in" },
+  signin: { script: "good to see you", title: "Welcome back, neighbor.", lede: "Sign in to update your profile and see what’s happening nearby.", submit: "Sign in" },
   signup: { script: "hello, neighbor", title: "Open your member account", lede: "Create your login now; your profile unlocks once the collective approves your application.", submit: "Create account" },
   forgot: { script: "it happens", title: "Reset your password", lede: "We’ll send a link to choose a new password.", submit: "Send reset link" },
 };
