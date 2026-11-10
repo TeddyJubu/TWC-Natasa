@@ -59,7 +59,7 @@ export function WhereCard({ editor, userId, hood, approved, avatar, hoodList }: 
               <text fontFamily="var(--font-plex)" fontSize="6.8" fontWeight="600" letterSpacing="1.45" fill="var(--bl-air-red)">
                 <textPath href="#air-mring">{hood.toUpperCase()} · QUEENS · NEW YORK ·</textPath>
               </text>
-              <text x="52" y="57" textAnchor="middle" fontFamily="var(--font-fraunces)" fontSize="13.5" fontWeight="700" fill="var(--bl-air-red)">{place.zip}</text>
+              <text x="52" y="57" textAnchor="middle" fontFamily="var(--font-gilda)" fontSize="13.5" fontWeight="400" fill="var(--bl-air-red)">{place.zip}</text>
             </svg>
             <div className="air-map-pin">
               <div className="air-map-pop">

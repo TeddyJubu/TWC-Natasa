@@ -12,10 +12,7 @@
 @font-face { font-family: "Instrument Serif"; src: url("./assets/fonts/home/instrument-serif-italic.woff2") format("woff2"); font-weight: 400; font-style: italic; font-display: swap; }
 @font-face { font-family: "Geist"; src: url("./assets/fonts/home/geist-variable.woff2") format("woff2"); font-weight: 400 600; font-display: swap; }
 @font-face { font-family: "Fragment Mono"; src: url("./assets/fonts/home/fragment-mono-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
-/* Airmail (/account): variable Fraunces (opsz + wght, roman and italic), variable DM Sans, IBM Plex Mono. Latin subsets. */
-@font-face { font-family: "Fraunces"; src: url("./assets/fonts/airmail/fraunces-latin-full-normal.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
-@font-face { font-family: "Fraunces"; src: url("./assets/fonts/airmail/fraunces-latin-full-italic.woff2") format("woff2"); font-weight: 100 900; font-style: italic; font-display: swap; }
-@font-face { font-family: "DM Sans"; src: url("./assets/fonts/airmail/dm-sans-latin-wght-normal.woff2") format("woff2"); font-weight: 100 1000; font-display: swap; }
+/* Airmail (/account): IBM Plex Mono for its stamps and labels (Gilda Display and Geist come from the shared faces). Latin subset. */
 @font-face { font-family: "IBM Plex Mono"; src: url("./assets/fonts/airmail/ibm-plex-mono-latin-500-normal.woff2") format("woff2"); font-weight: 500; font-display: swap; }
 @font-face { font-family: "IBM Plex Mono"; src: url("./assets/fonts/airmail/ibm-plex-mono-latin-600-normal.woff2") format("woff2"); font-weight: 600; font-display: swap; }
 @font-face { font-family: "IBM Plex Mono"; src: url("./assets/fonts/airmail/ibm-plex-mono-latin-700-normal.woff2") format("woff2"); font-weight: 700; font-display: swap; }
@@ -24,7 +21,7 @@
   --font-editorial: "Instrument Serif", Georgia, serif;
   --font-geist: "Geist", system-ui, sans-serif;
   --font-fragment: "Fragment Mono", ui-monospace, monospace;
-  --font-fraunces: "Fraunces", Georgia, serif;
+  --font-gilda: "Gilda Display", Georgia, serif;
   --font-plex: "IBM Plex Mono", ui-monospace, monospace;
   --color-sb-ink: #1f1f1c;
   --color-sb-paper: #fcfcfa;

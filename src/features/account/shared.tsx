@@ -5,7 +5,7 @@ import { cn } from "@/index";
 import { ring } from "@/app/layout/app-classes";
 import { Icon, type IconName } from "@/app/layout/icons";
 
-/** A letter on the desk: "Nº 01", a Fraunces title and a line under it. `id` makes it a tab anchor. */
+/** A letter on the desk: "Nº 01", a Gilda Display title and a line under it. `id` makes it a tab anchor. */
 export function AirCard({ id, no, title, subtitle, action, span, className, children }: {
   id?: string; no: number; title: string; subtitle?: React.ReactNode; action?: React.ReactNode; span?: 5 | 7;
   className?: string; children: React.ReactNode;
