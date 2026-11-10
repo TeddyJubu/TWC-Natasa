@@ -39,7 +39,7 @@ const meta = (route: AnyRoute) => ((route.options.head as () => { meta: Record<s
 const profile: Profile = {
   id: "u1", full_name: "Rosa Diaz", role_title: "Founder", business: "Diaz Bakery", neighborhood: "Astoria",
   specialty: "Food", bio: "", looking_for: "", website: "", avatar_path: null, business_logo_url: null, directory_visible: false,
-  public_profile: false, status: "approved", catalogue_number: 27, member_since: "2026-01-05T12:00:00Z",
+  public_profile: false, status: "approved", catalogue_number: 27, member_since: "2026-01-05T12:00:00Z", card_color: "mustard",
   created_at: "", updated_at: "",
 };
 const seed: [unknown[], unknown][] = [

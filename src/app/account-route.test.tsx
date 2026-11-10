@@ -30,7 +30,7 @@ afterEach(() => {
 const base: Profile = {
   id: "u1", full_name: "Rosa Diaz", role_title: "Founder", business: "Diaz Bakery", neighborhood: "Astoria",
   specialty: "Food", bio: "", looking_for: "", website: "", avatar_path: null, business_logo_url: null, directory_visible: false,
-  public_profile: false, status: "approved", catalogue_number: 27, member_since: "2026-01-05T12:00:00Z",
+  public_profile: false, status: "approved", catalogue_number: 27, member_since: "2026-01-05T12:00:00Z", card_color: "mustard",
   created_at: "", updated_at: "",
 };
 
@@ -154,7 +154,7 @@ describe("/account", () => {
     expect(within(membership).getByText(/assigned once you’re approved/i)).toBeTruthy();
   });
 
-  it("an approved member's cover: verified badge, specialty, work and place, her number and join date, a card preview", () => {
+  it("an approved member's cover: verified badge, specialty, work and place, her number and join date, a card preview", async () => {
     restoreDialog = stubDialog();
     renderAccount();
     const cover = screen.getByRole("region", { name: "Rosa Diaz" });
@@ -165,10 +165,14 @@ describe("/account", () => {
     const stat = (label: string) => within(cover).getByText(label).nextElementSibling?.textContent;
     expect([stat("Member"), stat("Joined")]).toEqual(["No. 27", "Jan 2026"]);
     fireEvent.click(within(cover).getByRole("button", { name: "View public card" }));
-    expect(screen.getByRole("dialog", { name: "Rosa Diaz, member profile" })).toBeTruthy();
+    const pass = screen.getByRole("dialog", { name: "Rosa Diaz" });
+    expect(within(pass).getByText("No. 27")).toBeTruthy();
     const membership = screen.getByRole("region", { name: "Membership" });
     expect(within(membership).getByText("Verified")).toBeTruthy();
     expect(within(membership).getByText("No. 27")).toBeTruthy();
+    // A swatch saves her pass colour on the spot.
+    fireEvent.click(within(pass).getByRole("radio", { name: "Rose" }));
+    await waitFor(() => expect(fake.calls).toContainEqual(["saveProfileFn", { card_color: "rose" }]));
   });
 
   describe("before approval", () => {
@@ -415,15 +419,15 @@ describe("/account", () => {
       expect(screen.getByRole("heading", { level: 1, name: "Rosa M. Diaz" })).toBeTruthy();
     });
 
-    it("Preview card opens the member dialog with her unsaved values", () => {
+    it("Preview card opens her member pass with her unsaved values", () => {
       restoreDialog = stubDialog();
       renderAccount();
       editPublicCard();
       fireEvent.change(screen.getByLabelText(/^full name/i), { target: { value: "Rosa M. Diaz" } });
       fireEvent.change(screen.getByLabelText(/^role/i), { target: { value: "Head Baker" } });
       fireEvent.click(button(/preview card/i));
-      const dialog = screen.getByRole("dialog", { name: "Rosa M. Diaz, member profile" });
-      expect(within(dialog).getByText("Head Baker · Diaz Bakery")).toBeTruthy();
+      const dialog = screen.getByRole("dialog", { name: "Rosa M. Diaz" });
+      expect(within(dialog).getByText("Head Baker, Diaz Bakery")).toBeTruthy();
       expect(fake.calls).toEqual([]);
     });
   });

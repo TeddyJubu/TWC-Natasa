@@ -140,6 +140,11 @@ describe("access rules (ported from the RLS checks)", () => {
   it("website must be http(s)", () => expect(() => saveProfile(as(B), { website: "javascript:alert(1)" })).toThrow(/CHECK/));
   it("bio is capped at 400 characters", () => expect(() => saveProfile(as(B), { bio: "x".repeat(401) })).toThrow(/CHECK/));
   it("neighborhood must be a known one", () => expect(() => saveProfile(as(B), { neighborhood: "Atlantis" })).toThrow(/FOREIGN KEY/));
+  it("card colour is one of the palette", () => {
+    expect(saveProfile(as(B), { card_color: "rose" }).card_color).toBe("rose");
+    expect(() => saveProfile(as(B), { card_color: "red; drop table" as never })).toThrow();
+    expect(() => db.prepare("update profiles set card_color = 'neon' where id = ?").run(B)).toThrow(/CHECK/);
+  });
 
   // A second member hides herself: her earlier portraits disappear for other members.
   it("fixture: hidden member is approved", () => {

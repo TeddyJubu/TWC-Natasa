@@ -8,14 +8,16 @@ import { checkImage, mediaUrl, removeMedia, writeMedia } from "@/server/media";
 import { bad, isObject, str } from "@/server/validate";
 import { checkSize, fileBytes, readForm, respond } from "@/server/request";
 import { toMemberProfile } from "./map";
+import { CARD_COLORS, type CardColor } from "./card-colors";
 
 export type MembershipStatus = "pending" | "approved" | "declined";
 export type Profile = {
   id: string; full_name: string; role_title: string; business: string; neighborhood: string | null; specialty: string;
   bio: string; looking_for: string; website: string; avatar_path: string | null; business_logo_url: string | null;
   directory_visible: boolean; public_profile: boolean; status: MembershipStatus; catalogue_number: number | null;
-  member_since: string | null; created_at: string; updated_at: string;
+  member_since: string | null; card_color: CardColor; created_at: string; updated_at: string;
 };
+
 /** `hasApplication`: she has applied (any status), so /account needn't point her at /join. */
 export type ProfileData = { profile: Profile; avatarUrl: string | undefined; logoUrl?: string; hasApplication: boolean };
 type ProfileRow = Omit<Profile, "directory_visible" | "public_profile"> & { directory_visible: number; public_profile: number };
@@ -110,7 +112,7 @@ export function intros({ db, actor }: Ctx, neighborhood: string | null): MemberP
 // (the old protect_profile_fields trigger); image paths change only through uploads.
 const TEXT_FIELDS = ["full_name", "role_title", "business", "specialty", "bio", "looking_for", "website"] as const;
 const FLAGS = ["directory_visible", "public_profile"] as const;
-export type ProfilePatch = Partial<Pick<Profile, (typeof TEXT_FIELDS)[number] | (typeof FLAGS)[number] | "neighborhood">>;
+export type ProfilePatch = Partial<Pick<Profile, (typeof TEXT_FIELDS)[number] | (typeof FLAGS)[number] | "neighborhood" | "card_color">>;
 
 /** Self-only edit of her card. Admin-only or unknown fields are rejected, not silently dropped. */
 export function saveProfile({ db, actor }: Ctx, patch: unknown): Profile {
@@ -124,6 +126,10 @@ export function saveProfile({ db, actor }: Ctx, patch: unknown): Profile {
       if (typeof value !== "boolean") throw bad(key);
       values.push(value ? 1 : 0);
     } else if (key === "neighborhood") values.push(value === null ? null : str(value, key, 100));
+    else if (key === "card_color") {
+      if (!(CARD_COLORS as readonly unknown[]).includes(value)) throw bad(key);
+      values.push(value as CardColor);
+    }
     else throw new AccessError(`You can’t change ${key}.`);
     sets.push(`${key} = ?`);
   }

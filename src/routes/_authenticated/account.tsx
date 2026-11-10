@@ -7,7 +7,6 @@ import { InlineError } from "@/app/layout/app-ui";
 import { useSignOut } from "@/app/layout/sign-out";
 import { useNeighborhoods, type Neighborhood } from "@/features/neighborhoods/queries";
 import { profileQuery, viewerQuery, type Profile } from "@/features/members/queries";
-import { toMemberProfile } from "@/features/members/map";
 import { useSaveProfile, type ProfilePatch } from "@/features/members/mutations";
 import { AccountHeader } from "@/features/account/AccountHeader";
 import { AirShell } from "@/features/account/AirShell";
@@ -17,6 +16,7 @@ import { HeadshotBooking } from "@/features/account/HeadshotBooking";
 import { IntroductionsSection } from "@/features/account/IntroductionsSection";
 import { WhereCard } from "@/features/account/WhereCard";
 import { SaveActions } from "@/features/account/SaveActions";
+import { PassDialog } from "@/features/account/MemberPass";
 import { PROFILE_FORM, changedFields, errorMessage, fieldId, type CardKey, type ProfileEditor } from "@/features/account/helpers";
 
 export const Route = createFileRoute("/_authenticated/account")({
@@ -97,6 +97,7 @@ function ProfileEditorPage({ userId, profile, avatar, logoUrl, hoodList, applied
   const [editing, setEditing] = React.useState<Partial<Record<CardKey, boolean>>>({});
   const [focus, setFocus] = React.useState<string | null>(null);
   const [openMember, setOpenMember] = React.useState<MemberProfile | null>(null);
+  const [passOpen, setPassOpen] = React.useState(false);
   // "All changes saved" stays up for a moment after a save, then the bar leaves.
   const [saved, setSaved] = React.useState(false);
   const savedFlash = React.useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -143,7 +144,8 @@ function ProfileEditorPage({ userId, profile, avatar, logoUrl, hoodList, applied
     });
   }
 
-  const preview = () => setOpenMember(toMemberProfile(card, { image: avatar, logo: logoUrl, placeholders: true }));
+  // "View public card" (and the save bar's Preview, which shows unsaved edits too) opens her member pass.
+  const preview = () => setPassOpen(true);
 
   return (
     <main id="main" tabIndex={-1} className="outline-none">
@@ -165,6 +167,7 @@ function ProfileEditorPage({ userId, profile, avatar, logoUrl, hoodList, applied
         />
       </div>
       <MemberDialog member={openMember} onClose={() => setOpenMember(null)} />
+      <PassDialog open={passOpen} onClose={() => setPassOpen(false)} userId={userId} facts={{ ...card, approved, avatar }} />
     </main>
   );
 }

@@ -567,6 +567,83 @@ textarea.twc-input { min-height: 132px; resize: vertical; }
   .air-saved { padding-left: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .air-btn, .air-tabs a, .air-stamp-face img { transition: none; } .air-btn:hover:not(:disabled) { translate: none; } }
+
+/* Member pass: "View public card" on /account. A die-cut postage pass in her chosen colour (`pass--*`), portrait
+   below 880px and landscape from there, with notches where the perforation meets the edge. Ink is fixed (#1d1c1a) on
+   every pass colour; the foil and tilt follow a fine pointer only (`--px`/`--py`, set from the pointer). */
+.pass-dialog { max-width: none; max-height: none; width: 100%; height: 100%; margin: 0; padding: 0; border: 0; background: transparent; overflow-y: auto; }
+.pass-dialog::backdrop { background: rgb(14 20 40 / 0.72); backdrop-filter: blur(3px); }
+.pass-dialog-in { display: flex; flex-direction: column; align-items: center; gap: 18px; min-height: 100%; padding: 64px 16px 32px; justify-content: center; perspective: 1100px; }
+.pass-close { position: fixed; top: 14px; right: 14px; z-index: 2; background: var(--bl-air-paper); }
+.pass--mustard { --pass: var(--color-sb-mustard); }
+.pass--rose { --pass: var(--color-sb-rose); }
+.pass--lilac { --pass: var(--color-sb-lilac); }
+.pass--mint { --pass: var(--color-sb-mint); }
+.pass-wrap { --mx: calc(var(--px, 50) * 1%); --my: calc(var(--py, 50) * 1%); width: min(500px, 100%); filter: drop-shadow(0 26px 30px rgb(0 0 0 / 0.5)) drop-shadow(0 2px 3px rgb(0 0 0 / 0.3)); transition: transform 0.6s var(--ease-gentle); }
+.pass { position: relative; min-height: 750px; overflow: hidden; border-radius: 24px; background: var(--pass); color: #1d1c1a; font-family: var(--font-geist);
+  -webkit-mask: radial-gradient(circle 15px at 0 475px, #0000 14.5px, #000 15px) left / 51% 100% no-repeat, radial-gradient(circle 15px at 100% 475px, #0000 14.5px, #000 15px) right / 51% 100% no-repeat;
+  mask: radial-gradient(circle 15px at 0 475px, #0000 14.5px, #000 15px) left / 51% 100% no-repeat, radial-gradient(circle 15px at 100% 475px, #0000 14.5px, #000 15px) right / 51% 100% no-repeat; }
+.pass::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.22; mix-blend-mode: multiply; background: var(--air-fiber); }
+.pass-top { position: absolute; top: 24px; left: 30px; right: 30px; display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; }
+.pass-top b { font-size: 13px; font-weight: 600; letter-spacing: 0.2em; }
+.pass-photo { position: absolute; left: 30px; right: 30px; top: 58px; height: 380px; overflow: hidden; border-radius: 12px; background: rgb(29 28 26 / 0.12); }
+.pass-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 22%; }
+.pass-initials { display: grid; place-items: center; height: 100%; font: 400 120px/1 var(--font-gilda); }
+.pass-tab { position: absolute; top: 57px; left: 50%; z-index: 1; translate: -50% 0; display: flex; align-items: center; gap: 9px; height: 44px; padding: 0 24px; border-radius: 0 0 20px 20px; background: var(--pass); font-size: 12px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; white-space: nowrap; }
+.pass-tab svg { width: 18px; height: 18px; }
+.pass-tab::before, .pass-tab::after { content: ""; position: absolute; top: 0; width: 20px; height: 20px; }
+.pass-tab::before { left: -20px; background: radial-gradient(circle at 0 100%, transparent 19.5px, var(--pass) 20px); }
+.pass-tab::after { right: -20px; background: radial-gradient(circle at 100% 100%, transparent 19.5px, var(--pass) 20px); }
+.pass-postmark { position: absolute; left: 30px; top: 362px; z-index: 1; width: min(260px, 70%); rotate: -7deg; opacity: 0.72; mix-blend-mode: multiply; pointer-events: none; }
+.pass-stamp { position: absolute; right: 38px; top: 338px; z-index: 2; width: 90px; height: 110px; rotate: 8deg; filter: drop-shadow(0 3px 4px rgb(0 0 0 / 0.35)); }
+.pass-stamp-paper { width: 100%; height: 100%; padding: 8px; background: #f6efe2; -webkit-mask: var(--air-perf-sm); mask: var(--air-perf-sm); }
+.pass-stamp-face { display: flex; flex-direction: column; align-items: center; justify-content: space-between; height: 100%; padding: 5px 4px 4px; background: #1d1c1a; color: var(--pass); text-align: center; text-transform: uppercase; outline: 1px solid #1d1c1a; outline-offset: 2px; }
+.pass-stamp-val { align-self: flex-start; min-height: 9px; font-size: 9px; font-weight: 600; line-height: 1; }
+.pass-stamp-name { max-width: 100%; overflow: hidden; font-size: 9px; font-weight: 600; letter-spacing: 0.1em; line-height: 1.15; overflow-wrap: anywhere; }
+.pass-stamp-foot { font-size: 5.5px; letter-spacing: 0.14em; line-height: 1; opacity: 0.8; }
+.pass-perf { position: absolute; left: 30px; right: 30px; top: 474px; border-top: 2px dashed rgb(29 28 26 / 0.45); }
+.pass-stub { position: relative; display: flex; flex-direction: column; min-height: 750px; padding: 496px 30px 30px; }
+.pass-stub h2 { font: 600 clamp(36px, 11vw, 54px)/0.92 var(--font-geist); letter-spacing: -0.02em; text-transform: uppercase; overflow-wrap: anywhere; text-wrap: balance; }
+.pass-role { margin-top: 8px; font-size: 13px; font-weight: 500; opacity: 0.8; }
+.pass-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 12px; margin-top: 18px; }
+.pass-grid dt { margin-bottom: 3px; font-size: 9.5px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.7; }
+.pass-grid dd { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.pass-code { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-top: auto; padding-top: 20px; }
+.pass-bars { flex: 1; height: 34px; background: repeating-linear-gradient(90deg, #1d1c1a 0 2px, transparent 2px 5px, #1d1c1a 5px 9px, transparent 9px 11px, #1d1c1a 11px 12px, transparent 12px 16px); }
+.pass-code span { font-size: 12px; font-weight: 500; letter-spacing: 0.1em; font-variant-numeric: tabular-nums; }
+.pass-shine, .pass-glare { position: absolute; inset: 0; z-index: 5; pointer-events: none; opacity: 0; transition: opacity 0.35s ease; }
+.pass-shine { mix-blend-mode: plus-lighter; filter: brightness(1.15) saturate(1.2);
+  background: radial-gradient(farthest-corner circle at var(--mx) var(--my), rgb(255 255 255 / 0.95), rgb(255 255 255 / 0.35) 22%, transparent 48%), repeating-linear-gradient(115deg, #ff9a8f 0%, #ffe98a 6%, #b9ffa0 12%, #9ff4ff 18%, #a9b6ff 24%, #f0a8ff 30%, #ff9a8f 36%) var(--mx) var(--my) / 300% 300%;
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><g fill='white'><path d='M20 23Q20 30 27 30Q20 30 20 37Q20 30 13 30Q20 30 20 23Z'/><path d='M90 11Q90 15 94 15Q90 15 90 19Q90 15 86 15Q90 15 90 11Z'/><path d='M115 72Q115 80 123 80Q115 80 115 88Q115 80 107 80Q115 80 115 72Z'/><path d='M50 95Q50 100 55 100Q50 100 50 105Q50 100 45 100Q50 100 50 95Z'/><circle cx='70' cy='60' r='1.4'/><circle cx='128' cy='130' r='1.2'/></g></svg>") 0 0 / 140px 140px;
+  mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><g fill='white'><path d='M20 23Q20 30 27 30Q20 30 20 37Q20 30 13 30Q20 30 20 23Z'/><path d='M90 11Q90 15 94 15Q90 15 90 19Q90 15 86 15Q90 15 90 11Z'/><path d='M115 72Q115 80 123 80Q115 80 115 88Q115 80 107 80Q115 80 115 72Z'/><path d='M50 95Q50 100 55 100Q50 100 50 105Q50 100 45 100Q50 100 50 95Z'/><circle cx='70' cy='60' r='1.4'/><circle cx='128' cy='130' r='1.2'/></g></svg>") 0 0 / 140px 140px; }
+.pass-glare { mix-blend-mode: overlay; background: radial-gradient(farthest-corner circle at var(--mx) var(--my), rgb(255 255 255 / 0.8) 6%, rgb(255 255 255 / 0.35) 22%, rgb(0 0 0 / 0.3) 90%); }
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .pass-wrap:hover { transform: rotateY(calc((var(--px, 50) - 50) * 0.26deg)) rotateX(calc((50 - var(--py, 50)) * 0.22deg)); transition: none; }
+  .pass-wrap:hover .pass-shine { opacity: 1; }
+  .pass-wrap:hover .pass-glare { opacity: 0.4; }
+}
+.pass-colors { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; padding: 10px 16px; border-radius: 999px; background: var(--bl-air-paper); }
+.pass-colors legend { float: left; margin-right: 6px; font: 500 10px var(--font-plex); letter-spacing: 0.16em; text-transform: uppercase; color: var(--bl-air-muted); }
+.pass-swatch { position: relative; display: grid; width: 30px; height: 30px; border-radius: 50%; background: var(--pass); box-shadow: inset 0 0 0 1px rgb(29 28 26 / 0.25); cursor: pointer; }
+.pass-swatch input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+.pass-swatch:has(:checked) { box-shadow: inset 0 0 0 1px rgb(29 28 26 / 0.25), 0 0 0 2px var(--bl-air-paper), 0 0 0 4px var(--bl-air-navy); }
+.pass-swatch:has(:focus-visible) { outline: 2px solid var(--bl-air-navy); outline-offset: 5px; }
+.pass-swatch:has(:disabled) { cursor: progress; }
+.pass-error { width: 100%; text-align: center; font-size: 13px; color: var(--color-danger); }
+@media (min-width: 880px) {
+  .pass-wrap { width: 780px; }
+  .pass { min-height: 500px;
+    -webkit-mask: radial-gradient(circle 15px at 420px 0, #0000 14.5px, #000 15px) top / 100% 51% no-repeat, radial-gradient(circle 15px at 420px 100%, #0000 14.5px, #000 15px) bottom / 100% 51% no-repeat;
+    mask: radial-gradient(circle 15px at 420px 0, #0000 14.5px, #000 15px) top / 100% 51% no-repeat, radial-gradient(circle 15px at 420px 100%, #0000 14.5px, #000 15px) bottom / 100% 51% no-repeat; }
+  .pass-photo { right: auto; bottom: 30px; width: 360px; height: auto; }
+  .pass-tab { left: 210px; }
+  .pass-postmark { left: 36px; top: 372px; width: 245px; }
+  .pass-stamp { right: auto; left: 290px; top: 368px; }
+  .pass-perf { left: 419px; right: auto; top: 30px; bottom: 30px; border-top: 0; border-left: 2px dashed rgb(29 28 26 / 0.45); }
+  .pass-stub { position: absolute; inset: 58px 30px 30px 450px; min-height: 0; padding: 0; }
+  .pass-stub h2 { font-size: 58px; }
+  .pass-grid { grid-template-columns: 1fr 1fr; gap: 16px 12px; margin-top: 22px; }
+}
 }
 /* Unlayered: the shared Toggle's row insets are utilities, and the airmail options sit flush on their rules. */
 .air-opts > label { padding-inline: 0; }
