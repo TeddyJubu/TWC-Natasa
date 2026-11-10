@@ -918,13 +918,14 @@ function OpenSwitch({ idPrefix, name, open, savedMessage, hint, busy, error, onS
 /**
  * The kit's admit ticket on the app palette: a paper card whose stub tears off along a dashed line, with a punched
  * notch at each end of the tear. `row` puts the stub beside the main part from sm; otherwise it sits underneath.
- * `label` makes it a named region.
+ * `label` makes it a named region; `stamp` swaps the hairline outline for the postage edge (twc-stamp-edge).
  */
-function Ticket({ label, row, stub, className, children }: { label?: string; row?: boolean; stub: React.ReactNode; className?: string; children: React.ReactNode }) {
+function Ticket({ label, row, stamp, stub, className, children }: { label?: string; row?: boolean; stamp?: boolean; stub: React.ReactNode; className?: string; children: React.ReactNode }) {
   const Tag = label ? "section" : "div";
-  const notch = "absolute size-4 rounded-full bg-app-sunken shadow-[inset_0_0_0_1px_var(--color-app-line)]";
+  const line = "shadow-[inset_0_0_0_1px_var(--color-app-line)]";
+  const notch = cn("absolute size-4 rounded-full bg-app-sunken", !stamp && line);
   return (
-    <Tag aria-label={label} className={cn("relative flex flex-col overflow-hidden rounded-md bg-app shadow-[inset_0_0_0_1px_var(--color-app-line)]", row && "sm:flex-row", className)}>
+    <Tag aria-label={label} className={cn("relative flex flex-col overflow-hidden bg-app", stamp ? "twc-stamp-edge" : cn("rounded-md", line), row && "sm:flex-row", className)}>
       <div className="flex min-w-0 flex-1 flex-col gap-3 p-5 sm:p-6">{children}</div>
       <div className={cn("relative flex shrink-0 flex-col justify-center border-t border-dashed border-app-muted/60 px-5 py-4 sm:px-6", row && "sm:w-56 sm:border-t-0 sm:border-l sm:py-6")}>
         <span aria-hidden className={cn(notch, "top-0 left-0 -translate-1/2")} />
@@ -944,7 +945,7 @@ function FormCard({ id, title, status, where, note, stub, onDelete, deleting }: 
   return (
     <article aria-labelledby={headingId}
       className="group relative rounded-md transition-transform duration-150 ease-snap hover:-translate-y-0.5 has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-app-accent motion-reduce:transition-none motion-reduce:hover:translate-y-0">
-      <Ticket className="h-full transition-shadow duration-150 group-hover:shadow-[inset_0_0_0_1px_var(--color-ink)]"
+      <Ticket stamp className="h-full"
         stub={(
           <div className="flex items-center justify-between gap-3 text-[13px] text-app-muted">
             <span className="min-w-0">{stub}</span>
