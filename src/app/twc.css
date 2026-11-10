@@ -286,15 +286,23 @@ textarea.twc-input { min-height: 132px; resize: vertical; }
 .air-link:disabled { opacity: 0.5; }
 
 /* Top bar: brand, the account tabs (a swipeable strip below lg), who is signed in */
-.air-top { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "brand who" "nav nav"; align-items: center; column-gap: 16px; padding-top: 10px; }
+.air-top { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "brand who"; align-items: center; column-gap: 16px; padding-top: 10px; }
 .air-brand { grid-area: brand; display: flex; align-items: center; gap: 10px; min-height: 44px; border-radius: 999px; font: 400 17px/1.2 var(--font-gilda); letter-spacing: -0.01em; white-space: nowrap; }
 .air-brand img { width: 26px; }
-.air-nav { grid-area: nav; display: flex; align-items: center; gap: 14px; min-width: 0; margin: 8px -16px 0; padding: 2px 16px 6px; overflow-x: auto; scrollbar-width: none; -webkit-mask: linear-gradient(90deg, #000 calc(100% - 44px), transparent); mask: linear-gradient(90deg, #000 calc(100% - 44px), transparent); }
-.air-tabs { display: inline-flex; gap: 2px; padding: 4px; border-radius: 999px; background: rgb(251 250 246 / 0.8); box-shadow: inset 0 0 0 1px var(--air-rule), 0 6px 16px -12px rgb(28 44 94 / 0.5); white-space: nowrap; }
-.air-tabs a { display: flex; align-items: center; gap: 7px; height: 38px; padding: 0 15px; border-radius: 999px; font-size: 13.5px; font-weight: 500; color: var(--bl-air-muted); transition: background-color var(--duration-fast), color var(--duration-fast); }
-.air-tabs a:hover { color: var(--bl-air-navy); }
-.air-tabs a[aria-current] { background: var(--bl-air-navy); color: var(--bl-air-paper); font-weight: 600; }
 .air-who { grid-area: who; display: flex; align-items: center; gap: 10px; }
+/* The account menu: her name and avatar open it (hover with a mouse; click, Enter or tap otherwise). */
+.air-me { position: relative; }
+.air-me-btn { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 3px 10px 3px 3px; border-radius: 999px; transition: background-color var(--duration-fast); }
+.air-me-btn:hover, .air-me[data-open] .air-me-btn { background: rgb(251 250 246 / 0.8); }
+.air-me-chev { color: var(--bl-air-muted); transition: rotate var(--duration-fast); }
+.air-me[data-open] .air-me-chev { rotate: 180deg; }
+.air-menu { position: absolute; right: 0; top: 100%; z-index: 30; display: none; padding-top: 8px; }
+.air-me[data-open] .air-menu { display: block; }
+@media (hover: hover) { .air-me:hover .air-menu { display: block; } .air-me:hover .air-me-chev { rotate: 180deg; } }
+.air-menu ul { display: grid; gap: 2px; min-width: 232px; padding: 6px; border-radius: 18px; background: var(--bl-air-paper); box-shadow: inset 0 0 0 1px var(--air-rule), 0 22px 34px -20px rgb(28 44 94 / 0.55), 0 2px 4px rgb(28 44 94 / 0.08); }
+.air-menu a { display: flex; align-items: center; gap: 10px; min-height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; font-weight: 500; color: var(--bl-air-muted); transition: background-color var(--duration-fast), color var(--duration-fast); }
+.air-menu a:hover { background: rgb(28 44 94 / 0.06); color: var(--bl-air-navy); }
+.air-menu a[aria-current] { background: var(--bl-air-navy); color: var(--bl-air-paper); font-weight: 600; }
 .air-avatar { display: grid; place-items: center; width: 36px; height: 36px; flex-shrink: 0; overflow: hidden; border-radius: 50%; background: var(--bl-air-sky); box-shadow: 0 0 0 2px var(--bl-air-paper), 0 0 0 3px var(--air-line); font: 400 13px var(--font-gilda); }
 .air-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .air-icon-btn { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; box-shadow: inset 0 0 0 1px var(--air-line); transition: background-color var(--duration-fast); }
@@ -490,9 +498,8 @@ textarea.twc-input { min-height: 132px; resize: vertical; }
 @media (min-width: 1024px) {
   .air::before { height: 10px; }
   .air-wrap { padding: 10px 40px 56px; }
-  .air-top { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "brand nav who"; min-height: 96px; padding-top: 0; }
+  .air-top { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "brand who"; min-height: 96px; padding-top: 0; }
   .air-brand { gap: 12px; font-size: 19px; } .air-brand img { width: 30px; }
-  .air-nav { justify-content: center; margin: 0; padding: 4px; overflow: visible; -webkit-mask: none; mask: none; }
   .air-avatar { width: 38px; height: 38px; }
   .air-env { padding: 12px; border-radius: 16px; }
   .air-env-in { grid-template-columns: 400px minmax(0, 1fr); grid-template-areas: "post top" "post stub"; grid-template-rows: auto 1fr; min-height: 472px; padding: 36px 44px 34px 40px; }
@@ -566,7 +573,7 @@ textarea.twc-input { min-height: 132px; resize: vertical; }
   .air-savebar { padding: 16px 14px 12px 22px; }
   .air-saved { padding-left: 0; }
 }
-@media (prefers-reduced-motion: reduce) { .air-btn, .air-tabs a, .air-stamp-face img { transition: none; } .air-btn:hover:not(:disabled) { translate: none; } }
+@media (prefers-reduced-motion: reduce) { .air-btn, .air-menu a, .air-stamp-face img { transition: none; } .air-btn:hover:not(:disabled) { translate: none; } }
 
 /* Member pass: "View public card" on /account. A die-cut postage pass in her chosen colour (`pass--*`), portrait
    below 880px and landscape from there, with notches where the perforation meets the edge. Ink is fixed (#1d1c1a) on
