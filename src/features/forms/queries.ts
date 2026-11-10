@@ -2,7 +2,7 @@
 // server), and the public POST.
 import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 import { postApi } from "@/app/api";
-import { adminFormResponsesFn, formResponsesCsvFn, saveAdminFormFn, setFormOpenFn, type SaveAdminFormInput } from "./fns";
+import { adminFormResponsesFn, deleteAdminFormFn, formResponsesCsvFn, saveAdminFormFn, setFormOpenFn, type SaveAdminFormInput } from "./fns";
 import type { Answers } from "./schema";
 
 export type { AdminForm, AdminFormResponse, PublicForm } from "./forms.server";
@@ -25,6 +25,14 @@ export function useSaveAdminForm() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: SaveAdminFormInput) => saveAdminFormFn({ data }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "form-responses"] }),
+  });
+}
+
+export function useDeleteAdminForm() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => deleteAdminFormFn({ data: { id } }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "form-responses"] }),
   });
 }

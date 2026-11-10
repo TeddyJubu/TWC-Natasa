@@ -52,3 +52,11 @@ export const formResponsesCsvFn = createServerFn({ method: "POST" })
     const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./forms.server")]);
     return serve((c) => m.formResponsesCsv(c, data));
   });
+
+/** Delete a form and all its answers. Admins only. */
+export const deleteAdminFormFn = createServerFn({ method: "POST" })
+  .validator(pass<{ id: string }>)
+  .handler(async ({ data }) => {
+    const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./forms.server")]);
+    return serve((c) => m.deleteAdminForm(c, data));
+  });

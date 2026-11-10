@@ -36,7 +36,7 @@ import { spotlightEntries } from "@/features/member-links/spotlight";
 import { QuestionsEditor } from "@/features/forms/FormEditor";
 import { draftFromQuestions, questionsFromDraft, starterQuestions } from "@/features/forms/form-draft";
 import type { SaveAdminFormInput } from "@/features/forms/fns";
-import { adminFormResponsesQuery, useDownloadFormCsv, useSaveAdminForm, useSetFormOpen, type AdminForm } from "@/features/forms/queries";
+import { adminFormResponsesQuery, useDeleteAdminForm, useDownloadFormCsv, useSaveAdminForm, useSetFormOpen, type AdminForm } from "@/features/forms/queries";
 import { BUILT_IN, BUILT_IN_INFO, COPY_FIELDS, COPY_MAX, LONG_TEXT, isCopyForm, type BuiltIn, type CopyForm } from "@/features/form-copy/manifest";
 import { adminFormCopyQuery, useSaveFormCopy } from "@/features/form-copy/queries";
 import { adminFormsStateQuery, useSetMembershipFormOpen } from "@/features/forms-state/queries";
@@ -935,8 +935,11 @@ function Ticket({ label, row, stub, className, children }: { label?: string; row
   );
 }
 
-/** One form as a ticket. The whole card opens its edit page (the heading's link stretches over it). */
-function FormCard({ id, title, status, where, note, stub }: { id: string; title: string; status: string; where?: string; note?: string; stub: React.ReactNode }) {
+/**
+ * One form as a ticket. The whole card opens its edit page (the heading's link stretches over it); `onDelete` adds a
+ * trash button raised above that link.
+ */
+function FormCard({ id, title, status, where, note, stub, onDelete, deleting }: { id: string; title: string; status: string; where?: string; note?: string; stub: React.ReactNode; onDelete?: () => void; deleting?: boolean }) {
   const headingId = `form-card-${id}`;
   return (
     <article aria-labelledby={headingId}
@@ -952,7 +955,15 @@ function FormCard({ id, title, status, where, note, stub }: { id: string; title:
           <h3 id={headingId} className="min-w-0 font-display text-[22px]/[1.2] break-words text-ink">
             <Link to="/admin/forms/$formId" params={{ formId: id }} className="outline-none after:absolute after:inset-0 after:content-['']">{title}</Link>
           </h3>
-          <StatusChip status={status} />
+          <div className="flex shrink-0 items-center gap-1.5">
+            <StatusChip status={status} />
+            {onDelete && (
+              <button type="button" aria-label={`Delete ${title}`} title="Delete" disabled={deleting} onClick={onDelete}
+                className={cn("relative z-10 grid size-8 place-items-center rounded-full text-app-muted transition-colors hover:bg-app-sunken hover:text-ink disabled:opacity-50", ring)}>
+                <Icon name="trash" className="size-4" />
+              </button>
+            )}
+          </div>
         </div>
         {where && <p className="twc-index break-all">{where}</p>}
         {note && <p className={meta}>{note}</p>}
@@ -979,7 +990,12 @@ export function FormsListPanel() {
   const states = useQuery(adminFormsStateQuery);
   const forms = useQuery(adminFormResponsesQuery);
   const [adding, setAdding] = React.useState(false);
+  const remove = useDeleteAdminForm();
   const tile = React.useRef<HTMLButtonElement>(null);
+  const confirmDelete = (f: AdminForm) => {
+    const answers = f.total === 0 ? "" : ` Its ${f.total === 1 ? "answer goes" : `${f.total} answers go`} with it; download the CSV first if you want to keep them.`;
+    if (window.confirm(`Delete “${f.name}” for good?${answers} Its /f/${f.slug} link will stop working.`)) { remove.mutate(f.id); tile.current?.focus(); }
+  };
   const custom = forms.data ?? [];
   const open = (kind: "application" | "review") => (states.data?.find((s) => s.kind === kind)?.open === false ? "closed" : "open");
   const status: Record<BuiltIn, string> = { application: open("application"), review: open("review"), contact: "always_on", partnership: "always_on", newsletter: "no_page" };
@@ -997,6 +1013,7 @@ export function FormsListPanel() {
           <div className={cardGrid}>
             {custom.map((f) => (
               <FormCard key={f.id} id={f.id} title={f.name} status={f.open ? "open" : "closed"} where={formPath(f.slug)}
+                onDelete={() => confirmDelete(f)} deleting={remove.isPending}
                 stub={<><span className="font-display text-lg/none text-ink tabular-nums">{f.total}</span> {f.total === 1 ? "answer" : "answers"}{f.newest_at ? ` · newest ${formatDate(f.newest_at)}` : ""}</>} />
             ))}
             <button ref={tile} type="button" aria-expanded={adding} aria-controls="forms-new" onClick={() => (adding ? close() : setAdding(true))}
@@ -1005,6 +1022,7 @@ export function FormsListPanel() {
               <span className="font-display text-[22px]/[1.2]">New form</span>
             </button>
           </div>
+          <MutationError mutation={remove} />
           {adding && <NewFormPanel onClose={close} />}
         </QueryGate>
       </section>

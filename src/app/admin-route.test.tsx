@@ -176,6 +176,20 @@ describe("/admin", () => {
       expect(link("Inbox").getAttribute("href")).toBe("/admin#inbox");
     });
 
+    it("a form of your own has a delete button that asks first, naming its answers; built-in forms have none", async () => {
+      renderForms({ "form-responses": [demoForm({ total: 2 })] });
+      const ask = vi.spyOn(window, "confirm").mockReturnValueOnce(false).mockReturnValueOnce(true);
+      expect(within(card("Built-in forms")).queryAllByRole("button", { name: /^Delete/ })).toHaveLength(0);
+      const del = within(card("Your forms")).getByRole("button", { name: "Delete Salon RSVP (demo)" });
+      fake.reset();
+      fireEvent.click(del);
+      expect(ask.mock.calls[0]![0]).toMatch(/Delete “Salon RSVP \(demo\)” for good\? Its 2 answers go with it; download the CSV first.*\/f\/salon-rsvp/);
+      expect(fake.calls).toEqual([]);
+      fireEvent.click(del);
+      await waitFor(() => expect(fake.calls[0]).toEqual(["deleteAdminFormFn", { id: "demo0001" }]));
+      ask.mockRestore();
+    });
+
     it("New form asks only for a name and web address, then folds away again", () => {
       renderForms({ "form-responses": [] });
       const yours = within(card("Your forms"));

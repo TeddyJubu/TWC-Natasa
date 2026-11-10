@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { openDb, type DB } from "@/server/db";
 import { DEMO_FORMS } from "./fixtures";
 import { toCsv } from "@/features/admin/format";
-import { adminFormResponses, CLOSED, CLOSED_MESSAGE_MAX, DUPLICATE, formRequest, formResponsesCsv, openForm, responseEntries, saveAdminForm, setFormOpen } from "./forms.server";
+import { adminFormResponses, CLOSED, CLOSED_MESSAGE_MAX, deleteAdminForm, DUPLICATE, formRequest, formResponsesCsv, openForm, responseEntries, saveAdminForm, setFormOpen } from "./forms.server";
 import { checkAnswers, checkQuestions, type Question } from "./schema";
 import { saveForm } from "./store";
 
@@ -283,6 +283,31 @@ describe("setFormOpen", () => {
     expect(() => setFormOpen(admin(), { id: "nope0001", open: false })).toThrow(/Invalid form/);
     expect(() => setFormOpen(admin(), { id: "demo0001", open: "yes" })).toThrow(/Invalid open/);
     expect(() => setFormOpen(admin(), { id: "demo0001", open: false, message: "x".repeat(CLOSED_MESSAGE_MAX + 1) })).toThrow(/Invalid message/);
+  });
+});
+
+describe("deleteAdminForm", () => {
+  const admin = () => ({ db, actor: ADMIN });
+  const count = (table: string) => (db.prepare(`select count(*) as n from ${table} where form_id = 'demo0001'`).get() as { n: number }).n;
+
+  it("is admin-only", () => {
+    expect(() => deleteAdminForm(ctx(), { id: "demo0001" })).toThrow(/sign in/i);
+  });
+
+  it("deletes the form with its answers and old names, so its link is a 404", async () => {
+    expect((await send("salon-rsvp", { answers: good })).status).toBe(204);
+    deleteAdminForm(admin(), { id: "demo0001" });
+    expect(db.prepare("select id from custom_forms where id = 'demo0001'").get()).toBeUndefined();
+    expect([count("custom_form_responses"), count("custom_form_old_slugs")]).toEqual([0, 0]);
+    expect(openForm(ctx(), { slug: "salon-rsvp" })).toBeNull();
+    expect(openForm(ctx(), { slug: "salon-rsvp-old" })).toBeNull();
+    expect(adminFormResponses(admin()).map((f) => f.id)).toEqual(["demo0002"]);
+  });
+
+  it("refuses an unknown or malformed id and deletes nothing", () => {
+    expect(() => deleteAdminForm(admin(), { id: "nope0001" })).toThrow(/Invalid form/);
+    expect(() => deleteAdminForm(admin(), { id: 7 })).toThrow(/Invalid form/);
+    expect(adminFormResponses(admin())).toHaveLength(2);
   });
 });
 

@@ -2,7 +2,7 @@
 // /api/forms/<slug>: size, per-visitor-per-form limit, honeypot); only admins open/close forms, create/edit
 // definitions through saveForm, read answers and download CSV (requireAdmin).
 import type { Ctx } from "@/server/context.server";
-import type { DB } from "@/server/db";
+import { tx, type DB } from "@/server/db";
 import { AccessError, requireAdmin } from "@/server/guard";
 import { checkSize, clientIp, HttpError, rateLimit, respond } from "@/server/request";
 import { bad, isObject, str } from "@/server/validate";
@@ -217,6 +217,21 @@ export function setFormOpen({ db, actor }: Ctx, input: unknown): void {
   }
   db.prepare(`update custom_forms set open = ?, closed_message = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') where id = ?`)
     .run(open ? 1 : 0, message, id);
+}
+
+/**
+ * Delete a custom form for good, with every answer it has: the table refuses to drop a form that still has answers
+ * (no cascade), so they go first, by name, in the same transaction. Its old names go with it (cascade).
+ */
+export function deleteAdminForm({ db, actor }: Ctx, input: unknown): void {
+  requireAdmin(db, actor);
+  if (!isObject(input)) throw bad("form");
+  const id = str(input.id, "form", 8);
+  if (id.length !== 8) throw bad("form");
+  tx(db, () => {
+    db.prepare("delete from custom_form_responses where form_id = ?").run(id);
+    if (db.prepare("delete from custom_forms where id = ?").run(id).changes === 0) throw bad("form");
+  });
 }
 
 /** One answer cell for CSV: choice labels joined, else the string (CRM-130). */
