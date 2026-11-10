@@ -3,9 +3,9 @@
 import * as React from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { cn, initials, safeHref, type MemberProfile } from "@/index";
+import { cn, safeHref, type MemberProfile } from "@/index";
 import { AppPage } from "@/app/layout/AppLayout";
-import { EmptySlot, InlineError } from "@/app/layout/app-ui";
+import { EmptySlot, InlineError, Stamp } from "@/app/layout/app-ui";
 import { fieldClass, redButton, ring, secondaryButton } from "@/app/layout/app-classes";
 import { Icon } from "@/app/layout/icons";
 import { AirShell } from "@/features/account/AirShell";
@@ -29,12 +29,6 @@ export const Route = createFileRoute("/_authenticated/directory")({
 const SHEET_SIZE = 12;
 const no4 = (n?: number) => (n === undefined ? "" : String(n).padStart(4, "0"));
 const printed = new Date().toLocaleDateString("en-US", { month: "short", year: "numeric", timeZone: "America/New_York" });
-
-/** The small line under a stamp's name ("Café owner · Woodside"). */
-function stampCaption(m: MemberProfile): string {
-  // TODO(human)
-  return m.neighborhood;
-}
 
 function DirectoryPage() {
   const { user } = Route.useRouteContext();
@@ -133,7 +127,10 @@ function DirectoryPage() {
                   </EmptySlot>
                 ) : (
                   <div role="group" aria-label={`Member stamps, sheet ${page + 1}`} className="air-sheet">
-                    {sheet.map((m) => <Stamp key={m.id} member={m} out={m.id === outId} onTear={() => tear(m)} />)}
+                    {sheet.map((m) => (
+                      <Stamp key={m.id} member={m} pressed={m.id === outId} onClick={() => tear(m)}
+                        label={[m.name, m.role, m.neighborhood && `in ${m.neighborhood}`].filter(Boolean).join(", ")} />
+                    ))}
                   </div>
                 )}
                 <div className="air-dir-foot">
@@ -150,28 +147,6 @@ function DirectoryPage() {
         </main>
       </AirShell>
     </AppPage>
-  );
-}
-
-/** One stamp on the sheet: a real toggle button. Torn out, it lifts off and leaves a dashed spot to tap. */
-function Stamp({ member: m, out, onTear }: { member: MemberProfile; out: boolean; onTear: () => void }) {
-  const n = m.catalogueNumber;
-  return (
-    <button
-      type="button" aria-pressed={out} onClick={onTear}
-      aria-label={[m.name, m.role, m.neighborhood && `in ${m.neighborhood}`].filter(Boolean).join(", ")}
-      className={cn("air-slot", ring, out && "is-out")}
-    >
-      <span aria-hidden className="air-slot-ghost">Torn out · tap to return</span>
-      <span aria-hidden className="air-slot-stamp">
-        <span className="air-slot-top">{n !== undefined && <><b>nº {String(n).padStart(2, "0")}</b><i>{n}¢</i></>}</span>
-        <span className="air-slot-ph">{m.image ? <img src={m.image} alt="" loading="lazy" /> : <span>{initials(m.name)}</span>}</span>
-        <span className="air-slot-foot">
-          <span className="min-w-0"><strong>{m.name}</strong><small>{stampCaption(m)}</small></span>
-          <em>twc.</em>
-        </span>
-      </span>
-    </button>
   );
 }
 

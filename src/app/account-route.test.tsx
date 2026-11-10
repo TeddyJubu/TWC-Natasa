@@ -310,10 +310,12 @@ describe("/account", () => {
   });
 
   describe("introductions", () => {
-    it("show real catalogue numbers", () => {
+    it("are stamps with their real catalogue numbers", () => {
       renderAccount({}, [card("Lena Ortiz", 40), card("Mei Chen", 41)]);
-      expect(screen.getByLabelText("Catalogue number 40")).toBeTruthy();
-      expect(screen.getByLabelText("Catalogue number 41")).toBeTruthy();
+      const sheet = within(document.getElementById("introductions")!);
+      expect(sheet.getByText("nº 40")).toBeTruthy();
+      expect(sheet.getByText("nº 41")).toBeTruthy();
+      expect(sheet.getAllByRole("button").map((b) => b.getAttribute("aria-pressed"))).toEqual([null, null]);
     });
 
     it("open a card into a dialog with that member's bio", () => {

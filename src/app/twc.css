@@ -628,6 +628,8 @@ textarea.twc-input { min-height: 132px; resize: vertical; }
 .air-slot-foot em { flex-shrink: 0; writing-mode: vertical-rl; rotate: 180deg; font: 400 15px/1 var(--font-gilda); font-style: normal; }
 @media (hover: hover) { .air-slot:not(.is-out):hover .air-slot-stamp { transform: translateY(-3px) rotate(-0.5deg); } }
 @media (min-width: 640px) { .air-sheet { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+/* /account's introductions: up to four stamps in one strip from sm, each no wider than a directory stamp. */
+@media (min-width: 640px) { .air-sheet--strip { grid-template-columns: repeat(4, minmax(0, 190px)); } }
 @media (min-width: 1024px) {
   .air-dir-intro { grid-template-columns: minmax(0, 1fr) 392px; align-items: end; gap: 48px; margin-top: 56px; }
   .air-dir-split { grid-template-columns: 304px minmax(0, 1fr); align-items: start; gap: 56px; margin-top: 104px; }

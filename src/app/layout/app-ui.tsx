@@ -1,7 +1,7 @@
 // The internal tools' building blocks (/account, /admin; DESIGN.md "Internal tools"): airmail letters on the onionskin
 // desk, mono labels, navy rules, stamps and tickets (`air-*` in src/app/twc.css, on the `air-*` tokens in theme.css).
 import * as React from "react";
-import { cn } from "@/index";
+import { cn, initials, type MemberProfile } from "@/index";
 import { Icon, type IconName } from "./icons";
 import { linkClass, ring, secondaryButton } from "./app-classes";
 
@@ -162,5 +162,33 @@ export function TicketDate({ when, tone = "navy" }: { when: { month: string; day
     <div aria-hidden className={cn("air-t-date", tone !== "navy" && `air-t-date--${tone}`)}>
       <small>{when.month}</small><b>{when.day}</b><small>{when.weekday}</small>
     </div>
+  );
+}
+
+/** The small line under a stamp's name ("Ceramics · Sunnyside"): her craft, else her role, then where; only what is set. */
+function stampCaption(m: MemberProfile): string {
+  return [m.specialty || m.role, m.neighborhood].filter(Boolean).join(" · ");
+}
+
+/**
+ * A member as a postage stamp (`air-slot` in a perforated `air-sheet`): number in red mono, value in cents, portrait or
+ * initials on navy (never a stand-in photo), name in Geist capitals, a caption, "twc." on its side. A real button named
+ * by `label`. With `pressed` it is a toggle that lifts off the sheet when on, leaving a dashed spot (/directory);
+ * without, it just opens something (/account's introductions).
+ */
+export function Stamp({ member: m, label, pressed, onClick }: { member: MemberProfile; label: string; pressed?: boolean; onClick: () => void }) {
+  const n = m.catalogueNumber;
+  return (
+    <button type="button" aria-pressed={pressed} aria-label={label} onClick={onClick} className={cn("air-slot", ring, pressed && "is-out")}>
+      {pressed !== undefined && <span aria-hidden className="air-slot-ghost">Torn out · tap to return</span>}
+      <span aria-hidden className="air-slot-stamp">
+        <span className="air-slot-top">{n !== undefined && <><b>nº {String(n).padStart(2, "0")}</b><i>{n}¢</i></>}</span>
+        <span className="air-slot-ph">{m.image ? <img src={m.image} alt="" loading="lazy" /> : <span>{initials(m.name)}</span>}</span>
+        <span className="air-slot-foot">
+          <span className="min-w-0"><strong>{m.name}</strong><small>{stampCaption(m)}</small></span>
+          <em>twc.</em>
+        </span>
+      </span>
+    </button>
   );
 }
