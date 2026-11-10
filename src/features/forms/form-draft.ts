@@ -8,7 +8,8 @@ export const NEEDS_CHOICES = new Set<QuestionType>(["dropdown", "radio", "checkb
 export type DraftChoice = { value: string; label: string };
 /** One editable question; `uid` is a client-only React key, never sent. */
 export type DraftQuestion = { uid: string; key: string; type: QuestionType; label: string; required: boolean; help: string; choices: DraftChoice[] };
-export type QuestionsDraft = { intro: string; thanks: string; questions: DraftQuestion[] };
+/** What the sheet on a form's Questions tab edits: everything a visitor reads. */
+export type QuestionsDraft = { name: string; intro: string; thanks: string; questions: DraftQuestion[] };
 
 const CHARS = "abcdefghijklmnopqrstuvwxyz0123456789";
 const random = (n: number) => Array.from(crypto.getRandomValues(new Uint8Array(n)), (b) => CHARS[b % CHARS.length]).join("");
@@ -71,4 +72,4 @@ export function questionsFromDraft(draft: DraftQuestion[]): Question[] {
 
 /** Whether two drafts would save the same questions (ignores client-only uids). */
 export const sameQuestions = (a: QuestionsDraft, b: QuestionsDraft) =>
-  a.intro === b.intro && a.thanks === b.thanks && JSON.stringify(questionsFromDraft(a.questions)) === JSON.stringify(questionsFromDraft(b.questions));
+  a.name === b.name && a.intro === b.intro && a.thanks === b.thanks && JSON.stringify(questionsFromDraft(a.questions)) === JSON.stringify(questionsFromDraft(b.questions));

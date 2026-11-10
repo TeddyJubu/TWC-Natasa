@@ -46,6 +46,7 @@ Signed-in pages (`/account`, `/admin`, and any new page behind sign-in) are a se
 - States: before approval, Gatherings, Headshot session and Introductions show the locked panel ("Unlocks once you're welcomed in"), linking to `/join` only when she has no application; headshot requests show cream / mint / rose notices for requested / confirmed / declined.
 - Layout: page column `max-w-250`, gutters `px-4` on phones and `sm:px-8`; cards stack with `gap-6`. Nothing scrolls sideways at 375px except a table inside its own region.
 - Motion: colour transitions, the switch knob and the `twc-btn` hover lift, all off under reduced motion.
+- Forms (`/admin/forms`): a form is a ticket, the kit's admit ticket on the app palette (`Ticket` in `panels.tsx`: paper card, dashed tear, a punched notch at each end): a card on the list with its answer count on the stub, and the summary at the top of its own page. A custom form's Questions tab is the form on a paper sheet (the one soft shadow on internal pages): every word is edited in place, with no box until hover or focus, and choices are the pills visitors tap. Fragment Mono (`twc-index`) carries links, dates and question numbers; at most one Caveat line per view.
 
 ## Accessibility
 - White text on photos needs the built-in gradients (`bg-sky-fade`, card overlays); don't remove them.

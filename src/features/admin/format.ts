@@ -250,6 +250,9 @@ export function describeAction(a: { action: ActionKind; application_id: string |
 export type FormTab = "answers" | "questions" | "settings";
 export const FORM_TABS: readonly FormTab[] = ["answers", "questions", "settings"];
 
+/** What an answer is called when it doesn't say who sent it. */
+export const NO_NAME = "No name given";
+
 /**
  * What one answer is called in a form's Answers list: who sent it, as far as the answers say. A person's name (by key
  * or label, never a business's), then an email address, then a fixed "No name given" — never a number, which would
@@ -260,5 +263,5 @@ export function answerTitle(entries: AnswerEntry[]): string {
   const about = (e: AnswerEntry) => `${e.key} ${e.label}`;
   const name = entries.find((e) => text(e) && /name/i.test(about(e)) && !/business|company|organi[sz]ation|brand|shop|venue/i.test(about(e)));
   const email = entries.find((e) => /^[^\s@]+@[^\s@]+$/.test(text(e)));
-  return (name && text(name)) || (email && text(email)) || "No name given";
+  return (name && text(name)) || (email && text(email)) || NO_NAME;
 }

@@ -2,7 +2,7 @@
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { cn } from "@/index";
+import { cn, initials } from "@/index";
 import { fieldClass, linkClass, primaryButton, ring, secondaryButton } from "@/app/layout/app-classes";
 import { Card, Chip, InlineError, Toggle, type ChipTone } from "@/app/layout/app-ui";
 import { Icon } from "@/app/layout/icons";
@@ -25,7 +25,7 @@ import type { ApprovalNotice } from "./approval-email";
 import {
   applicationOrigin, checkLogo, describeAction, DUPLICATE_TEXT, formatAnswers, formatDate, formatDay, humanizeKey,
   LOGGED_ACTION_KINDS, LOGGED_ACTION_LABELS, matchesSearch, newestByUser, newsletterLabel, subscriberConsentLabel,
-  reviewerName, answerTitle, FORM_TABS, type AnswerEntry, type FormTab, type LoggedActionKind,
+  reviewerName, answerTitle, FORM_TABS, NO_NAME, type AnswerEntry, type FormTab, type LoggedActionKind,
 } from "./format";
 import {
   adminReviewsQuery, adminSpotlightsQuery, reviewLinkStatesQuery, spotlightLinkStatesQuery, useMarkReviewDone, useMintReviewLink, useRevokeReviewLink,
@@ -850,12 +850,7 @@ function SpotlightRow({ spotlight: s }: { spotlight: AdminSpotlight }) {
 
 // ---------- Forms: the list, and each form's own edit page ----------
 
-function AnswersLink({ to }: { to: [label: string, href: string] }) {
-  return <>Answers go to <a className={linkClass} href={to[1]}>{to[0]}</a></>;
-}
-
 const formPath = (slug: string) => `/f/${slug}`;
-const answerCount = (n: number) => (n === 1 ? "1 answer" : `${n} answers`);
 
 /** Copies a site link, then says so (or shows the link to copy by hand). */
 function CopyLink({ path }: { path: string }) {
@@ -920,21 +915,48 @@ function OpenSwitch({ idPrefix, name, open, savedMessage, hint, busy, error, onS
   );
 }
 
-/** One form as a card. The whole card opens its edit page (the heading's link stretches over it). */
-function FormCard({ id, title, status, where, detail }: { id: string; title: string; status: string; where?: string; detail: React.ReactNode }) {
+/**
+ * The kit's admit ticket on the app palette: a paper card whose stub tears off along a dashed line, with a punched
+ * notch at each end of the tear. `row` puts the stub beside the main part from sm; otherwise it sits underneath.
+ * `label` makes it a named region.
+ */
+function Ticket({ label, row, stub, className, children }: { label?: string; row?: boolean; stub: React.ReactNode; className?: string; children: React.ReactNode }) {
+  const Tag = label ? "section" : "div";
+  const notch = "absolute size-4 rounded-full bg-app-sunken shadow-[inset_0_0_0_1px_var(--color-app-line)]";
+  return (
+    <Tag aria-label={label} className={cn("relative flex flex-col overflow-hidden rounded-md bg-app shadow-[inset_0_0_0_1px_var(--color-app-line)]", row && "sm:flex-row", className)}>
+      <div className="flex min-w-0 flex-1 flex-col gap-3 p-5 sm:p-6">{children}</div>
+      <div className={cn("relative flex shrink-0 flex-col justify-center border-t border-dashed border-app-muted/60 px-5 py-4 sm:px-6", row && "sm:w-56 sm:border-t-0 sm:border-l sm:py-6")}>
+        <span aria-hidden className={cn(notch, "top-0 left-0 -translate-1/2")} />
+        <span aria-hidden className={cn(notch, "top-0 right-0 translate-x-1/2 -translate-y-1/2", row && "sm:top-auto sm:right-auto sm:bottom-0 sm:left-0 sm:-translate-x-1/2 sm:translate-y-1/2")} />
+        {stub}
+      </div>
+    </Tag>
+  );
+}
+
+/** One form as a ticket. The whole card opens its edit page (the heading's link stretches over it). */
+function FormCard({ id, title, status, where, note, stub }: { id: string; title: string; status: string; where?: string; note?: string; stub: React.ReactNode }) {
   const headingId = `form-card-${id}`;
   return (
     <article aria-labelledby={headingId}
-      className="relative flex min-h-36 flex-col gap-2 rounded-md bg-app p-5 shadow-[inset_0_0_0_1px_var(--color-app-line)] transition-colors duration-150 hover:bg-app-sunken has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-app-accent">
-      <div className="flex items-start justify-between gap-3">
-        <h3 id={headingId} className="min-w-0 text-base font-medium break-words text-ink">
-          <Link to="/admin/forms/$formId" params={{ formId: id }} className="outline-none after:absolute after:inset-0 after:content-['']">{title}</Link>
-        </h3>
-        <StatusChip status={status} />
-      </div>
-      {where && <p className={meta}>{where}</p>}
-      <p className={meta}>{detail}</p>
-      <span aria-hidden className="mt-auto pt-2 text-sm text-ink">Open →</span>
+      className="group relative rounded-md transition-transform duration-150 ease-snap hover:-translate-y-0.5 has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-app-accent motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+      <Ticket className="h-full transition-shadow duration-150 group-hover:shadow-[inset_0_0_0_1px_var(--color-ink)]"
+        stub={(
+          <div className="flex items-center justify-between gap-3 text-[13px] text-app-muted">
+            <span className="min-w-0">{stub}</span>
+            <Icon name="arrow-right" className="size-4 text-ink transition-transform duration-150 group-hover:translate-x-0.5 motion-reduce:transition-none" />
+          </div>
+        )}>
+        <div className="flex items-start justify-between gap-3">
+          <h3 id={headingId} className="min-w-0 font-display text-[22px]/[1.2] break-words text-ink">
+            <Link to="/admin/forms/$formId" params={{ formId: id }} className="outline-none after:absolute after:inset-0 after:content-['']">{title}</Link>
+          </h3>
+          <StatusChip status={status} />
+        </div>
+        {where && <p className="twc-index break-all">{where}</p>}
+        {note && <p className={meta}>{note}</p>}
+      </Ticket>
     </article>
   );
 }
@@ -964,7 +986,7 @@ export function FormsListPanel() {
   const total = custom.reduce((n, f) => n + f.total, 0);
   const close = () => { setAdding(false); tile.current?.focus(); };
   return (
-    <div id="forms" className="flex scroll-mt-28 flex-col gap-10">
+    <div id="forms" className="flex scroll-mt-28 flex-col gap-12">
       <section aria-labelledby="forms-yours" className="flex flex-col gap-4">
         <SectionHead id="forms-yours" title="Your forms">
           {forms.data && custom.length > 0
@@ -975,12 +997,12 @@ export function FormsListPanel() {
           <div className={cardGrid}>
             {custom.map((f) => (
               <FormCard key={f.id} id={f.id} title={f.name} status={f.open ? "open" : "closed"} where={formPath(f.slug)}
-                detail={<>{answerCount(f.total)}{f.newest_at ? ` · newest ${formatDate(f.newest_at)}` : ""}</>} />
+                stub={<><span className="font-display text-lg/none text-ink tabular-nums">{f.total}</span> {f.total === 1 ? "answer" : "answers"}{f.newest_at ? ` · newest ${formatDate(f.newest_at)}` : ""}</>} />
             ))}
             <button ref={tile} type="button" aria-expanded={adding} aria-controls="forms-new" onClick={() => (adding ? close() : setAdding(true))}
-              className={cn("flex min-h-36 flex-col items-center justify-center gap-1.5 rounded-md border border-dashed border-app-line p-5 text-ink transition-colors duration-150 hover:bg-app-sunken aria-expanded:bg-app-sunken", ring)}>
-              <Icon name="plus" className="size-6" />
-              <span className="text-base font-medium">New form</span>
+              className={cn("group flex min-h-40 flex-col items-center justify-center gap-3 rounded-md border border-dashed border-app-muted/60 p-5 text-ink transition-colors duration-150 hover:border-ink hover:bg-app aria-expanded:border-ink aria-expanded:bg-app", ring)}>
+              <span aria-hidden className="grid size-11 place-items-center rounded-full bg-ink text-app transition-transform duration-150 ease-snap group-hover:scale-105 motion-reduce:transition-none"><Icon name="plus" className="size-5" /></span>
+              <span className="font-display text-[22px]/[1.2]">New form</span>
             </button>
           </div>
           {adding && <NewFormPanel onClose={close} />}
@@ -991,7 +1013,8 @@ export function FormsListPanel() {
         <div className={cardGrid}>
           {LISTED_BUILT_IN.map((kind) => {
             const info = BUILT_IN_INFO[kind];
-            return <FormCard key={kind} id={kind} title={info.title} status={status[kind]} where={info.href} detail={info.note} />;
+            return <FormCard key={kind} id={kind} title={info.title} status={status[kind]} where={info.href}
+              note={status[kind] === "always_on" ? undefined : info.note} stub={<>Answers in {info.answers[0]}</>} />;
           })}
         </div>
         <p className={meta}>
@@ -1026,7 +1049,7 @@ function NewFormPanel({ onClose }: { onClose: () => void }) {
   return (
     <form id="forms-new" aria-label="New form" onSubmit={submit} onKeyDown={(e) => { if (e.key === "Escape") onClose(); }}
       className="flex flex-col gap-5 rounded-md bg-app p-5 shadow-[inset_0_0_0_1px_var(--color-app-line)] sm:p-7">
-      <h3 className="font-display text-[22px]/[1.25] text-ink">New form</h3>
+      <h3 className="font-display text-[26px]/[1.2] text-ink">New form</h3>
       <div className="grid gap-5 md:grid-cols-2">
         <Field id="form-new-name" label="Name">
           <input ref={first} id="form-new-name" required maxLength={80} value={name} disabled={save.isPending} placeholder="Supper club RSVP"
@@ -1049,12 +1072,22 @@ function NewFormPanel({ onClose }: { onClose: () => void }) {
 
 /** An edit page's way back to the list. */
 export function BackToForms() {
-  return <Link to="/admin/forms" className={cn("inline-flex w-fit items-center gap-1.5 text-sm text-app-muted underline-offset-4 hover:underline", ring)}>← All forms</Link>;
+  return (
+    <Link to="/admin/forms" className={cn("inline-flex w-fit items-center gap-1.5 rounded-sm text-sm text-app-muted underline-offset-4 hover:text-ink hover:underline", ring)}>
+      <Icon name="arrow-left" className="size-4" />Back to forms
+    </Link>
+  );
 }
 
 function NotFound() {
   return <Card id="form" title="Form not found"><Empty>There is no form with this address. It may have been renamed or removed.</Empty></Card>;
 }
+
+/** A form's state in a sentence, next to its chip. */
+const STATUS_LINE: Record<string, string> = {
+  open: "Visitors can fill it in now.", closed: "Visitors see your closed message.",
+  always_on: "Always on; it can’t be closed.", no_page: "No public page yet.",
+};
 
 /** The edit page for a built-in form: where it lives, open/close (join and review), and its wording. */
 export function BuiltInFormPanel({ kind }: { kind: BuiltIn }) {
@@ -1063,14 +1096,25 @@ export function BuiltInFormPanel({ kind }: { kind: BuiltIn }) {
   const setOpen = useSetMembershipFormOpen();
   const state = states.data?.find((s) => s.kind === kind);
   const closable = kind === "application" || kind === "review";
+  const status = closable ? (state?.open === false ? "closed" : "open") : kind === "newsletter" ? "no_page" : "always_on";
   return (
     <>
-      <Card id="form" title="Status" subtitle={info.note}>
-        <p className={cn(pad, "flex flex-wrap items-center gap-x-5 gap-y-2 py-4 text-[15px] text-ink")}>
-          {info.href && <span>Public page: <PublicLink href={info.href} /></span>}
-          <span><AnswersLink to={info.answers} /></span>
-        </p>
-        {closable && (
+      <Ticket row label="Summary" stub={(
+        <div className="flex flex-col gap-1.5">
+          <p className="twc-eyebrow">Answers go to</p>
+          <a className={cn(linkClass, "w-fit font-display text-[22px]/[1.2] font-normal")} href={info.answers[1]}>{info.answers[0]}</a>
+        </div>
+      )}>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <StatusChip status={status} />
+          <p className="text-[15px] text-ink">{STATUS_LINE[status]}</p>
+        </div>
+        {info.href
+          ? <div className="flex flex-wrap items-center gap-x-4 gap-y-2"><PublicLink href={info.href} /><CopyLink path={info.href} /></div>
+          : <p className={meta}>{info.note}</p>}
+      </Ticket>
+      {closable && (
+        <Card id="status" title="Open or closed" subtitle="When it’s closed, visitors see your closed message instead of the form.">
           <QueryGate query={states} what="the open/closed switch">
             {state
               ? <OpenSwitch idPrefix={`membership-${kind}`} name={info.title} open={state.open} savedMessage={state.message} busy={setOpen.isPending}
@@ -1078,8 +1122,8 @@ export function BuiltInFormPanel({ kind }: { kind: BuiltIn }) {
                   error={<MutationError mutation={setOpen} />} onSet={(open, message) => setOpen.mutate({ kind, open, message })} />
               : <Empty>No switch found for this form.</Empty>}
           </QueryGate>
-        )}
-      </Card>
+        </Card>
+      )}
       {isCopyForm(kind)
         ? <WordingPanel form={kind} />
         : <Card id="wording" title="Wording"><Empty>This form has no public page yet, so there is no wording to edit.</Empty></Card>}
@@ -1123,14 +1167,19 @@ function WordingForm({ form, current, save }: { form: CopyForm; current: Record<
             <summary className={cn("flex min-h-14 cursor-pointer list-none items-center gap-3 px-5 sm:px-7 [&::-webkit-details-marker]:hidden", ring)}>
               <Icon name="chevron-down" className="size-3.5 -rotate-90 text-app-muted transition-transform group-open:rotate-0 motion-reduce:transition-none" />
               <h3 id={headingId} className="text-base font-medium text-ink">{group}</h3>
-              <span className={cn(meta, "ml-auto")}>{inGroup.length} {inGroup.length === 1 ? "text" : "texts"}{changed ? ` · ${changed} changed` : ""}</span>
+              <span className="ml-auto flex items-center gap-3">
+                {changed > 0 && <Chip tone="pending">{changed} changed</Chip>}
+                <span className={cn(meta, "max-sm:hidden")}>{inGroup.length} {inGroup.length === 1 ? "text" : "texts"}</span>
+              </span>
             </summary>
             <section aria-labelledby={headingId} className="flex flex-col gap-4 px-5 pb-6 sm:px-7">
               {inGroup.map((f) => {
                 const id = `wording-${form}-field-${fields.indexOf(f)}`;
                 const isChanged = !!draft[f.text].trim() && draft[f.text] !== f.text;
                 const hint = [f.text.includes("{name}") ? "{name} becomes the member’s first name." : "", isChanged ? "Changed from the original." : ""].filter(Boolean).join(" ");
-                const props = { id, value: draft[f.text], maxLength: COPY_MAX, className: fieldClass, placeholder: f.text, ...(hint ? { "aria-describedby": `${id}-hint` } : {}),
+                const props = { id, value: draft[f.text], maxLength: COPY_MAX, placeholder: f.text,
+                  // A changed box wears a sun rule, so your own words stand out from the originals.
+                  className: cn(fieldClass, isChanged && "shadow-[inset_0_0_0_2px_var(--color-app-pending)]"), ...(hint ? { "aria-describedby": `${id}-hint` } : {}),
                   // Read the value now: React clears `currentTarget` once the handler returns, before a queued update runs.
                   onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => { const { value } = e.currentTarget; setDraft((d) => ({ ...d, [f.text]: value })); } };
                 return (
@@ -1199,20 +1248,30 @@ function FormWorkspace({ form: f, tab, onTab }: { form: AdminForm; tab: FormTab;
   const [current, setCurrent] = React.useState(tab);
   React.useEffect(() => { setCurrent(tab); }, [tab]);
   const select = (next: FormTab) => { setCurrent(next); onTab(next); };
+  const status = f.open ? "open" : "closed";
   // Every panel stays mounted (just hidden), so unsaved questions survive a look at the answers.
   const panel = (name: FormTab, children: React.ReactNode) => (
     <div role="tabpanel" id={`form-panel-${name}`} aria-labelledby={`form-tab-${name}`} hidden={current !== name} className="flex flex-col gap-6">{children}</div>
   );
   return (
     <>
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
-        <StatusChip status={f.open ? "open" : "closed"} />
-        <PublicLink href={formPath(f.slug)} />
-        <span className={meta}>{answerCount(f.total)}</span>
-      </div>
+      <Ticket row label="Summary" stub={(
+        <div className="flex items-baseline gap-2.5 sm:flex-col sm:gap-1">
+          <p className="font-display text-[44px]/[1] text-ink tabular-nums">{f.total}</p>
+          <p className="twc-eyebrow">{f.total === 1 ? "answer" : "answers"}</p>
+          {f.newest_at && <p className="twc-index ml-auto sm:mt-1 sm:ml-0">newest {formatDate(f.newest_at)}</p>}
+        </div>
+      )}>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <StatusChip status={status} />
+          <p className="text-[15px] text-ink">{STATUS_LINE[status]}</p>
+          <button type="button" className={linkClass} onClick={() => select("settings")}>Change in Settings</button>
+        </div>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2"><PublicLink href={formPath(f.slug)} /><CopyLink path={formPath(f.slug)} /></div>
+      </Ticket>
       <FormTabs current={current} onSelect={select} />
       {panel("answers", <AnswersCard form={f} />)}
-      {panel("questions", <QuestionsCard form={f} />)}
+      {panel("questions", <QuestionsSheet form={f} />)}
       {panel("settings", <SettingsCards form={f} />)}
     </>
   );
@@ -1224,83 +1283,99 @@ const formPayload = (f: AdminForm, patch: Partial<SaveAdminFormInput>): SaveAdmi
   open: f.open, one_per_email: f.one_per_email, questions: f.questions, ...patch,
 });
 
+const entryText = (e: AnswerEntry) => (Array.isArray(e.value) ? e.value.join(", ") : e.value).trim();
+
 function AnswersCard({ form: f }: { form: AdminForm }) {
   const csv = useDownloadFormCsv();
   const [query, setQuery] = React.useState("");
-  const rows = f.responses.filter((r) => matchesSearch(query, r.entries.flatMap((e) => (Array.isArray(e.value) ? e.value : [e.value]))));
+  const rows = f.responses.filter((r) => matchesSearch(query, r.entries.map(entryText)));
   const searchId = `answers-search-${f.id}`;
+  if (f.total === 0) {
+    return (
+      <Card id="answers" title="Answers">
+        <div className={cn(pad, "flex flex-col gap-2 py-8")}>
+          <p className="font-script text-[30px]/[1.1] text-app-accent">no answers yet</p>
+          <p className="max-w-[60ch] text-[15px] text-ink">
+            {f.open ? "Share the link above. Each answer lands here the moment it’s sent." : "This form is closed. Open it in Settings, then share the link above."}
+          </p>
+        </div>
+      </Card>
+    );
+  }
   return (
-    <Card id="answers" title="Answers"
-      subtitle={f.total === 0 ? "None yet." : `${answerCount(f.total)}${f.newest_at ? ` · newest ${formatDate(f.newest_at)}` : ""}`}
-      action={f.total > 0 && (
+    <Card id="answers" title="Answers" subtitle="Newest first. Open one to read it in full."
+      action={(
         <button type="button" className={secondaryButton} disabled={csv.isPending} onClick={() => csv.mutate(f.id)}>
           <Icon name="download" className="size-4" />Download CSV
         </button>
       )}>
-      {f.total === 0
-        ? (
-          <div className={cn(pad, "flex flex-col gap-3 py-6 text-[15px] text-ink")}>
-            <p>{f.open ? "When someone fills in the form, their answers show up here. Share the link to get the first one:" : "This form is closed. Open it in Settings, then share the link:"}</p>
-            <p className="flex flex-wrap items-center gap-x-4 gap-y-2"><PublicLink href={formPath(f.slug)} /><CopyLink path={formPath(f.slug)} /></p>
-          </div>
-        )
+      {/* A handful is quicker to scan than to search. */}
+      {f.responses.length > 5 && (
+        <div role="search" className={cn(pad, "flex flex-col gap-1.5 py-4")}>
+          <label htmlFor={searchId} className="text-sm font-medium text-ink">Search answers</label>
+          <input id={searchId} type="search" value={query} autoComplete="off" onChange={(e) => setQuery(e.currentTarget.value)} className={cn(fieldClass, "max-w-120")} />
+        </div>
+      )}
+      {f.total > f.responses.length && <p className={cn(pad, meta, "py-3")}>Showing the newest {f.responses.length}. Download CSV for all {f.total}.</p>}
+      {rows.length === 0
+        ? <Empty>No answers match “{query}”.</Empty>
         : (
-          <>
-            <div role="search" className={cn(pad, "flex flex-col gap-1.5 py-4")}>
-              <label htmlFor={searchId} className="text-sm font-medium text-ink">Search answers</label>
-              <input id={searchId} type="search" value={query} autoComplete="off" onChange={(e) => setQuery(e.currentTarget.value)} className={cn(fieldClass, "max-w-120")} />
-            </div>
-            {f.total > f.responses.length && <p className={cn(pad, meta, "py-3")}>Showing the newest {f.responses.length}. Download CSV for all {f.total}.</p>}
-            {rows.length === 0
-              ? <Empty>No answers match “{query}”.</Empty>
-              : (
-                <ul aria-label="Answers" className="divide-y divide-app-rule">
-                  {rows.map((r) => (
-                    <li key={r.id}>
-                      <details className="group">
-                        <summary className={cn("flex min-h-14 cursor-pointer list-none flex-wrap items-center gap-x-3 gap-y-0.5 px-5 py-2 hover:bg-app-sunken sm:px-7 [&::-webkit-details-marker]:hidden", ring)}>
-                          <Icon name="chevron-down" className="size-3.5 -rotate-90 text-app-muted transition-transform group-open:rotate-0 motion-reduce:transition-none" />
-                          <span className="text-[15px] font-medium text-ink">{answerTitle(r.entries)}</span>
-                          <span className={cn(meta, "ml-auto")}>{formatDate(r.created_at)}</span>
-                        </summary>
-                        <div className="px-2 pb-3 sm:px-4"><AnswerList entries={r.entries} /></div>
-                      </details>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            {csv.isError && <div className={cn(pad, "py-3")}><MutationError mutation={csv} /></div>}
-          </>
+          <ul aria-label="Answers" className="divide-y divide-app-rule">
+            {rows.map((r) => {
+              const title = answerTitle(r.entries);
+              const rest = r.entries.map(entryText).filter((text) => text && text !== title).join(" · ");
+              return (
+                <li key={r.id}>
+                  <details className="group">
+                    <summary className={cn("flex min-h-16 cursor-pointer list-none items-center gap-3.5 px-5 py-3 transition-colors duration-150 hover:bg-app-sunken sm:px-7 [&::-webkit-details-marker]:hidden", ring)}>
+                      <span aria-hidden className="grid size-10 shrink-0 place-items-center rounded-full bg-app-sunken font-display text-sm text-ink group-hover:bg-app">
+                        {title === NO_NAME ? "–" : initials(title)}
+                      </span>
+                      <span className="flex min-w-0 flex-1 flex-col">
+                        <span className="truncate text-[15px] font-medium text-ink">{title}</span>
+                        {rest && <span className="truncate text-[13px] text-app-muted group-open:hidden">{rest}</span>}
+                      </span>
+                      <span className="twc-index shrink-0 max-sm:hidden">{formatDate(r.created_at)}</span>
+                      <Icon name="chevron-down" className="size-3.5 shrink-0 text-app-muted transition-transform group-open:rotate-180 motion-reduce:transition-none" />
+                    </summary>
+                    <div className="px-2 pb-4 sm:pr-4 sm:pl-18">
+                      <p className="twc-index px-3.5 pb-2 sm:hidden">{formatDate(r.created_at)}</p>
+                      <AnswerList entries={r.entries} />
+                    </div>
+                  </details>
+                </li>
+              );
+            })}
+          </ul>
         )}
+      {csv.isError && <div className={cn(pad, "py-3")}><MutationError mutation={csv} /></div>}
     </Card>
   );
 }
 
-function QuestionsCard({ form: f }: { form: AdminForm }) {
+/** The Questions tab: the form on paper, every word edited in place (name, intro, questions, thank-you). */
+function QuestionsSheet({ form: f }: { form: AdminForm }) {
   const save = useSaveAdminForm();
-  // Bumped after each save (once the refetch is in), so the editor starts again from what was stored.
+  // Bumped after each save (once the refetch is in), so the sheet starts again from what was stored.
   const [round, setRound] = React.useState(0);
   return (
-    <Card id="questions" title="Questions" subtitle="What visitors see, top to bottom. Saving changes the live form at once.">
-      <QuestionsEditor key={round} idPrefix={`form-${f.id}`} busy={save.isPending} saved={round > 0}
-        error={save.isError ? errorMessage(save.error) : null}
-        initial={{ intro: f.intro, thanks: f.thanks, questions: draftFromQuestions(f.questions) }}
-        onSave={(draft) => save.mutate(
-          formPayload(f, { intro: draft.intro, thanks: draft.thanks, questions: questionsFromDraft(draft.questions) }),
-          { onSuccess: () => { save.reset(); setRound((r) => r + 1); } },
-        )} />
-    </Card>
+    <QuestionsEditor key={round} idPrefix={`form-${f.id}`} busy={save.isPending} saved={round > 0}
+      error={save.isError ? errorMessage(save.error) : null}
+      initial={{ name: f.name, intro: f.intro, thanks: f.thanks, questions: draftFromQuestions(f.questions) }}
+      onSave={(draft) => save.mutate(
+        formPayload(f, { name: draft.name.trim(), intro: draft.intro, thanks: draft.thanks, questions: questionsFromDraft(draft.questions) }),
+        { onSuccess: () => { save.reset(); setRound((r) => r + 1); } },
+      )} />
   );
 }
 
 function SettingsCards({ form: f }: { form: AdminForm }) {
   const setOpen = useSetFormOpen();
   const save = useSaveAdminForm();
-  const [name, setName] = React.useState(f.name);
   const [slug, setSlug] = React.useState(f.slug);
   const [onePer, setOnePer] = React.useState(f.one_per_email);
-  React.useEffect(() => { setName(f.name); setSlug(f.slug); setOnePer(f.one_per_email); }, [f.name, f.slug, f.one_per_email]);
-  const dirty = name !== f.name || slug !== f.slug || onePer !== f.one_per_email;
+  React.useEffect(() => { setSlug(f.slug); setOnePer(f.one_per_email); }, [f.slug, f.one_per_email]);
+  const dirty = slug !== f.slug || onePer !== f.one_per_email;
   const id = (field: string) => `form-${f.id}-${field}`;
   return (
     <>
@@ -1309,15 +1384,11 @@ function SettingsCards({ form: f }: { form: AdminForm }) {
           hint="Shown at the form’s link while it’s closed (up to 1,000 characters). Blank uses the default."
           error={<MutationError mutation={setOpen} />} onSet={(open, message) => setOpen.mutate({ id: f.id, open, message })} />
       </Card>
-      <Card id="details" title="Name and link">
-        <form aria-label="Name and link" className="flex flex-col divide-y divide-app-rule"
-          onSubmit={(e) => { e.preventDefault(); save.mutate(formPayload(f, { name: name.trim(), slug: slug.trim(), one_per_email: onePer })); }}>
-          <div className={cn(pad, "grid gap-5 py-5 md:grid-cols-2")}>
-            <Field id={id("name")} label="Name" hint="The form’s title, on its page and in this list.">
-              <input id={id("name")} required maxLength={80} value={name} disabled={save.isPending} aria-describedby={`${id("name")}-hint`}
-                onChange={(e) => setName(e.currentTarget.value)} className={fieldClass} />
-            </Field>
-            <Field id={id("slug")} label="Web address"
+      <Card id="details" title="Link" subtitle="Where the form lives, and who can answer. Its name is on the Questions tab.">
+        <form aria-label="Link" className="flex flex-col divide-y divide-app-rule"
+          onSubmit={(e) => { e.preventDefault(); save.mutate(formPayload(f, { slug: slug.trim(), one_per_email: onePer })); }}>
+          <div className={cn(pad, "py-5")}>
+            <Field id={id("slug")} label="Web address" className="max-w-120"
               hint={`Link: /f/${slug || "…"}. Lowercase letters, numbers and hyphens.${slug !== f.slug ? ` The old link, /f/${f.slug}, will keep working.` : ""}`}>
               <input id={id("slug")} required maxLength={40} pattern="[a-z0-9]+(-[a-z0-9]+)*" value={slug} disabled={save.isPending}
                 aria-describedby={`${id("slug")}-hint`} onChange={(e) => setSlug(e.currentTarget.value)} className={fieldClass} />
@@ -1325,12 +1396,9 @@ function SettingsCards({ form: f }: { form: AdminForm }) {
           </div>
           <Toggle label="One answer per email" checked={onePer} disabled={save.isPending} onChange={(e) => setOnePer(e.currentTarget.checked)}
             description="A second answer from the same email address is turned away, with a note saying why." />
-          <div className={cn(pad, "flex flex-wrap items-center justify-between gap-3 py-4")}>
-            <span className="flex flex-wrap items-center gap-x-4 gap-y-2"><CopyLink path={formPath(f.slug)} /></span>
-            <div className="flex flex-wrap items-center gap-3">
-              {save.isError ? <MutationError mutation={save} /> : save.isSuccess && !dirty && <p role="status" className="text-sm text-app-muted">Saved.</p>}
-              <button type="submit" className={primaryButton} disabled={!dirty || save.isPending}>Save name and link</button>
-            </div>
+          <div className={cn(pad, "flex flex-wrap items-center justify-end gap-3 py-4")}>
+            {save.isError ? <MutationError mutation={save} /> : save.isSuccess && !dirty && <p role="status" className="text-sm text-app-muted">Saved.</p>}
+            <button type="submit" className={primaryButton} disabled={!dirty || save.isPending}>Save link</button>
           </div>
         </form>
       </Card>
