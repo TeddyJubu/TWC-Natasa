@@ -108,6 +108,19 @@ describe("mobile menu button", () => {
   });
 });
 
+describe("member profile (airmail palette, /account)", () => {
+  // [text, background]: every pair the airmail page uses. White is the primary button's label and the tickets' stubs.
+  const t = { ...light, white: "#ffffff" };
+  const pairs: [string, string][] = [
+    ["air-navy", "air-paper"], ["air-navy", "air-sky"], ["air-muted", "air-paper"], ["air-muted", "air-sky"],
+    ["air-red", "air-paper"], ["white", "air-red"], ["air-paper", "air-navy"], ["white", "air-navy"], ["white", "air-muted"],
+    ["danger", "air-paper"], ["air-navy", "white"], ["air-muted", "white"],
+  ];
+  it.each(pairs)("%s on %s clears AA", (fg, bg) => {
+    expect(contrast(t[fg as keyof typeof t], t[bg as keyof typeof t])).toBeGreaterThanOrEqual(AA);
+  });
+});
+
 describe("internal-page app shell (scrapbook app palette)", () => {
   // [text, background, alpha of a tinted background over `app`]: every text pair the app shell (/account, /admin) uses.
   // app = paper cards/sidebar/top bar, app-sunken = cream background, sub-panels, date tiles and notices.

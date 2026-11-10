@@ -76,6 +76,12 @@
   --bl-app-gel-green: #2fc27a; /* green gel pill (an always-on form): the glowing green at its heart */
   --bl-app-gel-green-soft: #d2f6e2; /* green gel pill: the pale green at its rim */
   --bl-app-gel-green-ink: #07311d; /* green gel pill: its label */
+  /* Airmail: /account only (DESIGN.md "Member profile"), onionskin paper and airmail stripes. Light in both modes. */
+  --bl-air-sky: #dfe6ee; /* the onionskin desk behind the letters */
+  --bl-air-paper: #fbfaf6; /* letters, the envelope, the save bar */
+  --bl-air-navy: #1c2c5e; /* ink: text, rules, switches, the navy stamp */
+  --bl-air-red: #d23b2e; /* airmail red: card numbers, rubber stamps, the primary button (white at 4.7:1) */
+  --bl-air-muted: #545e80; /* labels and secondary text: 6:1 on paper, 5:1 on the sky */
 }
 
 /* Night: black sections and dark mode. Tokens invert so components need no tone props. */
@@ -145,6 +151,11 @@
   --color-app-gel-green: var(--bl-app-gel-green);
   --color-app-gel-green-soft: var(--bl-app-gel-green-soft);
   --color-app-gel-green-ink: var(--bl-app-gel-green-ink);
+  --color-air-sky: var(--bl-air-sky);
+  --color-air-paper: var(--bl-air-paper);
+  --color-air-navy: var(--bl-air-navy);
+  --color-air-red: var(--bl-air-red);
+  --color-air-muted: var(--bl-air-muted);
   --color-ring: var(--bl-sky);
 
   --font-display: "Gilda Display", Georgia, serif;

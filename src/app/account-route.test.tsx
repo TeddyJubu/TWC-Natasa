@@ -114,19 +114,14 @@ describe("/account", () => {
     expect(screen.getByRole("main").id).toBe("main");
   });
 
-  it("shows the Admin group, linking /admin's cards, to admins only", () => {
+  it("shows an Admin tab, linking /admin, to admins only", () => {
     renderAccount({}, [], [], true);
-    const nav = screen.getAllByRole("navigation", { name: "Main" })[0];
-    const href = (name: string) => within(nav).getByRole("link", { name }).getAttribute("href");
-    expect(within(nav).getByText("Admin", { selector: "summary" })).toBeTruthy();
-    expect([href("Applications"), href("All members"), href("Neighborhoods"), href("Headshot bookings"), href("Gatherings")])
-      .toEqual(["/admin#applications", "/admin#members", "/admin#neighborhoods", "/admin#bookings", "/admin#gatherings"]);
-    // Another page's cards are never "here".
-    expect(within(nav).getByRole("link", { name: "Applications" }).getAttribute("aria-current")).toBeNull();
+    const nav = screen.getByRole("navigation", { name: "My account" });
+    expect(within(nav).getByRole("link", { name: "Admin" }).getAttribute("href")).toBe("/admin");
+    expect(within(nav).getByRole("link", { name: "Admin" }).getAttribute("aria-current")).toBeNull();
     cleanup();
     renderAccount();
-    expect(screen.queryByText("Admin")).toBeNull();
-    expect(screen.queryByRole("link", { name: "Applications" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Admin" })).toBeNull();
   });
 
   it("shows a declined application as declined, not in review", () => {
@@ -434,32 +429,17 @@ describe("/account", () => {
   });
 
   describe("navigation", () => {
-    it("anchors this page's account cards, with no Collective group and no Notifications", () => {
+    it("tabs anchor this page's account cards; sign out sits beside her name", () => {
       renderAccount();
-      const nav = screen.getAllByRole("navigation", { name: "Main" })[0];
+      const nav = screen.getByRole("navigation", { name: "My account" });
       const href = (name: string) => within(nav).getByRole("link", { name }).getAttribute("href");
-      for (const name of ["Home", "Members", "Gatherings", "Introductions"]) expect(within(nav).queryByRole("link", { name })).toBeNull();
-      expect(within(nav).queryByText("Collective")).toBeNull();
+      for (const name of ["Home", "Members", "Gatherings", "Introductions", "Admin"]) expect(within(nav).queryByRole("link", { name })).toBeNull();
       expect([href("Profile"), href("Public card"), href("Visibility"), href("Headshot session")]).toEqual(["#profile", "#public-card", "#visibility", "#headshot"]);
       expect(within(nav).getByRole("link", { name: "Profile" }).getAttribute("aria-current")).toBe("location");
-      expect(within(nav).queryByText("Notifications")).toBeNull();
+      expect(screen.getByRole("button", { name: "Sign out" })).toBeTruthy();
+      expect(screen.queryByRole("button", { name: "Open menu" })).toBeNull();
       expect(document.getElementById("gatherings")).toBeTruthy();
       expect(document.getElementById("introductions")).toBeTruthy();
-    });
-
-    it("the menu button opens the same nav in a drawer that closes on Escape", () => {
-      restoreDialog = stubDialog();
-      renderAccount({}, [], [], true);
-      const menu = button("Open menu");
-      expect(menu.getAttribute("aria-expanded")).toBe("false");
-      fireEvent.click(menu);
-      expect(menu.getAttribute("aria-expanded")).toBe("true");
-      const drawer = screen.getByRole("dialog", { name: "Menu" });
-      expect(within(drawer).getByRole("link", { name: "Applications" })).toBeTruthy();
-      expect(within(drawer).getByRole("button", { name: /sign out/i })).toBeTruthy();
-      fireEvent.keyDown(drawer, { key: "Escape" });
-      expect(screen.queryByRole("dialog", { name: "Menu" })).toBeNull();
-      expect(menu.getAttribute("aria-expanded")).toBe("false");
     });
   });
 

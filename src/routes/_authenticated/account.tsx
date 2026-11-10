@@ -3,7 +3,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Button, MemberDialog, type MemberProfile } from "@/index";
 import { AppPage } from "@/app/layout/AppLayout";
-import { AppShell } from "@/app/layout/AppShell";
 import { InlineError } from "@/app/layout/app-ui";
 import { useSignOut } from "@/app/layout/sign-out";
 import { useNeighborhoods, type Neighborhood } from "@/features/neighborhoods/queries";
@@ -11,6 +10,7 @@ import { profileQuery, viewerQuery, type Profile } from "@/features/members/quer
 import { toMemberProfile } from "@/features/members/map";
 import { useSaveProfile, type ProfilePatch } from "@/features/members/mutations";
 import { AccountHeader } from "@/features/account/AccountHeader";
+import { AirShell } from "@/features/account/AirShell";
 import { MembershipCard, PublicCard, VisibilityCard, WordsCard } from "@/features/account/ProfileCards";
 import { GatheringsList } from "@/features/account/GatheringsList";
 import { HeadshotBooking } from "@/features/account/HeadshotBooking";
@@ -71,14 +71,14 @@ function AccountPage() {
 
   return (
     <AppPage trail={false}>
-      <AppShell page="/account" admin={admin}>
+      <AirShell admin={admin} name={profile.full_name} avatar={avatar} catalogueNumber={profile.status === "approved" ? profile.catalogue_number : null}>
         <ProfileEditorPage
           userId={user.id} profile={profile} avatar={avatar} logoUrl={profileState.data?.logoUrl} hoodList={hoodList}
           applied={profileState.data?.hasApplication === true}
         >
           {profileState.isError && <InlineError message="We couldn’t refresh your profile. What you see may be out of date." onRetry={() => void profileState.refetch()} />}
         </ProfileEditorPage>
-      </AppShell>
+      </AirShell>
     </AppPage>
   );
 }
@@ -147,10 +147,10 @@ function ProfileEditorPage({ userId, profile, avatar, logoUrl, hoodList, applied
   return (
     <main id="main" tabIndex={-1} className="outline-none">
       {children}
-      <div className="flex max-w-250 flex-col gap-5 px-4 pt-5 pb-5 sm:px-8 lg:pt-8">
-        <AccountHeader userId={userId} profile={profile} avatar={avatar} onPreview={preview} />
+      <AccountHeader userId={userId} profile={profile} avatar={avatar} onPreview={preview} />
+      <div className="air-grid">
         <PublicCard editor={editor} userId={userId} logoPath={profile.business_logo_url} logoUrl={logoUrl} hoodList={hoodList} />
-        <WordsCard editor={editor} />
+        <WordsCard editor={editor} catalogueNumber={approved ? profile.catalogue_number : null} />
         <MembershipCard profile={profile} />
         <VisibilityCard editor={editor} profile={profile} />
         <HeadshotBooking userId={userId} approved={approved} applied={applied} />

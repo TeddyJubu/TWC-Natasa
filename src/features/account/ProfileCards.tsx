@@ -1,14 +1,15 @@
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
-import { cn, formatCatalogueNumber } from "@/index";
+import { ConstellationLogo, cn, formatCatalogueNumber } from "@/index";
 import type { Neighborhood } from "@/features/neighborhoods/queries";
 import { pickerNames } from "@/features/neighborhoods/options";
 import type { Profile } from "@/features/members/queries";
 import { memberSlug } from "@/features/members/map";
 import { useRemoveLogo, useUploadLogo } from "@/features/members/mutations";
-import { fieldClass, linkClass } from "@/app/layout/app-classes";
+import { fieldClass, ring } from "@/app/layout/app-classes";
 import { Icon, type IconName } from "@/app/layout/icons";
-import { Card, Chip, EditButton, Row, Toggle } from "@/app/layout/app-ui";
+import { Toggle } from "@/app/layout/app-ui";
+import { AirCard, AirEdit, Field } from "./shared";
 import { PROFILE_FORM, errorMessage, fieldId, monthYear, type ProfileEditor } from "./helpers";
 
 type TextRow = {
@@ -32,7 +33,7 @@ export function PublicCard({ editor, userId, logoPath, logoUrl, hoodList }: {
   const text = (row: TextRow) => {
     const value = card[row.key];
     return (
-      <Row
+      <Field
         key={row.key}
         label={row.label}
         htmlFor={editing ? fieldId(row.key) : undefined}
@@ -47,7 +48,7 @@ export function PublicCard({ editor, userId, logoPath, logoUrl, hoodList }: {
             onChange={(e) => set({ [row.key]: e.currentTarget.value })}
           />
         ) : value.trim() || row.empty}
-      </Row>
+      </Field>
     );
   };
   const hood = card.neighborhood;
@@ -55,9 +56,10 @@ export function PublicCard({ editor, userId, logoPath, logoUrl, hoodList }: {
   const options = pickerNames(hoodList, hood ?? []);
 
   return (
-    <Card id="public-card" title="Public card" subtitle="How neighbors see you in the member directory" action={<EditButton card="public card" editing={editing} onClick={() => editor.toggle("public")} />}>
+    <AirCard id="public-card" no={1} title="Public card" subtitle="How neighbors see you in the member directory" action={<AirEdit card="public card" editing={editing} onClick={() => editor.toggle("public")} />}>
+      <dl className="air-form">
       {PUBLIC_ROWS.map(text)}
-      <Row
+      <Field
         label="Neighborhood" htmlFor={editing ? fieldId("neighborhood") : undefined} icon="map-pin" empty={!editing && !hood}
         add={!editing && !hood ? { field: "neighborhood", onClick: () => add("public", "neighborhood") } : undefined}
       >
@@ -67,10 +69,11 @@ export function PublicCard({ editor, userId, logoPath, logoUrl, hoodList }: {
             {options.map((x) => <option key={x}>{x}</option>)}
           </select>
         ) : hood || "Not chosen yet"}
-      </Row>
+      </Field>
       {text(WEBSITE)}
       <LogoRow userId={userId} path={logoPath} url={logoUrl} business={card.business || card.full_name} />
-    </Card>
+      </dl>
+    </AirCard>
   );
 }
 
@@ -80,7 +83,7 @@ function LogoRow({ userId, path, url, business }: { userId: string; path: string
   const remove = useRemoveLogo(userId);
   const failed = upload.isError ? upload.error : remove.isError ? remove.error : null;
   const pick = (verb: string) => (
-    <label className={cn(linkClass, "shrink-0 cursor-pointer has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-app-accent has-[:disabled]:opacity-50")}>
+    <label className="air-link shrink-0 cursor-pointer has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ink has-[:disabled]:opacity-50">
       {verb}<span className="sr-only"> business logo</span>
       <input
         type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={upload.isPending}
@@ -89,71 +92,113 @@ function LogoRow({ userId, path, url, business }: { userId: string; path: string
     </label>
   );
   return (
-    <Row label="Business logo" icon="image" empty={!path}>
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+    <div className="air-cell air-cell--wide">
+      <dt className="air-lbl">Business logo</dt>
+      <dd className="flex min-w-0 flex-1 flex-wrap items-center gap-x-5 gap-y-2">
         {path ? (
           <>
-            {url && <img src={url} alt={`${business} logo`} className="h-10 w-auto max-w-40 object-contain" />}
-            <span className="ml-auto flex items-center gap-4">
+            {url && <span className="air-logo"><img src={url} alt={`${business} logo`} /></span>}
+            <span className="ml-auto flex items-center gap-5">
               {pick("Replace")}
-              <button type="button" disabled={remove.isPending} onClick={() => remove.mutate(path)} className={cn(linkClass, "text-ink-muted")}>
+              <button type="button" disabled={remove.isPending} onClick={() => remove.mutate(path)} className={cn("air-link", ring)}>
                 Remove<span className="sr-only"> logo</span>
               </button>
             </span>
           </>
         ) : (
           <>
-            <span className="flex-1 text-[13px]">Optional · JPG, PNG or WebP, up to 5 MB</span>
+            <span className="flex-1 text-[13px] text-app-muted">Optional · JPG, PNG or WebP, up to 5 MB</span>
             {pick("Add")}
           </>
         )}
         {failed && <p role="alert" className="w-full text-sm text-danger">{errorMessage(failed)}</p>}
-      </div>
-    </Row>
+      </dd>
+    </div>
   );
 }
 
-/** Bio and who she'd like to meet. */
-export function WordsCard({ editor }: { editor: ProfileEditor }) {
+/** Bio and who she'd like to meet, as a letter on ruled paper. */
+export function WordsCard({ editor, catalogueNumber }: { editor: ProfileEditor; catalogueNumber: number | null }) {
   const { card, set } = editor;
   const editing = editor.isEditing("words");
   return (
-    <Card title="In your words" subtitle="Short and warm beats long and formal" action={<EditButton card="in your words" editing={editing} onClick={() => editor.toggle("words")} />}>
-      <Row label="Bio" htmlFor={editing ? fieldId("bio") : undefined} top empty={!editing && !card.bio.trim()}>
-        {editing ? (
-          <>
-            <textarea id={fieldId("bio")} form={PROFILE_FORM} value={card.bio} maxLength={400} rows={4} aria-describedby="account-bio-count" className={fieldClass} onChange={(e) => set({ bio: e.currentTarget.value })} />
-            <p id="account-bio-count" className="mt-1.5 text-right text-xs text-app-muted tabular-nums">{card.bio.length} of 400 characters</p>
-          </>
-        ) : (
-          <p className="leading-[23px] whitespace-pre-line">{card.bio.trim() || "Tell neighbors what you make, who you make it for, and what brought you to the collective. Up to 400 characters."}</p>
-        )}
-      </Row>
-      <Row label="Looking to meet" htmlFor={editing ? fieldId("looking_for") : undefined} empty={!editing && !card.looking_for.trim()}>
-        {editing ? (
-          <input id={fieldId("looking_for")} form={PROFILE_FORM} value={card.looking_for} maxLength={160} placeholder="Retail partners and fellow makers" className={fieldClass} onChange={(e) => set({ looking_for: e.currentTarget.value })} />
-        ) : card.looking_for.trim() || "Who you’d love an introduction to"}
-      </Row>
-    </Card>
+    <AirCard span={7} no={2} title="In your words" subtitle="Short and warm beats long and formal" action={<AirEdit card="in your words" editing={editing} onClick={() => editor.toggle("words")} />}>
+      <div className="air-letter air-rule">
+        <div className="min-w-0">
+          {editing ? (
+            <>
+              <label htmlFor={fieldId("bio")} className="air-lbl">Bio</label>
+              <textarea id={fieldId("bio")} form={PROFILE_FORM} value={card.bio} maxLength={400} rows={5} aria-describedby="account-bio-count" className={fieldClass} onChange={(e) => set({ bio: e.currentTarget.value })} />
+              <p id="account-bio-count" className="mt-1.5 text-right text-xs text-app-muted tabular-nums">{card.bio.length} of 400 characters</p>
+            </>
+          ) : (
+            <>
+              <span className="air-lbl">Bio</span>
+              <p className={cn("air-ruled-serif", !card.bio.trim() && "text-app-muted")}>
+                {card.bio.trim() || "Tell neighbors what you make, who you make it for, and what brought you to the collective. Up to 400 characters."}
+              </p>
+            </>
+          )}
+        </div>
+        <div className="air-to">
+          <svg aria-hidden viewBox="0 0 130 40" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" className="air-waves">
+            {[9, 20, 31].map((y) => <path key={y} d={`M2 ${y} q8 -6 16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0`} />)}
+          </svg>
+          <div aria-hidden className="air-mini">
+            <div><div className="air-mini-face">
+              <span>{catalogueNumber !== null ? `${catalogueNumber}¢` : ""}</span>
+              <ConstellationLogo variant="white" alt="" className="w-6.5" />
+              <b>TWC</b>
+            </div></div>
+          </div>
+          {editing ? (
+            <>
+              <label htmlFor={fieldId("looking_for")} className="air-lbl">Looking to meet</label>
+              <input id={fieldId("looking_for")} form={PROFILE_FORM} value={card.looking_for} maxLength={160} placeholder="Retail partners and fellow makers" className={cn(fieldClass, "mt-2")} onChange={(e) => set({ looking_for: e.currentTarget.value })} />
+            </>
+          ) : (
+            <>
+              <span className="air-lbl">Looking to meet</span>
+              <p className={cn("air-ruled", !card.looking_for.trim() && "font-medium text-app-muted")}>{card.looking_for.trim() || "Who you’d love an introduction to"}</p>
+            </>
+          )}
+        </div>
+      </div>
+    </AirCard>
   );
 }
 
-/** Status, catalogue number and member since: read-only, set by admins. */
+/** Status, catalogue number and member since: read-only, set by admins. The rubber stamp is decoration. */
 export function MembershipCard({ profile }: { profile: Profile }) {
   const approved = profile.status === "approved";
   const declined = profile.status === "declined";
+  const since = approved ? monthYear(profile.member_since) : null;
   return (
-    <Card title="Membership" subtitle="Your standing in the collective">
-      <Row label="Status">
-        {approved ? (
-          <span className="inline-flex items-center gap-2">Approved <Chip tone="ok">Verified</Chip></span>
-        ) : declined ? "Your application wasn’t approved this time" : "Your application is being reviewed"}
-      </Row>
-      <Row label="Catalogue number" empty={!approved}>
-        {approved && profile.catalogue_number !== null ? `No. ${formatCatalogueNumber(profile.catalogue_number)}` : declined ? "—" : "Assigned once you’re approved"}
-      </Row>
-      <Row label="Member since" empty={!approved || !profile.member_since}>{(approved && monthYear(profile.member_since)) || "—"}</Row>
-    </Card>
+    <AirCard span={5} no={3} title="Membership" subtitle="Your standing in the collective" className="[&_.air-ch]:pr-28">
+      {approved && (
+        <div aria-hidden className="air-rubber"><b>Approved</b>{since && <small>{since.replace(/^(\w{3})\w*/, "$1")}</small>}</div>
+      )}
+      <dl className="air-rule">
+        <div className="air-catno">
+          <dt className="air-lbl">Catalogue number</dt>
+          {approved && profile.catalogue_number !== null
+            ? <dd>No. {formatCatalogueNumber(profile.catalogue_number)}</dd>
+            : <dd className="font-geist text-[15px] font-semibold tracking-normal text-app-muted">{declined ? "—" : "Assigned once you’re approved"}</dd>}
+        </div>
+        <div className="air-mrow">
+          <dt className="air-lbl">Status</dt>
+          <dd>
+            {approved
+              ? <>Approved <span className="air-chip">Verified</span></>
+              : declined ? "Your application wasn’t approved this time" : "Your application is being reviewed"}
+          </dd>
+        </div>
+        <div className="air-mrow">
+          <dt className="air-lbl">Member since</dt>
+          <dd className={cn(!since && "text-app-muted")}>{since || "—"}</dd>
+        </div>
+      </dl>
+    </AirCard>
   );
 }
 
@@ -178,7 +223,8 @@ export function VisibilityCard({ editor, profile }: { editor: ProfileEditor; pro
     ? memberSlug({ name: profile.full_name, catalogueNumber: profile.catalogue_number })
     : undefined;
   return (
-    <Card id="visibility" title="Visibility" subtitle={audience}>
+    <AirCard id="visibility" span={7} no={4} title="Visibility" subtitle={audience}>
+      <div className="air-opts air-rule">
       <Toggle
         label="Show me in the member directory"
         description={approved ? "Signed-in members can find you and your card." : "Signed-in members can find you and your card, once your membership is approved."}
@@ -192,13 +238,15 @@ export function VisibilityCard({ editor, profile }: { editor: ProfileEditor; pro
         checked={listed && card.public_profile} disabled={!listed}
         onChange={(e) => set({ public_profile: e.currentTarget.checked })}
       />
+      </div>
       {slug && (
-        <Row label="Your public page" icon="globe">
-          <Link to="/members/$slug" params={{ slug }} className={cn(linkClass, "inline-flex items-center gap-1.5")}>
+        <p className="air-mrow">
+          <span className="air-lbl">Your public page</span>
+          <Link to="/members/$slug" params={{ slug }} className={cn("air-link inline-flex items-center gap-1.5", ring)}>
             /members/{slug}<Icon name="external-link" className="size-3.5" />
           </Link>
-        </Row>
+        </p>
       )}
-    </Card>
+    </AirCard>
   );
 }

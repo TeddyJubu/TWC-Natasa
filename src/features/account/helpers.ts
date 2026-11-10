@@ -2,7 +2,7 @@ import type * as React from "react";
 import type { Profile } from "@/features/members/queries";
 import type { ProfilePatch } from "@/features/members/mutations";
 
-/** Inline `--hood` for a neighborhood color, consumed via `bg-(--hood)` / `text-(--hood)`. */
+/** Inline `--hood` for a neighborhood color, consumed via `bg-(--hood)`. */
 export const hoodStyle = (color?: string) => (color ? ({ "--hood": color } as React.CSSProperties) : undefined);
 
 export const errorMessage = (error: unknown) =>
@@ -36,4 +36,12 @@ export interface ProfileEditor {
   toggle: (key: CardKey) => void;
   /** Opens the card and focuses the field. */
   add: (key: CardKey, field: keyof Profile) => void;
+}
+
+export type Day = { month: string; day: string; weekday: string };
+/** Month, day and weekday of a date-only `YYYY-MM-DD`, read at noon so no time zone moves it a day. */
+export function dayParts(iso: string): Day {
+  const d = new Date(iso + "T12:00");
+  const part = (o: Intl.DateTimeFormatOptions) => d.toLocaleDateString("en-US", o);
+  return { month: part({ month: "short" }), day: part({ day: "numeric" }), weekday: part({ weekday: "short" }) };
 }

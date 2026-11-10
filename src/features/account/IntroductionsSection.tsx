@@ -3,8 +3,8 @@ import { MemberCard, type MemberProfile } from "@/index";
 import type { Neighborhood } from "@/features/neighborhoods/queries";
 import { toneFor } from "@/features/neighborhoods/tone";
 import { introsQuery } from "@/features/members/queries";
-import { Card, InlineError } from "@/app/layout/app-ui";
-import { Locked } from "./shared";
+import { InlineError } from "@/app/layout/app-ui";
+import { AirCard, EmptySlot, Locked } from "./shared";
 
 /** Introductions to other members in the black contact-sheet panel; each card opens the page's MemberDialog. */
 export function IntroductionsSection({
@@ -23,21 +23,21 @@ export function IntroductionsSection({
   const intros = introsState.data ?? [];
 
   return (
-    <Card id="introductions" title="Introductions" subtitle={n ? `Neighbors from ${n} first, then across the constellation.` : "Neighbors from across the constellation."}>
+    <AirCard id="introductions" span={5} no={7} title="Introductions" subtitle={n ? `Neighbors from ${n} first, then across the constellation.` : "Neighbors from across the constellation."}>
       {!approved ? <Locked applied={applied} /> : (
         <>
           {introsState.isError && <InlineError message="We couldn’t load your introductions." onRetry={() => void introsState.refetch()} />}
           {introsState.isSuccess && intros.length === 0 ? (
-            <p className="px-4 py-4 text-[15px] text-app-muted sm:px-5.5">No introductions yet. As more neighbors join the directory, they’ll appear here.</p>
+            <EmptySlot><p>No introductions yet. As more neighbors join the directory, they’ll appear here.</p></EmptySlot>
           ) : intros.length > 0 && (
-            <div className="p-3 sm:p-5">
-              <div className="grid grid-cols-1 gap-x-5 gap-y-7 rounded-md bg-black px-4 py-6 sm:grid-cols-2 sm:px-6 sm:pt-7 sm:pb-8 xl:grid-cols-4">
+            <div>
+              <div className="grid grid-cols-1 gap-x-5 gap-y-7 rounded-xl bg-black px-4 py-6 sm:grid-cols-2 sm:px-6 sm:pt-7 sm:pb-8">
                 {intros.map((m) => <MemberCard key={m.id} member={m} variant="catalogue" tone={toneFor(m.neighborhood, hoodList)} catalogueNumber={m.catalogueNumber} onOpen={() => onOpen(m)} />)}
               </div>
             </div>
           )}
         </>
       )}
-    </Card>
+    </AirCard>
   );
 }
