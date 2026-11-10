@@ -1,6 +1,6 @@
 // Uploaded images under `${DATA_DIR}/uploads/<bucket>/…` and the visibility rules of the old storage policies.
-// Buckets: `avatars/<owner id>/<kind>-<ts>.<ext>` (portraits and business logos, private) and
-// `neighborhood-logos/<slug>.<ext>` (public brand assets).
+// Buckets: `avatars/<owner id>/<kind>-<ts>.<ext>` (portraits and business logos, private),
+// `feed/<author id>/<post id>-<n>.<ext>` (newsfeed photos, members only) and `neighborhood-logos/<slug>.<ext>` (public brand assets).
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve, sep } from "node:path";
 import { dataDir, type DB } from "./db";
@@ -8,7 +8,7 @@ import { AccessError, isAdmin, isMember, type Actor } from "./guard";
 import { stripMetadata } from "./image-meta";
 
 export const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
-export type Bucket = "avatars" | "neighborhood-logos";
+export type Bucket = "avatars" | "feed" | "neighborhood-logos";
 const TYPES = { png: "image/png", jpg: "image/jpeg", webp: "image/webp" } as const;
 export type ImageExt = keyof typeof TYPES;
 
@@ -37,7 +37,7 @@ const SEGMENT = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
 /** The absolute file for a bucket-relative name, or null when the name isn't a plain path inside the bucket. */
 export function mediaFile(bucket: Bucket, name: string): string | null {
   const parts = name.split("/");
-  if (parts.length !== (bucket === "avatars" ? 2 : 1) || !parts.every((p) => SEGMENT.test(p))) return null;
+  if (parts.length !== (bucket === "neighborhood-logos" ? 1 : 2) || !parts.every((p) => SEGMENT.test(p))) return null;
   const root = resolve(uploadsDir(), bucket);
   const file = resolve(root, ...parts);
   return file.startsWith(root + sep) ? file : null;
@@ -68,6 +68,13 @@ export function canSeeAvatarFolder(db: DB, actor: Actor, ownerId: string): boole
     .get(ownerId) as { public_profile: number } | undefined;
   return !!owner && (owner.public_profile === 1 || isMember(db, actor?.id));
 }
+
+/**
+ * Newsfeed photos: approved members and admins, while the author still is one (the feed hides her posts otherwise).
+ * A deleted post's files are deleted with it.
+ */
+export const canSeeFeedFolder = (db: DB, actor: Actor, authorId: string): boolean =>
+  (isMember(db, actor?.id) || isAdmin(db, actor?.id)) && (isMember(db, authorId) || isAdmin(db, authorId));
 
 /** Public avatars (owner opted in) may be cached by anyone; everything else in that bucket is private. */
 const isPublicAvatarFolder = (db: DB, ownerId: string) =>
@@ -106,10 +113,11 @@ export function serveMedia(db: DB, actor: Actor, pathname: string): Response {
   if (bucket === "public") {
     file = publicFile(db, rest);
     open = true;
-  } else if (bucket === "avatars" || bucket === "neighborhood-logos") {
+  } else if (bucket === "avatars" || bucket === "feed" || bucket === "neighborhood-logos") {
     file = mediaFile(bucket, rest.join("/"));
     if (file && bucket === "avatars" && !canSeeAvatarFolder(db, actor, rest[0])) file = null;
-    open = bucket === "neighborhood-logos" || isPublicAvatarFolder(db, rest[0]);
+    if (file && bucket === "feed" && !canSeeFeedFolder(db, actor, rest[0])) file = null;
+    open = bucket === "neighborhood-logos" || (bucket === "avatars" && isPublicAvatarFolder(db, rest[0]));
   } else return notFound();
   if (!file) return notFound();
   let bytes: Buffer;
