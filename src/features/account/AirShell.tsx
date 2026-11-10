@@ -9,9 +9,12 @@ import { Icon } from "@/app/layout/icons";
 import { useSignOut } from "@/app/layout/sign-out";
 import { useButtonSparkles } from "@/app/layout/sparkles";
 
+/** The signed-in pages on this frame. */
+export type AirPage = "/account" | "/feed" | "/directory";
+
 /** `page` is where she is: the menu's sections are in-page anchors on /account and links back to it elsewhere. */
 export function AirShell({ page = "/account", admin, name, avatar, catalogueNumber, children }: {
-  page?: "/account" | "/directory"; admin: boolean; name: string; avatar?: string; catalogueNumber: number | null; children: React.ReactNode;
+  page?: AirPage; admin: boolean; name: string; avatar?: string; catalogueNumber: number | null; children: React.ReactNode;
 }) {
   const { signOut, error } = useSignOut();
   const active = useActiveSection("/account");
@@ -42,7 +45,7 @@ export function AirShell({ page = "/account", admin, name, avatar, catalogueNumb
  * Escape, a click outside or picking a section closes it.
  */
 function AccountMenu({ page, admin, active, name, avatar, catalogueNumber }: {
-  page: "/account" | "/directory"; admin: boolean; active: string | null; name: string; avatar?: string; catalogueNumber: number | null;
+  page: AirPage; admin: boolean; active: string | null; name: string; avatar?: string; catalogueNumber: number | null;
 }) {
   const [open, setOpen] = React.useState(false);
   const root = React.useRef<HTMLDivElement>(null);
@@ -85,6 +88,11 @@ function AccountMenu({ page, admin, active, name, avatar, catalogueNumber }: {
               )}
             </li>
           ))}
+          <li>
+            <Link to="/feed" aria-current={page === "/feed" ? "page" : undefined} onClick={close} className={ring}>
+              <Icon name="newspaper" className="size-4" />Newsfeed
+            </Link>
+          </li>
           <li>
             <Link to="/directory" aria-current={page === "/directory" ? "page" : undefined} onClick={close} className={ring}>
               <Icon name="users" className="size-4" />Member directory

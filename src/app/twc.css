@@ -639,6 +639,140 @@ textarea.twc-input { min-height: 132px; resize: vertical; }
 @media (prefers-reduced-motion: reduce) { .air-slot-stamp, .air-slot-ghost, .air-filter { transition: none; } }
 @media (prefers-reduced-motion: reduce) { .air-btn, .air-menu a, .air-stamp-face img { transition: none; } .air-btn:hover:not(:disabled) { translate: none; } }
 
+/* Newsfeed (/feed; DESIGN.md "Newsfeed"): a masthead over a dashed rule, the composer and posts as paper letters, her
+   pass in her own colour, and a side column of stamps and gatherings. One column on phones (the feed, then her pass,
+   then the side), the side column beside the feed from lg, her pass on the left from xl. */
+.air-feed { display: grid; gap: 40px; grid-template-areas: "main" "rail" "side"; margin-top: 24px; }
+.air-feed-main { grid-area: main; min-width: 0; }
+.air-feed-rail { grid-area: rail; display: grid; gap: 4px; align-content: start; }
+.air-feed-side { grid-area: side; display: grid; gap: 36px; align-content: start; min-width: 0; }
+.air-feed-mast { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; padding-bottom: 20px; border-bottom: 2px dashed var(--bl-air-line); }
+.air-feed-mast h1 { margin-top: 12px; font: 700 clamp(60px, 12vw, 104px)/0.8 var(--font-gilda); letter-spacing: -0.03em; }
+.air-feed-note { display: flex; align-items: center; gap: 9px; padding-bottom: 4px; font-size: 13px; font-weight: 600; color: var(--bl-air-muted); white-space: nowrap; }
+.air-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--bl-air-red); box-shadow: 0 0 0 3px rgb(210 59 46 / 0.22); }
+.air-feed-status { margin-top: 32px; font-size: 14px; color: var(--bl-air-muted); }
+.air-feed-filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 32px 0 18px; }
+.air-feed-list { display: grid; gap: 20px; }
+.air-feed-more { display: flex; justify-content: center; margin-top: 24px; }
+.air-feed-end { display: flex; align-items: center; gap: 16px; margin-top: 32px; font-size: 13px; font-weight: 500; color: var(--bl-air-muted); }
+.air-feed-end::before, .air-feed-end::after { content: ""; flex: 1; border-top: 2px dashed var(--bl-air-line); }
+
+/* A member as a tiny perforated stamp: portrait, or initials on navy. */
+.air-ms { display: inline-block; flex-shrink: 0; width: 40px; height: 48px; filter: drop-shadow(0 0 0.6px rgb(28 44 94 / 0.5)) drop-shadow(0 2px 2px rgb(28 44 94 / 0.16)); }
+.air-ms > span { display: block; width: 100%; height: 100%; padding: 5px; background: #fff; -webkit-mask: var(--air-perf-sm); mask: var(--air-perf-sm); }
+.air-ms i { display: grid; place-items: center; width: 100%; height: 100%; overflow: hidden; background: var(--bl-air-navy); color: var(--bl-air-paper); font: 400 15px/1 var(--font-gilda); font-style: normal; }
+.air-ms img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 22%; }
+.air-ms--s { width: 30px; height: 37px; }
+.air-ms--s > span { padding: 3.5px; }
+.air-ms--s i { font-size: 11px; }
+.air-ms--l { width: 46px; height: 56px; }
+.air-ms--xl { width: 62px; height: 76px; }
+.air-ms--xl > span { padding: 6px; }
+.air-ms--xl i { font-size: 22px; }
+
+/* A post, and the composer: paper letters on the desk. */
+.air-post { position: relative; border-radius: var(--bl-air-radius-card); background: var(--air-fiber), var(--bl-air-paper); box-shadow: var(--bl-air-shadow-card); }
+.air-post-h { display: flex; align-items: center; gap: 12px; padding: 18px 16px 0; }
+.air-post-name { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+a.air-post-name { border-radius: 2px; text-underline-offset: 3px; }
+a.air-post-name:hover { text-decoration: underline; }
+.air-post-meta { margin-top: 3px; font-size: 12.5px; line-height: 1.4; color: var(--bl-air-muted); }
+.air-post-b { padding: 14px 16px 0; font-size: 15px; line-height: 1.55; white-space: pre-line; overflow-wrap: anywhere; }
+.air-post-err { padding: 8px 16px 0; font-size: 13px; color: var(--color-danger); }
+.air-post-media { position: relative; display: grid; gap: 4px; margin: 16px 16px 0; overflow: hidden; border-radius: var(--bl-air-radius-cell); }
+.air-post-media a { display: block; min-width: 0; }
+.air-post-media img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: var(--bl-air-sky); }
+.air-post-media.is-1 img { aspect-ratio: 16 / 10; }
+.air-post-media.is-2, .air-post-media.is-3, .air-post-media.is-4 { grid-template-columns: 1fr 1fr; }
+.air-post-media.is-2 img { aspect-ratio: 4 / 5; }
+.air-post-media.is-3 > a:first-child { grid-column: 1 / -1; }
+.air-post-media.is-3 > a:first-child img { aspect-ratio: 16 / 9; }
+.air-post-pm { position: absolute; left: 12px; bottom: 10px; width: 150px; color: rgb(255 255 255 / 0.92); filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.5)); pointer-events: none; }
+.air-post-loved { padding: 14px 16px 0; font-size: 12.5px; color: var(--bl-air-muted); }
+.air-post-act { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; margin-top: 14px; padding: 6px 8px 8px; border-top: 1px solid var(--bl-air-line); }
+.air-act { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; border-radius: 10px; font-size: 13px; font-weight: 600; color: var(--bl-air-muted); transition: background-color var(--duration-fast), color var(--duration-fast); }
+.air-act:hover { background: rgb(28 44 94 / 0.06); color: var(--bl-air-navy); }
+.air-act svg { width: 18px; height: 18px; }
+.air-act[aria-pressed="true"] { color: var(--bl-air-red); }
+.air-act[aria-pressed="true"] svg { fill: currentColor; }
+.air-icon-btn--sm { width: 36px; height: 36px; flex-shrink: 0; box-shadow: none; color: var(--bl-air-muted); }
+.air-icon-btn--sm:hover { background: rgb(28 44 94 / 0.06); color: var(--bl-air-navy); }
+
+/* Replies: a navy wash under the post, then a field and a send button. */
+.air-thread { display: grid; justify-items: start; gap: 10px; margin: 0 16px 16px; padding: 12px; border-radius: 12px; background: var(--bl-air-tint); }
+.air-thread > ul, .air-reply-in { justify-self: stretch; }
+.air-reply { display: flex; align-items: flex-start; gap: 10px; }
+.air-reply-b { margin-top: 2px; font-size: 13.5px; line-height: 1.5; white-space: pre-line; overflow-wrap: anywhere; }
+.air-reply-in { display: flex; align-items: center; gap: 8px; }
+.air-reply-in .twc-input { flex: 1; min-width: 0; min-height: 44px; padding-block: 0; }
+.air-send { display: grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; border-radius: 50%; background: var(--bl-air-navy); color: var(--bl-air-paper); }
+.air-send:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* The composer: her words with no box until focus, her photos with a description each, the kinds and Post. */
+.air-compose { margin-top: 28px; padding: 18px 16px 14px; }
+.air-compose-row { display: flex; align-items: flex-start; gap: 14px; }
+.air-compose-field { display: block; width: 100%; min-height: 56px; max-height: 320px; padding: 8px 6px 4px; border: 0; border-radius: 8px; background: transparent; resize: vertical; field-sizing: content; font-size: 17px; font-weight: 500; line-height: 1.45; color: var(--bl-air-navy); }
+.air-compose-field::placeholder { color: var(--bl-air-muted); }
+.air-compose-field:focus-visible { outline: 2px solid var(--bl-air-navy); outline-offset: 2px; background: #fff; }
+.air-compose-to { display: flex; align-items: center; gap: 6px; margin-top: 6px; padding-left: 6px; font-size: 12.5px; color: var(--bl-air-muted); }
+.air-compose-photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-top: 14px; }
+.air-compose-photos li { position: relative; display: grid; gap: 6px; }
+.air-compose-photos img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; }
+.air-compose-photos .twc-input { min-height: 36px; padding: 0 10px; border-radius: 8px; font-size: 12.5px; }
+.air-compose-x { position: absolute; top: 6px; right: 6px; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: rgb(14 20 40 / 0.72); color: #fff; }
+.air-compose-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; padding-top: 14px; border-top: 1.5px dashed var(--bl-air-line); }
+.air-kinds { display: flex; flex-wrap: wrap; gap: 6px; }
+.air-kind { display: inline-flex; align-items: center; gap: 7px; min-height: 36px; padding: 0 12px; border-radius: 999px; box-shadow: inset 0 0 0 1.5px var(--bl-air-line); font-size: 12.5px; font-weight: 600; color: var(--bl-air-muted); cursor: pointer; transition: background-color var(--duration-fast), color var(--duration-fast); }
+.air-kind:hover { color: var(--bl-air-navy); }
+.air-kind:has(:checked) { background: var(--bl-air-navy); color: var(--bl-air-paper); box-shadow: none; }
+.air-kind:has(:focus-visible), .air-compose-add:has(:focus-visible) { outline: 2px solid var(--bl-air-navy); outline-offset: 2px; }
+.air-compose-add { cursor: pointer; color: var(--bl-air-navy); }
+.air-compose-add.is-full { opacity: 0.4; cursor: not-allowed; }
+
+/* Her pass, in the colour she picked on /account (`pass--*`); ink is fixed, as on the pass itself. */
+.air-feed-pass { position: relative; overflow: hidden; padding: 18px; border-radius: 16px; background: var(--pass); color: #1d1c1a; box-shadow: 0 18px 26px -18px rgb(28 44 94 / 0.55), 0 1px 2px rgb(28 44 94 / 0.2); }
+.air-feed-pass::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.22; mix-blend-mode: multiply; background: var(--air-fiber); }
+.air-feed-pass-top { display: flex; justify-content: space-between; gap: 8px; font: 600 10px var(--font-plex); letter-spacing: 0.16em; text-transform: uppercase; }
+.air-feed-pass-top span { opacity: 0.75; }
+.air-feed-pass-who { display: flex; align-items: flex-end; gap: 14px; margin-top: 16px; }
+.air-feed-pass-name { font-size: 22px; font-weight: 800; line-height: 0.95; letter-spacing: -0.02em; text-transform: uppercase; overflow-wrap: anywhere; }
+.air-feed-pass-cap { margin-top: 6px; font-size: 12px; font-weight: 500; opacity: 0.8; }
+.air-feed-pass-perf { margin: 16px -18px 14px; border-top: 2px dashed rgb(29 28 26 / 0.45); }
+.air-feed-pass-tally { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.air-feed-pass-tally div { display: flex; flex-direction: column-reverse; gap: 6px; }
+.air-feed-pass-tally dd { font: 400 28px/1 var(--font-gilda); }
+.air-feed-pass-tally dt { font: 600 9.5px var(--font-plex); letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.8; }
+.air-feed-pass-code { display: flex; align-items: flex-end; gap: 10px; margin-top: 16px; }
+.air-feed-pass-code span { font: 500 10.5px var(--font-plex); letter-spacing: 0.1em; }
+
+/* The side column: neighbors as a pair of stamps, then what's coming up. */
+.air-feed-h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.air-feed-h h2 { font: 600 10.5px var(--font-plex); letter-spacing: 0.18em; text-transform: uppercase; }
+.air-sheet--pair { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 300px; }
+.air-feed-why { margin-top: 14px; font-size: 12.5px; line-height: 1.5; color: var(--bl-air-muted); }
+.air-feed-events li { display: flex; align-items: flex-start; gap: 14px; padding: 12px 0; border-top: 1px solid var(--bl-air-line); font-size: 13.5px; line-height: 1.3; }
+.air-feed-events li:last-child { border-bottom: 1px solid var(--bl-air-line); }
+.air-feed-date { display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; width: 48px; height: 56px; border-radius: 8px; background: var(--bl-air-navy); color: var(--bl-air-paper); line-height: 1; }
+.air-feed-date b { font: 400 24px/0.9 var(--font-gilda); }
+.air-feed-date small { margin-top: 5px; font: 600 8.5px var(--font-plex); letter-spacing: 0.16em; text-transform: uppercase; }
+.air-feed-date.is-going { background: var(--bl-air-red); }
+
+@media (min-width: 640px) {
+  .air-post-h { padding: 20px 22px 0; }
+  .air-post-b, .air-post-loved, .air-post-err { padding-inline: 22px; }
+  .air-post-media { margin-inline: 22px; }
+  .air-post-act { padding-inline: 12px; }
+  .air-thread { margin-inline: 22px; }
+  .air-compose { padding: 20px 22px 16px; }
+}
+@media (min-width: 1024px) {
+  .air-feed { grid-template-columns: minmax(0, 1fr) 280px; grid-template-rows: auto 1fr; grid-template-areas: "main rail" "main side"; gap: 36px 40px; margin-top: 32px; }
+}
+@media (min-width: 1280px) {
+  .air-feed { grid-template-columns: 228px minmax(0, 1fr) 264px; grid-template-rows: auto; grid-template-areas: "rail main side"; column-gap: 32px; }
+}
+@media (prefers-reduced-motion: reduce) { .air-act, .air-kind { transition: none; } }
+
 /* Member pass: "View public card" on /account. A die-cut postage pass in her chosen colour (`pass--*`), portrait
    below 880px and landscape from there, with notches where the perforation meets the edge. Ink is fixed (#1d1c1a) on
    every pass colour; the foil and tilt follow a fine pointer only (`--px`/`--py`, set from the pointer). */

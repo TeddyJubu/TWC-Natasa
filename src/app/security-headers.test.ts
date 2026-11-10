@@ -81,7 +81,7 @@ describe("start instance", () => {
     expect(responseOf(await run(csrfMiddleware, crossSite(), "router")).status).toBe(200);
   });
 
-  it.each(["/api/images", "/api/neighborhood-logos", "/api/applications", "/api/contact", "/api/partnerships", "/api/review", "/api/spotlight", "/api/forms/salon-rsvp"])("CSRF middleware also guards the POST route %s", async (path) => {
+  it.each(["/api/images", "/api/feed", "/api/neighborhood-logos", "/api/applications", "/api/contact", "/api/partnerships", "/api/review", "/api/spotlight", "/api/forms/salon-rsvp"])("CSRF middleware also guards the POST route %s", async (path) => {
     const crossSite = new Request(`https://example.com${path}`, {
       method: "POST", headers: { "Sec-Fetch-Site": "cross-site", Origin: "https://evil.example" },
     });

@@ -10,16 +10,9 @@ import { canSeeAvatarFolder, checkImage, MAX_UPLOAD_BYTES, mediaUrl, removeMedia
 import { checkSize, HttpError, rateLimit, readForm, respond } from "@/server/request";
 import { bad, isObject, oneOf, str } from "@/server/validate";
 import { memberSlug } from "@/features/members/map";
+import { FEED_FILTERS, FEED_KINDS, MAX_ALT, MAX_PHOTOS, MAX_POST, MAX_REPLY, type FeedKind } from "./kinds";
 
-export const FEED_KINDS = ["update", "ask", "offer", "gathering"] as const;
-export type FeedKind = (typeof FEED_KINDS)[number];
-/** "hood" is her own neighborhood, read from her profile (never passed in). */
-export const FEED_FILTERS = ["all", "hood", "asks", "gatherings"] as const;
-export type FeedFilter = (typeof FEED_FILTERS)[number];
-export const MAX_PHOTOS = 4;
-export const MAX_POST = 5000;
-export const MAX_REPLY = 2000;
-export const MAX_ALT = 300;
+export type { FeedFilter, FeedKind } from "./kinds";
 const PAGE = 20;
 
 /** Who wrote it: only what the directory would show. `image` only when the reader may see her portrait; `slug` only when she has a member page. */
@@ -228,8 +221,10 @@ export function feedRequest(c: Ctx, request: Request): Promise<Response> {
     const form = await readForm(request);
     const files = form.getAll("photo");
     const alts = form.getAll("alt");
-    if (!files.every((f): f is Blob => f instanceof Blob)) throw bad("upload");
-    const photos = await Promise.all(files.map(async (f, i) => ({ bytes: new Uint8Array(await f.arrayBuffer()), alt: alts[i] ?? "" })));
+    const photos = await Promise.all(files.map(async (f, i) => {
+      if (typeof f === "string") throw bad("upload");
+      return { bytes: new Uint8Array(await f.arrayBuffer()), alt: alts[i] ?? "" };
+    }));
     return createPost(c, { kind: form.get("kind"), body: form.get("body") ?? "", photos });
   });
 }

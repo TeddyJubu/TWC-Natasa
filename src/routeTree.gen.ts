@@ -35,9 +35,11 @@ import { Route as VerifiedRouteImport } from './routes/verified'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/_admin/route'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedDirectoryRouteImport } from './routes/_authenticated/directory'
+import { Route as AuthenticatedFeedRouteImport } from './routes/_authenticated/feed'
 import { Route as ApiSplatRouteImport } from './routes/api/$'
 import { Route as ApiApplicationsRouteImport } from './routes/api/applications'
 import { Route as ApiContactRouteImport } from './routes/api/contact'
+import { Route as ApiFeedRouteImport } from './routes/api/feed'
 import { Route as ApiImagesRouteImport } from './routes/api/images'
 import { Route as ApiNeighborhoodLogosRouteImport } from './routes/api/neighborhood-logos'
 import { Route as ApiPartnershipsRouteImport } from './routes/api/partnerships'
@@ -182,6 +184,11 @@ const AuthenticatedDirectoryRoute = AuthenticatedDirectoryRouteImport.update({
   path: '/directory',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedFeedRoute = AuthenticatedFeedRouteImport.update({
+  id: '/feed',
+  path: '/feed',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const ApiSplatRoute = ApiSplatRouteImport.update({
   id: '/api/$',
   path: '/api/$',
@@ -195,6 +202,11 @@ const ApiApplicationsRoute = ApiApplicationsRouteImport.update({
 const ApiContactRoute = ApiContactRouteImport.update({
   id: '/api/contact',
   path: '/api/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiFeedRoute = ApiFeedRouteImport.update({
+  id: '/api/feed',
+  path: '/api/feed',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiImagesRoute = ApiImagesRouteImport.update({
@@ -300,9 +312,11 @@ export interface FileRoutesByFullPath {
   '/verified': typeof VerifiedRoute
   '/account': typeof AuthenticatedAccountRoute
   '/directory': typeof AuthenticatedDirectoryRoute
+  '/feed': typeof AuthenticatedFeedRoute
   '/api/$': typeof ApiSplatRoute
   '/api/applications': typeof ApiApplicationsRoute
   '/api/contact': typeof ApiContactRoute
+  '/api/feed': typeof ApiFeedRoute
   '/api/images': typeof ApiImagesRoute
   '/api/neighborhood-logos': typeof ApiNeighborhoodLogosRoute
   '/api/partnerships': typeof ApiPartnershipsRoute
@@ -344,9 +358,11 @@ export interface FileRoutesByTo {
   '/verified': typeof VerifiedRoute
   '/account': typeof AuthenticatedAccountRoute
   '/directory': typeof AuthenticatedDirectoryRoute
+  '/feed': typeof AuthenticatedFeedRoute
   '/api/$': typeof ApiSplatRoute
   '/api/applications': typeof ApiApplicationsRoute
   '/api/contact': typeof ApiContactRoute
+  '/api/feed': typeof ApiFeedRoute
   '/api/images': typeof ApiImagesRoute
   '/api/neighborhood-logos': typeof ApiNeighborhoodLogosRoute
   '/api/partnerships': typeof ApiPartnershipsRoute
@@ -391,9 +407,11 @@ export interface FileRoutesById {
   '/_authenticated/_admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/directory': typeof AuthenticatedDirectoryRoute
+  '/_authenticated/feed': typeof AuthenticatedFeedRoute
   '/api/$': typeof ApiSplatRoute
   '/api/applications': typeof ApiApplicationsRoute
   '/api/contact': typeof ApiContactRoute
+  '/api/feed': typeof ApiFeedRoute
   '/api/images': typeof ApiImagesRoute
   '/api/neighborhood-logos': typeof ApiNeighborhoodLogosRoute
   '/api/partnerships': typeof ApiPartnershipsRoute
@@ -437,9 +455,11 @@ export interface FileRouteTypes {
     | '/verified'
     | '/account'
     | '/directory'
+    | '/feed'
     | '/api/$'
     | '/api/applications'
     | '/api/contact'
+    | '/api/feed'
     | '/api/images'
     | '/api/neighborhood-logos'
     | '/api/partnerships'
@@ -481,9 +501,11 @@ export interface FileRouteTypes {
     | '/verified'
     | '/account'
     | '/directory'
+    | '/feed'
     | '/api/$'
     | '/api/applications'
     | '/api/contact'
+    | '/api/feed'
     | '/api/images'
     | '/api/neighborhood-logos'
     | '/api/partnerships'
@@ -527,9 +549,11 @@ export interface FileRouteTypes {
     | '/_authenticated/_admin'
     | '/_authenticated/account'
     | '/_authenticated/directory'
+    | '/_authenticated/feed'
     | '/api/$'
     | '/api/applications'
     | '/api/contact'
+    | '/api/feed'
     | '/api/images'
     | '/api/neighborhood-logos'
     | '/api/partnerships'
@@ -574,6 +598,7 @@ export interface RootRouteChildren {
   ApiSplatRoute: typeof ApiSplatRoute
   ApiApplicationsRoute: typeof ApiApplicationsRoute
   ApiContactRoute: typeof ApiContactRoute
+  ApiFeedRoute: typeof ApiFeedRoute
   ApiImagesRoute: typeof ApiImagesRoute
   ApiNeighborhoodLogosRoute: typeof ApiNeighborhoodLogosRoute
   ApiPartnershipsRoute: typeof ApiPartnershipsRoute
@@ -772,6 +797,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDirectoryRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/feed': {
+      id: '/_authenticated/feed'
+      path: '/feed'
+      fullPath: '/feed'
+      preLoaderRoute: typeof AuthenticatedFeedRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/$': {
       id: '/api/$'
       path: '/api/$'
@@ -791,6 +823,13 @@ declare module '@tanstack/react-router' {
       path: '/api/contact'
       fullPath: '/api/contact'
       preLoaderRoute: typeof ApiContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/feed': {
+      id: '/api/feed'
+      path: '/api/feed'
+      fullPath: '/api/feed'
+      preLoaderRoute: typeof ApiFeedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/images': {
@@ -925,12 +964,14 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedDirectoryRoute: typeof AuthenticatedDirectoryRoute
+  AuthenticatedFeedRoute: typeof AuthenticatedFeedRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRouteWithChildren,
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedDirectoryRoute: AuthenticatedDirectoryRoute,
+  AuthenticatedFeedRoute: AuthenticatedFeedRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -963,6 +1004,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiSplatRoute: ApiSplatRoute,
   ApiApplicationsRoute: ApiApplicationsRoute,
   ApiContactRoute: ApiContactRoute,
+  ApiFeedRoute: ApiFeedRoute,
   ApiImagesRoute: ApiImagesRoute,
   ApiNeighborhoodLogosRoute: ApiNeighborhoodLogosRoute,
   ApiPartnershipsRoute: ApiPartnershipsRoute,
