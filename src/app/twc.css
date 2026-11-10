@@ -348,7 +348,7 @@ textarea.twc-input { min-height: 132px; resize: vertical; }
 .air-card { position: relative; min-width: 0; padding: 22px 20px; border-radius: 14px; background: var(--air-fiber), var(--bl-air-paper); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.9), 0 22px 34px -28px rgb(28 44 94 / 0.6), 0 1px 2px rgb(28 44 94 / 0.08); scroll-margin-top: 16px; }
 .air-ch { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; margin-bottom: 18px; }
 .air-no { font: 500 10px var(--font-plex); letter-spacing: 0.16em; color: var(--bl-air-red); }
-.air-card h2 { margin-top: 6px; font: 400 27px/1.02 var(--font-gilda); letter-spacing: -0.015em; }
+.air-card h2 { margin-top: 6px; font: 700 27px/1.02 var(--font-gilda); letter-spacing: -0.015em; }
 .air-sub { margin-top: 6px; font-size: 13.5px; line-height: 1.45; color: var(--bl-air-muted); }
 .air-rule { border-top: 1.5px solid var(--bl-air-navy); }
 
