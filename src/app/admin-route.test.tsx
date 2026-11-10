@@ -141,22 +141,36 @@ describe("/admin", () => {
       expect(link("All forms").getAttribute("href")).toBe("/admin/forms#forms");
     });
 
-    it("/admin/forms lists every form separately: the five built-in ones, then your own, each opening its edit page", () => {
+    it("/admin/forms shows every form as a card: the five built-in ones, then your own, each opening its edit page", async () => {
       renderForms({ "form-responses": [demoForm({ total: 2, newest_at: "2026-11-09T15:00:00Z" })] });
       expect(screen.getAllByRole("main")).toHaveLength(1);
       expect(screen.getAllByRole("heading", { level: 1 }).map((h) => h.textContent)).toEqual(["Forms"]);
-      const list = within(card("Forms"));
-      expect(card("Forms").id).toBe("forms");
-      const rows = list.getAllByRole("article").map((a) => a.getAttribute("aria-labelledby"));
-      expect(rows).toHaveLength(6);
-      for (const [name, id, chip] of [["Membership application", "application", /Open/], ["Member review", "review", /Open/], ["Contact", "contact", /Always on/], ["Partnership", "partnership", /Always on/], ["Newsletter", "newsletter", /No page/], ["Salon RSVP (demo)", "demo0001", /Open/]] as const) {
-        const row = list.getByRole("article", { name });
-        expect(within(row).getByRole("link", { name }).getAttribute("href")).toBe(`/admin/forms/${id}`);
-        expect(within(row).getByRole("link", { name: `Edit ${name}` }).getAttribute("href")).toBe(`/admin/forms/${id}`);
-        expect(row.textContent).toMatch(chip);
+      expect(document.getElementById("forms")).toBeTruthy();
+      const builtIn = within(card("Built-in forms"));
+      const yours = within(card("Your forms"));
+      expect(builtIn.getAllByRole("article")).toHaveLength(5);
+      expect(yours.getAllByRole("article")).toHaveLength(1);
+      for (const [list, name, id, chip] of [
+        [builtIn, "Membership application", "application", /Open/], [builtIn, "Member review", "review", /Open/],
+        [builtIn, "Contact", "contact", /Always on/], [builtIn, "Partnership", "partnership", /Always on/],
+        [builtIn, "Newsletter", "newsletter", /No page/], [yours, "Salon RSVP (demo)", "demo0001", /Open/],
+      ] as const) {
+        const one = list.getByRole("article", { name });
+        // One link per card (it covers the whole card), straight to the form's edit page.
+        expect(within(one).getAllByRole("link").map((a) => a.getAttribute("href"))).toEqual([`/admin/forms/${id}`]);
+        expect(one.textContent).toMatch(chip);
       }
-      expect(list.getByRole("article", { name: "Salon RSVP (demo)" }).textContent).toMatch(/\/f\/salon-rsvp · 2 answers · newest Nov 9, 2026/);
-      expect(list.getByRole("form", { name: "Add a form" })).toBeTruthy();
+      const salon = yours.getByRole("article", { name: "Salon RSVP (demo)" }).textContent;
+      expect(salon).toMatch(/\/f\/salon-rsvp/);
+      expect(salon).toMatch(/2 answers · newest Nov 9, 2026/);
+      expect(card("Your forms").textContent).toMatch(/1 form at \/f\/…, 2 answers in all/);
+      // The add-form editor stays hidden until New form opens it.
+      expect(yours.queryByRole("form", { name: "Add a form" })).toBeNull();
+      const add = yours.getByRole("button", { name: "New form" });
+      expect(add.getAttribute("aria-expanded")).toBe("false");
+      fireEvent.click(add);
+      expect(yours.getByRole("form", { name: "Add a form" })).toBeTruthy();
+      expect(yours.getByRole("button", { name: "Cancel new form" }).getAttribute("aria-expanded")).toBe("true");
       expect(screen.queryByRole("region", { name: "Inbox" })).toBeNull();
       const nav = screen.getAllByRole("navigation", { name: "Main" })[0];
       const link = (name: string) => within(nav).getByRole("link", { name });
@@ -170,7 +184,7 @@ describe("/admin", () => {
         { kind: "application", open: false, message: "", updated_at: "", updated_by: null },
         { kind: "review", open: true, message: "", updated_at: "", updated_by: null },
       ] });
-      expect(within(card("Forms")).getByRole("article", { name: "Membership application" }).textContent).toMatch(/Closed/);
+      expect(within(card("Built-in forms")).getByRole("article", { name: "Membership application" }).textContent).toMatch(/Closed/);
     });
   });
 
@@ -713,7 +727,9 @@ describe("/admin", () => {
 
   it("forms list: Add a form publishes through saveAdminFormFn", async () => {
     renderForms({ "form-responses": [] });
-    const add = within(card("Forms")).getByRole("form", { name: "Add a form" });
+    const yours = within(card("Your forms"));
+    fireEvent.click(yours.getByRole("button", { name: "New form" }));
+    const add = yours.getByRole("form", { name: "Add a form" });
     fireEvent.change(within(add).getByLabelText("Name"), { target: { value: "Coffee chat" } });
     fireEvent.change(within(add).getByLabelText("Slug"), { target: { value: "coffee-chat" } });
     fake.results = [{ id: "abcd1234" }, []];
@@ -726,6 +742,8 @@ describe("/admin", () => {
         { key: "email", type: "email", label: "Email", required: true },
       ],
     });
+    // Published: the editor folds away again.
+    await waitFor(() => expect(yours.queryByRole("form", { name: "Add a form" })).toBeNull());
   });
 
   it("members: approve sets the profile status directly", async () => {

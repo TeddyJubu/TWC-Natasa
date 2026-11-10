@@ -894,53 +894,71 @@ function MembershipFormRow({ state: s }: { state: AdminFormState }) {
   );
 }
 
-const formLink = (id: string, label: string, className?: string) =>
-  <Link to="/admin/forms/$formId" params={{ formId: id }} className={cn("underline-offset-4", ring, className)}>{label}</Link>;
-
-/** One form in the list: its name opens its edit page (as does Edit). */
-function FormListRow({ id, title, status, details }: { id: string; title: string; status: string; details: React.ReactNode }) {
-  const headingId = `form-row-${id}`;
+/** One form as a card. The whole card opens its edit page (the heading's link stretches over it). */
+function FormCard({ id, title, status, where, detail }: { id: string; title: string; status: string; where?: string; detail: React.ReactNode }) {
+  const headingId = `form-card-${id}`;
   return (
-    <article aria-labelledby={headingId} className={cn(pad, "flex flex-wrap items-start justify-between gap-x-4 gap-y-3 py-5")}>
-      <div className="flex min-w-0 flex-col gap-0.5">
-        <h3 id={headingId} className="text-base font-medium break-words text-ink">{formLink(id, title, "hover:underline")}</h3>
-        {details}
-      </div>
-      <div className="flex items-center gap-3">
+    <article aria-labelledby={headingId}
+      className="relative flex min-h-36 flex-col gap-2 rounded-md bg-app p-5 shadow-[inset_0_0_0_1px_var(--color-app-line)] transition-colors duration-150 hover:bg-app-sunken has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-app-accent">
+      <div className="flex items-start justify-between gap-3">
+        <h3 id={headingId} className="min-w-0 text-base font-medium break-words text-ink">
+          <Link to="/admin/forms/$formId" params={{ formId: id }} className="outline-none after:absolute after:inset-0 after:content-['']">{title}</Link>
+        </h3>
         <StatusChip status={status} />
-        <Link to="/admin/forms/$formId" params={{ formId: id }} aria-label={`Edit ${title}`} className={secondaryButton}>Edit</Link>
       </div>
+      {where && <p className={meta}>{where}</p>}
+      <p className={meta}>{detail}</p>
+      <span aria-hidden className="mt-auto pt-2 text-sm text-ink">Edit →</span>
     </article>
   );
 }
 
-/** Every form, separately: the five built-in ones, then your own /f/… forms. Click one to edit it. */
+const cardGrid = "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3";
+
+/** Every form as a card: the five built-in ones, then your own /f/… forms and a New form card. */
 export function FormsListPanel() {
   const states = useQuery(adminFormsStateQuery);
   const forms = useQuery(adminFormResponsesQuery);
+  const [adding, setAdding] = React.useState(false);
   const custom = forms.data ?? [];
   const open = (kind: "application" | "review") => (states.data?.find((s) => s.kind === kind)?.open === false ? "closed" : "open");
   const status: Record<BuiltIn, string> = { application: open("application"), review: open("review"), contact: "always_on", partnership: "always_on", newsletter: "no_page" };
   const total = custom.reduce((n, f) => n + f.total, 0);
   return (
-    <Card id="forms" title="Forms" subtitle={`${BUILT_IN.length} built-in forms${forms.data ? ` · ${custom.length} of your own (${total} answers)` : ""}. Click a form to edit it.`}>
-      {BUILT_IN.map((kind) => {
-        const info = BUILT_IN_INFO[kind];
-        return (
-          <FormListRow key={kind} id={kind} title={info.title} status={status[kind]}
-            details={<p className={meta}>{info.href && <>{info.href} · </>}{info.note}</p>} />
-        );
-      })}
-      <QueryGate query={forms} what="your forms">
-        {custom.map((f) => (
-          <FormListRow key={f.id} id={f.id} title={f.name} status={f.open ? "open" : "closed"}
-            details={<p className={meta}>
-              /f/{f.slug} · {f.total === 1 ? "1 answer" : `${f.total} answers`}{f.newest_at ? ` · newest ${formatDate(f.newest_at)}` : ""}
-            </p>} />
-        ))}
-        <AddCustomForm />
-      </QueryGate>
-    </Card>
+    <div id="forms" className="flex scroll-mt-28 flex-col gap-10">
+      <section aria-labelledby="forms-built-in" className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1">
+          <h2 id="forms-built-in" className="font-display text-[26px]/[1.2] text-ink">Built-in forms</h2>
+          <p className="text-sm text-app-muted">The site’s own forms. Change their wording, or open and close the ones that can close.</p>
+        </div>
+        <div className={cardGrid}>
+          {BUILT_IN.map((kind) => {
+            const info = BUILT_IN_INFO[kind];
+            return <FormCard key={kind} id={kind} title={info.title} status={status[kind]} where={info.href} detail={info.note} />;
+          })}
+        </div>
+      </section>
+      <section aria-labelledby="forms-yours" className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1">
+          <h2 id="forms-yours" className="font-display text-[26px]/[1.2] text-ink">Your forms</h2>
+          <p className="text-sm text-app-muted">{forms.data ? `${custom.length === 1 ? "1 form" : `${custom.length} forms`} at /f/…, ${total === 1 ? "1 answer" : `${total} answers`} in all.` : "Forms you make, each at its own /f/… link."}</p>
+        </div>
+        <QueryGate query={forms} what="your forms">
+          <div className={cardGrid}>
+            {custom.map((f) => (
+              <FormCard key={f.id} id={f.id} title={f.name} status={f.open ? "open" : "closed"} where={`/f/${f.slug}`}
+                detail={<>{f.total === 1 ? "1 answer" : `${f.total} answers`}{f.newest_at ? ` · newest ${formatDate(f.newest_at)}` : ""}</>} />
+            ))}
+            <button type="button" aria-expanded={adding} aria-controls="forms-new" onClick={() => setAdding((a) => !a)}
+              className={cn("flex min-h-36 flex-col items-center justify-center gap-1 rounded-md border border-dashed border-app-line p-5 text-ink transition-colors duration-150 hover:bg-app-sunken", ring)}>
+              <span aria-hidden className="text-2xl/none">{adding ? "×" : "+"}</span>
+              <span className="text-base font-medium">{adding ? "Cancel new form" : "New form"}</span>
+            </button>
+          </div>
+          {adding && <div id="forms-new" className="rounded-md bg-app shadow-[inset_0_0_0_1px_var(--color-app-line)]"><AddCustomForm onDone={() => setAdding(false)} /></div>}
+        </QueryGate>
+      </section>
+    </div>
   );
 }
 
@@ -1045,7 +1063,7 @@ function formEditorPayload(values: FormEditorValues, id?: string) {
   };
 }
 
-function AddCustomForm() {
+function AddCustomForm({ onDone }: { onDone?: () => void }) {
   const save = useSaveAdminForm();
   const [formKey, setFormKey] = React.useState(0);
   const initial: FormEditorValues = {
@@ -1063,7 +1081,7 @@ function AddCustomForm() {
         error={save.isError ? errorMessage(save.error) : null}
         onSubmit={(values) => {
           save.mutate(formEditorPayload(values), {
-            onSuccess: () => { save.reset(); setFormKey((k) => k + 1); },
+            onSuccess: () => { save.reset(); setFormKey((k) => k + 1); onDone?.(); },
           });
         }}
       />
