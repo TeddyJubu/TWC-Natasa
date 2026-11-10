@@ -20,6 +20,7 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as FellowshipRouteImport } from './routes/fellowship'
 import { Route as GatheringsRouteImport } from './routes/gatherings'
+import { Route as HealthzRouteImport } from './routes/healthz'
 import { Route as JoinRouteImport } from './routes/join'
 import { Route as MembersRouteImport } from './routes/members'
 import { Route as NeighborhoodsRouteImport } from './routes/neighborhoods'
@@ -108,6 +109,11 @@ const FellowshipRoute = FellowshipRouteImport.update({
 const GatheringsRoute = GatheringsRouteImport.update({
   id: '/gatherings',
   path: '/gatherings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HealthzRoute = HealthzRouteImport.update({
+  id: '/healthz',
+  path: '/healthz',
   getParentRoute: () => rootRouteImport,
 } as any)
 const JoinRoute = JoinRouteImport.update({
@@ -298,6 +304,7 @@ export interface FileRoutesByFullPath {
   '/faq': typeof FaqRoute
   '/fellowship': typeof FellowshipRoute
   '/gatherings': typeof GatheringsRoute
+  '/healthz': typeof HealthzRoute
   '/join': typeof JoinRoute
   '/members': typeof MembersRoute
   '/neighborhoods': typeof NeighborhoodsRoute
@@ -344,6 +351,7 @@ export interface FileRoutesByTo {
   '/faq': typeof FaqRoute
   '/fellowship': typeof FellowshipRoute
   '/gatherings': typeof GatheringsRoute
+  '/healthz': typeof HealthzRoute
   '/join': typeof JoinRoute
   '/members': typeof MembersRoute
   '/neighborhoods': typeof NeighborhoodsRoute
@@ -392,6 +400,7 @@ export interface FileRoutesById {
   '/faq': typeof FaqRoute
   '/fellowship': typeof FellowshipRoute
   '/gatherings': typeof GatheringsRoute
+  '/healthz': typeof HealthzRoute
   '/join': typeof JoinRoute
   '/members': typeof MembersRoute
   '/neighborhoods': typeof NeighborhoodsRoute
@@ -441,6 +450,7 @@ export interface FileRouteTypes {
     | '/faq'
     | '/fellowship'
     | '/gatherings'
+    | '/healthz'
     | '/join'
     | '/members'
     | '/neighborhoods'
@@ -487,6 +497,7 @@ export interface FileRouteTypes {
     | '/faq'
     | '/fellowship'
     | '/gatherings'
+    | '/healthz'
     | '/join'
     | '/members'
     | '/neighborhoods'
@@ -534,6 +545,7 @@ export interface FileRouteTypes {
     | '/faq'
     | '/fellowship'
     | '/gatherings'
+    | '/healthz'
     | '/join'
     | '/members'
     | '/neighborhoods'
@@ -583,6 +595,7 @@ export interface RootRouteChildren {
   FaqRoute: typeof FaqRoute
   FellowshipRoute: typeof FellowshipRoute
   GatheringsRoute: typeof GatheringsRoute
+  HealthzRoute: typeof HealthzRoute
   JoinRoute: typeof JoinRoute
   MembersRoute: typeof MembersRoute
   NeighborhoodsRoute: typeof NeighborhoodsRoute
@@ -690,6 +703,13 @@ declare module '@tanstack/react-router' {
       path: '/gatherings'
       fullPath: '/gatherings'
       preLoaderRoute: typeof GatheringsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/healthz': {
+      id: '/healthz'
+      path: '/healthz'
+      fullPath: '/healthz'
+      preLoaderRoute: typeof HealthzRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/join': {
@@ -989,6 +1009,7 @@ const rootRouteChildren: RootRouteChildren = {
   FaqRoute: FaqRoute,
   FellowshipRoute: FellowshipRoute,
   GatheringsRoute: GatheringsRoute,
+  HealthzRoute: HealthzRoute,
   JoinRoute: JoinRoute,
   MembersRoute: MembersRoute,
   NeighborhoodsRoute: NeighborhoodsRoute,

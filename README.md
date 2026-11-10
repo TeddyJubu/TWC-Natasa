@@ -135,7 +135,8 @@ The site runs on our VPS (Ubuntu 24.04, Node 22): Caddy terminates TLS and proxi
 it fast-forwards `/opt/twc-natasa` to `origin/main`, then `bun install --frozen-lockfile`, typecheck, tests and build.
 Any failure stops there and the running site is untouched (a failed commit is tried once; the next push retries).
 On success it snapshots the database to `/var/backups/twc-natasa/pre-deploy-*.db` (newest 20 kept) and restarts
-`twc-natasa.service`, then checks the site answers. Migrations apply themselves when the server starts. Logs:
+`twc-natasa.service`, then checks the site answers (`GET /healthz`, which opens the database and is the one page
+open behind the PIN). Migrations apply themselves when the server starts. Logs:
 `journalctl -u twc-natasa-deploy` and `journalctl -u twc-natasa`.
 
 Layout on the VPS:
@@ -143,7 +144,7 @@ Layout on the VPS:
 ```
 /opt/twc-natasa                  checkout of main (the service's working directory)
 /etc/twc-natasa/app.env          server env: APP_URL, DATA_DIR, BETTER_AUTH_SECRET, CF_EMAIL_*, EMAIL_FROM, HOST,
-                                 PORT, NODE_ENV (root:www-data, 640)
+                                 PORT, NODE_ENV, SITE_PIN (root:www-data, 640)
 /var/lib/twc-natasa/data/twc.db  the database (+ -wal/-shm while running); uploads/ beside it
 /var/backups/twc-natasa/         pre-deploy snapshots, nightly-*.db and uploads-*.tgz (30 days)
 ```
@@ -154,6 +155,14 @@ proxies to it; only the CRM's embeddable forms (`/embed.js`, `/f/*`, their asset
 `/terms`, `/code-of-conduct`) are still served from the old static site there. `new.` and `join.…/join` redirect here. Traffic arrives through Cloudflare, then Caddy, so rate limits (Better Auth's and the per-IP limit on
 applications) key on `CF-Connecting-IP`, falling back to `X-Forwarded-For`. Someone who reaches Caddy directly
 (bypassing Cloudflare) can spoof that header, which only lets them dodge the rate limits.
+
+### Private preview (site PIN)
+
+While `SITE_PIN` is set in `app.env`, every request — pages, `/api`, `/media`, static files — needs the PIN first
+(`src/server/site-pin.ts`, run first in `server.mjs`). The PIN page posts to `/__pin`, which sets an HttpOnly cookie
+holding a hash of the PIN for 30 days and returns the visitor to the page she asked for (so emailed links still work
+after the PIN). Only the icons and `/healthz` are open. Changing the PIN signs everyone out of the preview; removing
+it (and restarting `twc-natasa.service`) opens the site. The PIN lives only in `app.env`: this repository is public.
 
 ### Backup
 

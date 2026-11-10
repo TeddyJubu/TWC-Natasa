@@ -35,7 +35,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         { rel: "stylesheet", href: appCss },
         // Headlines are set in the display face; fetch it with the CSS instead of after layout (T25).
         { rel: "preload", href: displayFontUrl, as: "font", type: "font/woff2", crossOrigin: "anonymous" },
-        { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+        // The constellation star on a white tile (public/), so it reads on light and dark tabs alike.
+        { rel: "icon", href: "/favicon.ico", sizes: "48x48" },
+        { rel: "icon", href: "/favicon.png", type: "image/png", sizes: "192x192" },
+        { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
         ...seo.links,
       ],
     };

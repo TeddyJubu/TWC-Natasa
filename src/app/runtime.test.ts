@@ -21,5 +21,8 @@ describe("node runtime", () => {
     expect(server).toMatch(/process\.env\.PORT \|\| 8788/);
     // Headers wrap the static middleware, so assets get them too.
     expect(server.indexOf("withSecurityHeaders(await next())")).toBeLessThan(server.indexOf("staticMiddleware("));
+    // The PIN gate answers before static files or the app, so nothing is served without it (src/server/site-pin.ts).
+    expect(server.indexOf("pinGate(request)")).toBeGreaterThan(server.indexOf("withSecurityHeaders(await next())"));
+    expect(server.indexOf("pinGate(request)")).toBeLessThan(server.indexOf("staticMiddleware("));
   });
 });
