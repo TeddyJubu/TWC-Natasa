@@ -7,7 +7,7 @@ import { introsQuery } from "@/features/members/queries";
 import { ring } from "@/app/layout/app-classes";
 import { Icon } from "@/app/layout/icons";
 import type { ProfileEditor } from "./helpers";
-import { AirCard, AirEdit, EmptySlot } from "./shared";
+import { EditButton, EmptySlot, Letter } from "@/app/layout/app-ui";
 import { NeighborhoodMap } from "./NeighborhoodMap";
 
 /**
@@ -28,23 +28,23 @@ export function WhereCard({ editor, userId, hood, approved, avatar, hoodList }: 
   // Introductions return at most four, so four means "four or more".
   const near = intros?.filter((m) => m.neighborhood === hood).length;
   const neighbors = near === undefined ? null : near === 0 ? "Just you, for now" : near >= 4 ? "4+ neighbors" : `${near} neighbor${near === 1 ? "" : "s"}`;
-  const edit = <AirEdit card="neighborhood" editing={false} onClick={() => editor.add("public", "neighborhood")} />;
+  const edit = <EditButton card="neighborhood" editing={false} onClick={() => editor.add("public", "neighborhood")} />;
   const work = [card.business, card.specialty].filter((s) => s.trim()).join(" · ");
 
   if (!hood) {
     return (
-      <AirCard id="where" no={1} title="Where you belong" subtitle="Your pin on the collective’s map of neighbors" action={edit}>
+      <Letter id="where" no={1} title="Where you belong" subtitle="Your pin on the collective’s map of neighbors" action={edit}>
         <EmptySlot icon="map-pin">
           <p className="air-empty-title">No neighborhood yet</p>
           <p>Choose yours and your pin goes on the map, next to the neighbors you’ll meet first.</p>
           <button type="button" onClick={() => editor.add("public", "neighborhood")} className={cn("air-link", ring)}>Choose your neighborhood</button>
         </EmptySlot>
-      </AirCard>
+      </Letter>
     );
   }
 
   return (
-    <AirCard id="where" no={1} title="Where you belong" subtitle="Your pin on the collective’s map of neighbors" action={edit}>
+    <Letter id="where" no={1} title="Where you belong" subtitle="Your pin on the collective’s map of neighbors" action={edit}>
       <div className={cn("air-where", !place && "air-where--nomap")}>
         {place && (
           <NeighborhoodMap center={place.center} label={hood}>
@@ -95,6 +95,6 @@ export function WhereCard({ editor, userId, hood, approved, avatar, hoodList }: 
           <p className="air-privacy"><Icon name="lock" className="size-4" />Shown by neighborhood only — never your address.</p>
         </div>
       </div>
-    </AirCard>
+    </Letter>
   );
 }

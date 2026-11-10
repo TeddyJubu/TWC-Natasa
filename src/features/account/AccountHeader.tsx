@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import { cn, formatCatalogueNumber, initials } from "@/index";
+import { formatCatalogueNumber, initials } from "@/index";
 import type { Profile } from "@/features/members/queries";
 import { useUploadAvatar } from "@/features/members/mutations";
 import { bookingQuery, eventsQuery, rsvpsQuery } from "@/features/events/queries";
 import { eventWhen } from "@/features/events/format";
-import { ring } from "@/app/layout/app-classes";
+import { redButton } from "@/app/layout/app-classes";
 import { Icon } from "@/app/layout/icons";
 import { dayParts, errorMessage } from "./helpers";
 
@@ -108,7 +108,7 @@ export function AccountHeader({ userId, profile, avatar, onPreview }: {
                 <p className="air-code-id">WC-{number}{hood ? `-${hood.replace(/[^a-z]/gi, "").slice(0, 3).toUpperCase()}` : ""}</p>
               </div>
             ) : <span />}
-            <button type="button" onClick={onPreview} className={cn("air-btn air-btn--red", ring)}>
+            <button type="button" onClick={onPreview} className={redButton}>
               View public card <Icon name="arrow-right" />
             </button>
           </div>

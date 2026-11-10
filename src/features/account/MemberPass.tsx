@@ -2,7 +2,7 @@ import * as React from "react";
 import { ConstellationLogo, cn, formatCatalogueNumber, initials } from "@/index";
 import { useSaveProfile } from "@/features/members/mutations";
 import { CARD_COLORS, type CardColor } from "@/features/members/card-colors";
-import { ring } from "@/app/layout/app-classes";
+import { secondaryButton } from "@/app/layout/app-classes";
 import { Icon } from "@/app/layout/icons";
 import { errorMessage } from "./helpers";
 
@@ -42,7 +42,7 @@ export function PassDialog({ open, onClose, userId, facts }: { open: boolean; on
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="pass-dialog-in">
-        <button type="button" onClick={onClose} className={cn("air-btn air-btn--line air-btn--sm pass-close", ring)}>
+        <button type="button" onClick={onClose} className={cn(secondaryButton, "pass-close")}>
           Close<span className="sr-only"> your public card</span>
         </button>
         <MemberPass facts={{ ...facts, card_color: color }} nameId={nameId} />

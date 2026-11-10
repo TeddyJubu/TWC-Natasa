@@ -9,7 +9,7 @@ import { useRemoveLogo, useUploadLogo } from "@/features/members/mutations";
 import { fieldClass, ring } from "@/app/layout/app-classes";
 import { Icon, type IconName } from "@/app/layout/icons";
 import { Toggle } from "@/app/layout/app-ui";
-import { AirCard, AirEdit, Field } from "./shared";
+import { EditButton, Field, Letter } from "@/app/layout/app-ui";
 import { PROFILE_FORM, errorMessage, fieldId, monthYear, type ProfileEditor } from "./helpers";
 
 type TextRow = {
@@ -56,7 +56,7 @@ export function PublicCard({ editor, userId, logoPath, logoUrl, hoodList }: {
   const options = pickerNames(hoodList, hood ?? []);
 
   return (
-    <AirCard id="public-card" no={2} title="Public card" subtitle="How neighbors see you in the member directory" action={<AirEdit card="public card" editing={editing} onClick={() => editor.toggle("public")} />}>
+    <Letter id="public-card" no={2} title="Public card" subtitle="How neighbors see you in the member directory" action={<EditButton card="public card" editing={editing} onClick={() => editor.toggle("public")} />}>
       <dl className="air-form">
       {PUBLIC_ROWS.map(text)}
       <Field
@@ -73,7 +73,7 @@ export function PublicCard({ editor, userId, logoPath, logoUrl, hoodList }: {
       {text(WEBSITE)}
       <LogoRow userId={userId} path={logoPath} url={logoUrl} business={card.business || card.full_name} />
       </dl>
-    </AirCard>
+    </Letter>
   );
 }
 
@@ -122,7 +122,7 @@ export function WordsCard({ editor, catalogueNumber }: { editor: ProfileEditor; 
   const { card, set } = editor;
   const editing = editor.isEditing("words");
   return (
-    <AirCard span={7} no={3} title="In your words" subtitle="Short and warm beats long and formal" action={<AirEdit card="in your words" editing={editing} onClick={() => editor.toggle("words")} />}>
+    <Letter span={7} no={3} title="In your words" subtitle="Short and warm beats long and formal" action={<EditButton card="in your words" editing={editing} onClick={() => editor.toggle("words")} />}>
       <div className="air-letter air-rule">
         <div className="min-w-0">
           {editing ? (
@@ -164,7 +164,7 @@ export function WordsCard({ editor, catalogueNumber }: { editor: ProfileEditor; 
           )}
         </div>
       </div>
-    </AirCard>
+    </Letter>
   );
 }
 
@@ -174,7 +174,7 @@ export function MembershipCard({ profile }: { profile: Profile }) {
   const declined = profile.status === "declined";
   const since = approved ? monthYear(profile.member_since) : null;
   return (
-    <AirCard span={5} no={4} title="Membership" subtitle="Your standing in the collective" className="[&_.air-ch]:pr-28">
+    <Letter span={5} no={4} title="Membership" subtitle="Your standing in the collective" className="[&_.air-ch]:pr-28">
       {approved && (
         <div aria-hidden className="air-rubber"><b>Approved</b>{since && <small>{since.replace(/^(\w{3})\w*/, "$1")}</small>}</div>
       )}
@@ -198,7 +198,7 @@ export function MembershipCard({ profile }: { profile: Profile }) {
           <dd className={cn(!since && "text-app-muted")}>{since || "—"}</dd>
         </div>
       </dl>
-    </AirCard>
+    </Letter>
   );
 }
 
@@ -223,7 +223,7 @@ export function VisibilityCard({ editor, profile }: { editor: ProfileEditor; pro
     ? memberSlug({ name: profile.full_name, catalogueNumber: profile.catalogue_number })
     : undefined;
   return (
-    <AirCard id="visibility" span={7} no={5} title="Visibility" subtitle={audience}>
+    <Letter id="visibility" span={7} no={5} title="Visibility" subtitle={audience}>
       <div className="air-opts air-rule">
       <Toggle
         label="Show me in the member directory"
@@ -247,6 +247,6 @@ export function VisibilityCard({ editor, profile }: { editor: ProfileEditor; pro
           </Link>
         </p>
       )}
-    </AirCard>
+    </Letter>
   );
 }

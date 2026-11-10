@@ -5,18 +5,19 @@ import { toneFor } from "@/features/neighborhoods/tone";
 import { eventsQuery, rsvpsQuery } from "@/features/events/queries";
 import { useToggleRsvp } from "@/features/events/mutations";
 import { eventWhen } from "@/features/events/format";
-import { ring } from "@/app/layout/app-classes";
+import { ring, secondaryButton } from "@/app/layout/app-classes";
 import { InlineError } from "@/app/layout/app-ui";
 import { Icon } from "@/app/layout/icons";
 import { errorMessage, hoodStyle } from "./helpers";
-import { AirCard, EmptySlot, Locked, TicketDate } from "./shared";
+import { EmptySlot, Letter, TicketDate } from "@/app/layout/app-ui";
+import { Locked } from "./shared";
 
 /** Upcoming gatherings with her RSVPs; applicants see what unlocks. */
 export function GatheringsList({ userId, approved, applied, hoodList }: { userId: string; approved: boolean; applied: boolean; hoodList: Neighborhood[] }) {
   return (
-    <AirCard id="gatherings" no={7} title="Gatherings" subtitle="Save your seat at what’s coming up">
+    <Letter id="gatherings" no={7} title="Gatherings" subtitle="Save your seat at what’s coming up">
       {approved ? <Events userId={userId} hoodList={hoodList} /> : <Locked applied={applied} />}
-    </AirCard>
+    </Letter>
   );
 }
 
@@ -71,7 +72,7 @@ function Events({ userId, hoodList }: { userId: string; hoodList: Neighborhood[]
                       <button
                         type="button" disabled={toggle.isPending || !rsvpsState.isSuccess}
                         onClick={() => toggle.mutate({ eventId: ev.id, going: true })}
-                        className={cn("air-btn air-btn--line air-btn--sm shrink-0", ring)}
+                        className={cn(secondaryButton, "shrink-0")}
                       >
                         Save my seat<span className="sr-only"> at {ev.title}</span>
                       </button>

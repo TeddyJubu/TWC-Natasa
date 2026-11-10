@@ -76,12 +76,22 @@
   --bl-app-gel-green: #2fc27a; /* green gel pill (an always-on form): the glowing green at its heart */
   --bl-app-gel-green-soft: #d2f6e2; /* green gel pill: the pale green at its rim */
   --bl-app-gel-green-ink: #07311d; /* green gel pill: its label */
-  /* Airmail: /account only (DESIGN.md "Member profile"), onionskin paper and airmail stripes. Light in both modes. */
-  --bl-air-sky: #dfe6ee; /* the onionskin desk behind the letters */
-  --bl-air-paper: #fbfaf6; /* letters, the envelope, the save bar */
-  --bl-air-navy: #1c2c5e; /* ink: text, rules, switches, the navy stamp */
-  --bl-air-red: #d23b2e; /* airmail red: card numbers, rubber stamps, the primary button (white at 4.7:1) */
+  /* Airmail: the internal tools' design system (/account, /admin; DESIGN.md "Internal tools"), onionskin paper and
+     airmail stripes. Light in both modes. Utilities: `bg-air-*`, `border-air-*`, `rounded-air-*`, `shadow-air-*`. */
+  --bl-air-sky: #dfe6ee; /* the onionskin desk behind the letters; hovers */
+  --bl-air-paper: #fbfaf6; /* letters, the envelope, the sidebar, the save bar */
+  --bl-air-navy: #1c2c5e; /* ink: text, rules, switches, the navy stamp, the current nav item */
+  --bl-air-red: #d23b2e; /* airmail red: card numbers, rubber stamps, the page's one primary button (white at 4.7:1) */
   --bl-air-muted: #545e80; /* labels and secondary text: 6:1 on paper, 5:1 on the sky */
+  --bl-air-rule: rgb(28 44 94 / 0.14); /* hairlines: menus, letter lines */
+  --bl-air-line: rgb(28 44 94 / 0.3); /* row dividers, form cells, dashed slots, outlines */
+  --bl-air-tint: rgb(28 44 94 / 0.035); /* a navy wash: wide cells, notes, notices */
+  --bl-air-radius-card: 14px; /* letters, the sidebar, the top bar */
+  --bl-air-radius-cell: 10px; /* customs forms, notices, the map, fields */
+  --bl-air-radius-menu: 18px; /* dropdown menus */
+  --bl-air-shadow-card: inset 0 1px 0 rgb(255 255 255 / 0.9), 0 22px 34px -28px rgb(28 44 94 / 0.6), 0 1px 2px rgb(28 44 94 / 0.08);
+  --bl-air-shadow-menu: inset 0 0 0 1px var(--bl-air-rule), 0 22px 34px -20px rgb(28 44 94 / 0.55), 0 2px 4px rgb(28 44 94 / 0.08);
+  --bl-air-shadow-lift: 0 10px 18px -12px rgb(28 44 94 / 0.6); /* the current nav item, a navy pill */
 }
 
 /* Night: black sections and dark mode. Tokens invert so components need no tone props. */
@@ -156,6 +166,15 @@
   --color-air-navy: var(--bl-air-navy);
   --color-air-red: var(--bl-air-red);
   --color-air-muted: var(--bl-air-muted);
+  --color-air-rule: var(--bl-air-rule);
+  --color-air-line: var(--bl-air-line);
+  --color-air-tint: var(--bl-air-tint);
+  --radius-air-card: var(--bl-air-radius-card);
+  --radius-air-cell: var(--bl-air-radius-cell);
+  --radius-air-menu: var(--bl-air-radius-menu);
+  --shadow-air-card: var(--bl-air-shadow-card);
+  --shadow-air-menu: var(--bl-air-shadow-menu);
+  --shadow-air-lift: var(--bl-air-shadow-lift);
   --color-ring: var(--bl-sky);
 
   --font-display: "Gilda Display", Georgia, serif;

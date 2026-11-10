@@ -4,7 +4,8 @@ import type { Neighborhood } from "@/features/neighborhoods/queries";
 import { toneFor } from "@/features/neighborhoods/tone";
 import { introsQuery } from "@/features/members/queries";
 import { InlineError } from "@/app/layout/app-ui";
-import { AirCard, EmptySlot, Locked } from "./shared";
+import { EmptySlot, Letter } from "@/app/layout/app-ui";
+import { Locked } from "./shared";
 
 /** Introductions to other members in the black contact-sheet panel; each card opens the page's MemberDialog. */
 export function IntroductionsSection({
@@ -23,7 +24,7 @@ export function IntroductionsSection({
   const intros = introsState.data ?? [];
 
   return (
-    <AirCard id="introductions" no={8} title="Introductions" subtitle={n ? `Neighbors from ${n} first, then across the constellation.` : "Neighbors from across the constellation."}>
+    <Letter id="introductions" no={8} title="Introductions" subtitle={n ? `Neighbors from ${n} first, then across the constellation.` : "Neighbors from across the constellation."}>
       {!approved ? <Locked applied={applied} /> : (
         <>
           {introsState.isError && <InlineError message="We couldn’t load your introductions." onRetry={() => void introsState.refetch()} />}
@@ -39,6 +40,6 @@ export function IntroductionsSection({
           )}
         </>
       )}
-    </AirCard>
+    </Letter>
   );
 }

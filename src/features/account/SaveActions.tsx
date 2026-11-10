@@ -1,6 +1,6 @@
 import type * as React from "react";
 import { cn } from "@/index";
-import { ring } from "@/app/layout/app-classes";
+import { redButton, ring } from "@/app/layout/app-classes";
 import { Icon } from "@/app/layout/icons";
 
 /**
@@ -34,7 +34,7 @@ export function SaveActions({ formId, dirty, pending, saved, error, onSubmit, on
               <button type="button" onClick={onPreview} className={cn("air-btn air-btn--line", ring)}>
                 <Icon name="eye" /><span>Preview<span className="sr-only sm:not-sr-only"> card</span></span>
               </button>
-              <button type="submit" disabled={pending} className={cn("air-btn air-btn--red", ring)}>
+              <button type="submit" disabled={pending} className={redButton}>
                 {pending ? "Saving…" : <>Save changes <Icon name="arrow-right" /></>}
               </button>
             </>

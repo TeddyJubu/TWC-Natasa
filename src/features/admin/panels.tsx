@@ -953,7 +953,7 @@ function FormCard({ id, title, status, where, note, stub, onDelete, deleting }: 
           </div>
         )}>
         <div className="flex items-start justify-between gap-3">
-          <h3 id={headingId} className="min-w-0 font-geist font-medium text-[22px]/[1.2] break-words text-ink">
+          <h3 id={headingId} className="min-w-0 font-gilda text-[22px]/[1.2] break-words text-ink">
             <Link to="/admin/forms/$formId" params={{ formId: id }} className="outline-none after:absolute after:inset-0 after:content-['']">{title}</Link>
           </h3>
           <div className="flex shrink-0 items-center gap-1.5">
@@ -980,7 +980,7 @@ const LISTED_BUILT_IN = BUILT_IN.filter((kind) => kind !== "newsletter");
 function SectionHead({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1">
-      <h2 id={id} className="font-geist text-[21px]/[1.2] font-medium tracking-[-0.3px] text-ink">{title}</h2>
+      <h2 id={id} className="font-gilda text-[27px]/[1.05] font-bold tracking-[-0.015em] text-ink lg:text-[31px]">{title}</h2>
       <p className="text-sm text-app-muted">{children}</p>
     </div>
   );
@@ -1015,14 +1015,14 @@ export function FormsListPanel() {
             {custom.map((f) => (
               <FormCard key={f.id} id={f.id} title={f.name} status={f.open ? "open" : "closed"} where={formPath(f.slug)}
                 onDelete={() => confirmDelete(f)} deleting={remove.isPending}
-                stub={<><span className="font-geist text-lg/none text-ink tabular-nums">{f.total}</span> {f.total === 1 ? "answer" : "answers"}{f.newest_at ? ` · newest ${formatDate(f.newest_at)}` : ""}</>} />
+                stub={<><span className="font-gilda text-lg/none text-ink tabular-nums">{f.total}</span> {f.total === 1 ? "answer" : "answers"}{f.newest_at ? ` · newest ${formatDate(f.newest_at)}` : ""}</>} />
             ))}
             <button ref={tile} type="button" aria-expanded={adding} aria-controls="forms-new" onClick={() => (adding ? close() : setAdding(true))}
               className={cn("group flex min-h-40 text-ink", ring)}>
               {/* The postage edge sits on an inner layer: a mask on the button would clip its focus outline too. */}
               <span className="twc-stamp-edge flex flex-1 flex-col items-center justify-center gap-3 bg-app/50 p-5 transition-colors duration-150 group-hover:bg-app group-aria-expanded:bg-app">
                 <span aria-hidden className="grid size-11 place-items-center rounded-full bg-ink text-app transition-transform duration-150 ease-snap group-hover:scale-105 motion-reduce:transition-none"><Icon name="plus" className="size-5" /></span>
-                <span className="font-geist text-[22px]/[1.2]">New form</span>
+                <span className="font-gilda text-[22px]/[1.2]">New form</span>
               </span>
             </button>
           </div>
@@ -1071,7 +1071,7 @@ function NewFormPanel({ onClose }: { onClose: () => void }) {
   return (
     <form id="forms-new" aria-label="New form" onSubmit={submit} onKeyDown={(e) => { if (e.key === "Escape") onClose(); }}
       className="flex flex-col gap-5 rounded-md bg-app p-5 shadow-[inset_0_0_0_1px_var(--color-app-line)] sm:p-7">
-      <h3 className="font-geist font-medium text-[26px]/[1.2] text-ink">New form</h3>
+      <h3 className="font-gilda text-[26px]/[1.2] text-ink">New form</h3>
       <div className="grid gap-5 md:grid-cols-2">
         <Field id="form-new-name" label="Name">
           <input ref={first} id="form-new-name" required maxLength={80} value={name} disabled={save.isPending} placeholder="Supper club RSVP"
@@ -1124,7 +1124,7 @@ export function BuiltInFormPanel({ kind }: { kind: BuiltIn }) {
       <Ticket row label="Summary" stub={(
         <div className="flex flex-col gap-1.5">
           <p className="twc-eyebrow">Answers go to</p>
-          <a className={cn(linkClass, "w-fit font-geist text-[22px]/[1.2] font-normal")} href={info.answers[1]}>{info.answers[0]}</a>
+          <a className={cn(linkClass, "w-fit font-gilda text-[22px]/[1.2] font-normal")} href={info.answers[1]}>{info.answers[0]}</a>
         </div>
       )}>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
@@ -1279,7 +1279,7 @@ function FormWorkspace({ form: f, tab, onTab }: { form: AdminForm; tab: FormTab;
     <>
       <Ticket row label="Summary" stub={(
         <div className="flex items-baseline gap-2.5 sm:flex-col sm:gap-1">
-          <p className="font-geist text-[44px]/[1] text-ink tabular-nums">{f.total}</p>
+          <p className="font-gilda text-[44px]/[1] text-ink tabular-nums">{f.total}</p>
           <p className="twc-eyebrow">{f.total === 1 ? "answer" : "answers"}</p>
           {f.newest_at && <p className="twc-index ml-auto sm:mt-1 sm:ml-0">newest {formatDate(f.newest_at)}</p>}
         </div>
@@ -1350,7 +1350,7 @@ function AnswersCard({ form: f }: { form: AdminForm }) {
                 <li key={r.id}>
                   <details className="group">
                     <summary className={cn("flex min-h-16 cursor-pointer list-none items-center gap-3.5 px-5 py-3 transition-colors duration-150 hover:bg-app-sunken sm:px-7 [&::-webkit-details-marker]:hidden", ring)}>
-                      <span aria-hidden className="grid size-10 shrink-0 place-items-center rounded-full bg-app-sunken font-geist text-sm text-ink group-hover:bg-app">
+                      <span aria-hidden className="grid size-10 shrink-0 place-items-center rounded-full bg-app-sunken font-gilda text-sm text-ink group-hover:bg-app">
                         {title === NO_NAME ? "–" : initials(title)}
                       </span>
                       <span className="flex min-w-0 flex-1 flex-col">
@@ -1520,7 +1520,7 @@ function AddNeighborhood({ nextOrder }: { nextOrder: number }) {
 
   return (
     <form key={formKey} onSubmit={submit} aria-label="Add a neighborhood" className={subpanel}>
-      <h3 className="font-geist font-medium text-xl/[1.3] text-ink">Add a neighborhood</h3>
+      <h3 className="font-gilda text-xl/[1.3] text-ink">Add a neighborhood</h3>
       <div className="grid gap-5 md:grid-cols-3">
         <Field id="hood-new-name" label="Name"><input id="hood-new-name" name="name" required maxLength={60} className={fieldClass} /></Field>
         <Field id="hood-new-slug" label="Slug" hint="Lowercase words joined by hyphens. Can’t be changed later.">
@@ -1566,7 +1566,7 @@ function NeighborhoodRow({ hood }: { hood: AdminNeighborhood }) {
         <span aria-hidden className="grid size-7 shrink-0 place-items-center overflow-hidden rounded-full bg-(--hood)" style={hoodStyle(hood.color)}>
           {logoSrc && <img src={logoSrc} alt="" className="size-5.5 object-contain" />}
         </span>
-        <h3 className="min-w-0 font-geist font-medium text-xl/[1.3] break-words text-ink">{hood.name}</h3>
+        <h3 className="min-w-0 font-gilda text-xl/[1.3] break-words text-ink">{hood.name}</h3>
         <span className="twc-index mr-auto">{hood.slug} · order {hood.sort_order}</span>
         <Chip tone={hood.active ? "ok" : "muted"}>{hood.active ? "Active" : "Inactive"}</Chip>
       </div>
@@ -1706,13 +1706,13 @@ function GatheringsTable({ rows, caption, onEdit, onGuests }: {
                   <div className="flex items-center gap-3.5 whitespace-nowrap">
                     <span className="flex w-14 shrink-0 flex-col gap-0.5 rounded-md bg-app-sunken pt-1.5 pb-2 text-center">
                       <span className="font-fragment text-[11px]/[14px] tracking-[1px] uppercase text-app-muted">{when.month}</span>
-                      <span className="font-geist text-[26px]/none text-ink">{when.day}</span>
+                      <span className="font-gilda text-[26px]/none text-ink">{when.day}</span>
                     </span>
                     <span>{when.weekday} · {when.time}</span>
                   </div>
                 </td>
                 <th scope="row" className={cn(cell, "min-w-52 font-normal")}>
-                  <span className="block font-geist text-xl/[1.3] text-ink">{e.title}</span>
+                  <span className="block font-gilda text-xl/[1.3] text-ink">{e.title}</span>
                   <span className={meta}>{kindLabel(e.kind)} · {e.location}</span>
                 </th>
                 <td className={cell}>
@@ -1773,7 +1773,7 @@ function GatheringForm({ event, onDone }: { event: AdminEvent | null; onDone: ()
   return (
     <form onSubmit={submit} aria-labelledby={id("heading")} className={subpanel}>
       <div className="flex flex-col gap-0.5">
-        <h3 id={id("heading")} className="font-geist font-medium text-xl/[1.3] text-ink">{event ? `Edit ${event.title}` : "Add a gathering"}</h3>
+        <h3 id={id("heading")} className="font-gilda text-xl/[1.3] text-ink">{event ? `Edit ${event.title}` : "Add a gathering"}</h3>
         <p className={meta}>Members see it in Gatherings as soon as you save.</p>
       </div>
       <div className="grid gap-5 md:grid-cols-2">
@@ -1839,7 +1839,7 @@ function GuestList({ event, onClose }: { event: AdminEvent; onClose: () => void 
     <section aria-labelledby={headingId} className="flex flex-col">
       <div className={cn(pad, "flex flex-wrap items-start justify-between gap-3 border-t border-app-line py-5")}>
         <div className="flex min-w-0 flex-col gap-0.5">
-          <h3 id={headingId} className="font-geist font-medium text-xl/[1.3] break-words text-ink">Guest list · {event.title}</h3>
+          <h3 id={headingId} className="font-gilda text-xl/[1.3] break-words text-ink">Guest list · {event.title}</h3>
           <p className={meta}>{n} member{n === 1 ? "" : "s"} saved a seat</p>
         </div>
         <div className="flex gap-2">

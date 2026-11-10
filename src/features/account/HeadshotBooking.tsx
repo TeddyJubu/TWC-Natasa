@@ -4,11 +4,12 @@ import { useQuery } from "@tanstack/react-query";
 import { bookingQuery } from "@/features/events/queries";
 import { useBookHeadshot } from "@/features/events/mutations";
 import { localDateISO } from "@/features/events/format";
-import { fieldClass, ring } from "@/app/layout/app-classes";
+import { fieldClass, primaryButton, ring } from "@/app/layout/app-classes";
 import { InlineError } from "@/app/layout/app-ui";
 import { Icon } from "@/app/layout/icons";
 import { dayParts, errorMessage } from "./helpers";
-import { AirCard, Field, Locked, TicketDate } from "./shared";
+import { Field, Letter, TicketDate } from "@/app/layout/app-ui";
+import { Locked } from "./shared";
 
 /** What the member sees for each headshot booking status (the database allows only these three). */
 const BOOKING_COPY: Record<string, { title: string; body: string; tone: "navy" | "red" | "muted" }> = {
@@ -25,9 +26,9 @@ const NOTES_ID = "headshot-notes";
 /** Her headshot session: the current request's status, or the request rows (values until an Add opens them). */
 export function HeadshotBooking({ userId, approved, applied }: { userId: string; approved: boolean; applied: boolean }) {
   return (
-    <AirCard id="headshot" span={5} no={6} title="Headshot session" subtitle="Included with your membership — your portrait, professionally done">
+    <Letter id="headshot" span={5} no={6} title="Headshot session" subtitle="Included with your membership — your portrait, professionally done">
       {approved ? <Booking userId={userId} /> : <Locked applied={applied} />}
-    </AirCard>
+    </Letter>
   );
 }
 
@@ -108,7 +109,7 @@ function Booking({ userId }: { userId: string }) {
       </dl>
       <div className="flex flex-wrap items-center justify-end gap-4">
         {book.isError && <p role="alert" className="mr-auto text-sm text-danger">{errorMessage(book.error)}</p>}
-        <button type="submit" disabled={book.isPending} className={cn("air-btn air-btn--navy air-btn--sm", ring)}>{book.isPending ? "Sending…" : <>Request my session <Icon name="arrow-right" /></>}</button>
+        <button type="submit" disabled={book.isPending} className={primaryButton}>{book.isPending ? "Sending…" : <>Request my session <Icon name="arrow-right" /></>}</button>
       </div>
     </form>
   );

@@ -108,9 +108,9 @@ describe("mobile menu button", () => {
   });
 });
 
-describe("member profile (airmail palette, /account)", () => {
-  // [text, background]: every pair the airmail page uses. White is the primary button's label and the tickets' stubs.
-  const t = { ...light, white: "#ffffff" };
+describe("internal tools (airmail palette: /account, /admin)", () => {
+  // [text, background]: every pair the airmail pages use. White is the primary button's label and the tickets' stubs.
+  const t: Record<string, string> = { ...light, white: "#ffffff" };
   const pairs: [string, string][] = [
     ["air-navy", "air-paper"], ["air-navy", "air-sky"], ["air-muted", "air-paper"], ["air-muted", "air-sky"],
     ["air-red", "air-paper"], ["white", "air-red"], ["air-paper", "air-navy"], ["white", "air-navy"], ["white", "air-muted"],
@@ -118,6 +118,11 @@ describe("member profile (airmail palette, /account)", () => {
   ];
   it.each(pairs)("%s on %s clears AA", (fg, bg) => {
     expect(contrast(t[fg as keyof typeof t], t[bg as keyof typeof t])).toBeGreaterThanOrEqual(AA);
+  });
+
+  // Notices and wide cells are a navy wash (`air-tint`, navy at 3.5%) over the paper.
+  it.each(["air-navy", "air-muted", "danger"])("%s on the tint clears AA", (fg) => {
+    expect(contrast(t[fg], blend(t["air-navy"], t["air-paper"], 0.035))).toBeGreaterThanOrEqual(AA);
   });
 });
 
@@ -148,19 +153,7 @@ describe("internal-page app shell (scrapbook app palette)", () => {
     }
   });
 
-  // Panel heads, the sidebar, the top bar and the save bar are glass: paper at 48% (`.app-glass`) over the sage
-  // ground, which runs from app-ground at the top to app-ground-warm at the foot.
-  it.each(["light", "night"] as const)("text on the glass clears AA over both ends of the ground in %s", (mode) => {
-    const t = tokens[mode];
-    for (const ground of ["app-ground", "app-ground-warm"]) {
-      const glass = blend(t.app, t[ground], 0.48);
-      for (const fg of ["ink", "app-muted", "app-accent", "danger"]) {
-        expect({ fg, ground, ok: contrast(t[fg], glass) >= AA }).toEqual({ fg, ground, ok: true });
-      }
-    }
-  });
-
-  it("the app-shell sources use the app tokens, never raw hex or palette colours", () => {
+  it("the internal-tool sources use the tokens, never raw hex or palette colours", () => {
     const read = (f: string) => readFileSync(`${process.cwd()}/${f}`, "utf8");
     const dir = (d: string) => readdirSync(`${process.cwd()}/${d}`).filter((f) => /\.tsx?$/.test(f)).map((f) => `${d}/${f}`);
     const src = [
@@ -170,8 +163,8 @@ describe("internal-page app shell (scrapbook app palette)", () => {
     ].map(read).join("\n");
     expect(src).toMatch(/text-app-muted/);
     expect(src).toMatch(/text-app-accent/);
-    expect(src).toMatch(/bg-app-pending/);
-    expect(src).toMatch(/bg-app-ok/);
+    expect(src).toMatch(/bg-air-navy/);
+    expect(src).not.toMatch(/app-glass|app-tiles/);
     expect(src).not.toMatch(/(?:bg|text|border|fill|stroke|ring|outline)-\[#|(?:bg|text|border)-(?:zinc|gray|neutral|slate|blue)-\d/);
   });
 });
