@@ -5,8 +5,8 @@ import { toneFor } from "@/features/neighborhoods/tone";
 import { eventsQuery, rsvpsQuery } from "@/features/events/queries";
 import { useToggleRsvp } from "@/features/events/mutations";
 import { eventWhen } from "@/features/events/format";
-import { primaryButton, secondaryButton } from "@/app/layout/app-classes";
-import { Card, InlineError } from "@/app/layout/app-ui";
+import { linkClass, primaryButton } from "@/app/layout/app-classes";
+import { Card, Chip, InlineError } from "@/app/layout/app-ui";
 import { Icon } from "@/app/layout/icons";
 import { errorMessage, hoodStyle } from "./helpers";
 import { Locked } from "./shared";
@@ -53,13 +53,26 @@ function Events({ userId, hoodList }: { userId: string; hoodList: Neighborhood[]
                   <p className="mt-0.5 text-[13px]/[1.5] text-app-muted">{ev.location} · {ev.neighborhood} · {when.time}</p>
                   {ev.description && <p className="mt-1 text-[13px]/[1.5] text-app-muted">{ev.description}</p>}
                 </div>
-                <button
-                  type="button" aria-pressed={going} disabled={toggle.isPending || !rsvpsState.isSuccess}
-                  onClick={() => toggle.mutate({ eventId: ev.id, going: !going })}
-                  className={cn(going ? primaryButton : secondaryButton, "col-start-2 justify-self-start sm:col-start-3")}
-                >
-                  {going ? <><Icon name="check" className="size-3.5" />You’re going</> : "Save my seat"}
-                </button>
+                {/* Going is a state (a mint chip) with a quiet way out; the black pill is only ever the invitation. */}
+                {going ? (
+                  <div className="col-start-2 flex flex-wrap items-center gap-x-4 gap-y-2 sm:col-start-3 sm:justify-end">
+                    <Chip tone="ok" className="gap-1.5"><Icon name="check" className="size-3.5" />You’re going</Chip>
+                    <button
+                      type="button" disabled={toggle.isPending} onClick={() => toggle.mutate({ eventId: ev.id, going: false })}
+                      className={cn(linkClass, "text-ink-muted disabled:opacity-50")}
+                    >
+                      Can’t make it<span className="sr-only"> to {ev.title}</span>
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button" disabled={toggle.isPending || !rsvpsState.isSuccess}
+                    onClick={() => toggle.mutate({ eventId: ev.id, going: true })}
+                    className={cn(primaryButton, "col-start-2 justify-self-start sm:col-start-3")}
+                  >
+                    Save my seat<span className="sr-only"> at {ev.title}</span>
+                  </button>
+                )}
               </li>
             );
           })}
@@ -72,7 +85,7 @@ function Events({ userId, hoodList }: { userId: string; hoodList: Neighborhood[]
 /** The pale-sage month/day tile; the dot is the gathering's neighborhood color. */
 export function DateTile({ month, day, color }: { month: string; day: string | number; color?: string }) {
   return (
-    <div className="flex w-14 shrink-0 flex-col gap-0.5 rounded-xl bg-app-sunken pt-1.5 pb-2 text-center">
+    <div className="flex w-14 shrink-0 flex-col gap-0.5 self-start rounded-xl bg-app-sunken pt-1.5 pb-2 text-center">
       <p className="flex items-center justify-center gap-1 font-fragment text-[11px]/[14px] tracking-[1px] uppercase text-app-muted">
         <span aria-hidden className={cn("size-1.5 rounded-full", color ? "bg-(--hood)" : "bg-app-line")} style={hoodStyle(color)} />
         {month}

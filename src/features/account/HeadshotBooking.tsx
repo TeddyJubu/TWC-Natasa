@@ -57,7 +57,6 @@ function Booking({ userId }: { userId: string }) {
   if (booking) {
     const copy = bookingCopy(booking.status);
     return (
-      <div className="p-2">
       <div className={cn(copy.notice, "items-start")}>
         <p className="twc-notice__title">{copy.title}</p>
         <p className="text-[15px] text-ink">{longDate(booking.preferred_date)} · {booking.preferred_time}. {copy.body}</p>
@@ -74,12 +73,11 @@ function Booking({ userId }: { userId: string }) {
           Change request
         </button>
       </div>
-      </div>
     );
   }
 
   return (
-    <form onSubmit={submit} className="divide-y divide-app-rule">
+    <form onSubmit={submit} className="app-tiles">
       <Row
         label="Preferred date" htmlFor={editing ? DATE_ID : undefined} icon="calendar" empty={!editing && !request.preferred_date}
         add={editing ? undefined : { field: "preferred date", onClick: () => open(DATE_ID) }}

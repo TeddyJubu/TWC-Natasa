@@ -31,10 +31,10 @@ export function AccountHeader({ userId, profile, avatar, onPreview }: {
   const work = [profile.role_title, profile.business].filter((s) => s.trim()).join(" · ");
   const joined = approved ? shortMonthYear(profile.member_since) : null;
   const stats: { value: string; label: string }[] = [
-    ...(approved && profile.catalogue_number !== null ? [{ value: `No. ${formatCatalogueNumber(profile.catalogue_number)}`, label: "member" }] : []),
-    ...(joined ? [{ value: joined, label: "joined" }] : []),
+    ...(approved && profile.catalogue_number !== null ? [{ value: `No. ${formatCatalogueNumber(profile.catalogue_number)}`, label: "Member" }] : []),
+    ...(joined ? [{ value: joined, label: "Joined" }] : []),
     ...(booking && booking.status !== "declined"
-      ? [{ value: shortDay(booking.preferred_date), label: booking.status === "confirmed" ? "headshot" : "headshot asked" }]
+      ? [{ value: shortDay(booking.preferred_date), label: booking.status === "confirmed" ? "Headshot" : "Headshot requested" }]
       : []),
   ];
   const waiting = declined
@@ -47,12 +47,15 @@ export function AccountHeader({ userId, profile, avatar, onPreview }: {
       <div aria-hidden className="app-hero-scrim absolute inset-0 -z-10" />
       <div className="flex min-h-[26.875rem] flex-col gap-6 p-5 sm:p-7 lg:grid lg:grid-cols-[minmax(0,1fr)_21.875rem] lg:grid-rows-[auto_1fr] lg:gap-x-8 lg:pl-10">
         <div className="flex items-start justify-between gap-4 lg:col-span-2">
-          <label className="group relative grid size-17 shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-app-sunken text-ink shadow-[0_0_0_3px_rgb(255_255_255/0.75),0_10px_24px_-12px_rgb(0_0_0/0.4)] has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-4 has-[:focus-visible]:outline-white has-[:disabled]:cursor-wait">
-            {avatar
-              ? <img src={avatar} alt="" className="size-full object-cover" />
-              : <span aria-hidden className="font-geist text-2xl">{initials(profile.full_name)}</span>}
-            <span aria-hidden className="absolute inset-0 grid place-items-center bg-black/45 text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-has-[:focus-visible]:opacity-100">
-              <Icon name="camera" className="size-5" />
+          <label className="group relative size-17 shrink-0 cursor-pointer rounded-full shadow-[0_0_0_3px_rgb(255_255_255/0.75),0_10px_24px_-12px_rgb(0_0_0/0.4)] has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-4 has-[:focus-visible]:outline-white has-[:disabled]:cursor-wait">
+            <span className="grid size-full place-items-center overflow-hidden rounded-full bg-app-sunken text-ink">
+              {avatar
+                ? <img src={avatar} alt="" className="size-full object-cover transition-[filter] duration-150 group-hover:brightness-90" />
+                : <span aria-hidden className="font-geist text-2xl">{initials(profile.full_name)}</span>}
+            </span>
+            {/* Always there, not only on hover: a touch screen has no hover to say the portrait can be changed. */}
+            <span aria-hidden className="absolute -right-1 -bottom-1 grid size-6.5 place-items-center rounded-full bg-app text-ink shadow-[0_2px_6px_rgb(0_0_0/0.25)]">
+              <Icon name="camera" className="size-3.5" />
             </span>
             <input
               type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={upload.isPending}
@@ -66,7 +69,7 @@ export function AccountHeader({ userId, profile, avatar, onPreview }: {
         </div>
 
         <div className="mt-auto flex min-w-0 flex-col items-start lg:pb-1.5">
-          <h1 id="account-name" className="max-w-full font-geist text-[44px]/[1] font-normal tracking-[-1.5px] break-words sm:text-[64px] lg:text-[80px]/[0.95] lg:tracking-[-3px]">
+          <h1 id="account-name" className="max-w-full font-geist text-[44px]/[1] font-normal tracking-[-1.5px] text-balance break-words sm:text-[64px] lg:text-[80px]/[0.95] lg:tracking-[-3px]">
             {profile.full_name || "Welcome, neighbor"}
           </h1>
           {profile.specialty.trim() && <p className="mt-4 text-[17px]/[1.4] text-white/92">{profile.specialty}</p>}
@@ -84,8 +87,8 @@ export function AccountHeader({ userId, profile, avatar, onPreview }: {
             <dl className="flex">
               {stats.map((s, i) => (
                 <div key={s.label} className={cn("flex flex-1 flex-col gap-0.5 px-3.5", i === 0 ? "pl-0" : "border-l border-white/30")}>
-                  <dt className="order-last text-xs text-white/90">{s.label}</dt>
-                  <dd className="text-lg/[1.3] font-medium tracking-[-0.2px] whitespace-nowrap">{s.value}</dd>
+                  <dt className="text-xs text-white/90">{s.label}</dt>
+                  <dd className="text-lg/[1.3] font-medium tracking-[-0.2px] whitespace-nowrap tabular-nums">{s.value}</dd>
                 </div>
               ))}
             </dl>

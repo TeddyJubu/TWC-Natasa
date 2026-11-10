@@ -37,7 +37,7 @@ export function EditButton({ card, editing, onClick }: { card: string; editing: 
 }
 
 /**
- * One label/value row: side by side from lg, stacked below. `htmlFor` makes the label a real <label> (edit mode).
+ * One label/value row (a quiet sentence-case label, the value in ink): side by side from lg, stacked below. `htmlFor` makes the label a real <label> (edit mode).
  * `empty` greys the value and its icon; `add` puts a trailing "Add" whose name includes the field.
  */
 export function Row({ label, htmlFor, icon, empty, add, top, children }: {
@@ -47,7 +47,7 @@ export function Row({ label, htmlFor, icon, empty, add, top, children }: {
   const Label = htmlFor ? "label" : "span";
   return (
     <div className={cn("flex flex-col gap-2 px-4 py-4 sm:px-5.5 lg:flex-row lg:gap-4", top ? "lg:items-start" : "lg:items-center")}>
-      <Label htmlFor={htmlFor} className={cn("twc-eyebrow text-[10.5px] tracking-[0.14em] text-app-muted lg:w-52 lg:shrink-0", top && "lg:pt-1")}>{label}</Label>
+      <Label htmlFor={htmlFor} className={cn("text-[13px]/[1.4] text-app-muted lg:w-44 lg:shrink-0", top && "lg:pt-1")}>{label}</Label>
       <div className={cn("flex min-w-0 flex-1 items-center gap-2 text-[14.5px] break-words", empty ? "text-app-muted" : "text-ink")}>
         {icon && <Icon name={icon} className={cn("size-4", empty ? "text-app-muted/70" : "text-ink-muted")} />}
         <div className="min-w-0 flex-1">{children}</div>

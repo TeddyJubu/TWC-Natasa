@@ -96,10 +96,22 @@ function ProfileEditorPage({ userId, profile, avatar, logoUrl, hoodList, applied
   const [editing, setEditing] = React.useState<Partial<Record<CardKey, boolean>>>({});
   const [focus, setFocus] = React.useState<string | null>(null);
   const [openMember, setOpenMember] = React.useState<MemberProfile | null>(null);
+  // "All changes saved" stays up for a moment after a save, then the bar leaves.
+  const [saved, setSaved] = React.useState(false);
+  const savedFlash = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  React.useEffect(() => () => { if (savedFlash.current) clearTimeout(savedFlash.current); }, []);
   const card = { ...profile, ...draft };
   const approved = profile.status === "approved";
   const changes = changedFields(profile, draft);
   const dirty = Object.keys(changes).length > 0;
+
+  // Leaving with unsaved edits asks first (the browser's own prompt), as the forms editor does.
+  React.useEffect(() => {
+    if (!dirty) return;
+    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty]);
 
   // "Add" opens a card and focuses its field once it has rendered.
   React.useLayoutEffect(() => {
@@ -109,7 +121,7 @@ function ProfileEditorPage({ userId, profile, avatar, logoUrl, hoodList, applied
 
   const editor: ProfileEditor = {
     card,
-    set: (patch) => setDraft((d) => ({ ...d, ...patch })),
+    set: (patch) => { setSaved(false); setDraft((d) => ({ ...d, ...patch })); },
     isEditing: (key) => !!editing[key],
     toggle: (key) => setEditing((e) => ({ ...e, [key]: !e[key] })),
     add: (key, field) => { setEditing((e) => ({ ...e, [key]: true })); setFocus(fieldId(field)); },
@@ -123,6 +135,9 @@ function ProfileEditorPage({ userId, profile, avatar, logoUrl, hoodList, applied
         // Keep only what still differs from the saved row (typing during the save survives), and show values again.
         setDraft((d) => changedFields(next, d));
         setEditing({});
+        setSaved(true);
+        if (savedFlash.current) clearTimeout(savedFlash.current);
+        savedFlash.current = setTimeout(() => setSaved(false), 2500);
       },
     });
   }
@@ -137,13 +152,14 @@ function ProfileEditorPage({ userId, profile, avatar, logoUrl, hoodList, applied
         <PublicCard editor={editor} userId={userId} logoPath={profile.business_logo_url} logoUrl={logoUrl} hoodList={hoodList} />
         <WordsCard editor={editor} />
         <MembershipCard profile={profile} />
-        <VisibilityCard editor={editor} />
+        <VisibilityCard editor={editor} profile={profile} />
         <HeadshotBooking userId={userId} approved={approved} applied={applied} />
         <GatheringsList userId={userId} approved={approved} applied={applied} hoodList={hoodList} />
         <IntroductionsSection userId={userId} approved={approved} applied={applied} neighborhood={profile.neighborhood || null} hoodList={hoodList} onOpen={setOpenMember} />
         <SaveActions
-          formId={PROFILE_FORM} dirty={dirty} pending={save.isPending} error={save.isError ? errorMessage(save.error) : null}
+          formId={PROFILE_FORM} dirty={dirty} pending={save.isPending} saved={saved} error={save.isError ? errorMessage(save.error) : null}
           onSubmit={submit} onPreview={preview}
+          onDiscard={() => { save.reset(); setDraft({}); setEditing({}); }}
         />
       </div>
       <MemberDialog member={openMember} onClose={() => setOpenMember(null)} />

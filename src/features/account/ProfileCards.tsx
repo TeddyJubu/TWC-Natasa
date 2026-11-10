@@ -1,11 +1,13 @@
 import * as React from "react";
+import { Link } from "@tanstack/react-router";
 import { cn, formatCatalogueNumber } from "@/index";
 import type { Neighborhood } from "@/features/neighborhoods/queries";
 import { pickerNames } from "@/features/neighborhoods/options";
 import type { Profile } from "@/features/members/queries";
+import { memberSlug } from "@/features/members/map";
 import { useRemoveLogo, useUploadLogo } from "@/features/members/mutations";
 import { fieldClass, linkClass } from "@/app/layout/app-classes";
-import type { IconName } from "@/app/layout/icons";
+import { Icon, type IconName } from "@/app/layout/icons";
 import { Card, Chip, EditButton, Row, Toggle } from "@/app/layout/app-ui";
 import { PROFILE_FORM, errorMessage, fieldId, monthYear, type ProfileEditor } from "./helpers";
 
@@ -119,7 +121,10 @@ export function WordsCard({ editor }: { editor: ProfileEditor }) {
     <Card title="In your words" subtitle="Short and warm beats long and formal" action={<EditButton card="in your words" editing={editing} onClick={() => editor.toggle("words")} />}>
       <Row label="Bio" htmlFor={editing ? fieldId("bio") : undefined} top empty={!editing && !card.bio.trim()}>
         {editing ? (
-          <textarea id={fieldId("bio")} form={PROFILE_FORM} value={card.bio} maxLength={400} rows={4} className={fieldClass} onChange={(e) => set({ bio: e.currentTarget.value })} />
+          <>
+            <textarea id={fieldId("bio")} form={PROFILE_FORM} value={card.bio} maxLength={400} rows={4} aria-describedby="account-bio-count" className={fieldClass} onChange={(e) => set({ bio: e.currentTarget.value })} />
+            <p id="account-bio-count" className="mt-1.5 text-right text-xs text-app-muted tabular-nums">{card.bio.length} of 400 characters</p>
+          </>
         ) : (
           <p className="leading-[23px] whitespace-pre-line">{card.bio.trim() || "Tell neighbors what you make, who you make it for, and what brought you to the collective. Up to 400 characters."}</p>
         )}
@@ -152,24 +157,48 @@ export function MembershipCard({ profile }: { profile: Profile }) {
   );
 }
 
-/** Directory and public-website switches; they mark the page unsaved like any other field. */
-export function VisibilityCard({ editor }: { editor: ProfileEditor }) {
+/**
+ * Directory and public-website switches; they mark the page unsaved like any other field. The subtitle says in one
+ * plain sentence who can see her card with the switches as they stand, and a saved, live public page gets its link.
+ */
+export function VisibilityCard({ editor, profile }: { editor: ProfileEditor; profile: Profile }) {
   const { card, set } = editor;
   const listed = card.directory_visible;
+  const approved = profile.status === "approved";
+  const audience = profile.status === "declined"
+    ? "Your card stays private and isn’t shown to anyone."
+    : !approved
+      ? "Your card stays private until you’re welcomed in. These choices take effect that day."
+      : listed && card.public_profile
+        ? "Anyone can see your card: members, and visitors to the public website."
+        : listed
+          ? "Only members of the collective can see your card."
+          : "Only you and the collective’s admins can see your card.";
+  const slug = approved && profile.directory_visible && profile.public_profile && profile.catalogue_number !== null
+    ? memberSlug({ name: profile.full_name, catalogueNumber: profile.catalogue_number })
+    : undefined;
   return (
-    <Card id="visibility" title="Visibility" subtitle="You decide where your card appears">
+    <Card id="visibility" title="Visibility" subtitle={audience}>
       <Toggle
-        label="Show me in the member directory" description="Only appears once your membership is approved."
+        label="Show me in the member directory"
+        description={approved ? "Signed-in members can find you and your card." : "Signed-in members can find you and your card, once your membership is approved."}
         checked={listed}
         // Switching the directory off also switches the public card off, so re-listing never republishes silently.
         onChange={(e) => set(e.currentTarget.checked ? { directory_visible: true } : { directory_visible: false, public_profile: false })}
       />
       <Toggle
         label="Show my profile on the public website"
-        description="Anyone on the internet can then see your card — name, portrait, work, neighborhood, bio and links — on our homepage and public member page. Needs “Show me in the member directory” on, and goes live only once you’re approved."
+        description={`Anyone on the internet can see your name, portrait, work, neighborhood, bio and links, on our homepage and your public page.${listed ? "" : " Turn on the member directory first."}${approved ? "" : " Goes live only once you’re approved."}`}
         checked={listed && card.public_profile} disabled={!listed}
         onChange={(e) => set({ public_profile: e.currentTarget.checked })}
       />
+      {slug && (
+        <Row label="Your public page" icon="globe">
+          <Link to="/members/$slug" params={{ slug }} className={cn(linkClass, "inline-flex items-center gap-1.5")}>
+            /members/{slug}<Icon name="external-link" className="size-3.5" />
+          </Link>
+        </Row>
+      )}
     </Card>
   );
 }

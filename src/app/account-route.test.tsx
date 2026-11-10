@@ -59,6 +59,9 @@ function renderAccount(
 
 const button = (name: RegExp | string) => screen.getByRole("button", { name }) as HTMLButtonElement;
 const save = () => button(/save changes/i);
+/** The save bar holds no buttons until something changed. */
+const noSave = () => screen.queryByRole("button", { name: /save changes/i }) === null;
+const status = () => screen.getByRole("status").textContent;
 const editPublicCard = () => fireEvent.click(button("Edit public card"));
 
 describe("/account", () => {
@@ -134,7 +137,8 @@ describe("/account", () => {
     expect(screen.queryByText(/being reviewed/i)).toBeNull();
     expect(screen.getByText(/wasn’t approved this time/i)).toBeTruthy();
     expect(screen.getByText("Application not approved")).toBeTruthy();
-    expect(screen.getByText("Your card stays private and isn’t shown to anyone.")).toBeTruthy();
+    // On the cover and as the Visibility card's one-line answer.
+    expect(screen.getAllByText("Your card stays private and isn’t shown to anyone.")).toHaveLength(2);
   });
 
   it("still shows a pending application as in review", () => {
@@ -164,7 +168,7 @@ describe("/account", () => {
     expect(within(cover).getByText("Founder · Diaz Bakery")).toBeTruthy();
     expect(within(cover).getByText("Astoria")).toBeTruthy();
     const stat = (label: string) => within(cover).getByText(label).nextElementSibling?.textContent;
-    expect([stat("member"), stat("joined")]).toEqual(["No. 27", "Jan 2026"]);
+    expect([stat("Member"), stat("Joined")]).toEqual(["No. 27", "Jan 2026"]);
     fireEvent.click(within(cover).getByRole("button", { name: "View public card" }));
     expect(screen.getByRole("dialog", { name: "Rosa Diaz, member profile" })).toBeTruthy();
     const membership = screen.getByRole("region", { name: "Membership" });
@@ -251,6 +255,24 @@ describe("/account", () => {
       expect(publicSwitch().closest("label")?.textContent).toMatch(/anyone on the internet/i);
     });
 
+    it("says in one sentence who can see her card, and links her public page once it is live", () => {
+      const visibility = () => screen.getByRole("region", { name: "Visibility" });
+      renderAccount({ directory_visible: false });
+      expect(within(visibility()).getByText("Only you and the collective’s admins can see your card.")).toBeTruthy();
+      fireEvent.click(directorySwitch());
+      expect(within(visibility()).getByText("Only members of the collective can see your card.")).toBeTruthy();
+      fireEvent.click(publicSwitch());
+      expect(within(visibility()).getByText(/^Anyone can see your card/)).toBeTruthy();
+      // Unsaved, so nothing is live yet: no link.
+      expect(within(visibility()).queryByRole("link")).toBeNull();
+      cleanup();
+      renderAccount({ directory_visible: true, public_profile: true });
+      expect(within(visibility()).getByRole("link", { name: "/members/rosa-diaz-27" })).toBeTruthy();
+      cleanup();
+      renderAccount({ status: "pending", catalogue_number: null, member_since: null });
+      expect(within(visibility()).getByText(/stays private until you’re welcomed in/)).toBeTruthy();
+    });
+
     it("is disabled until the directory switch is on", () => {
       renderAccount({ directory_visible: false });
       expect(publicSwitch().disabled).toBe(true);
@@ -315,11 +337,26 @@ describe("/account", () => {
   });
 
   describe("editing and saving", () => {
-    it("Save is disabled while nothing has changed", () => {
+    it("there is no Save, Discard or status until something has changed", () => {
       renderAccount();
-      expect(save().disabled).toBe(true);
+      expect(noSave()).toBe(true);
       editPublicCard();
-      expect(save().disabled).toBe(true);
+      expect(noSave()).toBe(true);
+      expect(screen.queryByRole("button", { name: /discard/i })).toBeNull();
+      expect(status()).toBe("");
+    });
+
+    it("Discard drops the draft, closes the cards and takes the bar away", () => {
+      renderAccount();
+      editPublicCard();
+      fireEvent.change(screen.getByLabelText(/^role/i), { target: { value: "Owner" } });
+      expect(status()).toBe("Unsaved changes");
+      fireEvent.click(button(/discard changes/i));
+      expect(noSave()).toBe(true);
+      expect(status()).toBe("");
+      expect(screen.queryByLabelText(/^role/i)).toBeNull();
+      expect(screen.getByText("Founder")).toBeTruthy();
+      expect(fake.calls.filter(([c]) => c === "saveProfileFn")).toEqual([]);
     });
 
     it("edit → dirty → save sends only the changed fields, then goes quiet and clean", async () => {
@@ -327,13 +364,13 @@ describe("/account", () => {
       editPublicCard();
       fireEvent.change(screen.getByLabelText(/^role/i), { target: { value: "  Owner " } });
       expect(save().disabled).toBe(false);
-      expect(screen.getByRole("status").textContent).toBe("Unsaved changes");
+      expect(status()).toBe("Unsaved changes");
       fake.results = [{ ...base, role_title: "Owner" }];
       fireEvent.click(save());
       await waitFor(() => expect(fake.calls[0]).toEqual(["saveProfileFn", { role_title: "Owner" }]));
       expect(fake.calls.filter(([c]) => c === "saveProfileFn")).toHaveLength(1);
-      expect(await screen.findByText("All changes saved")).toBeTruthy();
-      expect(save().disabled).toBe(true);
+      await waitFor(() => expect(status()).toBe("All changes saved"));
+      expect(noSave()).toBe(true);
       expect(screen.getByText("Owner")).toBeTruthy();
     });
 
@@ -368,18 +405,18 @@ describe("/account", () => {
       fake.results = [new Promise(() => {}) as never]; // upload never settles
       fireEvent.change(screen.getByLabelText(/upload a portrait/i), { target: { files: [ok] } });
       await act(() => new Promise((r) => setTimeout(r, 20))); // let the upload take its never-settling result
-      expect(save().disabled).toBe(true);
+      expect(noSave()).toBe(true);
       editPublicCard();
       const name = screen.getByLabelText(/^full name/i);
       fireEvent.change(name, { target: { value: "Rosa M. Diaz" } });
       fireEvent.change(name, { target: { value: "Rosa Diaz" } });
-      expect(save().disabled).toBe(true);
+      expect(noSave()).toBe(true);
       fireEvent.change(name, { target: { value: "Rosa M. Diaz" } });
       expect(save().disabled).toBe(false);
       fake.reset();
       fake.results = [{ ...base, full_name: "Rosa M. Diaz" }];
       fireEvent.click(save());
-      await waitFor(() => expect(save().disabled).toBe(true));
+      await waitFor(() => expect(noSave()).toBe(true));
       expect(screen.getByRole("heading", { level: 1, name: "Rosa M. Diaz" })).toBeTruthy();
     });
 
@@ -452,6 +489,23 @@ describe("/account", () => {
       await act(() => new Promise((r) => setTimeout(r, 20)));
       expect(fake.calls[0]).toEqual(["eventsFn", { from: expect.any(String) }]);
       expect(screen.queryByText(/no gatherings on the calendar yet/i)).toBeNull();
+    });
+
+    it("a seat is an invitation until taken; going is a chip with a quiet way out", async () => {
+      const ev = { id: "e1", title: "Supper Club", description: "", location: "Bar", neighborhood: "Astoria", starts_at: "2099-11-09T00:30:00Z", created_at: "" };
+      const queries = (rsvps: string[]): [unknown[], unknown][] => [
+        viewer(), [["profile", "u1"], { profile: base, avatarUrl: undefined }], [["events"], [ev]], [["rsvps", "u1"], rsvps],
+        [["booking", "u1"], null], [["intros", "u1", base.neighborhood], []],
+      ];
+      renderWithQueries(<Page />, queries([]));
+      expect(button("Save my seat at Supper Club")).toBeTruthy();
+      expect(screen.queryByText("You’re going")).toBeNull();
+      cleanup();
+      renderWithQueries(<Page />, queries(["e1"]));
+      expect(screen.getByText("You’re going")).toBeTruthy();
+      expect(screen.queryByRole("button", { name: /save my seat/i })).toBeNull();
+      fireEvent.click(button("Can’t make it to Supper Club"));
+      await waitFor(() => expect(fake.calls[0]).toEqual(["setRsvpFn", { eventId: "e1", going: false }]));
     });
 
     it("formats event day and time in New York time", () => {
