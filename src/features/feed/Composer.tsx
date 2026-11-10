@@ -55,7 +55,7 @@ export function Composer({ name, image }: { name: string; image?: string }) {
   const empty = !body.trim() && photos.length === 0;
   const error = problem ?? (create.isError ? errorMessage(create.error) : null);
   return (
-    <form onSubmit={submit} aria-labelledby="compose-title" className="air-post air-compose">
+    <form onSubmit={submit} aria-labelledby="compose-title" className="air-entry air-compose">
       <h2 id="compose-title" className="sr-only">Write a post</h2>
       <div className="air-compose-row">
         <MiniStamp name={name} image={image} size="l" />
@@ -82,7 +82,7 @@ export function Composer({ name, image }: { name: string; image?: string }) {
           ))}
         </ul>
       )}
-      {error && <p role="alert" className="air-post-err mt-3">{error}</p>}
+      {error && <p role="alert" className="air-entry-err mt-3">{error}</p>}
 
       <div className="air-compose-foot">
         <fieldset className="air-kinds">

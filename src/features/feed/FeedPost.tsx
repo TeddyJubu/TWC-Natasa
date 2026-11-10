@@ -27,8 +27,8 @@ export function MiniStamp({ name, image, size }: { name: string; image?: string;
 /** Her name, linked to her member page when she has one. */
 function Name({ author }: { author: FeedAuthor }) {
   return author.slug
-    ? <Link to="/members/$slug" params={{ slug: author.slug }} className={cn("air-post-name", ring)}>{author.name}</Link>
-    : <span className="air-post-name">{author.name}</span>;
+    ? <Link to="/members/$slug" params={{ slug: author.slug }} className={cn("air-entry-name", ring)}>{author.name}</Link>
+    : <span className="air-entry-name">{author.name}</span>;
 }
 
 const When = ({ iso }: { iso: string }) => <time dateTime={iso} title={postedAt(iso)}>{postedAgo(iso)}</time>;
@@ -52,12 +52,12 @@ export function FeedPost({ post }: { post: Post }) {
   }
 
   return (
-    <article className="air-post" aria-label={`${kind.label} from ${post.author.name}`}>
-      <header className="air-post-h">
+    <article className="air-entry" aria-label={`${kind.label} from ${post.author.name}`}>
+      <header className="air-entry-h">
         <MiniStamp name={post.author.name} image={post.author.image} />
         <div className="min-w-0 flex-1">
           <Name author={post.author} />
-          <p className="air-post-meta">
+          <p className="air-entry-meta">
             {[post.author.line, post.author.neighborhood].filter(Boolean).map((s) => `${s} · `).join("")}<When iso={post.createdAt} />
           </p>
         </div>
@@ -68,11 +68,11 @@ export function FeedPost({ post }: { post: Post }) {
           </button>
         )}
       </header>
-      {remove.isError && <p role="alert" className="air-post-err">{errorMessage(remove.error)}</p>}
-      {post.body && <p className="air-post-b">{post.body}</p>}
+      {remove.isError && <p role="alert" className="air-entry-err">{errorMessage(remove.error)}</p>}
+      {post.body && <p className="air-entry-b">{post.body}</p>}
       {post.photos.length > 0 && <Photos post={post} />}
-      {loves > 0 && <p className="air-post-loved">{lovedLine(loves, loved, post.lovedBy)}</p>}
-      <footer className="air-post-act">
+      {loves > 0 && <p className="air-entry-loved">{lovedLine(loves, loved, post.lovedBy)}</p>}
+      <footer className="air-entry-act">
         <button type="button" aria-pressed={loved} onClick={() => love.mutate(!loved)} disabled={love.isPending}
           aria-label={`Love (${loves})`} className={cn("air-act", ring)}>
           <Icon name="heart" />{loves}
@@ -80,7 +80,7 @@ export function FeedPost({ post }: { post: Post }) {
         <button type="button" onClick={startReply} aria-label={`Reply (${post.replies.length})`} className={cn("air-act", ring)}>
           <Icon name="message-circle" />{post.replies.length}
         </button>
-        {love.isError && <p role="alert" className="air-post-err ml-auto">{errorMessage(love.error)}</p>}
+        {love.isError && <p role="alert" className="air-entry-err ml-auto">{errorMessage(love.error)}</p>}
       </footer>
       {(post.replies.length > 0 || replying) && <Thread post={post} replying={replying} field={replyField} />}
     </article>
@@ -91,7 +91,7 @@ export function FeedPost({ post }: { post: Post }) {
 function Photos({ post }: { post: Post }) {
   const n = post.photos.length;
   return (
-    <div className={cn("air-post-media", `is-${n}`)}>
+    <div className={cn("air-entry-media", `is-${n}`)}>
       {post.photos.map((p, i) => (
         <a key={p.url} href={p.url} target="_blank" rel="noopener" className={ring}>
           <img src={p.url} alt={p.alt || `Photo ${i + 1} of ${n} from ${post.author.name}`} loading="lazy" />
@@ -110,7 +110,7 @@ function Postmark({ where, iso }: { where: string; iso: string }) {
   const opts = { timeZone: "America/New_York" } as const;
   const date = `${d.toLocaleDateString("en-US", { day: "numeric", ...opts })} ${d.toLocaleDateString("en-US", { month: "short", ...opts }).toUpperCase()}`;
   return (
-    <svg aria-hidden viewBox="0 0 220 112" fill="none" stroke="currentColor" className="air-post-pm">
+    <svg aria-hidden viewBox="0 0 220 112" fill="none" stroke="currentColor" className="air-entry-pm">
       <defs><path id={id} d="M16 56a40 40 0 1 1 80 0a40 40 0 1 1-80 0" /></defs>
       <circle cx="56" cy="56" r="52" strokeWidth="2" /><circle cx="56" cy="56" r="30" strokeWidth="1.5" />
       <text fontSize="10" fontWeight="600" letterSpacing="2.2" fill="currentColor" stroke="none">
@@ -155,7 +155,7 @@ function Thread({ post, replying, field }: { post: Post; replying: boolean; fiel
             <li key={r.id} className="air-reply">
               <MiniStamp name={r.author.name} image={r.author.image} size="s" />
               <div className="min-w-0 flex-1">
-                <p className="text-[13px]"><Name author={r.author} /><span className="air-post-meta ml-1.5 inline">{r.author.neighborhood && `${r.author.neighborhood} · `}<When iso={r.createdAt} /></span></p>
+                <p className="text-[13px]"><Name author={r.author} /><span className="air-entry-meta ml-1.5 inline">{r.author.neighborhood && `${r.author.neighborhood} · `}<When iso={r.createdAt} /></span></p>
                 <p className="air-reply-b">{r.body}</p>
               </div>
               {r.canDelete && (
@@ -167,7 +167,7 @@ function Thread({ post, replying, field }: { post: Post; replying: boolean; fiel
           ))}
         </ul>
       )}
-      {(send.isError || remove.isError) && <p role="alert" className="air-post-err">{errorMessage(send.error ?? remove.error)}</p>}
+      {(send.isError || remove.isError) && <p role="alert" className="air-entry-err">{errorMessage(send.error ?? remove.error)}</p>}
       {replying && (
         <form onSubmit={submit} className="air-reply-in">
           <label className="sr-only" htmlFor={`reply-${post.id}`}>Reply to {post.author.name}</label>

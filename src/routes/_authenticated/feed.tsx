@@ -97,7 +97,7 @@ function FeedPage() {
                 ) : (
                   <div className="air-feed-list">{posts.map((p) => <FeedPost key={p.id} post={p} />)}</div>
                 )}
-                {feed.isFetchNextPageError && <p role="alert" className="air-post-err mt-4">We couldn’t load older posts. Please try again.</p>}
+                {feed.isFetchNextPageError && <p role="alert" className="air-entry-err mt-4">We couldn’t load older posts. Please try again.</p>}
                 {posts.length > 0 && (feed.hasNextPage ? (
                   <div className="air-feed-more">
                     <button type="button" onClick={() => void feed.fetchNextPage()} disabled={feed.isFetchingNextPage} className={secondaryButton}>
@@ -186,7 +186,7 @@ function ComingUp({ userId }: { userId: string }) {
               <div aria-hidden className={cn("air-feed-date", going && "is-going")}><b>{when.day}</b><small>{when.weekday}</small></div>
               <div className="min-w-0">
                 <p className="font-semibold">{e.title}</p>
-                <p className="air-post-meta">{when.weekday}, {when.month} {when.day} · {when.time}{e.location && ` · ${e.location}`}</p>
+                <p className="air-entry-meta">{when.weekday}, {when.month} {when.day} · {when.time}{e.location && ` · ${e.location}`}</p>
                 {going && <Chip tone="ok" className="mt-1.5">You’re going</Chip>}
               </div>
             </li>
