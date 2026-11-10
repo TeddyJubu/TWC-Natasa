@@ -116,9 +116,8 @@ describe("/account", () => {
     const nav = screen.getAllByRole("navigation", { name: "Main" })[0];
     const href = (name: string) => within(nav).getByRole("link", { name }).getAttribute("href");
     expect(within(nav).getByText("Admin", { selector: "summary" })).toBeTruthy();
-    expect([href("Applications"), href("All members"), href("Neighborhoods"), href("Headshot bookings"), href("Admin Gatherings")])
+    expect([href("Applications"), href("All members"), href("Neighborhoods"), href("Headshot bookings"), href("Gatherings")])
       .toEqual(["/admin#applications", "/admin#members", "/admin#neighborhoods", "/admin#bookings", "/admin#gatherings"]);
-    expect(href("Gatherings")).toBe("#gatherings");
     // Another page's cards are never "here".
     expect(within(nav).getByRole("link", { name: "Applications" }).getAttribute("aria-current")).toBeNull();
     cleanup();
@@ -389,11 +388,12 @@ describe("/account", () => {
   });
 
   describe("navigation", () => {
-    it("links Home and Members, anchors this page's cards, and has no Notifications", () => {
+    it("anchors this page's account cards, with no Collective group and no Notifications", () => {
       renderAccount();
       const nav = screen.getAllByRole("navigation", { name: "Main" })[0];
       const href = (name: string) => within(nav).getByRole("link", { name }).getAttribute("href");
-      expect([href("Home"), href("Members"), href("Gatherings"), href("Introductions")]).toEqual(["/", "/members", "#gatherings", "#introductions"]);
+      for (const name of ["Home", "Members", "Gatherings", "Introductions"]) expect(within(nav).queryByRole("link", { name })).toBeNull();
+      expect(within(nav).queryByText("Collective")).toBeNull();
       expect([href("Profile"), href("Public card"), href("Visibility"), href("Headshot session")]).toEqual(["#profile", "#public-card", "#visibility", "#headshot"]);
       expect(within(nav).getByRole("link", { name: "Profile" }).getAttribute("aria-current")).toBe("location");
       expect(within(nav).queryByText("Notifications")).toBeNull();

@@ -11,16 +11,9 @@ import { useButtonSparkles } from "./sparkles";
 /** The internal pages: each renders `AppShell` with its own path. */
 /** `/admin/forms/edit` stands for any one form's edit page: no sidebar card is "here" on it. */
 export type ShellPage = "/account" | "/admin" | "/admin/forms" | "/admin/forms/edit";
-/** `sr` prefixes the accessible name where a label repeats in another group ("Admin Gatherings"). */
-type NavItem = { label: string; icon: IconName; to: "/" | "/members" | "/account" | "/admin" | "/admin/forms"; hash?: string; sr?: string };
-type NavGroup = { label: string; items: NavItem[]; fold?: boolean };
+type NavItem = { label: string; icon: IconName; to: "/account" | "/admin" | "/admin/forms"; hash?: string };
+type NavGroup = { label: string; items: NavItem[] };
 
-const COLLECTIVE: NavItem[] = [
-  { label: "Home", icon: "house", to: "/" },
-  { label: "Members", icon: "users", to: "/members" },
-  { label: "Gatherings", icon: "calendar-days", to: "/account", hash: "gatherings" },
-  { label: "Introductions", icon: "handshake", to: "/account", hash: "introductions" },
-];
 const MY_ACCOUNT: NavItem[] = [
   { label: "Profile", icon: "circle-user-round", to: "/account", hash: "profile" },
   { label: "Public card", icon: "id-card", to: "/account", hash: "public-card" },
@@ -37,7 +30,7 @@ const ADMIN: NavItem[] = [
   { label: "Spotlight answers", icon: "notebook-pen", to: "/admin", hash: "spotlight" },
   { label: "Neighborhoods", icon: "map-pin", to: "/admin", hash: "neighborhoods" },
   { label: "Headshot bookings", icon: "calendar", to: "/admin", hash: "bookings" },
-  { label: "Gatherings", icon: "calendar-days", to: "/admin", hash: "gatherings", sr: "Admin" },
+  { label: "Gatherings", icon: "calendar-days", to: "/admin", hash: "gatherings" },
 ];
 const FORMS: NavItem[] = [
   { label: "All forms", icon: "notebook-pen", to: "/admin/forms", hash: "forms" },
@@ -45,12 +38,10 @@ const FORMS: NavItem[] = [
 
 /**
  * The Admin and Forms groups only for admins; UX only, since /admin's guard and every admin server function check again.
- * Collective only on /account: the admin pages are a work desk, not the member's home.
  */
-const groups = (admin: boolean, page: ShellPage): NavGroup[] => [
-  ...(page === "/account" ? [{ label: "Collective", items: COLLECTIVE }] : []),
-  { label: "My account", items: MY_ACCOUNT, fold: true },
-  ...(admin ? [{ label: "Admin", items: ADMIN, fold: true }, { label: "Forms", items: FORMS, fold: true }] : []),
+const groups = (admin: boolean): NavGroup[] => [
+  { label: "My account", items: MY_ACCOUNT },
+  ...(admin ? [{ label: "Admin", items: ADMIN }, { label: "Forms", items: FORMS }] : []),
 ];
 
 /**
@@ -59,7 +50,7 @@ const groups = (admin: boolean, page: ShellPage): NavGroup[] => [
  */
 function useActiveSection(page: ShellPage) {
   // Page groups first, so the top card (Profile, Applications) is "here" before anything scrolls.
-  const anchors = [...MY_ACCOUNT, ...ADMIN, ...FORMS, ...COLLECTIVE].filter((i) => i.to === page && i.hash).map((i) => i.hash!);
+  const anchors = [...MY_ACCOUNT, ...ADMIN, ...FORMS].filter((i) => i.to === page && i.hash).map((i) => i.hash!);
   const key = anchors.join(" ");
   const [active, setActive] = React.useState(anchors[0]);
   React.useEffect(() => {
@@ -124,7 +115,7 @@ function NavLink({ item, page, active, onNavigate }: { item: NavItem; page: Shel
     "flex min-h-11 w-full items-center gap-3 rounded-full px-3.5 text-[15px]/[1.3] transition-colors duration-150",
     current ? "bg-ink text-app" : "text-ink hover:bg-app-sunken", ring,
   );
-  const body = <><Icon name={item.icon} className="size-4.5" />{item.sr && <span className="sr-only">{item.sr} </span>}{item.label}</>;
+  const body = <><Icon name={item.icon} className="size-4.5" />{item.label}</>;
   return (
     <li>
       {here
@@ -146,18 +137,13 @@ function ShellNav({ page, admin, active, onSignOut, onNavigate }: {
   return (
     <>
       <nav aria-label="Main" className="flex flex-col gap-2">
-        {groups(admin, page).map((g) => g.fold ? (
+        {groups(admin).map((g) => (
           <details key={g.label} open className="group flex flex-col gap-0.5">
             <summary className={cn("twc-eyebrow flex w-fit cursor-pointer list-none items-center gap-1.5 rounded-full px-3.5 pt-3 pb-2 [&::-webkit-details-marker]:hidden", ring)}>
               {g.label} <Icon name="chevron-down" className="size-3 -rotate-90 transition-transform group-open:rotate-0 motion-reduce:transition-none" />
             </summary>
             {list(g.items)}
           </details>
-        ) : (
-          <div key={g.label} className="flex flex-col gap-0.5">
-            <p className="twc-eyebrow px-3.5 pt-3 pb-2">{g.label}</p>
-            {list(g.items)}
-          </div>
         ))}
       </nav>
       <div className="mt-auto border-t border-app-line pt-3">

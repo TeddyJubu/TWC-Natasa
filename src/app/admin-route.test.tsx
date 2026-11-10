@@ -130,9 +130,9 @@ describe("/admin", () => {
       expect(link("Applications").getAttribute("href")).toBe("#applications");
       expect(link("Applications").getAttribute("aria-current")).toBeNull();
       expect(link("Headshot bookings").getAttribute("aria-current")).toBeNull();
-      // No Collective group on the admin pages: only this page's Gatherings card.
-      for (const name of ["Home", "Members", "Gatherings", "Introductions"]) expect(within(nav).queryByRole("link", { name })).toBeNull();
-      expect(link("Admin Gatherings").getAttribute("href")).toBe("#gatherings");
+      // No Collective group: only this page's Gatherings card.
+      for (const name of ["Home", "Members", "Introductions"]) expect(within(nav).queryByRole("link", { name })).toBeNull();
+      expect(link("Gatherings").getAttribute("href")).toBe("#gatherings");
       // The other internal page's cards are router links, never "here".
       expect(link("Profile").getAttribute("href")).toBe("/account#profile");
       expect(link("Profile").getAttribute("aria-current")).toBeNull();
