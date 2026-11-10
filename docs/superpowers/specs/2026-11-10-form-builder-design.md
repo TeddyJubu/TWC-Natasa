@@ -38,6 +38,18 @@ New columns on `custom_forms`:
 `questions` on an unpublished form is `[]`. The importer and seeds (`saveForm` in `store.ts`) set `published_at` on
 insert, so what they write is live as before.
 
+**`saveForm` stays the only writer of live definitions,** with two changes:
+
+- It replaces the whole row and its old slugs, and defaults `open` to 1 and `one_per_email` to 0. `publishForm` and
+  `saveFormSettings` therefore read the current row and pass every field (old slugs, `open`, `one_per_email` and the
+  new columns) through, so a publish never drops a 301 or reopens a closed form. A test covers both.
+- `checkQuestions` gets `{ allowEmpty: true }` for an unpublished form's `[]`. Publish always runs it strictly
+  (at least one answerable question).
+
+The draft is the one exception to "questions checked by `checkQuestions`": `saveFormDraft` stores it after a shape
+check only, it is never served publicly, and Preview runs `checkQuestions` first and shows its error instead of
+rendering a draft it can't check.
+
 ## Question model (`schema.ts`)
 
 New types, added to the existing eleven:
@@ -50,6 +62,9 @@ New types, added to the existing eleven:
 | `consent` | `"yes"` | One checkbox; the label is the statement. |
 | `time` | `HH:MM` | Native `type="time"`. |
 | `file` | bucket-relative file name | See File uploads. At most 3 per form. |
+
+`checkQuestions` learns the new types: `page` may have an empty label, and `heading`/`page` keys are never stored.
+Heading help and page titles are plain text like intro and thank-you words, never HTML.
 
 Every question keeps a `key`. The builder generates it once (`q_` + 6 random characters) and never changes it, because
 answers are stored by key. Choice values are generated from the label when the choice is added and then kept.
@@ -78,7 +93,7 @@ current step's shown questions. A step with no shown questions is skipped. The s
 | `deleteForm` | Refuses when the form has any answer; otherwise deletes the row. |
 | `formResponsesCsv` | Unchanged, plus file answers as full URLs. |
 
-`saveAdminForm` and `setFormOpen` are replaced by the functions above. `closedReason(row, count, now)` returns the
+`saveAdminForm` and `setFormOpen` are replaced by the functions above. `closedMessage(row, count, now)` returns the
 closed words when the form is switched closed, past `closes_at`, or at `max_responses`; `openForm` and
 `submitResponse` both use it. After a stored answer, `notify` forms call `notifyAdmins` (subject and a link to the
 answers; no answer text in the email), which never fails the request.
@@ -91,10 +106,18 @@ answers; no answer text in the email), which never fails the request.
   then the per-visitor limit.
 - Each file: at most 5 MB, type from its first bytes — PDF, PNG, JPEG or WebP. Images lose their metadata
   (`stripMetadata`).
-- Stored at `uploads/form-files/<form id>/<response id>-<key>.<ext>`, written before the insert and removed if the
-  insert fails.
-- Served only at `/media/form-files/…` to admins, `Cache-Control: private, no-store`, `nosniff`; a PDF is sent as an
-  attachment. Everyone else gets the same 404.
+- A file question's answer comes only from its stored part: any value for that key in `answers` is dropped, so a
+  visitor can't point an answer at another file.
+- Order: every check first (closed, max answers, one per email, `checkAnswers`, `visibleKeys`), then the files of
+  shown file questions are written, then the insert; a failed insert removes them. A refused or hidden answer leaves
+  nothing on disk.
+- Stored at `uploads/form-files/<form id>/<response id>-<key>.<ext>`.
+- `media.ts` gains the `form-files` bucket (two path segments, like `avatars`), a PDF check beside `sniffImage`, and
+  `Content-Disposition: attachment` for PDFs.
+- Served only at `/media/form-files/…` to admins, `Cache-Control: private, no-store`, `nosniff`. Everyone else gets
+  the same 404.
+- ponytail: no total disk cap; one visitor can send 10 × 16 MB per form per 10 minutes. Add a per-form byte cap if
+  disk use grows.
 
 ## Admin UI
 
@@ -122,7 +145,9 @@ Code lives in `src/features/forms/builder/` (canvas, block editor, settings, ans
 - `forms.test.ts`: migration 0012, each new server function and its `requireAdmin`, delete refused with answers, draft
   invisible until Publish, closed by date and by count, alerts never failing a request.
 - `schema.test.ts`: new types, `showIf` checks, `visibleKeys`, hidden answers dropped.
-- Upload tests: size cap before read, type by bytes, admin-only serving, cleanup on a failed insert.
+- Upload tests: size cap before read, type by bytes, admin-only serving, cleanup on a failed insert, a forged file
+  answer in `answers` dropped, nothing written for a refused or hidden answer.
+- `forms.test.ts` also: publish and settings keep old slugs and `open`.
 - Component tests: builder add/reorder/remove, autosave payload, public multi-page stepping and logic.
 - `policy.test.ts` and the `API_ROUTES` test keep passing.
 
@@ -132,4 +157,5 @@ Code lives in `src/features/forms/builder/` (canvas, block editor, settings, ans
 2. Public page: new types, logic, pages.
 3. Admin list and builder.
 4. File uploads.
-5. `AGENTS.md` and `AUDIT-TASKS.md`.
+5. `AGENTS.md` (custom-forms rule: new functions and the draft exception; `notifyAdmins` list; Uploads rule: the
+   admin-only `form-files` bucket; the forms endpoint's 16 MB cap) and `AUDIT-TASKS.md`.
