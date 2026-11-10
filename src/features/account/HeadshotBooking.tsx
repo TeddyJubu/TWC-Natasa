@@ -25,7 +25,7 @@ const NOTES_ID = "headshot-notes";
 /** Her headshot session: the current request's status, or the request rows (values until an Add opens them). */
 export function HeadshotBooking({ userId, approved, applied }: { userId: string; approved: boolean; applied: boolean }) {
   return (
-    <AirCard id="headshot" span={5} no={5} title="Headshot session" subtitle="Included with your membership — your portrait, professionally done">
+    <AirCard id="headshot" span={5} no={6} title="Headshot session" subtitle="Included with your membership — your portrait, professionally done">
       {approved ? <Booking userId={userId} /> : <Locked applied={applied} />}
     </AirCard>
   );

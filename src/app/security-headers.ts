@@ -12,7 +12,8 @@ export function contentSecurityPolicy(): string {
     "script-src 'self' 'unsafe-inline' https://doop.design",
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob:",
-    "connect-src 'self' https://doop.design",
+    // OpenFreeMap: the /account neighborhood map's style, vector tiles, glyphs and sprites (NeighborhoodMap.tsx).
+    "connect-src 'self' https://doop.design https://tiles.openfreemap.org",
     "font-src 'self'",
     "frame-ancestors 'self'",
     "base-uri 'self'",

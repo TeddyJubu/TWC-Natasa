@@ -22,6 +22,7 @@
     "better-auth": "1.7.18",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
+    "maplibre-gl": "6.16.0",
     "ogl": "1.0.11",
     "react": "19.2.7",
     "react-dom": "19.2.7",

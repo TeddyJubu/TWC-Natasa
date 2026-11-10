@@ -28,7 +28,11 @@ const FILLED = {
 const STROKED = {
   mail: "M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm18 3-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7",
   menu: "M4 6h16M4 12h16M4 18h16", x: "M18 6 6 18M6 6l12 12", check: "M20 6 9 17l-5-5",
-  plus: "M5 12h14M12 5v14", "arrow-up": "m5 12 7-7 7 7M12 19V5", "arrow-down": "M12 5v14m7-7-7 7-7-7",
+  plus: "M5 12h14M12 5v14", minus: "M5 12h14",
+  locate: "M2 12h3M19 12h3M12 2v3M12 19v3M12 5a7 7 0 1 0 0 14 7 7 0 1 0 0-14zm0 4a3 3 0 1 0 0 6 3 3 0 1 0 0-6z",
+  maximize: "M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3",
+  minimize: "M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3",
+  lock: "M7 11V7a5 5 0 0 1 10 0v4M5 11h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2z", "arrow-up": "m5 12 7-7 7 7M12 19V5", "arrow-down": "M12 5v14m7-7-7 7-7-7",
   "arrow-right": "M5 12h14m-7-7 7 7-7 7", "arrow-left": "M19 12H5m7 7-7-7 7-7",
   trash: "M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2",
   download: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3",

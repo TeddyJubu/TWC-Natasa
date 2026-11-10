@@ -419,6 +419,69 @@ textarea.twc-input { min-height: 132px; resize: vertical; }
 .air-saved i.air-saved--dirty { background: var(--bl-air-red); }
 .air-saved svg { width: 12px; height: 12px; }
 
+/* Where you belong: the neighborhood map (NeighborhoodMap.tsx) and its home-post column */
+.air-where { display: grid; gap: 20px; }
+.air-map { position: relative; isolation: isolate; height: 340px; overflow: hidden; border: 1.5px solid var(--bl-air-navy); border-radius: 10px; background: #d9e1ed; }
+.air-map:fullscreen { height: 100%; border: 0; border-radius: 0; }
+.air-map-canvas { position: absolute; inset: 0; filter: grayscale(1) brightness(1.04) contrast(0.9); }
+.air-map-tint { position: absolute; inset: 0; z-index: 1; background: #d9e1ed; opacity: 0.85; mix-blend-mode: multiply; pointer-events: none; }
+.air-map-ring { position: absolute; left: 50%; top: 50%; z-index: 1; width: var(--ring); height: var(--ring); translate: -50% -50%; border: 1.5px dashed rgb(28 44 94 / 0.55); border-radius: 50%; background: rgb(28 44 94 / 0.05); pointer-events: none; }
+.air-map-mark { position: absolute; left: 14px; top: 14px; z-index: 2; width: 180px; height: 85px; opacity: 0.9; mix-blend-mode: multiply; pointer-events: none; }
+.air-map-pin { position: absolute; left: 50%; top: 50%; z-index: 3; display: grid; justify-items: center; translate: -50% calc(-100% + 30px); }
+.air-map-pop { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; margin-bottom: 14px; padding: 16px 22px 12px; border-radius: 6px; background: var(--bl-air-paper); box-shadow: 0 10px 24px -12px rgb(28 44 94 / 0.6), 0 0 0 1px var(--air-rule); text-align: center; white-space: nowrap; }
+.air-map-pop::before { content: ""; position: absolute; inset: 0 0 auto; height: 4px; border-radius: 6px 6px 0 0; background: var(--air-chev); }
+.air-map-pop::after { content: ""; position: absolute; left: 50%; bottom: -7px; width: 14px; height: 14px; translate: -50% 0; rotate: 45deg; background: var(--bl-air-paper); }
+.air-map-pop .air-lbl { margin: 0 0 2px; }
+.air-map-pop b { font: 600 22px/1.15 var(--font-fraunces); letter-spacing: -0.015em; }
+.air-map-pop small { font-size: 13.5px; color: var(--bl-air-muted); }
+.air-map-face { position: relative; display: grid; place-items: center; width: 60px; height: 60px; overflow: hidden; border-radius: 50%; background: var(--bl-air-sky); box-shadow: 0 0 0 3px #fff, 0 0 0 5.5px var(--bl-air-red), 0 8px 16px rgb(28 44 94 / 0.35); font: 600 20px var(--font-fraunces); }
+.air-map-face img { width: 100%; height: 100%; object-fit: cover; }
+/* Three beats, then still: motion that starts on its own stops within 5 s (WCAG 2.2.2). */
+.air-map-pulse { position: absolute; bottom: -18px; left: 50%; width: 96px; height: 96px; translate: -50% 0; border-radius: 50%; background: radial-gradient(circle, rgb(210 59 46 / 0.28), rgb(210 59 46 / 0) 70%); animation: air-pulse 1.4s var(--ease-snap, ease-out) 3; }
+.air-map-hood { position: absolute; left: 50%; bottom: 32px; z-index: 3; display: inline-flex; align-items: center; gap: 8px; translate: -50% 0; padding: 8px 16px; border-radius: 999px; background: var(--bl-air-navy); color: var(--bl-air-paper); box-shadow: 0 0 0 2px var(--bl-air-paper); font: 600 10.5px var(--font-plex); letter-spacing: 0.18em; text-transform: uppercase; white-space: nowrap; }
+.air-map-ctrls { position: absolute; right: 12px; top: 12px; z-index: 3; display: flex; flex-direction: column; gap: 8px; }
+.air-map-ctrls > div { display: flex; flex-direction: column; overflow: hidden; border-radius: 10px; background: #fff; box-shadow: 0 0 0 1px var(--air-rule), 0 6px 14px -8px rgb(28 44 94 / 0.5); }
+.air-map-ctrls button { display: grid; place-items: center; width: 44px; height: 44px; color: var(--bl-air-navy); }
+.air-map-ctrls button + button { border-top: 1px solid var(--air-rule); }
+.air-map-ctrls button:hover { background: var(--bl-air-sky); }
+.air-map-scale { position: absolute; left: 14px; bottom: 14px; z-index: 3; display: none; padding: 8px 10px 9px; border-radius: 6px; background: rgb(251 250 246 / 0.9); font: 600 10px var(--font-plex); letter-spacing: 0.12em; }
+.air-map-scale i { display: block; width: var(--scale); height: 5px; margin-top: 6px; border: 1.5px solid var(--bl-air-navy); border-top: 0; }
+.air-map-attr { position: absolute; right: 0; bottom: 0; z-index: 3; max-width: 100%; padding: 3px 8px; border-top-left-radius: 6px; background: rgb(251 250 246 / 0.85); color: var(--bl-air-muted); font-size: 10px; line-height: 1.4; }
+.air-map-attr a { text-decoration: underline; text-underline-offset: 2px; }
+.air-post-col { display: flex; flex-direction: column; min-width: 0; }
+.air-post-name { font: 600 46px/1 var(--font-fraunces); letter-spacing: -0.035em; overflow-wrap: anywhere; }
+.air-post-city { margin-top: 8px; font: italic 400 19px/1.3 var(--font-fraunces); }
+.air-post-coords { margin-top: 10px; font: 500 11px var(--font-plex); letter-spacing: 0.14em; color: var(--bl-air-muted); }
+.air-train { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--bl-air-navy); color: var(--bl-air-paper); font-size: 12px; font-weight: 700; }
+.air-privacy { display: flex; align-items: flex-start; gap: 10px; margin-top: 20px; padding: 14px 16px; border-radius: 10px; background: rgb(28 44 94 / 0.035); box-shadow: inset 0 0 0 1px var(--air-rule); font-size: 13.5px; line-height: 1.5; color: var(--bl-air-muted); }
+.air-privacy svg { margin-top: 2px; color: var(--bl-air-navy); }
+@keyframes air-pulse { from { scale: 0.4; opacity: 1; } to { scale: 1.3; opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .air-map-pulse { animation: none; opacity: 0.6; } }
+@media (min-width: 640px) { .air-map-scale { display: block; } }
+/* Phones: the popup needs the middle, so the chip moves to the top-left (in place of the postmark) and the controls
+   to the bottom-right. */
+@media (max-width: 639px) {
+  .air-map { height: 420px; }
+  .air-map-mark { display: none; }
+  .air-map-hood { top: 12px; bottom: auto; left: 12px; translate: none; }
+  .air-map-ctrls { top: auto; bottom: 44px; }
+  .air-map-pop { padding: 14px 18px 10px; }
+  .air-map-pop b { font-size: 19px; }
+  .air-map-pop small { font-size: 12.5px; }
+}
+@media (min-width: 1024px) {
+  .air-where { grid-template-columns: minmax(0, 1fr) 330px; gap: 36px; }
+  .air-where--nomap { grid-template-columns: minmax(0, 1fr); }
+  .air-map { height: 520px; }
+  .air-map-mark { left: 26px; top: 26px; width: 290px; height: 137px; }
+  .air-post-col { padding-top: 6px; }
+  .air-post-name { font-size: clamp(44px, 4.6vw, 60px); }
+  .air-post-city { font-size: 23px; }
+  .air-post-coords { font-size: 12px; }
+  .air-privacy { margin-top: auto; }
+  .air-post-col .air-rule { margin-bottom: 24px; }
+}
+
 /* Shared controls inside the airmail page */
 .air .twc-input { background: #fff; }
 .air .twc-input:focus { outline-color: var(--bl-air-navy); }

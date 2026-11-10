@@ -14,7 +14,7 @@ import { AirCard, EmptySlot, Locked, TicketDate } from "./shared";
 /** Upcoming gatherings with her RSVPs; applicants see what unlocks. */
 export function GatheringsList({ userId, approved, applied, hoodList }: { userId: string; approved: boolean; applied: boolean; hoodList: Neighborhood[] }) {
   return (
-    <AirCard id="gatherings" span={7} no={6} title="Gatherings" subtitle="Save your seat at what’s coming up">
+    <AirCard id="gatherings" span={7} no={7} title="Gatherings" subtitle="Save your seat at what’s coming up">
       {approved ? <Events userId={userId} hoodList={hoodList} /> : <Locked applied={applied} />}
     </AirCard>
   );

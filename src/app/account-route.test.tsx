@@ -428,6 +428,39 @@ describe("/account", () => {
     });
   });
 
+  describe("where you belong", () => {
+    const where = () => screen.getByRole("region", { name: "Where you belong" });
+
+    it("sits right under the cover: her neighborhood's post, nearest stop, where it gathers and who's near", () => {
+      const ev = { id: "e1", title: "Supper Club", description: "", location: "Bar Bolonat", neighborhood: "Astoria", starts_at: "2099-11-09T00:30:00Z", created_at: "" };
+      renderAccount({}, [card("Lena Ortiz", 3)], [ev]);
+      const order = [...document.querySelectorAll("main section[id]")].map((el) => el.id);
+      expect(order.slice(0, 3)).toEqual(["profile", "where", "public-card"]);
+      const text = where().textContent;
+      expect(text).toContain("Queens, New York 11106");
+      expect(text).toContain("Broadway, N, W trains");
+      expect(text).toContain("Bar Bolonat");
+      expect(text).toContain("1 neighbor");
+      expect(text).toContain("never your address");
+      expect(within(where()).getByRole("group", { name: "Map of Astoria" })).toBeTruthy();
+    });
+
+    it("drops what it doesn't know: a neighborhood with no place has no map or stop; no gathering, no row", () => {
+      renderAccount({ neighborhood: "Bayside" }, [], [], false, [[["neighborhoods"], [...NEIGHBORHOOD_SEED, { slug: "bayside", name: "Bayside", color: "#123456", logoUrl: null, active: true }]]]);
+      const text = where().textContent;
+      expect(text).toContain("Bayside");
+      expect(text).not.toMatch(/Nearest stop|Gathers at|°/);
+      expect(within(where()).queryByRole("group")).toBeNull();
+      expect(text).toContain("Just you, for now");
+    });
+
+    it("without a neighborhood, offers to choose one in the public card's picker", () => {
+      renderAccount({ neighborhood: null });
+      fireEvent.click(within(where()).getByRole("button", { name: "Choose your neighborhood" }));
+      expect(document.activeElement).toBe(screen.getByRole("combobox", { name: /neighborhood/i }));
+    });
+  });
+
   describe("navigation", () => {
     it("tabs anchor this page's account cards; sign out sits beside her name", () => {
       renderAccount();

@@ -16,19 +16,22 @@ const run = (m: unknown, request: Request, handlerType: "router" | "serverFn", r
 const responseOf = (r: { response: Response } | Response) => (r instanceof Response ? r : r.response);
 
 describe("content security policy", () => {
-  it("is the full enforced policy: same origin, data:/blob: images, and the doop design-sync host", () => {
+  it("is the full enforced policy: same origin, data:/blob: images, the doop design-sync host and the map tiles", () => {
     expect(contentSecurityPolicy()).toBe(
       "default-src 'self'; script-src 'self' 'unsafe-inline' https://doop.design; style-src 'self' 'unsafe-inline'; " +
-        "img-src 'self' data: blob:; connect-src 'self' https://doop.design; font-src 'self'; " +
+        "img-src 'self' data: blob:; connect-src 'self' https://doop.design https://tiles.openfreemap.org; font-src 'self'; " +
         "frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'",
     );
   });
 
-  it("is what SECURITY_HEADERS sends, and doop.design is the only third-party origin", () => {
+  it("is what SECURITY_HEADERS sends; doop.design and the map's tile host are the only third-party origins", () => {
     const csp = SECURITY_HEADERS["Content-Security-Policy"];
     expect(csp).toBe(contentSecurityPolicy());
+    // Tiles are fetched, never scripted: the map's host is in connect-src only.
+    expect(csp).toMatch(/connect-src [^;]*https:\/\/tiles\.openfreemap\.org/);
+    expect(csp).not.toMatch(/script-src [^;]*openfreemap/);
     expect(csp).not.toMatch(/supabase|lovable|gptengineer|wss?:|\*|http:\/\//);
-    expect(csp.match(/https:\/\/[^;\s]+/g)).toEqual(["https://doop.design", "https://doop.design"]);
+    expect(csp.match(/https:\/\/[^;\s]+/g)).toEqual(["https://doop.design", "https://doop.design", "https://tiles.openfreemap.org"]);
   });
 });
 

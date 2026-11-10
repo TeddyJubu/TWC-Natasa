@@ -23,7 +23,7 @@ export function IntroductionsSection({
   const intros = introsState.data ?? [];
 
   return (
-    <AirCard id="introductions" span={5} no={7} title="Introductions" subtitle={n ? `Neighbors from ${n} first, then across the constellation.` : "Neighbors from across the constellation."}>
+    <AirCard id="introductions" span={5} no={8} title="Introductions" subtitle={n ? `Neighbors from ${n} first, then across the constellation.` : "Neighbors from across the constellation."}>
       {!approved ? <Locked applied={applied} /> : (
         <>
           {introsState.isError && <InlineError message="We couldn’t load your introductions." onRetry={() => void introsState.refetch()} />}
