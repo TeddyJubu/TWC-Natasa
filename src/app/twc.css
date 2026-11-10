@@ -42,16 +42,19 @@
 .twc-chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 9999px; background: rgb(252 252 250 / 0.9); color: var(--color-sb-ink); font: 400 13px/19.5px var(--font-display); letter-spacing: 1.6px; text-transform: uppercase; }
 .twc-chip--ring { background: transparent; box-shadow: inset 0 0 0 1px rgb(31 31 28 / 0.25); }
 .twc-chip svg { width: 14px; height: 14px; }
-/* Gel pill (an open form's status): a glossy blue drop with a white rim, a glow along the bottom and one sharper
-   corner; solid blue while its card (a `group`) is hovered. After the chip rules so it replaces the ring's background
-   and outline. */
+/* Gel pill (an open form's status): a glossy blue drop with a 1px dark edge, a glow along the bottom and one sharper
+   corner. While its card (a `group`) is hovered the gradient turns over: the blue sinks, the glow rises (the two
+   positions are registered at the end of this file so they slide). After the chip rules so it replaces the ring. */
 .twc-gel {
   border-radius: 13px 5px 13px 13px; color: var(--color-app-gel-ink);
   background:
-    radial-gradient(60% 55% at 50% 108%, rgb(255 255 255 / 0.85), transparent),
-    radial-gradient(80% 95% at 50% 10%, var(--color-app-gel), var(--color-app-gel-soft) 100%);
-  box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / 0.9), inset 0 1px 2px rgb(255 255 255 / 0.7);
+    radial-gradient(60% 55% at 50% var(--gel-glow-y), rgb(255 255 255 / 0.85), transparent),
+    radial-gradient(80% 95% at 50% var(--gel-core-y), var(--color-app-gel), var(--color-app-gel-soft) 100%);
+  box-shadow: inset 0 0 0 1px var(--color-app-gel-ink), inset 0 2px 2px rgb(255 255 255 / 0.6);
+  transition: --gel-glow-y var(--duration-base, 300ms) var(--ease-snap), --gel-core-y var(--duration-base, 300ms) var(--ease-snap);
 }
+@media (hover: hover) { .group:hover .twc-gel { --gel-glow-y: -8%; --gel-core-y: 90%; } }
+@media (prefers-reduced-motion: reduce) { .twc-gel { transition: none; } }
 .twc-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; display: inline-block; }
 
 /* Eyebrows */
@@ -200,3 +203,7 @@ textarea.twc-input { min-height: 132px; resize: vertical; }
    The design-system polaroid MemberCard/MemberDialog set their index line in `font-mono`; on the public site
    that is Fragment Mono. Scoped to the page so nothing else's monospace changes. */
 .twc-page { --font-mono: var(--font-fragment); }
+
+/* The gel pill's gradient positions, registered (outside the layer) so a hover can slide them. */
+@property --gel-glow-y { syntax: "<percentage>"; inherits: false; initial-value: 108%; }
+@property --gel-core-y { syntax: "<percentage>"; inherits: false; initial-value: 10%; }
