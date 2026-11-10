@@ -245,3 +245,20 @@ export function describeAction(a: { action: ActionKind; application_id: string |
     case "neighborhood": return a.detail ? `set ${whose} neighborhood to ${a.detail}` : `cleared ${whose} neighborhood`;
   }
 }
+
+/** A custom form's edit-page tabs, in order (also the `?tab=` values). */
+export type FormTab = "answers" | "questions" | "settings";
+export const FORM_TABS: readonly FormTab[] = ["answers", "questions", "settings"];
+
+/**
+ * What one answer is called in a form's Answers list: who sent it, as far as the answers say. A person's name (by key
+ * or label, never a business's), then an email address, then a fixed "No name given" — never a number, which would
+ * shift each time a newer answer arrives. Blank answers never win.
+ */
+export function answerTitle(entries: AnswerEntry[]): string {
+  const text = (e: AnswerEntry) => (typeof e.value === "string" ? e.value.trim() : "");
+  const about = (e: AnswerEntry) => `${e.key} ${e.label}`;
+  const name = entries.find((e) => text(e) && /name/i.test(about(e)) && !/business|company|organi[sz]ation|brand|shop|venue/i.test(about(e)));
+  const email = entries.find((e) => /^[^\s@]+@[^\s@]+$/.test(text(e)));
+  return (name && text(name)) || (email && text(email)) || "No name given";
+}

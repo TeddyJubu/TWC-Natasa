@@ -1,9 +1,9 @@
 // The /admin cards (sidebar anchors). Data and rules live in ./queries, ./mutations and ./format; these only render.
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { cn } from "@/index";
-import { fieldClass, primaryButton, ring, secondaryButton } from "@/app/layout/app-classes";
+import { fieldClass, linkClass, primaryButton, ring, secondaryButton } from "@/app/layout/app-classes";
 import { Card, Chip, InlineError, Toggle, type ChipTone } from "@/app/layout/app-ui";
 import { Icon } from "@/app/layout/icons";
 import { toneFor } from "@/features/neighborhoods/tone";
@@ -25,7 +25,7 @@ import type { ApprovalNotice } from "./approval-email";
 import {
   applicationOrigin, checkLogo, describeAction, DUPLICATE_TEXT, formatAnswers, formatDate, formatDay, humanizeKey,
   LOGGED_ACTION_KINDS, LOGGED_ACTION_LABELS, matchesSearch, newestByUser, newsletterLabel, subscriberConsentLabel,
-  reviewerName, type AnswerEntry, type LoggedActionKind,
+  reviewerName, answerTitle, FORM_TABS, type AnswerEntry, type FormTab, type LoggedActionKind,
 } from "./format";
 import {
   adminReviewsQuery, adminSpotlightsQuery, reviewLinkStatesQuery, spotlightLinkStatesQuery, useMarkReviewDone, useMintReviewLink, useRevokeReviewLink,
@@ -33,13 +33,13 @@ import {
 } from "@/features/member-links/queries";
 import { reviewEntries } from "@/features/member-links/schema";
 import { spotlightEntries } from "@/features/member-links/spotlight";
-import { FormEditor } from "@/features/forms/FormEditor";
-import { draftFromQuestions, questionsFromDraft, starterQuestions, type FormEditorValues } from "@/features/forms/form-draft";
+import { QuestionsEditor } from "@/features/forms/FormEditor";
+import { draftFromQuestions, questionsFromDraft, starterQuestions } from "@/features/forms/form-draft";
+import type { SaveAdminFormInput } from "@/features/forms/fns";
 import { adminFormResponsesQuery, useDownloadFormCsv, useSaveAdminForm, useSetFormOpen, type AdminForm } from "@/features/forms/queries";
-import { KIND_LABEL } from "@/features/forms-state/constants";
 import { BUILT_IN, BUILT_IN_INFO, COPY_FIELDS, COPY_MAX, LONG_TEXT, isCopyForm, type BuiltIn, type CopyForm } from "@/features/form-copy/manifest";
 import { adminFormCopyQuery, useSaveFormCopy } from "@/features/form-copy/queries";
-import { adminFormsStateQuery, useSetMembershipFormOpen, type AdminFormState } from "@/features/forms-state/queries";
+import { adminFormsStateQuery, useSetMembershipFormOpen } from "@/features/forms-state/queries";
 
 const errorMessage = (error: unknown) =>
   (error as { message?: string } | null)?.message || "Something went wrong. Please try again.";
@@ -851,46 +851,72 @@ function SpotlightRow({ spotlight: s }: { spotlight: AdminSpotlight }) {
 // ---------- Forms: the list, and each form's own edit page ----------
 
 function AnswersLink({ to }: { to: [label: string, href: string] }) {
-  return <>answers in <a className={cn("underline", ring)} href={to[1]}>{to[0]}</a></>;
+  return <>Answers go to <a className={linkClass} href={to[1]}>{to[0]}</a></>;
 }
 
-function MembershipFormRow({ state: s }: { state: AdminFormState }) {
-  const setOpen = useSetMembershipFormOpen();
-  const [message, setMessage] = React.useState(s.message);
-  React.useEffect(() => { setMessage(s.message); }, [s.message]);
-  const busy = setOpen.isPending;
-  const label = KIND_LABEL[s.kind];
-  const href = s.kind === "application" ? "/join" : "/review";
-  const closeForm = () => {
-    if (!window.confirm(`Close “${label}”? Visitors will see the closed message instead of the form.`)) return;
-    setOpen.mutate({ kind: s.kind, open: false, message });
+const formPath = (slug: string) => `/f/${slug}`;
+const answerCount = (n: number) => (n === 1 ? "1 answer" : `${n} answers`);
+
+/** Copies a site link, then says so (or shows the link to copy by hand). */
+function CopyLink({ path }: { path: string }) {
+  const [state, setState] = React.useState<"idle" | "copied" | "failed">("idle");
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(new URL(path, window.location.origin).href);
+      setState("copied");
+    } catch {
+      setState("failed");
+    }
   };
   return (
-    <Item headingId={`membership-form-${s.kind}`} title={label} status={s.open ? "open" : "closed"}
-      details={<p className={meta}>
-        <a className={cn("underline", ring)} href={href}>{href}</a> · <AnswersLink to={BUILT_IN_INFO[s.kind].answers} />
-        {s.updated_at ? ` · updated ${formatDate(s.updated_at)}` : ""}
-      </p>}>
-      <div className="flex flex-col gap-3 rounded-md bg-app-sunken p-3.5">
-        <Field id={`membership-closed-${s.kind}`} label="Closed message" hint="Shown on the public page when closed (up to 1,000 characters). Blank uses the default.">
-          <input id={`membership-closed-${s.kind}`} value={message} maxLength={1000} disabled={busy}
-            aria-describedby={`membership-closed-${s.kind}-hint`}
+    <span className="inline-flex flex-wrap items-center gap-2.5">
+      <button type="button" className={secondaryButton} onClick={() => void copy()}><Icon name="copy" className="size-4" />Copy link</button>
+      <span role="status" className="text-[13px] text-app-muted">{state === "copied" ? "Copied" : state === "failed" ? `Couldn’t copy. The link is ${path}` : ""}</span>
+    </span>
+  );
+}
+
+/** A public page link that opens in a new tab, so the admin page stays put. */
+function PublicLink({ href }: { href: string }) {
+  return (
+    <a className={cn(linkClass, "inline-flex items-center gap-1.5")} href={href} target="_blank" rel="noreferrer">
+      {href}<Icon name="external-link" className="size-3.5" /><span className="sr-only"> (opens in a new tab)</span>
+    </a>
+  );
+}
+
+/**
+ * The one open/closed control for a form, and its closed message. Closing asks first. Each form has exactly one of
+ * these, so nothing else on the page can reopen a form behind it.
+ */
+function OpenSwitch({ idPrefix, name, open, savedMessage, hint, busy, error, onSet }: {
+  idPrefix: string; name: string; open: boolean; savedMessage: string; hint: string; busy: boolean; error: React.ReactNode;
+  onSet: (open: boolean, message: string) => void;
+}) {
+  const [message, setMessage] = React.useState(savedMessage);
+  React.useEffect(() => { setMessage(savedMessage); }, [savedMessage]);
+  const toggle = (next: boolean) => {
+    if (!next && !window.confirm(`Close “${name}”? Visitors will see the closed message instead of the form.`)) return;
+    onSet(next, message);
+  };
+  return (
+    <>
+      <Toggle label="Open for answers" checked={open} disabled={busy} onChange={(e) => toggle(e.currentTarget.checked)}
+        description={open ? "Visitors can fill it in now. Switch off to close it." : "Closed. Visitors see the closed message below."} />
+      <div className={cn(pad, "flex flex-col gap-3 py-5")}>
+        <Field id={`${idPrefix}-closed`} label="Closed message" hint={hint}>
+          <input id={`${idPrefix}-closed`} value={message} maxLength={1000} disabled={busy} aria-describedby={`${idPrefix}-closed-hint`}
             onChange={(e) => setMessage(e.currentTarget.value)} className={fieldClass} />
         </Field>
-        <div className="flex flex-wrap gap-2.5">
-          {s.open
-            ? <button type="button" className={secondaryButton} disabled={busy} aria-label={`Close ${label}`} onClick={closeForm}>Close form</button>
-            : <>
-                <button type="button" className={primaryButton} disabled={busy} aria-label={`Open ${label}`}
-                  onClick={() => setOpen.mutate({ kind: s.kind, open: true })}>Open form</button>
-                <button type="button" className={secondaryButton} disabled={busy || message === s.message}
-                  aria-label={`Update closed message for ${label}`}
-                  onClick={() => setOpen.mutate({ kind: s.kind, open: false, message })}>Update closed message</button>
-              </>}
-        </div>
-        <MutationError mutation={setOpen} />
+        {message !== savedMessage && (
+          <div className="flex flex-wrap gap-2.5">
+            <button type="button" className={secondaryButton} disabled={busy} onClick={() => onSet(open, message)}>Save closed message</button>
+            <button type="button" className={secondaryButton} disabled={busy} onClick={() => setMessage(savedMessage)}>Undo</button>
+          </div>
+        )}
+        {error}
       </div>
-    </Item>
+    </>
   );
 }
 
@@ -908,57 +934,116 @@ function FormCard({ id, title, status, where, detail }: { id: string; title: str
       </div>
       {where && <p className={meta}>{where}</p>}
       <p className={meta}>{detail}</p>
-      <span aria-hidden className="mt-auto pt-2 text-sm text-ink">Edit →</span>
+      <span aria-hidden className="mt-auto pt-2 text-sm text-ink">Open →</span>
     </article>
   );
 }
 
 const cardGrid = "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3";
+/** Built-in forms with a page to edit; the newsletter has none, so it is a note under them. */
+const LISTED_BUILT_IN = BUILT_IN.filter((kind) => kind !== "newsletter");
 
-/** Every form as a card: the five built-in ones, then your own /f/… forms and a New form card. */
+function SectionHead({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-1">
+      <h2 id={id} className="font-display text-[26px]/[1.2] text-ink">{title}</h2>
+      <p className="text-sm text-app-muted">{children}</p>
+    </div>
+  );
+}
+
+/** Your own /f/… forms first (the ones you change), then the site's built-in forms. */
 export function FormsListPanel() {
   const states = useQuery(adminFormsStateQuery);
   const forms = useQuery(adminFormResponsesQuery);
   const [adding, setAdding] = React.useState(false);
+  const tile = React.useRef<HTMLButtonElement>(null);
   const custom = forms.data ?? [];
   const open = (kind: "application" | "review") => (states.data?.find((s) => s.kind === kind)?.open === false ? "closed" : "open");
   const status: Record<BuiltIn, string> = { application: open("application"), review: open("review"), contact: "always_on", partnership: "always_on", newsletter: "no_page" };
   const total = custom.reduce((n, f) => n + f.total, 0);
+  const close = () => { setAdding(false); tile.current?.focus(); };
   return (
     <div id="forms" className="flex scroll-mt-28 flex-col gap-10">
+      <section aria-labelledby="forms-yours" className="flex flex-col gap-4">
+        <SectionHead id="forms-yours" title="Your forms">
+          {forms.data && custom.length > 0
+            ? `${custom.length === 1 ? "1 form" : `${custom.length} forms`} at /f/…, ${total === 1 ? "1 answer" : `${total} answers`} in all.`
+            : "Forms you make, each at its own /f/… link: RSVPs, sign-ups, surveys."}
+        </SectionHead>
+        <QueryGate query={forms} what="your forms">
+          <div className={cardGrid}>
+            {custom.map((f) => (
+              <FormCard key={f.id} id={f.id} title={f.name} status={f.open ? "open" : "closed"} where={formPath(f.slug)}
+                detail={<>{answerCount(f.total)}{f.newest_at ? ` · newest ${formatDate(f.newest_at)}` : ""}</>} />
+            ))}
+            <button ref={tile} type="button" aria-expanded={adding} aria-controls="forms-new" onClick={() => (adding ? close() : setAdding(true))}
+              className={cn("flex min-h-36 flex-col items-center justify-center gap-1.5 rounded-md border border-dashed border-app-line p-5 text-ink transition-colors duration-150 hover:bg-app-sunken aria-expanded:bg-app-sunken", ring)}>
+              <Icon name="plus" className="size-6" />
+              <span className="text-base font-medium">New form</span>
+            </button>
+          </div>
+          {adding && <NewFormPanel onClose={close} />}
+        </QueryGate>
+      </section>
       <section aria-labelledby="forms-built-in" className="flex flex-col gap-4">
-        <div className="flex flex-col gap-1">
-          <h2 id="forms-built-in" className="font-display text-[26px]/[1.2] text-ink">Built-in forms</h2>
-          <p className="text-sm text-app-muted">The site’s own forms. Change their wording, or open and close the ones that can close.</p>
-        </div>
+        <SectionHead id="forms-built-in" title="Built-in forms">The site’s own forms. Change their wording, or open and close the two that can close.</SectionHead>
         <div className={cardGrid}>
-          {BUILT_IN.map((kind) => {
+          {LISTED_BUILT_IN.map((kind) => {
             const info = BUILT_IN_INFO[kind];
             return <FormCard key={kind} id={kind} title={info.title} status={status[kind]} where={info.href} detail={info.note} />;
           })}
         </div>
-      </section>
-      <section aria-labelledby="forms-yours" className="flex flex-col gap-4">
-        <div className="flex flex-col gap-1">
-          <h2 id="forms-yours" className="font-display text-[26px]/[1.2] text-ink">Your forms</h2>
-          <p className="text-sm text-app-muted">{forms.data ? `${custom.length === 1 ? "1 form" : `${custom.length} forms`} at /f/…, ${total === 1 ? "1 answer" : `${total} answers`} in all.` : "Forms you make, each at its own /f/… link."}</p>
-        </div>
-        <QueryGate query={forms} what="your forms">
-          <div className={cardGrid}>
-            {custom.map((f) => (
-              <FormCard key={f.id} id={f.id} title={f.name} status={f.open ? "open" : "closed"} where={`/f/${f.slug}`}
-                detail={<>{f.total === 1 ? "1 answer" : `${f.total} answers`}{f.newest_at ? ` · newest ${formatDate(f.newest_at)}` : ""}</>} />
-            ))}
-            <button type="button" aria-expanded={adding} aria-controls="forms-new" onClick={() => setAdding((a) => !a)}
-              className={cn("flex min-h-36 flex-col items-center justify-center gap-1 rounded-md border border-dashed border-app-line p-5 text-ink transition-colors duration-150 hover:bg-app-sunken", ring)}>
-              <span aria-hidden className="text-2xl/none">{adding ? "×" : "+"}</span>
-              <span className="text-base font-medium">{adding ? "Cancel new form" : "New form"}</span>
-            </button>
-          </div>
-          {adding && <div id="forms-new" className="rounded-md bg-app shadow-[inset_0_0_0_1px_var(--color-app-line)]"><AddCustomForm onDone={() => setAdding(false)} /></div>}
-        </QueryGate>
+        <p className={meta}>
+          Newsletter sign-ups come from the membership application’s opt-in; there is no separate form. See them in{" "}
+          <a className={linkClass} href={BUILT_IN_INFO.newsletter.answers[1]}>{BUILT_IN_INFO.newsletter.answers[0]}</a>.
+        </p>
       </section>
     </div>
+  );
+}
+
+/** A link name from a form name: what checkQuestions' slug rules accept (a–z, 0–9, single hyphens, ≤ 40). */
+const slugFrom = (name: string) =>
+  name.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+/, "").slice(0, 40).replace(/-+$/, "");
+
+/** Name and web address only; the form is made closed with name + email questions, then opens on its Questions tab. */
+function NewFormPanel({ onClose }: { onClose: () => void }) {
+  const save = useSaveAdminForm();
+  const navigate = useNavigate();
+  const [name, setName] = React.useState("");
+  const [slug, setSlug] = React.useState<string | null>(null);
+  const address = slug ?? slugFrom(name);
+  const first = React.useRef<HTMLInputElement>(null);
+  React.useEffect(() => { first.current?.focus(); }, []);
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    save.mutate(
+      { name: name.trim(), slug: address, intro: "", thanks: "", closed_message: "", open: false, one_per_email: false, questions: starterQuestions() },
+      { onSuccess: ({ id }) => { onClose(); void navigate({ to: "/admin/forms/$formId", params: { formId: id }, search: { tab: "questions" } }); } },
+    );
+  };
+  return (
+    <form id="forms-new" aria-label="New form" onSubmit={submit} onKeyDown={(e) => { if (e.key === "Escape") onClose(); }}
+      className="flex flex-col gap-5 rounded-md bg-app p-5 shadow-[inset_0_0_0_1px_var(--color-app-line)] sm:p-7">
+      <h3 className="font-display text-[22px]/[1.25] text-ink">New form</h3>
+      <div className="grid gap-5 md:grid-cols-2">
+        <Field id="form-new-name" label="Name">
+          <input ref={first} id="form-new-name" required maxLength={80} value={name} disabled={save.isPending} placeholder="Supper club RSVP"
+            onChange={(e) => setName(e.currentTarget.value)} className={fieldClass} />
+        </Field>
+        <Field id="form-new-slug" label="Web address" hint={`The form’s link: /f/${address || "…"}`}>
+          <input id="form-new-slug" required maxLength={40} pattern="[a-z0-9]+(-[a-z0-9]+)*" value={address} disabled={save.isPending}
+            aria-describedby="form-new-slug-hint" onChange={(e) => setSlug(e.currentTarget.value)} className={fieldClass} />
+        </Field>
+      </div>
+      <p className={meta}>It starts closed with two questions, your name and email, so nobody sees it until you open it in Settings.</p>
+      <MutationError mutation={save} />
+      <div className="flex flex-wrap gap-2.5">
+        <button type="submit" className={primaryButton} disabled={save.isPending}>Create form</button>
+        <button type="button" className={secondaryButton} disabled={save.isPending} onClick={onClose}>Cancel</button>
+      </div>
+    </form>
   );
 }
 
@@ -975,22 +1060,26 @@ function NotFound() {
 export function BuiltInFormPanel({ kind }: { kind: BuiltIn }) {
   const info = BUILT_IN_INFO[kind];
   const states = useQuery(adminFormsStateQuery);
+  const setOpen = useSetMembershipFormOpen();
   const state = states.data?.find((s) => s.kind === kind);
+  const closable = kind === "application" || kind === "review";
   return (
     <>
-      <Card id="form" title={info.title} subtitle={info.note}>
-        <p className={cn(pad, "py-4 text-[15px]")}>
-          {info.href && <>Public page: <a className={cn("underline", ring)} href={info.href}>{info.href}</a> · </>}
-          <AnswersLink to={info.answers} />
+      <Card id="form" title="Status" subtitle={info.note}>
+        <p className={cn(pad, "flex flex-wrap items-center gap-x-5 gap-y-2 py-4 text-[15px] text-ink")}>
+          {info.href && <span>Public page: <PublicLink href={info.href} /></span>}
+          <span><AnswersLink to={info.answers} /></span>
         </p>
-      </Card>
-      {(kind === "application" || kind === "review") && (
-        <Card id="status" title="Open or closed" subtitle="When closed, visitors see your closed message instead of the form.">
+        {closable && (
           <QueryGate query={states} what="the open/closed switch">
-            {state ? <MembershipFormRow state={state} /> : <Empty>No switch found for this form.</Empty>}
+            {state
+              ? <OpenSwitch idPrefix={`membership-${kind}`} name={info.title} open={state.open} savedMessage={state.message} busy={setOpen.isPending}
+                  hint="Shown on the public page while it’s closed (up to 1,000 characters). Blank uses the default."
+                  error={<MutationError mutation={setOpen} />} onSet={(open, message) => setOpen.mutate({ kind, open, message })} />
+              : <Empty>No switch found for this form.</Empty>}
           </QueryGate>
-        </Card>
-      )}
+        )}
+      </Card>
       {isCopyForm(kind)
         ? <WordingPanel form={kind} />
         : <Card id="wording" title="Wording"><Empty>This form has no public page yet, so there is no wording to edit.</Empty></Card>}
@@ -1013,168 +1102,239 @@ function WordingPanel({ form }: { form: CopyForm }) {
 
 function WordingForm({ form, current, save }: { form: CopyForm; current: Record<string, string>; save: ReturnType<typeof useSaveFormCopy> }) {
   const fields = COPY_FIELDS[form];
-  const [draft, setDraft] = React.useState<Record<string, string>>(() => Object.fromEntries(fields.map((f) => [f.text, current[f.text] ?? f.text])));
-  const changed = fields.some((f) => draft[f.text] !== (current[f.text] ?? f.text));
+  const saved = (text: string) => current[text] ?? text;
+  const [draft, setDraft] = React.useState<Record<string, string>>(() => Object.fromEntries(fields.map((f) => [f.text, saved(f.text)])));
+  const unsaved = fields.filter((f) => draft[f.text] !== saved(f.text)).length;
   const groups = [...new Set(fields.map((f) => f.group))];
+  React.useEffect(() => {
+    if (!unsaved) return;
+    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [unsaved]);
   return (
-    <form aria-label="Wording" className="flex flex-col gap-7 px-5 py-6 sm:px-7" onSubmit={(e) => { e.preventDefault(); save.mutate({ form, values: draft }); }}>
-      {groups.map((group, gi) => (
-        <section key={group} aria-labelledby={`wording-${form}-group-${gi}`} className="flex flex-col gap-4">
-          <h3 id={`wording-${form}-group-${gi}`} className="twc-eyebrow">{group}</h3>
-          {fields.filter((f) => f.group === group).map((f) => {
-            const id = `wording-${form}-field-${fields.indexOf(f)}`;
-            const long = f.text.length > LONG_TEXT;
-            const props = { id, value: draft[f.text], maxLength: COPY_MAX, className: fieldClass, placeholder: f.text, // Read the value now: React clears `currentTarget` once the handler returns, before a queued update runs.
-              onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => { const { value } = e.currentTarget; setDraft((d) => ({ ...d, [f.text]: value })); } };
-            return (
-              <Field key={f.text} id={id} label={f.text} hint={f.text.includes("{name}") ? "{name} becomes the member’s first name." : undefined}>
-                {long ? <textarea rows={3} {...props} /> : <input {...props} />}
-              </Field>
-            );
-          })}
-        </section>
-      ))}
-      <MutationError mutation={save} />
-      <div className="flex flex-wrap items-center gap-3">
-        <button type="submit" className={primaryButton} disabled={!changed || save.isPending}>Save wording</button>
-        {save.isSuccess && !changed && <p role="status" className="text-sm text-app-muted">Saved. The page now reads this way.</p>}
+    <form aria-label="Wording" className="flex flex-col" onSubmit={(e) => { e.preventDefault(); save.mutate({ form, values: draft }); }}>
+      {groups.map((group, gi) => {
+        const inGroup = fields.filter((f) => f.group === group);
+        const changed = inGroup.filter((f) => draft[f.text].trim() && draft[f.text] !== f.text).length;
+        const headingId = `wording-${form}-group-${gi}`;
+        return (
+          <details key={group} open={gi === 0} className="group border-b border-app-rule">
+            <summary className={cn("flex min-h-14 cursor-pointer list-none items-center gap-3 px-5 sm:px-7 [&::-webkit-details-marker]:hidden", ring)}>
+              <Icon name="chevron-down" className="size-3.5 -rotate-90 text-app-muted transition-transform group-open:rotate-0 motion-reduce:transition-none" />
+              <h3 id={headingId} className="text-base font-medium text-ink">{group}</h3>
+              <span className={cn(meta, "ml-auto")}>{inGroup.length} {inGroup.length === 1 ? "text" : "texts"}{changed ? ` · ${changed} changed` : ""}</span>
+            </summary>
+            <section aria-labelledby={headingId} className="flex flex-col gap-4 px-5 pb-6 sm:px-7">
+              {inGroup.map((f) => {
+                const id = `wording-${form}-field-${fields.indexOf(f)}`;
+                const isChanged = !!draft[f.text].trim() && draft[f.text] !== f.text;
+                const hint = [f.text.includes("{name}") ? "{name} becomes the member’s first name." : "", isChanged ? "Changed from the original." : ""].filter(Boolean).join(" ");
+                const props = { id, value: draft[f.text], maxLength: COPY_MAX, className: fieldClass, placeholder: f.text, ...(hint ? { "aria-describedby": `${id}-hint` } : {}),
+                  // Read the value now: React clears `currentTarget` once the handler returns, before a queued update runs.
+                  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => { const { value } = e.currentTarget; setDraft((d) => ({ ...d, [f.text]: value })); } };
+                return (
+                  // The label is the original sentence: read it as a sentence, not as a small-caps field name.
+                  <Field key={f.text} id={id} label={f.text} hint={hint || undefined} className="[&>label]:text-[13px] [&>label]:font-normal [&>label]:tracking-normal [&>label]:normal-case [&>label]:text-app-muted">
+                    {f.text.length > LONG_TEXT ? <textarea rows={3} {...props} /> : <input {...props} />}
+                  </Field>
+                );
+              })}
+            </section>
+          </details>
+        );
+      })}
+      <div className="sticky bottom-0 z-10 flex flex-wrap items-center justify-between gap-3 bg-app px-5 py-3.5 shadow-[inset_0_1px_0_var(--color-app-line)] sm:px-7">
+        {save.isError
+          ? <MutationError mutation={save} />
+          : <p role="status" className="text-sm text-app-muted">{unsaved ? `${unsaved} unsaved ${unsaved === 1 ? "change" : "changes"}` : save.isSuccess ? "Saved. The page now reads this way." : "No unsaved changes"}</p>}
+        <div className="flex flex-wrap gap-2.5">
+          {unsaved > 0 && <button type="button" className={secondaryButton} disabled={save.isPending}
+            onClick={() => setDraft(Object.fromEntries(fields.map((f) => [f.text, saved(f.text)])))}>Discard changes</button>}
+          <button type="submit" className={primaryButton} disabled={!unsaved || save.isPending}>Save wording</button>
+        </div>
       </div>
     </form>
   );
 }
 
-/** The edit page for one of your own /f/… forms: settings, questions, open/close, answers and CSV. */
-export function CustomFormPanel({ id }: { id: string }) {
-  const forms = useQuery(adminFormResponsesQuery);
-  const form = forms.data?.find((f) => f.id === id);
-  return (
-    <QueryGate query={forms} what="this form">
-      {form ? <Card id="form" title="Edit form" subtitle={`/f/${form.slug}`}><FormRow form={form} startEditing /></Card> : <NotFound />}
-    </QueryGate>
-  );
-}
+const TAB_LABEL: Record<FormTab, string> = { answers: "Answers", questions: "Questions", settings: "Settings" };
 
-function formEditorPayload(values: FormEditorValues, id?: string) {
-  return {
-    ...(id ? { id } : {}),
-    name: values.name, slug: values.slug.trim(), intro: values.intro, thanks: values.thanks,
-    closed_message: values.closed_message, open: values.open, one_per_email: values.one_per_email,
-    questions: questionsFromDraft(values.questions),
-  };
-}
-
-function AddCustomForm({ onDone }: { onDone?: () => void }) {
-  const save = useSaveAdminForm();
-  const [formKey, setFormKey] = React.useState(0);
-  const initial: FormEditorValues = {
-    name: "", slug: "", intro: "", thanks: "", closed_message: "", open: true, one_per_email: false,
-    questions: starterQuestions(),
+/** Tabs (WAI-ARIA tabs pattern: arrow keys, Home and End move between them). */
+function FormTabs({ current, onSelect }: { current: FormTab; onSelect: (tab: FormTab) => void }) {
+  const refs = React.useRef<Partial<Record<FormTab, HTMLButtonElement | null>>>({});
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    const i = FORM_TABS.indexOf(current);
+    const next = { ArrowRight: FORM_TABS[(i + 1) % 3], ArrowLeft: FORM_TABS[(i + 2) % 3], Home: FORM_TABS[0], End: FORM_TABS[2] }[e.key];
+    if (!next) return;
+    e.preventDefault();
+    onSelect(next);
+    refs.current[next]?.focus();
   };
   return (
-    <div key={formKey} className={subpanel}>
-      <FormEditor
-        idPrefix="form-new"
-        title="Add a form"
-        initial={initial}
-        submitLabel="Publish form"
-        busy={save.isPending}
-        error={save.isError ? errorMessage(save.error) : null}
-        onSubmit={(values) => {
-          save.mutate(formEditorPayload(values), {
-            onSuccess: () => { save.reset(); setFormKey((k) => k + 1); onDone?.(); },
-          });
-        }}
-      />
+    <div role="tablist" aria-label="Form" onKeyDown={onKeyDown} className="flex w-fit gap-1 rounded-full bg-app p-1 shadow-[inset_0_0_0_1px_var(--color-app-line)]">
+      {FORM_TABS.map((tab) => (
+        <button key={tab} ref={(el) => { refs.current[tab] = el; }} type="button" role="tab" id={`form-tab-${tab}`} aria-controls={`form-panel-${tab}`}
+          aria-selected={tab === current} tabIndex={tab === current ? 0 : -1} onClick={() => onSelect(tab)}
+          className={cn("min-h-10 rounded-full px-4.5 text-[15px] transition-colors duration-150", tab === current ? "bg-ink text-app" : "text-ink hover:bg-app-sunken", ring)}>
+          {TAB_LABEL[tab]}
+        </button>
+      ))}
     </div>
   );
 }
 
-function FormRow({ form: f, startEditing = false }: { form: AdminForm; startEditing?: boolean }) {
-  const setOpen = useSetFormOpen();
-  const csv = useDownloadFormCsv();
-  const save = useSaveAdminForm();
-  const [message, setMessage] = React.useState(f.closed_message);
-  const [editing, setEditing] = React.useState(startEditing);
-  React.useEffect(() => { setMessage(f.closed_message); }, [f.closed_message]);
-  const shown = f.total > f.responses.length ? ` · newest ${f.responses.length} shown` : "";
-  const newest = f.newest_at ? ` · newest ${formatDate(f.newest_at)}` : "";
-  const busy = setOpen.isPending || csv.isPending || save.isPending;
-  const closeForm = () => {
-    if (!window.confirm(`Close “${f.name}”? Visitors will see the closed message instead of the form.`)) return;
-    setOpen.mutate({ id: f.id, open: false, message });
-  };
-  const editInitial: FormEditorValues = {
-    name: f.name, slug: f.slug, intro: f.intro, thanks: f.thanks, closed_message: f.closed_message,
-    open: f.open, one_per_email: f.one_per_email, questions: draftFromQuestions(f.questions),
-  };
+/** One of your own /f/… forms: Answers, Questions and Settings tabs. `tab` comes from the URL (`?tab=`). */
+export function CustomFormPanel({ id, tab, onTab }: { id: string; tab: FormTab; onTab: (tab: FormTab) => void }) {
+  const forms = useQuery(adminFormResponsesQuery);
+  const form = forms.data?.find((f) => f.id === id);
   return (
-    <Item headingId={`form-${f.id}`} title={f.name} status={f.open ? "open" : "closed"}
-      details={<p className={meta}>
-        <a className={cn("underline", ring)} href={`/f/${f.slug}`}>/f/{f.slug}</a>
-        {" · "}v{f.version}
-        {" · "}{f.total === 1 ? "1 answer" : `${f.total} answers`}{newest}{shown}
-        {f.one_per_email ? " · one per email" : ""}
-      </p>}>
-      <div className="flex flex-col gap-3 rounded-md bg-app-sunken p-3.5">
-        <Field id={`form-closed-${f.id}`} label="Closed message" hint="Shown on /f/… when the form is closed (up to 1,000 characters).">
-          <input id={`form-closed-${f.id}`} value={message} maxLength={1000} disabled={busy}
-            aria-describedby={`form-closed-${f.id}-hint`}
-            onChange={(e) => setMessage(e.currentTarget.value)} className={fieldClass} />
-        </Field>
-        <div className="flex flex-wrap gap-2.5">
-          {f.open
-            ? <button type="button" className={secondaryButton} disabled={busy} aria-label={`Close ${f.name}`} onClick={closeForm}>Close form</button>
-            : <>
-                <button type="button" className={primaryButton} disabled={busy} aria-label={`Open ${f.name}`}
-                  onClick={() => setOpen.mutate({ id: f.id, open: true })}>Open form</button>
-                <button type="button" className={secondaryButton} disabled={busy || message === f.closed_message}
-                  aria-label={`Update closed message for ${f.name}`}
-                  onClick={() => setOpen.mutate({ id: f.id, open: false, message })}>Update closed message</button>
-              </>}
-          <button type="button" className={secondaryButton} disabled={busy}
-            aria-label={editing ? `Cancel editing ${f.name}` : `Edit ${f.name}`}
-            onClick={() => { setEditing((on) => !on); save.reset(); }}>
-            {editing ? "Cancel edit" : "Edit form"}
-          </button>
-          {f.total > 0 && (
-            <button type="button" className={secondaryButton} disabled={busy}
-              aria-label={`Download CSV of ${f.name}`} onClick={() => csv.mutate(f.id)}>
-              Download CSV
-            </button>
-          )}
-        </div>
-        <MutationError mutation={setOpen} />
-        <MutationError mutation={csv} />
+    <QueryGate query={forms} what="this form">
+      {form ? <FormWorkspace form={form} tab={tab} onTab={onTab} /> : <NotFound />}
+    </QueryGate>
+  );
+}
+
+function FormWorkspace({ form: f, tab, onTab }: { form: AdminForm; tab: FormTab; onTab: (tab: FormTab) => void }) {
+  const [current, setCurrent] = React.useState(tab);
+  React.useEffect(() => { setCurrent(tab); }, [tab]);
+  const select = (next: FormTab) => { setCurrent(next); onTab(next); };
+  // Every panel stays mounted (just hidden), so unsaved questions survive a look at the answers.
+  const panel = (name: FormTab, children: React.ReactNode) => (
+    <div role="tabpanel" id={`form-panel-${name}`} aria-labelledby={`form-tab-${name}`} hidden={current !== name} className="flex flex-col gap-6">{children}</div>
+  );
+  return (
+    <>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+        <StatusChip status={f.open ? "open" : "closed"} />
+        <PublicLink href={formPath(f.slug)} />
+        <span className={meta}>{answerCount(f.total)}</span>
       </div>
-      {editing && (
-        <div className="rounded-md bg-app-sunken p-3.5 sm:p-5">
-          <FormEditor
-            key={`${f.id}-v${f.version}`}
-            idPrefix={`form-edit-${f.id}`}
-            title={`Edit ${f.name}`}
-            initial={editInitial}
-            submitLabel="Save form"
-            busy={save.isPending}
-            error={save.isError ? errorMessage(save.error) : null}
-            onCancel={() => { setEditing(false); save.reset(); }}
-            onSubmit={(values) => {
-              save.mutate(formEditorPayload(values, f.id), {
-                onSuccess: () => { setEditing(false); save.reset(); },
-              });
-            }}
-          />
-        </div>
-      )}
-      {f.responses.map((r) => (
-        <details key={r.id} className="group rounded-md bg-app-sunken">
-          <summary className={cn("flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-md px-3.5 text-sm font-medium text-ink [&::-webkit-details-marker]:hidden", ring)}>
-            <Icon name="chevron-down" className="size-3.25 -rotate-90 text-app-muted transition-transform group-open:rotate-0 motion-reduce:transition-none" />
-            {formatDate(r.created_at)} ({r.entries.length} answers)
-          </summary>
-          <AnswerList entries={r.entries} />
-        </details>
-      ))}
-    </Item>
+      <FormTabs current={current} onSelect={select} />
+      {panel("answers", <AnswersCard form={f} />)}
+      {panel("questions", <QuestionsCard form={f} />)}
+      {panel("settings", <SettingsCards form={f} />)}
+    </>
+  );
+}
+
+/** Everything saveAdminForm needs, from the form as the server last sent it, with `patch` on top. */
+const formPayload = (f: AdminForm, patch: Partial<SaveAdminFormInput>): SaveAdminFormInput => ({
+  id: f.id, name: f.name, slug: f.slug, intro: f.intro, thanks: f.thanks, closed_message: f.closed_message,
+  open: f.open, one_per_email: f.one_per_email, questions: f.questions, ...patch,
+});
+
+function AnswersCard({ form: f }: { form: AdminForm }) {
+  const csv = useDownloadFormCsv();
+  const [query, setQuery] = React.useState("");
+  const rows = f.responses.filter((r) => matchesSearch(query, r.entries.flatMap((e) => (Array.isArray(e.value) ? e.value : [e.value]))));
+  const searchId = `answers-search-${f.id}`;
+  return (
+    <Card id="answers" title="Answers"
+      subtitle={f.total === 0 ? "None yet." : `${answerCount(f.total)}${f.newest_at ? ` · newest ${formatDate(f.newest_at)}` : ""}`}
+      action={f.total > 0 && (
+        <button type="button" className={secondaryButton} disabled={csv.isPending} onClick={() => csv.mutate(f.id)}>
+          <Icon name="download" className="size-4" />Download CSV
+        </button>
+      )}>
+      {f.total === 0
+        ? (
+          <div className={cn(pad, "flex flex-col gap-3 py-6 text-[15px] text-ink")}>
+            <p>{f.open ? "When someone fills in the form, their answers show up here. Share the link to get the first one:" : "This form is closed. Open it in Settings, then share the link:"}</p>
+            <p className="flex flex-wrap items-center gap-x-4 gap-y-2"><PublicLink href={formPath(f.slug)} /><CopyLink path={formPath(f.slug)} /></p>
+          </div>
+        )
+        : (
+          <>
+            <div role="search" className={cn(pad, "flex flex-col gap-1.5 py-4")}>
+              <label htmlFor={searchId} className="text-sm font-medium text-ink">Search answers</label>
+              <input id={searchId} type="search" value={query} autoComplete="off" onChange={(e) => setQuery(e.currentTarget.value)} className={cn(fieldClass, "max-w-120")} />
+            </div>
+            {f.total > f.responses.length && <p className={cn(pad, meta, "py-3")}>Showing the newest {f.responses.length}. Download CSV for all {f.total}.</p>}
+            {rows.length === 0
+              ? <Empty>No answers match “{query}”.</Empty>
+              : (
+                <ul aria-label="Answers" className="divide-y divide-app-rule">
+                  {rows.map((r) => (
+                    <li key={r.id}>
+                      <details className="group">
+                        <summary className={cn("flex min-h-14 cursor-pointer list-none flex-wrap items-center gap-x-3 gap-y-0.5 px-5 py-2 hover:bg-app-sunken sm:px-7 [&::-webkit-details-marker]:hidden", ring)}>
+                          <Icon name="chevron-down" className="size-3.5 -rotate-90 text-app-muted transition-transform group-open:rotate-0 motion-reduce:transition-none" />
+                          <span className="text-[15px] font-medium text-ink">{answerTitle(r.entries)}</span>
+                          <span className={cn(meta, "ml-auto")}>{formatDate(r.created_at)}</span>
+                        </summary>
+                        <div className="px-2 pb-3 sm:px-4"><AnswerList entries={r.entries} /></div>
+                      </details>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            {csv.isError && <div className={cn(pad, "py-3")}><MutationError mutation={csv} /></div>}
+          </>
+        )}
+    </Card>
+  );
+}
+
+function QuestionsCard({ form: f }: { form: AdminForm }) {
+  const save = useSaveAdminForm();
+  // Bumped after each save (once the refetch is in), so the editor starts again from what was stored.
+  const [round, setRound] = React.useState(0);
+  return (
+    <Card id="questions" title="Questions" subtitle="What visitors see, top to bottom. Saving changes the live form at once.">
+      <QuestionsEditor key={round} idPrefix={`form-${f.id}`} busy={save.isPending} saved={round > 0}
+        error={save.isError ? errorMessage(save.error) : null}
+        initial={{ intro: f.intro, thanks: f.thanks, questions: draftFromQuestions(f.questions) }}
+        onSave={(draft) => save.mutate(
+          formPayload(f, { intro: draft.intro, thanks: draft.thanks, questions: questionsFromDraft(draft.questions) }),
+          { onSuccess: () => { save.reset(); setRound((r) => r + 1); } },
+        )} />
+    </Card>
+  );
+}
+
+function SettingsCards({ form: f }: { form: AdminForm }) {
+  const setOpen = useSetFormOpen();
+  const save = useSaveAdminForm();
+  const [name, setName] = React.useState(f.name);
+  const [slug, setSlug] = React.useState(f.slug);
+  const [onePer, setOnePer] = React.useState(f.one_per_email);
+  React.useEffect(() => { setName(f.name); setSlug(f.slug); setOnePer(f.one_per_email); }, [f.name, f.slug, f.one_per_email]);
+  const dirty = name !== f.name || slug !== f.slug || onePer !== f.one_per_email;
+  const id = (field: string) => `form-${f.id}-${field}`;
+  return (
+    <>
+      <Card id="status" title="Open or closed" subtitle="When it’s closed, visitors see your closed message instead of the questions.">
+        <OpenSwitch idPrefix={`form-${f.id}`} name={f.name} open={f.open} savedMessage={f.closed_message} busy={setOpen.isPending}
+          hint="Shown at the form’s link while it’s closed (up to 1,000 characters). Blank uses the default."
+          error={<MutationError mutation={setOpen} />} onSet={(open, message) => setOpen.mutate({ id: f.id, open, message })} />
+      </Card>
+      <Card id="details" title="Name and link">
+        <form aria-label="Name and link" className="flex flex-col divide-y divide-app-rule"
+          onSubmit={(e) => { e.preventDefault(); save.mutate(formPayload(f, { name: name.trim(), slug: slug.trim(), one_per_email: onePer })); }}>
+          <div className={cn(pad, "grid gap-5 py-5 md:grid-cols-2")}>
+            <Field id={id("name")} label="Name" hint="The form’s title, on its page and in this list.">
+              <input id={id("name")} required maxLength={80} value={name} disabled={save.isPending} aria-describedby={`${id("name")}-hint`}
+                onChange={(e) => setName(e.currentTarget.value)} className={fieldClass} />
+            </Field>
+            <Field id={id("slug")} label="Web address"
+              hint={`Link: /f/${slug || "…"}. Lowercase letters, numbers and hyphens.${slug !== f.slug ? ` The old link, /f/${f.slug}, will keep working.` : ""}`}>
+              <input id={id("slug")} required maxLength={40} pattern="[a-z0-9]+(-[a-z0-9]+)*" value={slug} disabled={save.isPending}
+                aria-describedby={`${id("slug")}-hint`} onChange={(e) => setSlug(e.currentTarget.value)} className={fieldClass} />
+            </Field>
+          </div>
+          <Toggle label="One answer per email" checked={onePer} disabled={save.isPending} onChange={(e) => setOnePer(e.currentTarget.checked)}
+            description="A second answer from the same email address is turned away, with a note saying why." />
+          <div className={cn(pad, "flex flex-wrap items-center justify-between gap-3 py-4")}>
+            <span className="flex flex-wrap items-center gap-x-4 gap-y-2"><CopyLink path={formPath(f.slug)} /></span>
+            <div className="flex flex-wrap items-center gap-3">
+              {save.isError ? <MutationError mutation={save} /> : save.isSuccess && !dirty && <p role="status" className="text-sm text-app-muted">Saved.</p>}
+              <button type="submit" className={primaryButton} disabled={!dirty || save.isPending}>Save name and link</button>
+            </div>
+          </div>
+        </form>
+      </Card>
+    </>
   );
 }
 
@@ -1200,9 +1360,9 @@ function useLogoPick() {
 }
 
 /** Label above, control, optional hint (the control's `aria-describedby` is `${id}-hint`). */
-function Field({ id, label, hint, children }: { id: string; label: string; hint?: string; children: React.ReactNode }) {
+function Field({ id, label, hint, className, children }: { id: string; label: string; hint?: string; className?: string; children: React.ReactNode }) {
   return (
-    <div className="twc-field">
+    <div className={cn("twc-field", className)}>
       <label htmlFor={id}>{label}</label>
       {children}
       {hint && <p id={`${id}-hint`} className="twc-hint">{hint}</p>}

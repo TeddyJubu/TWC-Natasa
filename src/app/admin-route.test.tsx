@@ -89,8 +89,9 @@ function renderAdmin(over: Partial<Record<AdminKey, unknown>> = {}, extra: [unkn
 }
 const renderForms = (over: Partial<Record<AdminKey, unknown>> = {}) => renderAdmin(over, [], FormsPage);
 /** One form's edit page at /admin/forms/<formId>; `copy` seeds the wording read for a built-in form. */
-function renderFormPage(formId: string, over: Partial<Record<AdminKey, unknown>> = {}, copy?: [string, Record<string, string>]) {
+function renderFormPage(formId: string, over: Partial<Record<AdminKey, unknown>> = {}, copy?: [string, Record<string, string>], tab?: string) {
   vi.spyOn(FormRoute, "useParams").mockReturnValue({ formId } as never);
+  vi.spyOn(FormRoute, "useSearch").mockReturnValue((tab ? { tab } : {}) as never);
   return renderAdmin(over, copy ? [[["admin", "form-copy", copy[0]], copy[1]]] : [], FormPage);
 }
 const demoForm = (over: Record<string, unknown> = {}) => ({
@@ -141,19 +142,23 @@ describe("/admin", () => {
       expect(link("All forms").getAttribute("href")).toBe("/admin/forms#forms");
     });
 
-    it("/admin/forms shows every form as a card: the five built-in ones, then your own, each opening its edit page", async () => {
+    it("/admin/forms shows your own forms first, then the built-in ones, each card opening its edit page", () => {
       renderForms({ "form-responses": [demoForm({ total: 2, newest_at: "2026-11-09T15:00:00Z" })] });
       expect(screen.getAllByRole("main")).toHaveLength(1);
       expect(screen.getAllByRole("heading", { level: 1 }).map((h) => h.textContent)).toEqual(["Forms"]);
       expect(document.getElementById("forms")).toBeTruthy();
+      expect(screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent)).toEqual(["Your forms", "Built-in forms"]);
       const builtIn = within(card("Built-in forms"));
       const yours = within(card("Your forms"));
-      expect(builtIn.getAllByRole("article")).toHaveLength(5);
       expect(yours.getAllByRole("article")).toHaveLength(1);
+      // The newsletter has no page of its own: a note pointing at its subscribers, not a card.
+      expect(builtIn.getAllByRole("article")).toHaveLength(4);
+      expect(builtIn.queryByRole("article", { name: "Newsletter" })).toBeNull();
+      expect(builtIn.getByRole("link", { name: "Newsletter" }).getAttribute("href")).toBe("/admin#newsletter");
       for (const [list, name, id, chip] of [
         [builtIn, "Membership application", "application", /Open/], [builtIn, "Member review", "review", /Open/],
         [builtIn, "Contact", "contact", /Always on/], [builtIn, "Partnership", "partnership", /Always on/],
-        [builtIn, "Newsletter", "newsletter", /No page/], [yours, "Salon RSVP (demo)", "demo0001", /Open/],
+        [yours, "Salon RSVP (demo)", "demo0001", /Open/],
       ] as const) {
         const one = list.getByRole("article", { name });
         // One link per card (it covers the whole card), straight to the form's edit page.
@@ -164,19 +169,29 @@ describe("/admin", () => {
       expect(salon).toMatch(/\/f\/salon-rsvp/);
       expect(salon).toMatch(/2 answers · newest Nov 9, 2026/);
       expect(card("Your forms").textContent).toMatch(/1 form at \/f\/…, 2 answers in all/);
-      // The add-form editor stays hidden until New form opens it.
-      expect(yours.queryByRole("form", { name: "Add a form" })).toBeNull();
-      const add = yours.getByRole("button", { name: "New form" });
-      expect(add.getAttribute("aria-expanded")).toBe("false");
-      fireEvent.click(add);
-      expect(yours.getByRole("form", { name: "Add a form" })).toBeTruthy();
-      expect(yours.getByRole("button", { name: "Cancel new form" }).getAttribute("aria-expanded")).toBe("true");
-      expect(screen.queryByRole("region", { name: "Inbox" })).toBeNull();
       const nav = screen.getAllByRole("navigation", { name: "Main" })[0];
       const link = (name: string) => within(nav).getByRole("link", { name });
       expect(link("All forms").getAttribute("href")).toBe("#forms");
       expect(link("All forms").getAttribute("aria-current")).toBe("location");
       expect(link("Inbox").getAttribute("href")).toBe("/admin#inbox");
+    });
+
+    it("New form asks only for a name and web address, then folds away again", () => {
+      renderForms({ "form-responses": [] });
+      const yours = within(card("Your forms"));
+      expect(yours.queryByRole("form", { name: "New form" })).toBeNull();
+      const tile = yours.getByRole("button", { name: "New form" });
+      expect(tile.getAttribute("aria-expanded")).toBe("false");
+      fireEvent.click(tile);
+      const form = yours.getByRole("form", { name: "New form" });
+      expect(tile.getAttribute("aria-expanded")).toBe("true");
+      expect(document.activeElement).toBe(within(form).getByLabelText("Name"));
+      // The web address follows the name until it's edited by hand.
+      fireEvent.change(within(form).getByLabelText("Name"), { target: { value: "Café supper, Nov!" } });
+      expect((within(form).getByLabelText("Web address") as HTMLInputElement).value).toBe("cafe-supper-nov");
+      fireEvent.click(within(form).getByRole("button", { name: "Cancel" }));
+      expect(yours.queryByRole("form", { name: "New form" })).toBeNull();
+      expect(document.activeElement).toBe(tile);
     });
 
     it("the list shows a closed join form as Closed", () => {
@@ -607,25 +622,37 @@ describe("/admin", () => {
   });
 
   describe("a form's edit page", () => {
+    const rsvp = (over: Record<string, unknown> = {}) => demoForm({
+      questions: [
+        { key: "name", type: "short", label: "Your name", required: true },
+        { key: "coming", type: "radio", label: "Coming?", required: false, choices: [{ value: "yes", label: "Yes" }, { value: "no", label: "No" }] },
+      ],
+      ...over,
+    });
+
     it("built-in: h1 is the form, with where it lives, its open/close switch and its wording", () => {
       renderFormPage("application", {}, ["application", { "Full name": "Your full name" }]);
       expect(screen.getAllByRole("heading", { level: 1 }).map((h) => h.textContent)).toEqual(["Membership application"]);
-      expect(within(screen.getByRole("link", { name: "← All forms" })).getByText).toBeDefined();
       expect(screen.getByRole("link", { name: "← All forms" }).getAttribute("href")).toBe("/admin/forms");
-      expect(within(card("Membership application")).getByRole("link", { name: "/join" }).getAttribute("href")).toBe("/join");
-      expect(within(card("Membership application")).getByRole("link", { name: "Applications" }).getAttribute("href")).toBe("/admin#applications");
-      expect(within(card("Open or closed")).getByRole("article", { name: "Membership application" })).toBeTruthy();
+      const status = within(card("Status"));
+      expect(status.getByRole("link", { name: /\/join/ }).getAttribute("href")).toBe("/join");
+      expect(status.getByRole("link", { name: "Applications" }).getAttribute("href")).toBe("/admin#applications");
+      expect((status.getByRole("switch", { name: /Open for answers/ }) as HTMLInputElement).checked).toBe(true);
       // The wording box starts from what the page says now: the saved text where there is one, the default elsewhere.
       const wording = within(card("Wording"));
       expect((wording.getByLabelText("Full name") as HTMLInputElement).value).toBe("Your full name");
       expect((wording.getByLabelText("Preferred name") as HTMLInputElement).value).toBe("Preferred name");
       expect(wording.getByRole("heading", { name: "Top of the page" })).toBeTruthy();
       expect(wording.getByRole("heading", { name: "Button and thank-you" })).toBeTruthy();
+      // Groups fold: only the first starts open, and each says how many of its texts are changed.
+      const groups = card("Wording").querySelectorAll("details");
+      expect([...groups].map((d) => d.open)).toEqual([true, ...Array(groups.length - 1).fill(false)]);
+      expect(card("Wording").textContent).toMatch(/1 changed/);
     });
 
     it("built-in: Save wording sends every text and is off until something changes", async () => {
       renderFormPage("contact", {}, ["contact", {}]);
-      expect(screen.queryByRole("region", { name: "Open or closed" })).toBeNull();
+      expect(within(card("Status")).queryByRole("switch")).toBeNull();
       const save = within(card("Wording")).getByRole("button", { name: "Save wording" }) as HTMLButtonElement;
       expect(save.disabled).toBe(true);
       // Two edits in one batch: each must keep its own text (a queued update can't read a cleared event target).
@@ -634,6 +661,7 @@ describe("/admin", () => {
         fireEvent.change(within(card("Wording")).getByLabelText("Message received"), { target: { value: "Got it!" } });
       });
       expect(save.disabled).toBe(false);
+      expect(within(card("Wording")).getByRole("status").textContent).toBe("2 unsaved changes");
       fake.results = [null, { "Say hello, neighbor.": "Hello, friend." }];
       fireEvent.click(save);
       await waitFor(() => expect(fake.calls[0]?.[0]).toBe("saveFormCopyFn"));
@@ -642,7 +670,15 @@ describe("/admin", () => {
       expect(sent.values["Say hello, neighbor."]).toBe("Hello, friend.");
       expect(sent.values["Message received"]).toBe("Got it!");
       expect(sent.values["Send message"]).toBe("Send message");
-      expect((await within(card("Wording")).findByRole("status")).textContent).toMatch(/Saved/);
+      await waitFor(() => expect(within(card("Wording")).getByRole("status").textContent).toMatch(/Saved/));
+    });
+
+    it("built-in: Discard changes puts the saved wording back", () => {
+      renderFormPage("contact", {}, ["contact", {}]);
+      const box = within(card("Wording")).getByLabelText("Send message") as HTMLInputElement;
+      fireEvent.change(box, { target: { value: "Send it" } });
+      fireEvent.click(within(card("Wording")).getByRole("button", { name: "Discard changes" }));
+      expect(box.value).toBe("Send message");
     });
 
     it("built-in: the newsletter has no public page, so no wording to edit", () => {
@@ -652,33 +688,43 @@ describe("/admin", () => {
       expect(screen.queryByRole("button", { name: "Save wording" })).toBeNull();
     });
 
-    it("built-in: Close posts open:false with the message", async () => {
-      renderFormPage("review", { "forms-state": [
-        { kind: "application", open: true, message: "", updated_at: "2026-11-10T00:00:00Z", updated_by: null },
-        { kind: "review", open: true, message: "", updated_at: "2026-11-10T00:00:00Z", updated_by: null },
-      ] }, ["review", {}]);
-      const row = within(card("Open or closed")).getByRole("article", { name: "Member review" });
-      expect(within(row).getByRole("link", { name: "/review" }).getAttribute("href")).toBe("/review");
-      fireEvent.change(within(row).getByLabelText("Closed message"), { target: { value: "Reviews paused." } });
+    it("built-in: switching off asks first, then posts open:false with the message", async () => {
+      renderFormPage("review", {}, ["review", {}]);
+      const status = within(card("Status"));
+      fireEvent.change(status.getByLabelText("Closed message"), { target: { value: "Reviews paused." } });
       fake.results = [null, []];
-      fireEvent.click(within(row).getByRole("button", { name: "Close Member review" }));
-      expect(confirm).toHaveBeenCalled();
+      fireEvent.click(status.getByRole("switch", { name: /Open for answers/ }));
+      expect(confirm).toHaveBeenCalledWith("Close “Member review”? Visitors will see the closed message instead of the form.");
       await waitFor(() => expect(fake.calls[0]).toEqual(["setMembershipFormOpenFn", { kind: "review", open: false, message: "Reviews paused." }]));
     });
 
-    it("your own form: its settings editor is open, with open/close, answers and CSV", () => {
+    it("your own form: opens on Answers, with tabs for Questions and Settings", () => {
       const entries = [{ key: "name", label: "Your name", value: "Rosa Diaz" }, { key: "diet", label: "Anything we should know?", value: ["Vegan", "No nuts"] }];
-      renderFormPage("demo0001", { "form-responses": [demoForm({ total: 1, newest_at: "2026-11-09T15:00:00Z", one_per_email: true, responses: [{ id: "a1", created_at: "2026-11-09T15:00:00Z", entries }] })] });
+      renderFormPage("demo0001", { "form-responses": [rsvp({ total: 1, newest_at: "2026-11-09T15:00:00Z", responses: [{ id: "a1", created_at: "2026-11-09T15:00:00Z", entries }] })] });
       expect(screen.getAllByRole("heading", { level: 1 }).map((h) => h.textContent)).toEqual(["Salon RSVP (demo)"]);
-      const rsvp = within(card("Edit form")).getByRole("article", { name: "Salon RSVP (demo)" });
-      expect(within(rsvp).getByRole("link", { name: "/f/salon-rsvp" }).getAttribute("href")).toBe("/f/salon-rsvp");
-      expect(rsvp.textContent).toMatch(/1 answer/);
-      expect(rsvp.textContent).toMatch(/one per email/);
-      expect(within(rsvp).getByRole("form", { name: "Edit Salon RSVP (demo)" })).toBeTruthy();
-      expect(within(rsvp).getByRole("button", { name: "Close Salon RSVP (demo)" })).toBeTruthy();
-      expect(within(rsvp).getByRole("button", { name: "Download CSV of Salon RSVP (demo)" })).toBeTruthy();
-      expect(within(rsvp).getByText("Your name", { selector: "dt, span, p" }).textContent).toBe("Your name");
-      expect(within(rsvp).getAllByRole("listitem").map((li) => li.textContent)).toContain("Vegan");
+      expect(screen.getByRole("link", { name: /\/f\/salon-rsvp/ }).getAttribute("href")).toBe("/f/salon-rsvp");
+      const tabs = screen.getAllByRole("tab");
+      expect(tabs.map((t) => [t.textContent, t.getAttribute("aria-selected")])).toEqual([["Answers", "true"], ["Questions", "false"], ["Settings", "false"]]);
+      expect(screen.getByRole("tabpanel", { name: "Answers" })).toBeTruthy();
+      const answers = within(card("Answers"));
+      expect(answers.getByRole("button", { name: "Download CSV" })).toBeTruthy();
+      expect(answers.getAllByRole("listitem").map((li) => li.textContent)).toContain("Vegan");
+      // Arrow keys move between tabs; the panels stay mounted, only hidden.
+      fireEvent.keyDown(tabs[0], { key: "ArrowRight" });
+      expect(screen.getByRole("tab", { name: "Questions" }).getAttribute("aria-selected")).toBe("true");
+      expect(document.activeElement).toBe(screen.getByRole("tab", { name: "Questions" }));
+      expect(screen.getByRole("tabpanel", { name: "Questions" })).toBeTruthy();
+      expect(document.getElementById("form-panel-answers")!.hidden).toBe(true);
+    });
+
+    it("your own form: ?tab=settings opens on Settings; no answers yet says how to get some", () => {
+      renderFormPage("demo0001", { "form-responses": [rsvp()] }, undefined, "settings");
+      expect(screen.getByRole("tab", { name: "Settings" }).getAttribute("aria-selected")).toBe("true");
+      // The other tabs' panels are hidden, so out of the accessibility tree until chosen.
+      expect(screen.queryByRole("region", { name: "Answers" })).toBeNull();
+      fireEvent.click(screen.getByRole("tab", { name: "Answers" }));
+      expect(card("Answers").textContent).toMatch(/When someone fills in the form/);
+      expect(within(card("Answers")).queryByRole("button", { name: "Download CSV" })).toBeNull();
     });
 
     it("your own form: an unknown id says so", () => {
@@ -686,15 +732,84 @@ describe("/admin", () => {
       expect(card("Form not found")).toBeTruthy();
     });
 
-    it("your own form: Close form asks confirm then posts open:false with the closed message", async () => {
-      renderFormPage("demo0001", { "form-responses": [demoForm()] });
-      const rsvp = within(card("Edit form")).getByRole("article", { name: "Salon RSVP (demo)" });
-      // The editor is open on this page and has its own "Closed message" too: the first is the open/close control.
-      fireEvent.change(within(rsvp).getAllByLabelText("Closed message")[0], { target: { value: "Full for now." } });
-      fake.results = [null, [demoForm({ open: false, closed_message: "Full for now." })]];
-      fireEvent.click(within(rsvp).getByRole("button", { name: "Close Salon RSVP (demo)" }));
+    it("your own form: switching off asks first, then posts open:false with the closed message", async () => {
+      renderFormPage("demo0001", { "form-responses": [rsvp()] }, undefined, "settings");
+      const status = within(card("Open or closed"));
+      // Exactly one closed message and one switch on the page.
+      expect(screen.getAllByLabelText("Closed message")).toHaveLength(1);
+      fireEvent.change(status.getByLabelText("Closed message"), { target: { value: "Full for now." } });
+      fake.results = [null, [rsvp({ open: false, closed_message: "Full for now." })]];
+      fireEvent.click(status.getByRole("switch", { name: /Open for answers/ }));
       expect(confirm).toHaveBeenCalled();
       await waitFor(() => expect(fake.calls[0]).toEqual(["setFormOpenFn", { id: "demo0001", open: false, message: "Full for now." }]));
+    });
+
+    it("your own form: saving questions after closing it keeps it closed (the editor never owns open/closed)", async () => {
+      renderFormPage("demo0001", { "form-responses": [rsvp()] }, undefined, "questions");
+      // Start an edit, then (unsaved) go close the form from Settings; the refetch says closed.
+      fireEvent.change(within(screen.getByRole("form", { name: "Questions" })).getAllByLabelText("Question")[0], { target: { value: "Full name" } });
+      fireEvent.click(screen.getByRole("tab", { name: "Settings" }));
+      fake.results = [null, [rsvp({ open: false, closed_message: "Full." })]];
+      fireEvent.click(within(card("Open or closed")).getByRole("switch", { name: /Open for answers/ }));
+      await waitFor(() => expect(within(card("Open or closed")).getByRole("switch", { name: /Open for answers/ })).toHaveProperty("checked", false));
+      // Back on Questions the unsaved edit is still there; saving it must not reopen the form.
+      fireEvent.click(screen.getByRole("tab", { name: "Questions" }));
+      const editor = within(screen.getByRole("form", { name: "Questions" }));
+      expect((editor.getAllByLabelText("Question")[0] as HTMLInputElement).value).toBe("Full name");
+      fake.results = [{ id: "demo0001" }, [rsvp({ open: false, closed_message: "Full." })]];
+      fireEvent.click(editor.getByRole("button", { name: "Save questions" }));
+      await waitFor(() => expect(fake.calls.at(-2)).toEqual(["saveAdminFormFn", expect.objectContaining({ id: "demo0001", open: false, closed_message: "Full." })]));
+    });
+
+    it("your own form: the question editor sends the questions with their keys and choice values kept", async () => {
+      renderFormPage("demo0001", { "form-responses": [rsvp({ intro: "Hi", thanks: "Bye", one_per_email: true, version: 2 })] }, undefined, "questions");
+      const editor = within(screen.getByRole("form", { name: "Questions" }));
+      expect(editor.queryByLabelText(/^Key/)).toBeNull();
+      const save = editor.getByRole("button", { name: "Save questions" }) as HTMLButtonElement;
+      expect(save.disabled).toBe(true);
+      // Reorder, rename a choice, add one, and add a question.
+      fireEvent.click(editor.getByRole("button", { name: "Move question 2 up" }));
+      fireEvent.change(editor.getByLabelText("Question 1, choice 1"), { target: { value: "Yes, see you there" } });
+      fireEvent.click(editor.getAllByRole("button", { name: "Add choice" })[0]);
+      fireEvent.change(editor.getByLabelText("Question 1, choice 3"), { target: { value: "Maybe" } });
+      fireEvent.click(editor.getByRole("button", { name: "Add question" }));
+      expect(document.activeElement).toBe(editor.getAllByLabelText("Question")[2]);
+      fireEvent.change(editor.getAllByLabelText("Question")[2], { target: { value: "Anything else?" } });
+      expect(editor.getByRole("status").textContent).toBe("Unsaved changes");
+      fake.results = [{ id: "demo0001" }, []];
+      fireEvent.click(save);
+      await waitFor(() => expect(fake.calls[0]?.[0]).toBe("saveAdminFormFn"));
+      const sent = fake.calls[0][1] as { questions: { key: string; label: string; choices?: { value: string; label: string }[] }[] } & Record<string, unknown>;
+      expect(sent).toMatchObject({ id: "demo0001", name: "Salon RSVP (demo)", slug: "salon-rsvp", intro: "Hi", thanks: "Bye", one_per_email: true, open: true });
+      expect(sent.questions.map((q) => q.key).slice(0, 2)).toEqual(["coming", "name"]);
+      expect(sent.questions[0].choices).toEqual([{ value: "yes", label: "Yes, see you there" }, { value: "no", label: "No" }, { value: "maybe", label: "Maybe" }]);
+      expect(sent.questions[2]).toMatchObject({ label: "Anything else?", type: "short" });
+      expect(sent.questions[2].key).toMatch(/^q_[a-z0-9]{6}$/);
+    });
+
+    it("your own form: Remove asks before dropping a question with words in it", () => {
+      renderFormPage("demo0001", { "form-responses": [rsvp()] }, undefined, "questions");
+      const editor = within(screen.getByRole("form", { name: "Questions" }));
+      confirm.mockReturnValueOnce(false);
+      fireEvent.click(editor.getByRole("button", { name: "Remove question 2" }));
+      expect(editor.getAllByLabelText("Question")).toHaveLength(2);
+      fireEvent.click(editor.getByRole("button", { name: "Remove question 2" }));
+      expect(editor.getAllByLabelText("Question")).toHaveLength(1);
+      fireEvent.click(editor.getByRole("button", { name: "Discard changes" }));
+      expect(editor.getAllByLabelText("Question")).toHaveLength(2);
+    });
+
+    it("your own form: Name and link saves name, address and one-per-email, nothing else", async () => {
+      renderFormPage("demo0001", { "form-responses": [rsvp({ open: false, closed_message: "Shut.", intro: "Hi" })] }, undefined, "settings");
+      const details = within(screen.getByRole("form", { name: "Name and link" }));
+      fireEvent.change(details.getByLabelText("Web address"), { target: { value: "salon" } });
+      expect(details.getByText(/The old link, \/f\/salon-rsvp, will keep working/)).toBeTruthy();
+      fireEvent.click(details.getByRole("switch", { name: /One answer per email/ }));
+      fake.results = [{ id: "demo0001" }, []];
+      fireEvent.click(details.getByRole("button", { name: "Save name and link" }));
+      await waitFor(() => expect(fake.calls[0]).toEqual(["saveAdminFormFn", expect.objectContaining({
+        id: "demo0001", slug: "salon", one_per_email: true, open: false, closed_message: "Shut.", intro: "Hi",
+      })]));
     });
 
     it("your own form: Download CSV asks the server for that form's export", async () => {
@@ -704,46 +819,33 @@ describe("/admin", () => {
       const revokeObjectURL = vi.fn();
       vi.stubGlobal("URL", { ...URL, createObjectURL, revokeObjectURL });
       const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
-      fireEvent.click(within(card("Edit form")).getByRole("button", { name: "Download CSV of Salon RSVP (demo)" }));
+      fireEvent.click(within(card("Answers")).getByRole("button", { name: "Download CSV" }));
       await waitFor(() => expect(fake.calls).toEqual([["formResponsesCsvFn", { id: "demo0001" }]]));
       expect(createObjectURL).toHaveBeenCalled();
       expect(click).toHaveBeenCalled();
       click.mockRestore();
       vi.unstubAllGlobals();
     });
-
-    it("your own form: saving the editor stores the changed definition", async () => {
-      renderFormPage("demo0001", { "form-responses": [demoForm({ intro: "Hi", thanks: "Bye", one_per_email: true, version: 2 })] });
-      const edit = within(card("Edit form")).getByRole("form", { name: "Edit Salon RSVP (demo)" });
-      fireEvent.change(within(edit).getByLabelText("Name"), { target: { value: "Salon RSVP" } });
-      fake.results = [{ id: "demo0001" }, []];
-      fireEvent.click(within(edit).getByRole("button", { name: "Save form" }));
-      await waitFor(() => expect(fake.calls[0]).toEqual(["saveAdminFormFn", expect.objectContaining({
-        id: "demo0001", name: "Salon RSVP", slug: "salon-rsvp", intro: "Hi", thanks: "Bye", one_per_email: true, open: true,
-        questions: [{ key: "name", type: "short", label: "Your name", required: true }],
-      })]));
-    });
   });
 
-  it("forms list: Add a form publishes through saveAdminFormFn", async () => {
+  it("forms list: New form creates a closed form with name and email questions", async () => {
     renderForms({ "form-responses": [] });
     const yours = within(card("Your forms"));
     fireEvent.click(yours.getByRole("button", { name: "New form" }));
-    const add = yours.getByRole("form", { name: "Add a form" });
+    const add = yours.getByRole("form", { name: "New form" });
     fireEvent.change(within(add).getByLabelText("Name"), { target: { value: "Coffee chat" } });
-    fireEvent.change(within(add).getByLabelText("Slug"), { target: { value: "coffee-chat" } });
     fake.results = [{ id: "abcd1234" }, []];
-    fireEvent.click(within(add).getByRole("button", { name: "Publish form" }));
+    fireEvent.click(within(add).getByRole("button", { name: "Create form" }));
     await waitFor(() => expect(fake.calls[0]?.[0]).toBe("saveAdminFormFn"));
     expect(fake.calls[0]?.[1]).toMatchObject({
-      name: "Coffee chat", slug: "coffee-chat", open: true, one_per_email: false,
+      name: "Coffee chat", slug: "coffee-chat", open: false, one_per_email: false,
       questions: [
         { key: "name", type: "short", label: "Your name", required: true },
         { key: "email", type: "email", label: "Email", required: true },
       ],
     });
-    // Published: the editor folds away again.
-    await waitFor(() => expect(yours.queryByRole("form", { name: "Add a form" })).toBeNull());
+    // Made: the panel folds away (and the page moves on to the new form's Questions tab).
+    await waitFor(() => expect(yours.queryByRole("form", { name: "New form" })).toBeNull());
   });
 
   it("members: approve sets the profile status directly", async () => {

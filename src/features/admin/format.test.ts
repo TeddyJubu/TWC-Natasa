@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  answerTitle,
   LOGO_MAX_BYTES, applicationOrigin, attachEmails, checkLogo, describeAction, duplicatesOf, formatAnswers, isCalendarDate,
   newsletterLabel, humanizeKey, logoPath, matchesSearch, newestByUser, reviewerName, sortApplications, subscriberConsentLabel,
   toCsv, validateNeighborhood,
@@ -253,5 +254,20 @@ describe("describeAction", () => {
     expect(d("neighborhood")).toBe("cleared Nia’s neighborhood");
     expect(d("approved", { application_id: "x", subject_name: null })).toBe("approved a removed application");
     expect(d("neighborhood", { subject_name: null, detail: "Astoria" })).toBe("set a removed member’s neighborhood to Astoria");
+  });
+});
+
+describe("answerTitle", () => {
+  const e = (key: string, label: string, value: string | string[]) => ({ key, label, value });
+  it("names the person: by key or label, skipping blanks and business names", () => {
+    expect(answerTitle([e("email", "Email", "rosa@x.test"), e("name", "Your name", " Rosa Diaz ")])).toBe("Rosa Diaz");
+    expect(answerTitle([e("q_ab12cd", "Full name", "Ana Ruiz")])).toBe("Ana Ruiz");
+    expect(answerTitle([e("biz", "Business name", "Rosa's Bakery"), e("q_1", "Your name", "Rosa")])).toBe("Rosa");
+    expect(answerTitle([e("name", "Your name", "  "), e("email", "Email", "lena@x.test")])).toBe("lena@x.test");
+  });
+  it("falls back to an email anywhere, then to a fixed title (never a list number)", () => {
+    expect(answerTitle([e("q_9", "How do we reach you?", "pat@x.test")])).toBe("pat@x.test");
+    expect(answerTitle([e("coming", "Coming?", "yes"), e("diet", "Diet", ["vegan"])])).toBe("No name given");
+    expect(answerTitle([])).toBe("No name given");
   });
 });

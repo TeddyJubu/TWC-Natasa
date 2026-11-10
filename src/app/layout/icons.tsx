@@ -27,7 +27,12 @@ const FILLED = {
 } as const;
 const STROKED = {
   mail: "M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm18 3-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7",
-  menu: "M4 6h16M4 12h16M4 18h16", x: "M18 6 6 18M6 6l12 12" } as const;
+  menu: "M4 6h16M4 12h16M4 18h16", x: "M18 6 6 18M6 6l12 12",
+  plus: "M5 12h14M12 5v14", "arrow-up": "m5 12 7-7 7 7M12 19V5", "arrow-down": "M12 5v14m7-7-7 7-7-7",
+  trash: "M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2",
+  download: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3",
+  "external-link": "M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6",
+  copy: "M10 8h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2zM4 16a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2" } as const;
 
 export type IconName = keyof typeof FILLED | keyof typeof STROKED;
 
