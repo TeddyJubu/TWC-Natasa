@@ -1018,9 +1018,12 @@ export function FormsListPanel() {
                 stub={<><span className="font-display text-lg/none text-ink tabular-nums">{f.total}</span> {f.total === 1 ? "answer" : "answers"}{f.newest_at ? ` · newest ${formatDate(f.newest_at)}` : ""}</>} />
             ))}
             <button ref={tile} type="button" aria-expanded={adding} aria-controls="forms-new" onClick={() => (adding ? close() : setAdding(true))}
-              className={cn("group flex min-h-40 flex-col items-center justify-center gap-3 rounded-md border border-dashed border-app-muted/60 p-5 text-ink transition-colors duration-150 hover:border-ink hover:bg-app aria-expanded:border-ink aria-expanded:bg-app", ring)}>
-              <span aria-hidden className="grid size-11 place-items-center rounded-full bg-ink text-app transition-transform duration-150 ease-snap group-hover:scale-105 motion-reduce:transition-none"><Icon name="plus" className="size-5" /></span>
-              <span className="font-display text-[22px]/[1.2]">New form</span>
+              className={cn("group flex min-h-40 text-ink", ring)}>
+              {/* The postage edge sits on an inner layer: a mask on the button would clip its focus outline too. */}
+              <span className="twc-stamp-edge flex flex-1 flex-col items-center justify-center gap-3 bg-app/50 p-5 transition-colors duration-150 group-hover:bg-app group-aria-expanded:bg-app">
+                <span aria-hidden className="grid size-11 place-items-center rounded-full bg-ink text-app transition-transform duration-150 ease-snap group-hover:scale-105 motion-reduce:transition-none"><Icon name="plus" className="size-5" /></span>
+                <span className="font-display text-[22px]/[1.2]">New form</span>
+              </span>
             </button>
           </div>
           <MutationError mutation={remove} />
