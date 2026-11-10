@@ -97,6 +97,8 @@ export function Field({ label, htmlFor, icon, empty, add, className, children }:
 
 /** Chip tones. Outlined is still open; filled navy is settled; red is a no. */
 export type ChipTone = "pending" | "ok" | "gel" | "gel-green" | "no" | "muted";
+// TODO(human): decide how a status reads at a glance across /admin. The entries below are a working default.
+// Rework `pending`, `ok`, `no` and `muted` (keep the gel lines); use only air-*/app-*/ink/danger tokens.
 const TONE: Record<ChipTone, string> = {
   pending: "text-ink shadow-[inset_0_0_0_1.5px_currentColor]",
   ok: "bg-air-navy text-air-paper",
