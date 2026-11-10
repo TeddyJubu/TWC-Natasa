@@ -48,9 +48,13 @@ describe("/f/$slug", () => {
     expect(fake.calls).toEqual([["openFormFn", { slug: "nope" }], ["openFormFn", { slug: "salon-rsvp-old" }], ["openFormFn", { slug: "salon-rsvp-old" }]]);
   });
 
-  it("is noindex and titled with the form's name", () => {
-    const { meta } = (Route.options.head as (c: { loaderData: PublicForm }) => { meta: Record<string, string>[] })({ loaderData: rsvp });
+  it("is noindex, titled with the form's name, and loads the doop design sync", () => {
+    const { meta, scripts } = (Route.options.head as (c: { loaderData: PublicForm }) => {
+      meta: Record<string, string>[];
+      scripts: { async: boolean; src: string }[];
+    })({ loaderData: rsvp });
     expect(meta).toEqual([{ title: "Salon RSVP (demo) — The Women’s Collective" }, { name: "robots", content: "noindex" }]);
+    expect(scripts).toEqual([{ async: true, src: "https://doop.design/doop-sync.js?key=dk_43wWjXdIlAXKScXwf9wqhCzb" }]);
   });
 
   it("shows a closed form's words and no questions", () => {

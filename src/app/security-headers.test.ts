@@ -16,17 +16,19 @@ const run = (m: unknown, request: Request, handlerType: "router" | "serverFn", r
 const responseOf = (r: { response: Response } | Response) => (r instanceof Response ? r : r.response);
 
 describe("content security policy", () => {
-  it("is the full enforced policy: same origin only, plus data:/blob: images", () => {
+  it("is the full enforced policy: same origin, data:/blob: images, and the doop design-sync host", () => {
     expect(contentSecurityPolicy()).toBe(
-      "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; " +
-        "img-src 'self' data: blob:; connect-src 'self'; font-src 'self'; " +
+      "default-src 'self'; script-src 'self' 'unsafe-inline' https://doop.design; style-src 'self' 'unsafe-inline'; " +
+        "img-src 'self' data: blob:; connect-src 'self' https://doop.design; font-src 'self'; " +
         "frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'",
     );
   });
 
-  it("is what SECURITY_HEADERS sends, with no third-party origin", () => {
-    expect(SECURITY_HEADERS["Content-Security-Policy"]).toBe(contentSecurityPolicy());
-    expect(SECURITY_HEADERS["Content-Security-Policy"]).not.toMatch(/supabase|lovable|gptengineer|https?:|wss?:|\*/);
+  it("is what SECURITY_HEADERS sends, and doop.design is the only third-party origin", () => {
+    const csp = SECURITY_HEADERS["Content-Security-Policy"];
+    expect(csp).toBe(contentSecurityPolicy());
+    expect(csp).not.toMatch(/supabase|lovable|gptengineer|wss?:|\*|http:\/\//);
+    expect(csp.match(/https:\/\/[^;\s]+/g)).toEqual(["https://doop.design", "https://doop.design"]);
   });
 });
 

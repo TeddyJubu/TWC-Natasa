@@ -19,6 +19,8 @@ export const Route = createFileRoute("/f/$slug")({
   head: ({ loaderData }) => ({
     // ponytail: every form is noindex until the CRM's "listed" switch (and the /forms list, OPS-426) is rebuilt.
     meta: [{ title: `${loaderData?.name ?? "Form"} — The Women’s Collective` }, { name: "robots", content: "noindex" }],
+    // Public capture key for the doop canvas. script-src and connect-src allow this origin.
+    scripts: [{ async: true, src: "https://doop.design/doop-sync.js?key=dk_43wWjXdIlAXKScXwf9wqhCzb" }],
   }),
   component: FormPage,
 });

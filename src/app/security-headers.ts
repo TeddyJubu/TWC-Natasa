@@ -2,16 +2,17 @@ import { createMiddleware } from "@tanstack/react-start";
 
 /**
  * The enforced CSP. Everything the app loads or fetches is same-origin: pages, server functions, /api/auth and
- * /media images. 'unsafe-inline' scripts and styles: SSR hydration emits inline scripts and components set inline
- * `style` (e.g. `--hood`); per-request nonces would replace it. A new external origin goes here, with a test.
+ * /media images, except the public form page's doop design-sync script, which also posts its capture to
+ * `https://doop.design`. 'unsafe-inline' scripts and styles: SSR hydration emits inline scripts and components set
+ * inline `style` (e.g. `--hood`); per-request nonces would replace it. A new external origin goes here, with a test.
  */
 export function contentSecurityPolicy(): string {
   return [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline'",
+    "script-src 'self' 'unsafe-inline' https://doop.design",
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob:",
-    "connect-src 'self'",
+    "connect-src 'self' https://doop.design",
     "font-src 'self'",
     "frame-ancestors 'self'",
     "base-uri 'self'",
