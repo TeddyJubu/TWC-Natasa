@@ -68,6 +68,9 @@
   --bl-app-accent: #1670b0; /* blue ink: verified badge, inline links, focus outline */
   --bl-app-pending: #edd22e; /* sun: "under review", "pending", "requested" chips */
   --bl-app-ok: #c6f3df; /* mint: "approved", "active", "confirmed" chips */
+  --bl-app-gel: #3d8fff; /* gel pill (an open form): the glowing blue at its heart */
+  --bl-app-gel-soft: #d3e6ff; /* gel pill: the pale blue at its rim */
+  --bl-app-gel-ink: #0a2149; /* gel pill: its label, 5:1 on the brightest blue */
 }
 
 /* Night: black sections and dark mode. Tokens invert so components need no tone props. */
@@ -127,6 +130,9 @@
   --color-app-accent: var(--bl-app-accent);
   --color-app-pending: var(--bl-app-pending);
   --color-app-ok: var(--bl-app-ok);
+  --color-app-gel: var(--bl-app-gel);
+  --color-app-gel-soft: var(--bl-app-gel-soft);
+  --color-app-gel-ink: var(--bl-app-gel-ink);
   --color-ring: var(--bl-sky);
 
   --font-display: "Gilda Display", Georgia, serif;

@@ -42,6 +42,15 @@
 .twc-chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 9999px; background: rgb(252 252 250 / 0.9); color: var(--color-sb-ink); font: 400 13px/19.5px var(--font-display); letter-spacing: 1.6px; text-transform: uppercase; }
 .twc-chip--ring { background: transparent; box-shadow: inset 0 0 0 1px rgb(31 31 28 / 0.25); }
 .twc-chip svg { width: 14px; height: 14px; }
+/* Gel pill (an open form's status): a glossy blue drop with a white rim, a glow along the bottom and one sharper
+   corner. After the chip rules so it replaces the ring's background and outline. */
+.twc-gel {
+  border-radius: 13px 5px 13px 13px; color: var(--color-app-gel-ink);
+  background:
+    radial-gradient(60% 55% at 50% 108%, rgb(255 255 255 / 0.85), transparent),
+    radial-gradient(80% 95% at 50% 10%, var(--color-app-gel), var(--color-app-gel-soft) 100%);
+  box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / 0.9), inset 0 1px 2px rgb(255 255 255 / 0.7), 0 1px 3px rgb(22 112 176 / 0.35);
+}
 .twc-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; display: inline-block; }
 
 /* Eyebrows */

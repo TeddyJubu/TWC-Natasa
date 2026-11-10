@@ -64,10 +64,11 @@ export function Row({ label, htmlFor, icon, empty, add, top, children }: {
 }
 
 /** Chip tones: waiting on someone (sun), settled yes (mint), settled no (danger on cream), neutral (ring only). */
-export type ChipTone = "pending" | "ok" | "no" | "muted";
+export type ChipTone = "pending" | "ok" | "gel" | "no" | "muted";
 const TONE: Record<ChipTone, string> = {
   pending: "bg-app-pending text-ink",
   ok: "bg-app-ok text-ink",
+  gel: "twc-gel",
   no: "bg-app-sunken text-danger",
   muted: "text-app-muted",
 };

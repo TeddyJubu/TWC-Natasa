@@ -118,6 +118,8 @@ describe("internal-page app shell (scrapbook app palette)", () => {
     ["app", "ink"],
     // Status chips and notices: ink on sun (pending) and mint (ok); danger on cream (declined) is above.
     ["ink", "app-pending"], ["ink", "app-ok"],
+    // The gel pill (an open form): its label on the brightest and the palest blue of the gradient.
+    ["app-gel-ink", "app-gel"], ["app-gel-ink", "app-gel-soft"],
   ];
 
   it.each(["light", "night"] as const)("every text pair clears AA in %s", (mode) => {
