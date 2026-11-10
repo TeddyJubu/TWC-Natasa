@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Button, MemberDialog, type MemberProfile } from "@/index";
 import { AppPage } from "@/app/layout/AppLayout";
-import { AppShell, TopBar } from "@/app/layout/AppShell";
+import { AppShell } from "@/app/layout/AppShell";
 import { InlineError } from "@/app/layout/app-ui";
 import { useSignOut } from "@/app/layout/sign-out";
 import { useNeighborhoods, type Neighborhood } from "@/features/neighborhoods/queries";
@@ -45,15 +45,15 @@ function AccountPage() {
   const { signOut, error: signOutError } = useSignOut();
 
   if (profileState.isPending) {
-    return <main id="main" tabIndex={-1} className="grid min-h-screen place-items-center bg-app-sunken outline-none"><span role="status" aria-label="Loading your profile" className="size-6 animate-spin rounded-full border-2 border-ink border-t-transparent" /></main>;
+    return <main id="main" tabIndex={-1} className="app-ground grid min-h-screen place-items-center outline-none"><span role="status" aria-label="Loading your profile" className="size-6 animate-spin rounded-full border-2 border-ink border-t-transparent" /></main>;
   }
 
   // Only when there is nothing to show: a failed background refetch keeps the cached profile (and unsaved edits).
   if (!profile) {
     return (
-      <main id="main" tabIndex={-1} className="grid min-h-screen place-items-center bg-app-sunken p-6 text-ink outline-none">
+      <main id="main" tabIndex={-1} className="app-ground grid min-h-screen place-items-center p-6 text-ink outline-none">
         <div className="flex max-w-md flex-col items-center gap-5 text-center">
-          <p className="font-display text-2xl">{profileState.isError ? "We Couldn’t Load Your Profile" : "Profile Not Found"}</p>
+          <p className="font-geist text-2xl font-medium">{profileState.isError ? "We Couldn’t Load Your Profile" : "Profile Not Found"}</p>
           <p role="alert" className="text-sm text-ink-muted">
             {profileState.isError
               ? errorMessage(profileState.error)
@@ -63,7 +63,7 @@ function AccountPage() {
             {profileState.isError && <Button variant="ink" size="sm" onClick={() => void profileState.refetch()}>Retry</Button>}
             <Button variant="outline" size="sm" onClick={signOut}>Sign out</Button>
           </div>
-          {signOutError && <p role="alert" className="text-sm text-danger">{signOutError}</p>}
+          {signOutError && <p role="alert" className="rounded-2xl bg-app px-4 py-3 text-sm text-danger">{signOutError}</p>}
         </div>
       </main>
     );
@@ -95,11 +95,7 @@ function ProfileEditorPage({ userId, profile, avatar, logoUrl, hoodList, applied
   const [draft, setDraft] = React.useState<ProfilePatch>({});
   const [editing, setEditing] = React.useState<Partial<Record<CardKey, boolean>>>({});
   const [focus, setFocus] = React.useState<string | null>(null);
-  const [saved, setSaved] = React.useState(false);
   const [openMember, setOpenMember] = React.useState<MemberProfile | null>(null);
-  // Cleared on unmount so a slow suite (VPS deploy) can't fire setState after jsdom is gone.
-  const savedFlash = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-  React.useEffect(() => () => { if (savedFlash.current) clearTimeout(savedFlash.current); }, []);
   const card = { ...profile, ...draft };
   const approved = profile.status === "approved";
   const changes = changedFields(profile, draft);
@@ -113,7 +109,7 @@ function ProfileEditorPage({ userId, profile, avatar, logoUrl, hoodList, applied
 
   const editor: ProfileEditor = {
     card,
-    set: (patch) => { setSaved(false); setDraft((d) => ({ ...d, ...patch })); },
+    set: (patch) => setDraft((d) => ({ ...d, ...patch })),
     isEditing: (key) => !!editing[key],
     toggle: (key) => setEditing((e) => ({ ...e, [key]: !e[key] })),
     add: (key, field) => { setEditing((e) => ({ ...e, [key]: true })); setFocus(fieldId(field)); },
@@ -127,19 +123,17 @@ function ProfileEditorPage({ userId, profile, avatar, logoUrl, hoodList, applied
         // Keep only what still differs from the saved row (typing during the save survives), and show values again.
         setDraft((d) => changedFields(next, d));
         setEditing({});
-        setSaved(true);
-        if (savedFlash.current) clearTimeout(savedFlash.current);
-        savedFlash.current = setTimeout(() => setSaved(false), 2500);
       },
     });
   }
 
+  const preview = () => setOpenMember(toMemberProfile(card, { image: avatar, logo: logoUrl, placeholders: true }));
+
   return (
     <main id="main" tabIndex={-1} className="outline-none">
-      <TopBar title="My account" who={{ name: profile.full_name || "Neighbor", avatar }} />
       {children}
-      <div className="flex max-w-250 flex-col gap-6 px-4 pt-5 pb-4 sm:px-8 sm:pt-8">
-        <AccountHeader userId={userId} profile={profile} avatar={avatar} />
+      <div className="flex max-w-250 flex-col gap-5 px-4 pt-5 pb-5 sm:px-8 lg:pt-8">
+        <AccountHeader userId={userId} profile={profile} avatar={avatar} onPreview={preview} />
         <PublicCard editor={editor} userId={userId} logoPath={profile.business_logo_url} logoUrl={logoUrl} hoodList={hoodList} />
         <WordsCard editor={editor} />
         <MembershipCard profile={profile} />
@@ -148,9 +142,8 @@ function ProfileEditorPage({ userId, profile, avatar, logoUrl, hoodList, applied
         <GatheringsList userId={userId} approved={approved} applied={applied} hoodList={hoodList} />
         <IntroductionsSection userId={userId} approved={approved} applied={applied} neighborhood={profile.neighborhood || null} hoodList={hoodList} onOpen={setOpenMember} />
         <SaveActions
-          formId={PROFILE_FORM} dirty={dirty} pending={save.isPending} saved={saved} error={save.isError ? errorMessage(save.error) : null}
-          onSubmit={submit}
-          onPreview={() => setOpenMember(toMemberProfile(card, { image: avatar, logo: logoUrl, placeholders: true }))}
+          formId={PROFILE_FORM} dirty={dirty} pending={save.isPending} error={save.isError ? errorMessage(save.error) : null}
+          onSubmit={submit} onPreview={preview}
         />
       </div>
       <MemberDialog member={openMember} onClose={() => setOpenMember(null)} />

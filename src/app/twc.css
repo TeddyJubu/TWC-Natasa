@@ -58,6 +58,34 @@
 .twc-gel--green { --gel: var(--color-app-gel-green); --gel-soft: var(--color-app-gel-green-soft); --gel-ink: var(--color-app-gel-green-ink); }
 @media (hover: hover) { .group:hover .twc-gel { --gel-glow-y: -8%; --gel-core-y: 90%; } }
 @media (prefers-reduced-motion: reduce) { .twc-gel { transition: none; } }
+/* App shell (internal pages; DESIGN.md "Internal pages"): Geist for every face, a sage ground, frosted-glass panels
+   whose rows are paper tiles. The glass is the paper token at 48%, so dark mode follows the tokens. */
+.app-ground {
+  --font-display: var(--font-geist); --font-script: var(--font-geist); --font-editorial: var(--font-geist);
+  background:
+    radial-gradient(70% 30% at 0% 0%, var(--color-app-sunken), transparent 70%),
+    linear-gradient(180deg, var(--color-app-ground), var(--color-app-ground-warm)) fixed;
+}
+.app-glass {
+  background: color-mix(in srgb, var(--color-app) 48%, transparent);
+  -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-app) 75%, transparent), 0 28px 50px -40px rgb(38 62 50 / 0.35);
+}
+/* A panel's rows: each direct child is a paper tile; a list's items are. */
+.app-tiles { display: flex; flex-direction: column; gap: 8px; }
+.app-tiles > :is(ol, ul) { display: flex; flex-direction: column; gap: 8px; }
+.app-tiles > :not(ol, ul), .app-tiles > :is(ol, ul) > li { border-radius: 16px; background: var(--color-app); box-shadow: 0 1px 2px rgb(30 45 38 / 0.05); }
+.app-tiles .twc-notice { border-radius: 12px; }
+.app-ground .twc-notice__title { font-size: 17px; font-weight: 500; letter-spacing: -0.2px; }
+/* Outlined pills inside a panel are soft paper pills; the ink ring comes back on hover. */
+.app-glass .twc-btn--outline { background: var(--color-app); box-shadow: 0 1px 2px rgb(30 45 38 / 0.06), inset 0 0 0 1px color-mix(in srgb, var(--color-ink) 14%, transparent); }
+.app-glass .twc-btn--outline:hover { box-shadow: inset 0 0 0 1.5px var(--color-ink), 0 12px 26px -14px rgb(31 31 28 / 0.55); }
+/* The /account cover photo's scrim. Stacked (below lg) the type runs over the bright sky, so the whole photo is
+   dimmed; side by side it sits on the darker left and foot, so the right of the photo stays clear. */
+.app-hero-scrim { background: linear-gradient(0deg, rgb(18 30 22 / 0.72), rgb(18 30 22 / 0.55)); }
+@media (min-width: 64rem) {
+  .app-hero-scrim { background: linear-gradient(90deg, rgb(18 30 22 / 0.5), rgb(18 30 22 / 0.14) 55%, transparent), linear-gradient(0deg, rgb(18 30 22 / 0.55), transparent 60%); }
+}
 /* Glitter from a clicked app-shell button (sparkles.ts): a four-point star that pops out, flies a few px and fades. */
 .twc-spark {
   position: fixed; z-index: 100; width: var(--spark-size, 6px); height: var(--spark-size, 6px); margin: calc(var(--spark-size, 6px) / -2);

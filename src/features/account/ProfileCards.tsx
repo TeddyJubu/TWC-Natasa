@@ -138,7 +138,7 @@ export function MembershipCard({ profile }: { profile: Profile }) {
   const approved = profile.status === "approved";
   const declined = profile.status === "declined";
   return (
-    <Card title="Membership">
+    <Card title="Membership" subtitle="Your standing in the collective">
       <Row label="Status">
         {approved ? (
           <span className="inline-flex items-center gap-2">Approved <Chip tone="ok">Verified</Chip></span>

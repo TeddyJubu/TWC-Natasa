@@ -155,10 +155,18 @@ describe("/account", () => {
     expect(within(membership).getByText(/assigned once you’re approved/i)).toBeTruthy();
   });
 
-  it("an approved member gets the verified badge and her number in the subline", () => {
+  it("an approved member's cover: verified badge, specialty, work and place, her number and join date, a card preview", () => {
+    restoreDialog = stubDialog();
     renderAccount();
-    expect(screen.getByText("Verified member")).toBeTruthy();
-    expect(screen.getByText("Member No. 27 · Approved member since January 2026")).toBeTruthy();
+    const cover = screen.getByRole("region", { name: "Rosa Diaz" });
+    expect(within(cover).getByText("Verified member")).toBeTruthy();
+    expect(within(cover).getByText("Food")).toBeTruthy();
+    expect(within(cover).getByText("Founder · Diaz Bakery")).toBeTruthy();
+    expect(within(cover).getByText("Astoria")).toBeTruthy();
+    const stat = (label: string) => within(cover).getByText(label).nextElementSibling?.textContent;
+    expect([stat("member"), stat("joined")]).toEqual(["No. 27", "Jan 2026"]);
+    fireEvent.click(within(cover).getByRole("button", { name: "View public card" }));
+    expect(screen.getByRole("dialog", { name: "Rosa Diaz, member profile" })).toBeTruthy();
     const membership = screen.getByRole("region", { name: "Membership" });
     expect(within(membership).getByText("Verified")).toBeTruthy();
     expect(within(membership).getByText("No. 27")).toBeTruthy();
@@ -319,11 +327,12 @@ describe("/account", () => {
       editPublicCard();
       fireEvent.change(screen.getByLabelText(/^role/i), { target: { value: "  Owner " } });
       expect(save().disabled).toBe(false);
+      expect(screen.getByRole("status").textContent).toBe("Unsaved changes");
       fake.results = [{ ...base, role_title: "Owner" }];
       fireEvent.click(save());
       await waitFor(() => expect(fake.calls[0]).toEqual(["saveProfileFn", { role_title: "Owner" }]));
       expect(fake.calls.filter(([c]) => c === "saveProfileFn")).toHaveLength(1);
-      expect(await screen.findByText("Saved")).toBeTruthy();
+      expect(await screen.findByText("All changes saved")).toBeTruthy();
       expect(save().disabled).toBe(true);
       expect(screen.getByText("Owner")).toBeTruthy();
     });

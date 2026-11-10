@@ -8,7 +8,7 @@ import { linkClass } from "@/app/layout/app-classes";
  */
 export function Locked({ applied }: { applied: boolean }) {
   return (
-    <div className="p-5 sm:px-7 sm:py-6">
+    <div className="p-4 sm:p-5.5">
       <div className="twc-notice items-start">
         <p className="twc-notice__title">Unlocks once you’re welcomed in</p>
         <p className="text-sm text-app-muted">Members see gatherings, headshot booking, and personal introductions here.</p>

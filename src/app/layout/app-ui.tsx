@@ -1,14 +1,12 @@
-// The app shell's building blocks (internal pages): paper cards on cream, Gilda titles, eyebrow labels, the
-// scrapbook kit's pills and chips. See DESIGN.md "Internal pages".
+// The app shell's building blocks (internal pages): glass panels on the sage ground holding paper-tile rows, Geist
+// titles, eyebrow labels, the scrapbook kit's pills and chips. See DESIGN.md "Internal pages".
 import * as React from "react";
 import { cn } from "@/index";
 import { Icon, type IconName } from "./icons";
 import { linkClass, secondaryButton } from "./app-classes";
 
-/** A paper card's frame: 6px corners, a hairline ring. */
-export const cardFrame = "w-full scroll-mt-28 overflow-hidden rounded-md bg-app shadow-[inset_0_0_0_1px_var(--color-app-line)]";
-/** Card-level padding, matching the head and rows. */
-export const cardPad = "px-5 py-5 sm:px-7 sm:py-6";
+/** A panel's frame: frosted glass, 26px corners; its rows are paper tiles inset by 8px. */
+export const cardFrame = "app-glass w-full scroll-mt-28 overflow-hidden rounded-[26px]";
 
 /** A titled card; its heading names the region. `id` makes it a sidebar anchor. */
 export function Card({ id, title, subtitle, action, children }: {
@@ -16,15 +14,15 @@ export function Card({ id, title, subtitle, action, children }: {
 }) {
   const headingId = React.useId();
   return (
-    <section id={id} aria-labelledby={headingId} className={cardFrame}>
-      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3 border-b border-app-line px-5 pt-6 pb-5 sm:px-7">
-        <div className="flex min-w-0 flex-col gap-1">
-          <h2 id={headingId} className="font-display text-[26px]/[1.2] text-ink">{title}</h2>
-          {subtitle && <p className="text-sm text-app-muted">{subtitle}</p>}
+    <section id={id} aria-labelledby={headingId} className={cn(cardFrame, "px-2 pb-2")}>
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 px-3.5 pt-6 pb-4 sm:px-5.5">
+        <div className="flex min-w-0 flex-col gap-0.5">
+          <h2 id={headingId} className="font-geist text-[21px]/[1.2] font-medium tracking-[-0.3px] text-ink">{title}</h2>
+          {subtitle && <p className="text-[13px] text-app-muted">{subtitle}</p>}
         </div>
         {action}
       </div>
-      <div className="divide-y divide-app-rule">{children}</div>
+      <div className="app-tiles">{children}</div>
     </section>
   );
 }
@@ -48,9 +46,9 @@ export function Row({ label, htmlFor, icon, empty, add, top, children }: {
 }) {
   const Label = htmlFor ? "label" : "span";
   return (
-    <div className={cn("flex flex-col gap-2 px-5 py-4 sm:px-7 lg:flex-row lg:gap-4", top ? "lg:items-start" : "lg:items-center")}>
-      <Label htmlFor={htmlFor} className={cn("twc-eyebrow lg:w-52 lg:shrink-0", top && "lg:pt-1")}>{label}</Label>
-      <div className={cn("flex min-w-0 flex-1 items-center gap-2 text-[15px] break-words", empty ? "text-app-muted" : "text-ink")}>
+    <div className={cn("flex flex-col gap-2 px-4 py-4 sm:px-5.5 lg:flex-row lg:gap-4", top ? "lg:items-start" : "lg:items-center")}>
+      <Label htmlFor={htmlFor} className={cn("twc-eyebrow text-[10.5px] tracking-[0.14em] text-app-muted lg:w-52 lg:shrink-0", top && "lg:pt-1")}>{label}</Label>
+      <div className={cn("flex min-w-0 flex-1 items-center gap-2 text-[14.5px] break-words", empty ? "text-app-muted" : "text-ink")}>
         {icon && <Icon name={icon} className={cn("size-4", empty ? "text-app-muted/70" : "text-ink-muted")} />}
         <div className="min-w-0 flex-1">{children}</div>
         {add && (
@@ -82,7 +80,7 @@ export function Chip({ tone = "muted", className, children }: { tone?: ChipTone;
 /** A labelled switch row: a real checkbox with role="switch"; the track is decoration. */
 export function Toggle({ label, description, ...input }: { label: string; description: string } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
-    <label className="flex cursor-pointer items-start gap-6 px-5 py-5 sm:px-7 has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-60">
+    <label className="flex cursor-pointer items-start gap-6 px-4 py-4.5 sm:px-5.5 has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-60">
       <span className="flex min-w-0 flex-1 flex-col gap-1">
         <span className="text-base font-medium text-ink">{label}</span>
         <span className="text-[13px]/[1.5] text-app-muted">{description}</span>
@@ -98,7 +96,7 @@ export function Toggle({ label, description, ...input }: { label: string; descri
 
 export function InlineError({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
-    <div role="alert" className="flex flex-wrap items-center gap-4 px-5 py-4 text-sm text-app-muted sm:px-7">
+    <div role="alert" className="flex flex-wrap items-center gap-4 px-4 py-4 text-sm text-app-muted sm:px-5.5">
       <p>{message}</p>
       <button type="button" onClick={onRetry} className={secondaryButton}>Retry</button>
     </div>

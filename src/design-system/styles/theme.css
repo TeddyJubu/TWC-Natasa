@@ -60,12 +60,14 @@
   --bl-forest-hills: #5fd35f;
   --bl-rego-park: #ff4438;
   /* App palette: the internal-page app shell only (/account, /admin; DESIGN.md "Internal pages"), in the scrapbook's paper and cream. */
-  --bl-app: #fcfcfa; /* paper: sidebar, top bar, cards */
-  --bl-app-sunken: #f3f0e8; /* cream: the app background, hovers, sub-panels, date tiles */
+  --bl-app: #fcfcfa; /* paper: the rows inside the glass panels, nav lists, pills */
+  --bl-app-sunken: #f2f6f3; /* pale sage: hovers, sub-panels, date tiles */
+  --bl-app-ground: #dce8e2; /* sage: the page background's cool top (a gradient, with ground-warm) */
+  --bl-app-ground-warm: #ebe9e3; /* the page background's warm foot */
   --bl-app-line: #dbdbd9; /* ink at 15% on paper: outlines and dividers */
   --bl-app-rule: #dbdbd9; /* row dividers: the boards use one line weight */
-  --bl-app-muted: #6b6b66; /* labels and secondary text: 4.6:1 on cream */
-  --bl-app-accent: #1670b0; /* blue ink: verified badge, inline links, focus outline */
+  --bl-app-muted: #5f5f5a; /* labels and secondary text: 5.1:1 on the sage ground */
+  --bl-app-accent: #145f99; /* blue ink: inline links, focus outline; 5.3:1 on the sage ground */
   --bl-app-pending: #edd22e; /* sun: "under review", "pending", "requested" chips */
   --bl-app-ok: #c6f3df; /* mint: "approved", "active", "confirmed" chips */
   --bl-app-gel: #3d8fff; /* gel pill (an open form): the glowing blue at its heart */
@@ -89,6 +91,8 @@
   --bl-danger: #ff8a73;
   --bl-app: #09090b;
   --bl-app-sunken: #111113;
+  --bl-app-ground: #0c0f0d;
+  --bl-app-ground-warm: #100f0d;
   --bl-app-line: #27272a;
   --bl-app-rule: #1c1c1f;
   --bl-app-muted: #a1a1aa;
@@ -127,6 +131,8 @@
   --color-rego-park: var(--bl-rego-park);
   --color-app: var(--bl-app);
   --color-app-sunken: var(--bl-app-sunken);
+  --color-app-ground: var(--bl-app-ground);
+  --color-app-ground-warm: var(--bl-app-ground-warm);
   --color-app-line: var(--bl-app-line);
   --color-app-rule: var(--bl-app-rule);
   --color-app-muted: var(--bl-app-muted);

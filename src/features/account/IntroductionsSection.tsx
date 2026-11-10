@@ -28,7 +28,7 @@ export function IntroductionsSection({
         <>
           {introsState.isError && <InlineError message="We couldn’t load your introductions." onRetry={() => void introsState.refetch()} />}
           {introsState.isSuccess && intros.length === 0 ? (
-            <p className="px-5 py-4 text-[15px] text-app-muted sm:px-7">No introductions yet. As more neighbors join the directory, they’ll appear here.</p>
+            <p className="px-4 py-4 text-[15px] text-app-muted sm:px-5.5">No introductions yet. As more neighbors join the directory, they’ll appear here.</p>
           ) : intros.length > 0 && (
             <div className="p-3 sm:p-5">
               <div className="grid grid-cols-1 gap-x-5 gap-y-7 rounded-md bg-black px-4 py-6 sm:grid-cols-2 sm:px-6 sm:pt-7 sm:pb-8 xl:grid-cols-4">

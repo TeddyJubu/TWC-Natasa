@@ -121,6 +121,10 @@ describe("internal-page app shell (scrapbook app palette)", () => {
     // The gel pill (an open form): its label on the brightest and the palest blue of the gradient.
     ["app-gel-ink", "app-gel"], ["app-gel-ink", "app-gel-soft"],
     ["app-gel-green-ink", "app-gel-green"], ["app-gel-green-ink", "app-gel-green-soft"],
+    // Page intros, section heads and their links sit straight on the sage ground (both ends of its gradient).
+    // Errors never do: a shell-level alert sits on a paper tile, because danger misses AA on the sage.
+    ...["app-ground", "app-ground-warm"].flatMap((g): [string, string][] =>
+      ["ink", "ink-muted", "app-muted", "app-accent"].map((fg) => [fg, g])),
   ];
 
   it.each(["light", "night"] as const)("every text pair clears AA in %s", (mode) => {
@@ -128,6 +132,18 @@ describe("internal-page app shell (scrapbook app palette)", () => {
     for (const [fg, bg, alpha] of pairs) {
       const back = alpha === undefined ? t[bg] : blend(t[bg], t.app, alpha);
       expect({ fg, bg, ok: contrast(t[fg], back) >= AA }).toEqual({ fg, bg, ok: true });
+    }
+  });
+
+  // Panel heads, the sidebar, the top bar and the save bar are glass: paper at 48% (`.app-glass`) over the sage
+  // ground, which runs from app-ground at the top to app-ground-warm at the foot.
+  it.each(["light", "night"] as const)("text on the glass clears AA over both ends of the ground in %s", (mode) => {
+    const t = tokens[mode];
+    for (const ground of ["app-ground", "app-ground-warm"]) {
+      const glass = blend(t.app, t[ground], 0.48);
+      for (const fg of ["ink", "app-muted", "app-accent", "danger"]) {
+        expect({ fg, ground, ok: contrast(t[fg], glass) >= AA }).toEqual({ fg, ground, ok: true });
+      }
     }
   });
 

@@ -57,7 +57,7 @@ function Booking({ userId }: { userId: string }) {
   if (booking) {
     const copy = bookingCopy(booking.status);
     return (
-      <div className="p-5 sm:px-7 sm:py-6">
+      <div className="p-2">
       <div className={cn(copy.notice, "items-start")}>
         <p className="twc-notice__title">{copy.title}</p>
         <p className="text-[15px] text-ink">{longDate(booking.preferred_date)} · {booking.preferred_time}. {copy.body}</p>
@@ -103,7 +103,7 @@ function Booking({ userId }: { userId: string }) {
           ? <input id={NOTES_ID} maxLength={300} placeholder="Bringing products, a team…" value={request.notes} className={fieldClass} onChange={(e) => setRequest({ ...request, notes: e.currentTarget.value })} />
           : request.notes || "Bringing products, a team…"}
       </Row>
-      <div className="flex flex-wrap items-center justify-end gap-4 px-5 py-4 sm:px-7">
+      <div className="flex flex-wrap items-center justify-end gap-4 px-4 py-4 sm:px-5.5">
         {book.isError && <p role="alert" className="mr-auto text-sm text-danger">{errorMessage(book.error)}</p>}
         <button type="submit" disabled={book.isPending} className={primaryButton}>{book.isPending ? "Sending…" : <>Request my session <span aria-hidden className="twc-arrow">→</span></>}</button>
       </div>
