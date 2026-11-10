@@ -89,8 +89,8 @@ function EmailNotice({ notice }: { notice: ApprovalNotice | null | undefined }) 
   );
 }
 
-/** Waiting on an admin (pending, requested) in sun; approved/confirmed in mint; an open form in blue gel; declined in danger. */
-const STATUS_TONE: Record<string, ChipTone> = { pending: "pending", requested: "pending", approved: "ok", confirmed: "ok", open: "gel", always_on: "ok", declined: "no" };
+/** Waiting on an admin (pending, requested) in sun; approved/confirmed in mint; an open form in blue gel, an always-on one in green gel; declined in danger. */
+const STATUS_TONE: Record<string, ChipTone> = { pending: "pending", requested: "pending", approved: "ok", confirmed: "ok", open: "gel", always_on: "gel-green", declined: "no" };
 function StatusChip({ status }: { status: string }) {
   return <Chip tone={STATUS_TONE[status] ?? "muted"}>{humanizeKey(status)}</Chip>;
 }

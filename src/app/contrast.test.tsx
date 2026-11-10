@@ -120,6 +120,7 @@ describe("internal-page app shell (scrapbook app palette)", () => {
     ["ink", "app-pending"], ["ink", "app-ok"],
     // The gel pill (an open form): its label on the brightest and the palest blue of the gradient.
     ["app-gel-ink", "app-gel"], ["app-gel-ink", "app-gel-soft"],
+    ["app-gel-green-ink", "app-gel-green"], ["app-gel-green-ink", "app-gel-green-soft"],
   ];
 
   it.each(["light", "night"] as const)("every text pair clears AA in %s", (mode) => {

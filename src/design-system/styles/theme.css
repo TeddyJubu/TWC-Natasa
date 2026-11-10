@@ -71,6 +71,9 @@
   --bl-app-gel: #3d8fff; /* gel pill (an open form): the glowing blue at its heart */
   --bl-app-gel-soft: #d3e6ff; /* gel pill: the pale blue at its rim */
   --bl-app-gel-ink: #0a2149; /* gel pill: its label, 5:1 on the brightest blue */
+  --bl-app-gel-green: #2fc27a; /* green gel pill (an always-on form): the glowing green at its heart */
+  --bl-app-gel-green-soft: #d2f6e2; /* green gel pill: the pale green at its rim */
+  --bl-app-gel-green-ink: #07311d; /* green gel pill: its label */
 }
 
 /* Night: black sections and dark mode. Tokens invert so components need no tone props. */
@@ -133,6 +136,9 @@
   --color-app-gel: var(--bl-app-gel);
   --color-app-gel-soft: var(--bl-app-gel-soft);
   --color-app-gel-ink: var(--bl-app-gel-ink);
+  --color-app-gel-green: var(--bl-app-gel-green);
+  --color-app-gel-green-soft: var(--bl-app-gel-green-soft);
+  --color-app-gel-green-ink: var(--bl-app-gel-green-ink);
   --color-ring: var(--bl-sky);
 
   --font-display: "Gilda Display", Georgia, serif;

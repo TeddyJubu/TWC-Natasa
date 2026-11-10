@@ -42,17 +42,20 @@
 .twc-chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 9999px; background: rgb(252 252 250 / 0.9); color: var(--color-sb-ink); font: 400 13px/19.5px var(--font-display); letter-spacing: 1.6px; text-transform: uppercase; }
 .twc-chip--ring { background: transparent; box-shadow: inset 0 0 0 1px rgb(31 31 28 / 0.25); }
 .twc-chip svg { width: 14px; height: 14px; }
-/* Gel pill (an open form's status): a glossy blue drop with a 1px dark edge, a glow along the bottom and one sharper
+/* Gel pill (an open form's status; green for an always-on one): a glossy blue drop with a 1px dark edge, a glow along the bottom and one sharper
    corner. While its card (a `group`) is hovered the gradient turns over: the blue sinks, the glow rises (the two
    positions are registered at the end of this file so they slide). After the chip rules so it replaces the ring. */
 .twc-gel {
-  border-radius: 13px 5px 13px 13px; color: var(--color-app-gel-ink);
+  --gel: var(--color-app-gel); --gel-soft: var(--color-app-gel-soft); --gel-ink: var(--color-app-gel-ink);
+  border-radius: 13px 5px 13px 13px; color: var(--gel-ink);
   background:
     radial-gradient(60% 55% at 50% var(--gel-glow-y), rgb(255 255 255 / 0.85), transparent),
-    radial-gradient(80% 95% at 50% var(--gel-core-y), var(--color-app-gel), var(--color-app-gel-soft) 100%);
-  box-shadow: inset 0 0 0 1px var(--color-app-gel-ink), inset 0 2px 2px rgb(255 255 255 / 0.6);
+    radial-gradient(80% 95% at 50% var(--gel-core-y), var(--gel), var(--gel-soft) 100%);
+  box-shadow: inset 0 0 0 1px var(--gel-ink), inset 0 2px 2px rgb(255 255 255 / 0.6);
   transition: --gel-glow-y var(--duration-base, 300ms) var(--ease-snap), --gel-core-y var(--duration-base, 300ms) var(--ease-snap);
 }
+/* The same drop in green: a built-in form that is always on. */
+.twc-gel--green { --gel: var(--color-app-gel-green); --gel-soft: var(--color-app-gel-green-soft); --gel-ink: var(--color-app-gel-green-ink); }
 @media (hover: hover) { .group:hover .twc-gel { --gel-glow-y: -8%; --gel-core-y: 90%; } }
 @media (prefers-reduced-motion: reduce) { .twc-gel { transition: none; } }
 /* Glitter from a clicked app-shell button (sparkles.ts): a four-point star that pops out, flies a few px and fades. */
