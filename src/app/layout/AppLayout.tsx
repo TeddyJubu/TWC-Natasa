@@ -8,9 +8,10 @@ import { Icon } from "./twc";
 /**
  * Live page wrapper. Its first child is a "Skip to content" link to `#main`: every page puts its content
  * between the nav and the footer in one `<main id="main" tabIndex={-1} className="outline-none">`.
- * It also hosts the flower cursor trail (client-only, fine pointers, no reduced motion).
+ * It also hosts the glitter cursor trail (client-only, fine pointers, no reduced motion), except on the internal
+ * pages, which pass `trail={false}`.
  */
-export function AppPage({ children, className }: { children: React.ReactNode; className?: string }) {
+export function AppPage({ children, className, trail = true }: { children: React.ReactNode; className?: string; trail?: boolean }) {
   return (
     <div className={cn("twc-page min-h-screen overflow-x-clip", className)}>
       <a
@@ -20,7 +21,7 @@ export function AppPage({ children, className }: { children: React.ReactNode; cl
         Skip to content
       </a>
       {children}
-      <ImageTrail />
+      {trail && <ImageTrail />}
     </div>
   );
 }

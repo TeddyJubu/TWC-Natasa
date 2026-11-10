@@ -70,7 +70,7 @@ function AccountPage() {
   }
 
   return (
-    <AppPage>
+    <AppPage trail={false}>
       <AppShell page="/account" admin={admin}>
         <ProfileEditorPage
           userId={user.id} profile={profile} avatar={avatar} logoUrl={profileState.data?.logoUrl} hoodList={hoodList}

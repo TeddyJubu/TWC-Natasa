@@ -19,7 +19,7 @@ function AdminPage() {
   const { user } = Route.useRouteContext();
   const [query, setQuery] = React.useState("");
   return (
-    <AppPage>
+    <AppPage trail={false}>
       <AppShell page="/admin" admin>
         <main id="main" tabIndex={-1} className="outline-none">
           <TopBar title="Admin" heading who={{ name: user.name || user.email }} />

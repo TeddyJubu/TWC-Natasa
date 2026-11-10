@@ -35,7 +35,7 @@ function FormPage() {
   const forms = useQuery({ ...adminFormResponsesQuery, enabled: !builtIn });
   const title = builtIn ? BUILT_IN_INFO[builtIn].title : forms.data?.find((f) => f.id === formId)?.name ?? "Form";
   return (
-    <AppPage>
+    <AppPage trail={false}>
       <AppShell page="/admin/forms/edit" admin>
         <main id="main" tabIndex={-1} className="outline-none">
           <TopBar title={title} heading who={{ name: user.name || user.email }} />

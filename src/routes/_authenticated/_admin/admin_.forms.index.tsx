@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_authenticated/_admin/admin_/forms/")({
 function FormsPage() {
   const { user } = Route.useRouteContext();
   return (
-    <AppPage>
+    <AppPage trail={false}>
       <AppShell page="/admin/forms" admin>
         <main id="main" tabIndex={-1} className="outline-none">
           <TopBar title="Forms" heading who={{ name: user.name || user.email }} />

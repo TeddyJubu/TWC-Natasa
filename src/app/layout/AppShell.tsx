@@ -43,9 +43,12 @@ const FORMS: NavItem[] = [
   { label: "All forms", icon: "notebook-pen", to: "/admin/forms", hash: "forms" },
 ];
 
-/** The Admin and Forms groups only for admins; UX only, since /admin's guard and every admin server function check again. */
-const groups = (admin: boolean): NavGroup[] => [
-  { label: "Collective", items: COLLECTIVE },
+/**
+ * The Admin and Forms groups only for admins; UX only, since /admin's guard and every admin server function check again.
+ * Collective only on /account: the admin pages are a work desk, not the member's home.
+ */
+const groups = (admin: boolean, page: ShellPage): NavGroup[] => [
+  ...(page === "/account" ? [{ label: "Collective", items: COLLECTIVE }] : []),
   { label: "My account", items: MY_ACCOUNT, fold: true },
   ...(admin ? [{ label: "Admin", items: ADMIN, fold: true }, { label: "Forms", items: FORMS, fold: true }] : []),
 ];
@@ -143,7 +146,7 @@ function ShellNav({ page, admin, active, onSignOut, onNavigate }: {
   return (
     <>
       <nav aria-label="Main" className="flex flex-col gap-2">
-        {groups(admin).map((g) => g.fold ? (
+        {groups(admin, page).map((g) => g.fold ? (
           <details key={g.label} open className="group flex flex-col gap-0.5">
             <summary className={cn("twc-eyebrow flex w-fit cursor-pointer list-none items-center gap-1.5 rounded-full px-3.5 pt-3 pb-2 [&::-webkit-details-marker]:hidden", ring)}>
               {g.label} <Icon name="chevron-down" className="size-3 -rotate-90 transition-transform group-open:rotate-0 motion-reduce:transition-none" />
