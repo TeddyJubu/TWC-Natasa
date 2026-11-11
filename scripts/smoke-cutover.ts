@@ -6,6 +6,8 @@
  * Usage: bun scripts/smoke-cutover.ts [--form <live-old-slug>]
  *   SMOKE_CONNECT=http://127.0.0.1:18080  send each request there with the real Host header
  *                                         (a local Caddy run of the patched file).
+ * Also checks the CSP nonce on the new host's `/`: every inline script must carry the header's nonce, or the page
+ * doesn't hydrate (run it again after deploy, through Cloudflare, so a zone feature injecting scripts shows up).
  * Read-only: GETs only, never posts a form. Exit 1 on any mismatch.
  */
 import { readFileSync } from "node:fs";
@@ -65,6 +67,22 @@ export function checks(md: string, formSlug?: string): Check[] {
   return list;
 }
 
+/**
+ * What's wrong with a page's inline scripts under its CSP: no `'nonce-…'` in script-src, or an inline script (no src,
+ * not JSON-LD data) whose nonce isn't it. Empty means every inline script runs.
+ */
+export function nonceProblems(html: string, csp: string | null): string[] {
+  const nonce = /script-src[^;]*'nonce-([^']+)'/.exec(csp ?? "")?.[1];
+  if (!nonce) return ["no 'nonce-…' in the Content-Security-Policy script-src"];
+  const problems: string[] = [];
+  for (const [, attrs] of html.matchAll(/<script\b([^>]*)>/gi)) {
+    if (/\ssrc=/i.test(attrs) || /type=["']?application\/ld\+json/i.test(attrs)) continue;
+    const got = /\snonce=["']?([^"'\s>]+)/i.exec(attrs)?.[1];
+    if (got !== nonce) problems.push(`inline <script${attrs}> ${got ? `has nonce ${got}` : "has no nonce"}`);
+  }
+  return problems;
+}
+
 async function main(): Promise<number> {
   const md = readFileSync(join(import.meta.dirname, "../migration/redirects.md"), "utf8");
   const at = process.argv.indexOf("--form");
@@ -79,6 +97,12 @@ async function main(): Promise<number> {
     const want = ok ? "" : `  (want ${c.status}${c.location ? ` ${c.location}` : ""})`;
     console.log(`${ok ? "ok  " : "FAIL"} ${c.host}${c.path} → ${res.status}${loc ? ` ${loc}` : ""}${want}`);
   }
+  const home = connect ? `${connect}/` : `${NEW}/`;
+  const res = await fetch(home, { headers: connect ? { host: new URL(NEW).host } : {} });
+  const problems = nonceProblems(await res.text(), res.headers.get("content-security-policy"));
+  bad += problems.length;
+  for (const p of problems) console.log(`FAIL ${NEW}/ CSP nonce: ${p}`);
+  if (!problems.length) console.log(`ok   ${NEW}/ every inline script carries the CSP nonce`);
   console.log(bad ? `smoke-cutover: ${bad} failed` : "smoke-cutover: ok");
   return bad ? 1 : 0;
 }

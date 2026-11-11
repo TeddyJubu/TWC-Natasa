@@ -8,7 +8,7 @@ import { ErrorPage, NotFound } from "@/app/layout/StatusPages";
  * The request's CSP nonce from securityHeadersMiddleware (src/app/security-headers.ts), on the server only: the
  * router puts it on every inline SSR script and in a `csp-nonce` meta, which the browser's router reads back.
  */
-function requestNonce(): string | undefined {
+export function requestNonce(): string | undefined {
   try {
     return (getGlobalStartContext() as { nonce?: string } | undefined)?.nonce;
   } catch {
