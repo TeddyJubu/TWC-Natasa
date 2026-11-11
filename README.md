@@ -207,6 +207,60 @@ sqlite3 /var/lib/twc-natasa/data/twc.db "select count(*) from \"user\" where ema
 
 The `sqlite3` count is the authoritative cross-check.
 
+### Launch checklist (lifting the preview)
+
+In this order; each step is done (and its check passes) before the next. Steps 1–3 can be done now, behind the PIN.
+
+1. **Remove the edge script injection (blocker).** Since at least 2026-11-11 every `text/html` response on `new.*`
+   and the apex, including Caddy's static coming-soon page and the PIN page, ends in a hidden inline script that
+   writes `betaflight.uk.com` and `convertmaister.com` links before `</body>`. The origin app and Caddy were checked
+   clean on 2026-11-11, so it is added at the Cloudflare edge. In the Cloudflare dashboard, for the
+   `thewomenscollective.club` zone and its account, look in: Workers Routes (any route on the zone) and the Workers
+   they point at; Rules → Snippets; Zaraz (tools, custom HTML, triggers); Apps; Rules → Transform rules, plus
+   Configuration, Origin and Page rules; Pages custom domains; then Manage Account → Members (anyone unknown),
+   API Tokens (user and account; revoke anything unknown or unused) and the Audit Log (who added what, when).
+   Remove it, then rotate: the Cloudflare password, 2FA and every API token (reissue `CF_EMAIL_API_TOKEN`), the
+   registrar login, the VPS's SSH keys and users, `BETTER_AUTH_SECRET` (signs everyone out), `BEEHIIV_API_KEY`,
+   `GOOGLE_CLIENT_SECRET` and `SITE_PIN`; update `app.env` and restart `twc-natasa.service`. Read the SSH auth log
+   and compare the database and uploads with a nightly backup from before the injection. Check:
+   `curl -s https://new.thewomenscollective.club/ | grep -ci betaflight` and the same for the apex give `0`, and
+   `bun scripts/smoke-cutover.ts` passes (it fails on an inline script without the app's nonce, or a link to a host
+   outside `KNOWN_HOSTS`, on `new.*` `/` and `/about` and the apex `/` and `/404.html`).
+2. **Off-site backups.** Make `twc-natasa-backup` also copy the nightly `nightly-*.db` and `uploads-*.tgz` off the
+   VPS (for example rclone to a Cloudflare R2 bucket with object lock, its key only on the VPS), then do one restore
+   drill from that copy into a scratch `DATA_DIR` (Backup, below).
+3. **Uptime and deploy alerts.** An external monitor (Cloudflare Health Checks or UptimeRobot) on
+   `https://new.thewomenscollective.club/healthz` (open behind the PIN, so it can start now) that emails the owner;
+   and `twc-natasa-deploy` emailing the admins the commit and failing step when a deploy fails (curl the Cloudflare
+   Email API with the `CF_EMAIL_*` values from `app.env`), optionally an `OnFailure=` unit on `twc-natasa.service`.
+4. **Remove the demo members** (commands above) and check the `sqlite3` count is `0`.
+5. **Caddy headers** (`/opt/nbwc/Caddyfile`, TWC blocks only: back it up with a timestamp, `caddy validate`, then
+   reload). In the `new.thewomenscollective.club` block, remove the `Permissions-Policy`, `Referrer-Policy` and
+   `X-Content-Type-Options` lines (the app's tested headers are then the only ones, not doubled) and any
+   `X-Robots-Tag`. In the `thewomenscollective.club` block, remove the `X-Robots-Tag` line, so the coming-soon page
+   and the redirects stop carrying `noindex`. Do this together with step 6. The apex page redirects stay `301`: their
+   targets are the final `new.*` URLs, and browsers have cached them since 2026-11-09 anyway.
+6. **Lift the PIN.** Back up `app.env`, delete its `SITE_PIN` line, `systemctl restart twc-natasa`.
+7. **Verify with curl.**
+   - `curl -sI https://new.thewomenscollective.club/` gives `200`, one each of `content-security-policy`,
+     `permissions-policy`, `referrer-policy`, `x-content-type-options`, `strict-transport-security: max-age=31536000`,
+     and no `x-robots-tag`; the same for `/about` and `/members`.
+   - `curl -sI https://thewomenscollective.club/` has no `x-robots-tag`.
+   - A hashed file from the page (`curl -sI https://new.thewomenscollective.club/assets/<name>.js`) has
+     `cache-control: public, max-age=31536000, immutable`.
+   - `curl -s -o /dev/null -D - -H 'Accept-Encoding: gzip, br' https://new.thewomenscollective.club/ | grep -i content-encoding`
+     shows `gzip` (or `br` from Cloudflare).
+   - `curl -s https://new.thewomenscollective.club/sitemap.xml | grep -c -- '-demo-'` gives `0`, and `/robots.txt`
+     has its `Sitemap:` line.
+   - `bun scripts/smoke-cutover.ts --launch` passes (the `--launch` rows also fail on any `X-Robots-Tag` on the
+     two home pages).
+8. **Search engines.** In Google Search Console add the domain property `thewomenscollective.club` (DNS TXT record
+   in Cloudflare), submit `https://new.thewomenscollective.club/sitemap.xml` and request indexing of `/`. In Bing
+   Webmaster Tools import the site from Search Console (or verify it the same way) and submit the same sitemap.
+
+Still for the owner to decide: whether apex `/` keeps the coming-soon page once `new.*` is public (if it does, its
+links should point straight at the `new.*` paths, one hop, with a link to the new site).
+
 ### Backup
 
 `twc-natasa-backup.timer` copies the database with SQLite's online backup and tars the uploads every night at
@@ -218,6 +272,10 @@ sqlite3 /var/lib/twc-natasa/data/twc.db ".backup '/var/backups/twc-natasa/manual
 
 Restore: `systemctl stop twc-natasa`, copy the backup over `twc.db` (delete `twc.db-wal`/`-shm`), put the uploads
 back, `systemctl start twc-natasa`.
+
+These copies are on the same VPS as the database, so they don't survive losing it: an off-site copy and a restore
+drill from it are launch step 2. Nothing alerts on a failed deploy or a down site yet beyond the journal (launch
+step 3).
 
 ## First admin
 
