@@ -33,6 +33,7 @@ import { Route as SpotlightRouteImport } from './routes/spotlight'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as TypographyRouteImport } from './routes/typography'
 import { Route as VerifiedRouteImport } from './routes/verified'
+import { Route as DotwellKnownSecurityDottxtRouteImport } from './routes/[.]well-known/security[.]txt'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/_admin/route'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedDirectoryRouteImport } from './routes/_authenticated/directory'
@@ -176,6 +177,12 @@ const VerifiedRoute = VerifiedRouteImport.update({
   path: '/verified',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DotwellKnownSecurityDottxtRoute =
+  DotwellKnownSecurityDottxtRouteImport.update({
+    id: '/.well-known/security.txt',
+    path: '/.well-known/security.txt',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
   id: '/_admin',
   getParentRoute: () => AuthenticatedRouteRoute,
@@ -317,6 +324,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/typography': typeof TypographyRoute
   '/verified': typeof VerifiedRoute
+  '/.well-known/security.txt': typeof DotwellKnownSecurityDottxtRoute
   '/account': typeof AuthenticatedAccountRoute
   '/directory': typeof AuthenticatedDirectoryRoute
   '/feed': typeof AuthenticatedFeedRoute
@@ -364,6 +372,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/typography': typeof TypographyRoute
   '/verified': typeof VerifiedRoute
+  '/.well-known/security.txt': typeof DotwellKnownSecurityDottxtRoute
   '/account': typeof AuthenticatedAccountRoute
   '/directory': typeof AuthenticatedDirectoryRoute
   '/feed': typeof AuthenticatedFeedRoute
@@ -414,6 +423,7 @@ export interface FileRoutesById {
   '/typography': typeof TypographyRoute
   '/verified': typeof VerifiedRoute
   '/_authenticated/_admin': typeof AuthenticatedAdminRouteRouteWithChildren
+  '/.well-known/security.txt': typeof DotwellKnownSecurityDottxtRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/directory': typeof AuthenticatedDirectoryRoute
   '/_authenticated/feed': typeof AuthenticatedFeedRoute
@@ -463,6 +473,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/typography'
     | '/verified'
+    | '/.well-known/security.txt'
     | '/account'
     | '/directory'
     | '/feed'
@@ -510,6 +521,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/typography'
     | '/verified'
+    | '/.well-known/security.txt'
     | '/account'
     | '/directory'
     | '/feed'
@@ -559,6 +571,7 @@ export interface FileRouteTypes {
     | '/typography'
     | '/verified'
     | '/_authenticated/_admin'
+    | '/.well-known/security.txt'
     | '/_authenticated/account'
     | '/_authenticated/directory'
     | '/_authenticated/feed'
@@ -608,6 +621,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   TypographyRoute: typeof TypographyRoute
   VerifiedRoute: typeof VerifiedRoute
+  DotwellKnownSecurityDottxtRoute: typeof DotwellKnownSecurityDottxtRoute
   ApiSplatRoute: typeof ApiSplatRoute
   ApiApplicationsRoute: typeof ApiApplicationsRoute
   ApiContactRoute: typeof ApiContactRoute
@@ -794,6 +808,13 @@ declare module '@tanstack/react-router' {
       path: '/verified'
       fullPath: '/verified'
       preLoaderRoute: typeof VerifiedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.well-known/security.txt': {
+      id: '/.well-known/security.txt'
+      path: '/.well-known/security.txt'
+      fullPath: '/.well-known/security.txt'
+      preLoaderRoute: typeof DotwellKnownSecurityDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/_admin': {
@@ -1022,6 +1043,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   TypographyRoute: TypographyRoute,
   VerifiedRoute: VerifiedRoute,
+  DotwellKnownSecurityDottxtRoute: DotwellKnownSecurityDottxtRoute,
   ApiSplatRoute: ApiSplatRoute,
   ApiApplicationsRoute: ApiApplicationsRoute,
   ApiContactRoute: ApiContactRoute,
