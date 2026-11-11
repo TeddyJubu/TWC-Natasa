@@ -9,7 +9,7 @@ import { TINY, WITH_GPS } from "@/test/images";
 import { openDb, type DB } from "./db";
 import { mediaFile, writeMedia } from "./media";
 import {
-  DEMO_COUNT, demoCounts, hasDemo, photoFile, planDemo, portraitFile, realUsers, removeDemo, seedDemo,
+  checkDemoBeforeLaunch, DEMO_COUNT, demoCounts, hasDemo, photoFile, planDemo, portraitFile, realUsers, removeDemo, seedDemo,
   type DemoFixtures, type DemoMedia,
 } from "./demo-seed";
 
@@ -250,4 +250,19 @@ describe("scripts/seed-demo.ts", () => {
     expect(out.stderr).toContain("--confirm");
     expect(out.stdout).toContain("1 real account(s)");
   });
+});
+
+describe("checkDemoBeforeLaunch", () => {
+  it("refuses a production start without SITE_PIN while a demo account exists, and nothing else", () => {
+    const db = openDb(":memory:");
+    const prod = { NODE_ENV: "production" };
+    expect(() => checkDemoBeforeLaunch(db, prod)).not.toThrow();
+    db.prepare(`insert into "user" (id, name, email, emailVerified, createdAt, updatedAt) values ('d1', 'Ada (Demo)', 'demo-001@demo.twc.invalid', 1, 0, 0)`).run();
+    expect(() => checkDemoBeforeLaunch(db, prod)).toThrow(/seed-demo\.ts --remove before lifting SITE_PIN/);
+    expect(() => checkDemoBeforeLaunch(db, { ...prod, SITE_PIN: "1234" })).not.toThrow();
+    expect(() => checkDemoBeforeLaunch(db, { NODE_ENV: "development" })).not.toThrow();
+  });
+
+  it("runs when the server starts", () =>
+    expect(readFileSync("src/server.ts", "utf8")).toMatch(/^checkDemoBeforeLaunch\(getDb\(\)\);$/m));
 });

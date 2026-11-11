@@ -212,6 +212,15 @@ export function demoCounts(db: DB): Record<string, number> {
   };
 }
 export const hasDemo = (db: DB) => Object.values(demoCounts(db)).some((n) => n > 0);
+
+/**
+ * In production, a startup error while demo rows exist and SITE_PIN isn't set: lifting the PIN (a restart) would
+ * otherwise open the shared demo password to approved-member access, and the demo members to /members and search.
+ */
+export function checkDemoBeforeLaunch(db: DB, env: Record<string, string | undefined> = process.env): void {
+  if (env.NODE_ENV !== "production" || env.SITE_PIN) return;
+  if (hasDemo(db)) throw new Error("Demo members are still in the database: run scripts/seed-demo.ts --remove before lifting SITE_PIN.");
+}
 /** Accounts that aren't demo ones: anything above zero means a real database, which needs --confirm. */
 export const realUsers = (db: DB) => (db.prepare(`select count(*) as n from "user" where not (${IS_DEMO_EMAIL})`).get() as { n: number }).n;
 

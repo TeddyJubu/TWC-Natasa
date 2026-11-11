@@ -252,7 +252,7 @@ In this order; each step is done (and its check passes) before the next. Steps 1
    `X-Robots-Tag`. In the `thewomenscollective.club` block, remove the `X-Robots-Tag` line, so the coming-soon page
    and the redirects stop carrying `noindex`. Do this together with step 7. The apex page redirects stay `301`: their
    targets are the final `new.*` URLs, and browsers have cached them since 2026-11-09 anyway.
-7. **Lift the PIN.** Back up `app.env`, delete its `SITE_PIN` line, `systemctl restart twc-natasa`.
+7. **Lift the PIN.** Back up `app.env`, delete its `SITE_PIN` line, `systemctl restart twc-natasa`. The server refuses to start without `SITE_PIN` while demo rows remain (step 5), so a failed restart here means the demo removal didn't happen.
 8. **Verify with curl.**
    - `curl -sI https://new.thewomenscollective.club/` gives `200`, one each of `content-security-policy`,
      `permissions-policy`, `referrer-policy`, `x-content-type-options`, `strict-transport-security: max-age=31536000`,
