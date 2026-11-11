@@ -54,6 +54,11 @@ function AuthPage() {
     setError(null);
     setNotice(null);
   };
+  // Forgot password? and Back to sign in unmount themselves: hand focus to the Email field so keyboard and screen-reader users keep their place.
+  const switchTo = (next: Mode) => {
+    setMode(next);
+    requestAnimationFrame(() => document.getElementById("email")?.focus());
+  };
 
   // Already signed in (e.g. back from Google, or a second visit): straight to the account.
   React.useEffect(() => {
@@ -175,7 +180,7 @@ function AuthPage() {
               {mode !== "forgot" && field(
                 "password", "Password",
                 { type: "password", minLength: 8, autoComplete: mode === "signup" ? "new-password" : "current-password" },
-                mode === "signin" ? <button type="button" onClick={() => setMode("forgot")} className={cn(slink, "text-[13px]")}>Forgot password?</button> : undefined,
+                mode === "signin" ? <button type="button" onClick={() => switchTo("forgot")} className={cn(slink, "text-[13px]")}>Forgot password?</button> : undefined,
                 mode === "signup" ? "At least 8 characters." : undefined,
               )}
               {error && <p id="auth-error" role="alert" className={authAlert}>{error}</p>}
@@ -191,7 +196,7 @@ function AuthPage() {
             </form>
 
             <p className="flex flex-col items-center gap-2 text-center text-sm">
-              {mode === "forgot" && <button type="button" onClick={() => setMode("signin")} className={slink}>Back to sign in</button>}
+              {mode === "forgot" && <button type="button" onClick={() => switchTo("signin")} className={slink}>Back to sign in</button>}
               <Link to="/join" className={slink}>Not a member yet? Apply</Link>
             </p>
           </div>

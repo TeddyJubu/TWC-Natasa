@@ -228,3 +228,15 @@ describe("/auth", () => {
     });
   });
 });
+
+describe("/auth focus", () => {
+  it("moves focus to the Email field when Forgot password? and Back to sign in replace the form", async () => {
+    renderWithQueries(<Page />);
+    fireEvent.click(screen.getByRole("button", { name: /forgot password\?/i }));
+    await vi.waitFor(() => expect(document.activeElement).toBe(screen.getByLabelText(/email/i)));
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toMatch(/reset your password/i);
+    (document.activeElement as HTMLElement).blur();
+    fireEvent.click(screen.getByRole("button", { name: /back to sign in/i }));
+    await vi.waitFor(() => expect(document.activeElement).toBe(screen.getByLabelText(/email/i)));
+  });
+});
