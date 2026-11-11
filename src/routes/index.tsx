@@ -12,7 +12,7 @@ import neighbors from "@/assets/photography/home/neighbors.webp";
 import natasaFounder from "@/assets/photography/home/natasa-founder.webp";
 import nightSky from "@/assets/photography/home/night-sky.webp";
 import gathering from "@/assets/photography/event.jpg";
-import { eventSizes, eventSrcSet } from "@/app/responsive-images";
+import { eventPolaroidSizes, eventSizes, eventSrcSet, heroRockSizes, heroRockSrcSet } from "@/app/responsive-images";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import { Icon, Scallop } from "@/app/layout/twc";
 import caveatUrl from "@/assets/fonts/home/caveat-400.woff2?url";
@@ -110,10 +110,10 @@ function Ribbon({ items, className, reverse }: { items: string[]; className: str
   );
 }
 
-function Polaroid({ src, alt, caption, className, photoClass, captionClass }: { src: string; alt: string; caption: string; className?: string; photoClass?: string; captionClass?: string }) {
+function Polaroid({ src, srcSet, sizes, loading = "lazy", alt, caption, className, photoClass, captionClass }: { src: string; srcSet?: string; sizes?: string; loading?: "lazy" | "eager"; alt: string; caption: string; className?: string; photoClass?: string; captionClass?: string }) {
   return (
     <figure className={cn("flex flex-col bg-sb-cream transition-[rotate,translate,scale,box-shadow] duration-500 ease-[var(--ease-snap)] hover:z-10 hover:-translate-y-2 hover:rotate-0 hover:scale-[1.03]", className)}>
-      <img src={src} alt={alt} loading="lazy" decoding="async" className={cn("w-full object-cover", photoClass)} />
+      <img src={src} srcSet={srcSet} sizes={sizes} alt={alt} loading={loading} decoding="async" className={cn("w-full object-cover", photoClass)} />
       <figcaption className={cn("font-script leading-none text-sb-ink", captionClass)}>{caption}</figcaption>
     </figure>
   );
@@ -156,6 +156,8 @@ function Hero() {
         <div className="sb-photo-in relative aspect-[358/440] overflow-hidden rounded-[22px] sm:aspect-[16/10] lg:aspect-[1312/600]">
           <img
             src={heroRock}
+            srcSet={heroRockSrcSet}
+            sizes={heroRockSizes}
             alt="A woman in sunglasses sitting on a sunlit rock beneath a wide blue sky"
             fetchPriority="high"
             className="sb-parallax absolute inset-0 size-full scale-110 object-cover object-[50%_55%]"
@@ -171,6 +173,7 @@ function Hero() {
         <div className="sb-drop absolute right-[3%] top-[40%] z-10 w-[120px] min-[360px]:top-[44%] min-[360px]:w-[140px] sm:w-[176px] lg:top-[38%] lg:w-[190px] xl:top-[42%] xl:w-[212px]" style={delay(HERO_BEATS.polaroid)}>
           <Polaroid
             src={queensPolaroid}
+            loading="eager"
             alt="Women laughing together at an evening rooftop gathering"
             caption="our people, Queens"
             className={cn("rotate-6 gap-1.5 bg-sb-paper p-2 pb-3 lg:gap-2.5 lg:p-3 lg:pb-4", lift)}
@@ -419,7 +422,7 @@ function Constellation() {
 
         <div className="col-span-2 -order-1 flex flex-col items-center gap-5 text-center lg:order-none lg:col-span-1 lg:gap-6">
           <div className="sb-float">
-            <ConstellationLogo variant="ink" alt="" loading="lazy" className="w-24 transition-[rotate] duration-700 ease-[var(--ease-snap)] hover:rotate-[72deg] lg:w-[112px]" />
+            <ConstellationLogo variant="ink" alt="" loading="lazy" sizes="(min-width: 64rem) 112px, 96px" className="w-24 transition-[rotate] duration-700 ease-[var(--ease-snap)] hover:rotate-[72deg] lg:w-[112px]" />
           </div>
           <p className={cn(script, "motion-scroll-reveal rotate-3")}>our constellation</p>
           <h2 id="constellation-title" className={cn(h2, "motion-scroll-reveal")}>
@@ -461,6 +464,8 @@ function Founder() {
         <div className="relative aspect-[6/5] w-full max-w-[350px] shrink-0 lg:max-w-[440px] xl:max-w-[540px]">
           <Polaroid
             src={gathering}
+            srcSet={eventSrcSet}
+            sizes={eventPolaroidSizes}
             alt="Members of the collective together in person"
             caption="the collective, in person"
             captionClass="text-right text-xl lg:text-[28px]"

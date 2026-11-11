@@ -53,6 +53,20 @@ describe.each([["/fellowship", Fellowship], ["/partnerships", Partnerships]] as 
   });
 });
 
+describe.each([
+  ["/fellowship", Fellowship, "members-gathering", [800, 1080], 1600, "540px"],
+  ["/partnerships", Partnerships, "gathering-ceramics", [800, 1280], 1600, "612px"],
+] as const)("%s arch photo", (_path, route, name, widths, original, sizes) => {
+  it("is the high-priority hero, with downscales and the drawn width as sizes", () => {
+    show(route);
+    const img = main().querySelector("img[fetchpriority=high]")!;
+    const srcset = img.getAttribute("srcset")!;
+    for (const w of widths) expect(srcset).toMatch(new RegExp(`${name}-${w}\\.webp ${w}w`));
+    expect(srcset).toMatch(new RegExp(`${name}\\.webp ${original}w$`));
+    expect(img.getAttribute("sizes")).toBe(sizes);
+  });
+});
+
 describe("/fellowship", () => {
   it("links to the application, the questions, the contact page and the code of conduct", () => {
     show(Fellowship);

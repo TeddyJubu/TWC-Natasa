@@ -1,5 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import aboutGathering from "@/assets/photography/site/about-gathering.webp";
+import { aboutGatheringSizes, aboutGatheringSrcSet } from "@/app/responsive-images";
 import aboutCoffee from "@/assets/photography/site/about-coffee.webp";
 import natasaFounder from "@/assets/photography/home/natasa-founder.webp";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
@@ -52,7 +53,7 @@ function AboutPage() {
             <p className="twc-chip twc-chip--ring self-start"><Icon name="pin" />Western Queens, New York</p>
           </div>
           <div className="relative min-h-[440px] min-w-0 flex-[1_1_380px]">
-            <img src={aboutGathering} alt="A group of women laughing together outdoors on a sunny day" width={1280} height={1600} fetchPriority="high" className="twc-photo twc-photo--arch absolute left-0 top-0 aspect-[5/7] w-[min(300px,80%)]" />
+            <img src={aboutGathering} srcSet={aboutGatheringSrcSet} sizes={aboutGatheringSizes} alt="A group of women laughing together outdoors on a sunny day" width={1280} height={1600} fetchPriority="high" className="twc-photo twc-photo--arch absolute left-0 top-0 aspect-[5/7] w-[min(300px,80%)]" />
             <figure className="twc-polaroid absolute -bottom-2.5 right-0 w-[min(200px,55%)]">
               <img src={aboutCoffee} alt="Two women chatting over coffee at an outdoor café" width={1600} height={901} loading="lazy" />
               <figcaption>our people, Queens</figcaption>

@@ -56,6 +56,13 @@ describe("/about", () => {
     ]);
   });
 
+  it("the arch photo is the high-priority hero, with an 800w downscale and its drawn width as sizes", () => {
+    show(About);
+    const img = main().querySelector("img[fetchpriority=high]")!;
+    expect(img.getAttribute("srcset")).toMatch(/about-gathering-800\.webp 800w, \S*about-gathering\.webp 1280w$/);
+    expect(img.getAttribute("sizes")).toBe("336px");
+  });
+
   it("links the studio in a new tab, announced, and the CTAs to /neighborhoods and /join", () => {
     show(About);
     const studio = within(main()).getByRole("link", { name: /Visit Nataša’s studio/ });

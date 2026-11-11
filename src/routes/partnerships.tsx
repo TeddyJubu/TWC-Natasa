@@ -1,5 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import gatheringCeramics from "@/assets/photography/site/gathering-ceramics.webp";
+import { gatheringCeramicsSizes, gatheringCeramicsSrcSet } from "@/app/responsive-images";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import { Icon, Scallop } from "@/app/layout/twc";
 import { PartnershipForm } from "@/features/contact/PartnershipForm";
@@ -48,7 +49,7 @@ function PartnershipsPage() {
             <p className="twc-chip twc-chip--ring self-start"><Icon name="pin" />Western Queens, New York</p>
           </div>
           <div className="min-w-0 flex-[1_1_380px]">
-            <img src={gatheringCeramics} alt="Two women painting ceramics together at a creative workshop" width={1600} height={1067} fetchPriority="high" className="twc-photo twc-photo--arch aspect-[5/6] w-[min(340px,100%)] object-[30%_center]" />
+            <img src={gatheringCeramics} srcSet={gatheringCeramicsSrcSet} sizes={gatheringCeramicsSizes} alt="Two women painting ceramics together at a creative workshop" width={1600} height={1067} fetchPriority="high" className="twc-photo twc-photo--arch aspect-[5/6] w-[min(340px,100%)] object-[30%_center]" />
           </div>
         </section>
 

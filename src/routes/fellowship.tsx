@@ -1,5 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import membersGathering from "@/assets/photography/site/members-gathering.webp";
+import { membersGatheringSizes, membersGatheringSrcSet } from "@/app/responsive-images";
 import gatheringSupper from "@/assets/photography/site/gathering-supper.webp";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import { Icon, Scallop, TwcRibbon } from "@/app/layout/twc";
@@ -45,7 +46,7 @@ function FellowshipPage() {
             <p className="twc-chip twc-chip--ring self-start"><Icon name="pin" />Western Queens, New York</p>
           </div>
           <div className="relative min-h-[380px] min-w-0 flex-[1_1_380px]">
-            <img src={membersGathering} alt="Two women in conversation at a stylish indoor gathering, holding wine glasses" width={1600} height={1069} fetchPriority="high" className="twc-photo twc-photo--arch absolute left-0 top-0 aspect-[5/6] w-[min(300px,80%)]" />
+            <img src={membersGathering} srcSet={membersGatheringSrcSet} sizes={membersGatheringSizes} alt="Two women in conversation at a stylish indoor gathering, holding wine glasses" width={1600} height={1069} fetchPriority="high" className="twc-photo twc-photo--arch absolute left-0 top-0 aspect-[5/6] w-[min(300px,80%)]" />
             <figure className="twc-polaroid absolute -bottom-2.5 right-0 w-[min(220px,58%)]">
               <img src={gatheringSupper} alt="A candle-lit supper with a group of women smiling and chatting" width={1600} height={1067} loading="lazy" />
               <figcaption>around the table</figcaption>
