@@ -2,7 +2,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { AppFooter, AppPage } from "@/app/layout/AppLayout";
 import type { Profile } from "@/features/members/queries";
 import { renderWithQueries } from "@/test/dom";
@@ -19,9 +19,6 @@ import { Route as Members } from "@/routes/members";
 import { Route as Join } from "@/routes/join";
 import { Route as Account } from "@/routes/_authenticated/account";
 import { Route as Admin } from "@/routes/_authenticated/_admin/admin";
-import { Route as Privacy } from "@/routes/privacy";
-import { Route as Terms } from "@/routes/terms";
-import { Route as Conduct } from "@/routes/code-of-conduct";
 import { Route as Colors } from "@/routes/colors";
 import { Route as Typography } from "@/routes/typography";
 import { Route as Components } from "@/routes/components";
@@ -58,7 +55,7 @@ const seed: [unknown[], unknown][] = [
 ];
 
 const live = {
-  "/": Home, "/members": Members, "/join": Join, "/account": Account, "/admin": Admin, "/privacy": Privacy, "/terms": Terms, "/code-of-conduct": Conduct,
+  "/": Home, "/members": Members, "/join": Join, "/account": Account, "/admin": Admin,
 } as const;
 const showcase = { "/colors": Colors, "/typography": Typography, "/components": Components } as const;
 
@@ -134,28 +131,27 @@ describe("root route", () => {
   });
 });
 
+// The legal pages are gone until they're written for real (docs/LEGAL-PAGES-REQUIRED.md): nothing may link them.
 describe("AppFooter", () => {
-  const LEGAL = [["Privacy", "/privacy"], ["Terms", "/terms"], ["Code of conduct", "/code-of-conduct"]];
-  const footerLinks = () =>
-    within(screen.getByRole("navigation", { name: "Legal" })).getAllByRole("link").map((a) => [a.textContent, a.getAttribute("href")]);
-
-  it("always links the privacy policy, terms and code of conduct", () => {
-    render(<AppFooter />);
-    expect(footerLinks()).toEqual(LEGAL);
+  const REMOVED = ["/privacy", "/terms", "/code-of-conduct"];
+  it("the router has no legal routes, so they 404", () => {
+    const tree = readFileSync(resolve(process.cwd(), "src/routeTree.gen.ts"), "utf8");
+    expect(tree).toMatch(/path: '\/about'/);
+    for (const path of REMOVED) expect(tree).not.toContain(`path: '${path}'`);
   });
 
-  it("/join has a footer with the legal links: applicants read them before applying", () => {
-    const Page = component(live["/join"]);
-    renderWithQueries(<Page />, seed);
-    expect(footerLinks().slice(-3)).toEqual(LEGAL);
+  it("carries no legal links while the legal pages are removed", () => {
+    render(<AppFooter />);
+    expect(screen.queryByRole("navigation", { name: "Legal" })).toBeNull();
+    expect(screen.getAllByRole("link").map((a) => a.getAttribute("href")).filter((h) => REMOVED.includes(h ?? ""))).toEqual([]);
   });
 
   for (const [path, route] of Object.entries(live)) {
-    it(`${path}: a footer, when the page has one, carries the legal links`, () => {
+    it(`${path} links none of the removed legal pages`, () => {
       const Page = component(route);
       const { container } = renderWithQueries(<Page />, seed);
-      if (!container.querySelector("footer")) return;
-      expect(footerLinks().slice(-3)).toEqual(LEGAL);
+      const hrefs = [...container.querySelectorAll("a")].map((a) => (a.getAttribute("href") ?? "").split("#")[0]);
+      expect(hrefs.filter((h) => REMOVED.includes(h))).toEqual([]);
     });
   }
 });

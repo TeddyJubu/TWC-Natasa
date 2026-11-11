@@ -68,7 +68,7 @@ describe("status pages landmarks", () => {
       expect(mains[0].contains(screen.getByRole("link", { name: /back to home/i }))).toBe(true);
       expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
       expectNoSkippedHeadings(mains[0]);
-      expect(screen.getByRole("navigation", { name: "Legal" })).toBeTruthy();
+      expect(screen.getByRole("navigation", { name: "Footer" })).toBeTruthy();
     });
   }
 });

@@ -2,7 +2,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import { Icon } from "@/app/layout/twc";
 
-type Answer = { q: string; a: string; link?: { text: string; to: "/contact" | "/privacy"; after: string } };
+type Answer = { q: string; a: string; link?: { text: string; to: "/contact"; after: string } };
 type Group = { id: string; title: string; items: Answer[] };
 
 // Answers reuse copy already on the site (home FAQ, sign-up, account and application). Questions with
@@ -47,7 +47,7 @@ const FAQ_GROUPS: Group[] = [
     id: "privacy",
     title: "Privacy",
     items: [
-      { q: "What do you do with my information?", a: "We use it to review applications, keep in touch, run programs and events, schedule headshots, and — only with your permission — create directory listings and spotlights. Private information is not intentionally published. The full story is in our ", link: { text: "privacy policy", to: "/privacy", after: "." } },
+      { q: "What do you do with my information?", a: "We use it to review applications, keep in touch, run programs and events, schedule headshots, and — only with your permission — create directory listings and spotlights. Private information is not intentionally published." },
     ],
   },
 ];

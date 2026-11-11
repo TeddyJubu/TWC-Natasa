@@ -100,7 +100,6 @@ function FellowshipPage() {
             <h2 id="principles-title" className="twc-h3">What we expect of each other.</h2>
             <p className="text-[17px] leading-[1.65] text-sb-paper/80">Show up. Give first. Say the real thing rather than the polished thing. Keep what’s said in a room in that room unless you’re told otherwise.</p>
             <p className="text-[17px] leading-[1.65] text-sb-paper/80">And the one that matters most: the directory is not a mailing list. Members’ details are there so people can connect, never so anyone can broadcast. No bulk outreach, no cold pitching, no adding people to lists they didn’t join.</p>
-            <Link to="/code-of-conduct" className="twc-btn twc-btn--sun mt-1.5">Read the code of conduct <Icon name="arrow" className="twc-arrow" /></Link>
           </div>
         </section>
         <Scallop from="#0b0b0a" to="#fcfcfa" />

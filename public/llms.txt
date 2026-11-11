@@ -20,12 +20,6 @@ The founder is Nataša Tuohy, a New York–based architectural and interior desi
 - [Join](https://new.thewomenscollective.club/join): the membership application
 - [Contact](https://new.thewomenscollective.club/contact): membership, gathering ideas, partnerships or press
 
-## Policies
-
-- [Privacy](https://new.thewomenscollective.club/privacy)
-- [Terms](https://new.thewomenscollective.club/terms)
-- [Code of conduct](https://new.thewomenscollective.club/code-of-conduct)
-
 ## Optional
 
 - [Questions and answers in full](https://new.thewomenscollective.club/llms-full.txt)

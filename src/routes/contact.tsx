@@ -36,8 +36,7 @@ function ContactPage() {
           <div className="mt-2 flex flex-col gap-2 rounded-md bg-sb-cream px-6 py-[22px]">
             <h2 className="font-display text-[22px] leading-[1.3]">Something happened that shouldn’t have?</h2>
             <p className="text-[15px] text-sb-muted">
-              Reports about a member or an event go straight to the people who handle them, confidentially. See{" "}
-              <Link to="/code-of-conduct" hash="report" className="twc-inlink">Reporting something</Link> in our code of conduct.
+              Reports about a member or an event go straight to the people who handle them, confidentially. Choose “Reporting conduct” as the topic of your message.
             </p>
           </div>
           <p className="text-[15px] text-sb-muted">

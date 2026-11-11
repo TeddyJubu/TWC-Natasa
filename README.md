@@ -209,7 +209,7 @@ The `sqlite3` count is the authoritative cross-check.
 
 ### Launch checklist (lifting the preview)
 
-In this order; each step is done (and its check passes) before the next. Steps 1–3 can be done now, behind the PIN.
+In this order; each step is done (and its check passes) before the next. Steps 1–4 can be done now, behind the PIN.
 
 1. **Remove the edge script injection (blocker).** Since at least 2026-11-11 every `text/html` response on `new.*`
    and the apex, including Caddy's static coming-soon page and the PIN page, ends in a hidden inline script that
@@ -237,15 +237,21 @@ In this order; each step is done (and its check passes) before the next. Steps 1
    `https://new.thewomenscollective.club/healthz` (open behind the PIN, so it can start now) that emails the owner;
    and `twc-natasa-deploy` emailing the admins the commit and failing step when a deploy fails (curl the Cloudflare
    Email API with the `CF_EMAIL_*` values from `app.env`), optionally an `OnFailure=` unit on `twc-natasa.service`.
-4. **Remove the demo members** (commands above) and check the `sqlite3` count is `0`.
-5. **Caddy headers** (`/opt/nbwc/Caddyfile`, TWC blocks only: back it up with a timestamp, `caddy validate`, then
+4. **Legal pages (blocker).** `/privacy`, `/terms` and `/code-of-conduct` were removed on 2026-11-11 and now 404;
+   the site collects personal data, so a real privacy policy (plus terms and a code of conduct) must be written,
+   reviewed and re-added before the PIN comes off. What they must cover, what the old drafts got wrong, the commit to
+   recover the drafts from and every place to re-link them: `docs/LEGAL-PAGES-REQUIRED.md`. Check:
+   `curl -s -o /dev/null -w '%{http_code}' https://new.thewomenscollective.club/privacy` gives `200` (with the PIN
+   cookie) and the footer links all three.
+5. **Remove the demo members** (commands above) and check the `sqlite3` count is `0`.
+6. **Caddy headers** (`/opt/nbwc/Caddyfile`, TWC blocks only: back it up with a timestamp, `caddy validate`, then
    reload). In the `new.thewomenscollective.club` block, remove the `Permissions-Policy`, `Referrer-Policy` and
    `X-Content-Type-Options` lines (the app's tested headers are then the only ones, not doubled) and any
    `X-Robots-Tag`. In the `thewomenscollective.club` block, remove the `X-Robots-Tag` line, so the coming-soon page
-   and the redirects stop carrying `noindex`. Do this together with step 6. The apex page redirects stay `301`: their
+   and the redirects stop carrying `noindex`. Do this together with step 7. The apex page redirects stay `301`: their
    targets are the final `new.*` URLs, and browsers have cached them since 2026-11-09 anyway.
-6. **Lift the PIN.** Back up `app.env`, delete its `SITE_PIN` line, `systemctl restart twc-natasa`.
-7. **Verify with curl.**
+7. **Lift the PIN.** Back up `app.env`, delete its `SITE_PIN` line, `systemctl restart twc-natasa`.
+8. **Verify with curl.**
    - `curl -sI https://new.thewomenscollective.club/` gives `200`, one each of `content-security-policy`,
      `permissions-policy`, `referrer-policy`, `x-content-type-options`, `strict-transport-security: max-age=31536000`,
      and no `x-robots-tag`; the same for `/about` and `/members`.
@@ -258,7 +264,7 @@ In this order; each step is done (and its check passes) before the next. Steps 1
      has its `Sitemap:` line.
    - `bun scripts/smoke-cutover.ts --launch` passes (the `--launch` rows also fail on any `X-Robots-Tag` on the
      two home pages).
-8. **Search engines.** In Google Search Console add the domain property `thewomenscollective.club` (DNS TXT record
+9. **Search engines.** In Google Search Console add the domain property `thewomenscollective.club` (DNS TXT record
    in Cloudflare), submit `https://new.thewomenscollective.club/sitemap.xml` and request indexing of `/`. In Bing
    Webmaster Tools import the site from Search Console (or verify it the same way) and submit the same sitemap.
 

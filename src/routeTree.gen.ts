@@ -13,7 +13,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as CodeOfConductRouteImport } from './routes/code-of-conduct'
 import { Route as ColorsRouteImport } from './routes/colors'
 import { Route as ComponentsRouteImport } from './routes/components'
 import { Route as ContactRouteImport } from './routes/contact'
@@ -25,12 +24,10 @@ import { Route as JoinRouteImport } from './routes/join'
 import { Route as MembersRouteImport } from './routes/members'
 import { Route as NeighborhoodsRouteImport } from './routes/neighborhoods'
 import { Route as PartnershipsRouteImport } from './routes/partnerships'
-import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ReviewRouteImport } from './routes/review'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SpotlightRouteImport } from './routes/spotlight'
-import { Route as TermsRouteImport } from './routes/terms'
 import { Route as TypographyRouteImport } from './routes/typography'
 import { Route as VerifiedRouteImport } from './routes/verified'
 import { Route as DotwellKnownSecurityDottxtRouteImport } from './routes/[.]well-known/security[.]txt'
@@ -75,11 +72,6 @@ const AboutRoute = AboutRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CodeOfConductRoute = CodeOfConductRouteImport.update({
-  id: '/code-of-conduct',
-  path: '/code-of-conduct',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ColorsRoute = ColorsRouteImport.update({
@@ -137,11 +129,6 @@ const PartnershipsRoute = PartnershipsRouteImport.update({
   path: '/partnerships',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PrivacyRoute = PrivacyRouteImport.update({
-  id: '/privacy',
-  path: '/privacy',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -160,11 +147,6 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const SpotlightRoute = SpotlightRouteImport.update({
   id: '/spotlight',
   path: '/spotlight',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TermsRoute = TermsRouteImport.update({
-  id: '/terms',
-  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TypographyRoute = TypographyRouteImport.update({
@@ -304,7 +286,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
-  '/code-of-conduct': typeof CodeOfConductRoute
   '/colors': typeof ColorsRoute
   '/components': typeof ComponentsRoute
   '/contact': typeof ContactRoute
@@ -316,12 +297,10 @@ export interface FileRoutesByFullPath {
   '/members': typeof MembersRoute
   '/neighborhoods': typeof NeighborhoodsRoute
   '/partnerships': typeof PartnershipsRoute
-  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/review': typeof ReviewRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/spotlight': typeof SpotlightRoute
-  '/terms': typeof TermsRoute
   '/typography': typeof TypographyRoute
   '/verified': typeof VerifiedRoute
   '/.well-known/security.txt': typeof DotwellKnownSecurityDottxtRoute
@@ -352,7 +331,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
-  '/code-of-conduct': typeof CodeOfConductRoute
   '/colors': typeof ColorsRoute
   '/components': typeof ComponentsRoute
   '/contact': typeof ContactRoute
@@ -364,12 +342,10 @@ export interface FileRoutesByTo {
   '/members': typeof MembersRoute
   '/neighborhoods': typeof NeighborhoodsRoute
   '/partnerships': typeof PartnershipsRoute
-  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/review': typeof ReviewRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/spotlight': typeof SpotlightRoute
-  '/terms': typeof TermsRoute
   '/typography': typeof TypographyRoute
   '/verified': typeof VerifiedRoute
   '/.well-known/security.txt': typeof DotwellKnownSecurityDottxtRoute
@@ -402,7 +378,6 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
-  '/code-of-conduct': typeof CodeOfConductRoute
   '/colors': typeof ColorsRoute
   '/components': typeof ComponentsRoute
   '/contact': typeof ContactRoute
@@ -414,12 +389,10 @@ export interface FileRoutesById {
   '/members': typeof MembersRoute
   '/neighborhoods': typeof NeighborhoodsRoute
   '/partnerships': typeof PartnershipsRoute
-  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/review': typeof ReviewRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/spotlight': typeof SpotlightRoute
-  '/terms': typeof TermsRoute
   '/typography': typeof TypographyRoute
   '/verified': typeof VerifiedRoute
   '/_authenticated/_admin': typeof AuthenticatedAdminRouteRouteWithChildren
@@ -453,7 +426,6 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/auth'
-    | '/code-of-conduct'
     | '/colors'
     | '/components'
     | '/contact'
@@ -465,12 +437,10 @@ export interface FileRouteTypes {
     | '/members'
     | '/neighborhoods'
     | '/partnerships'
-    | '/privacy'
     | '/reset-password'
     | '/review'
     | '/sitemap.xml'
     | '/spotlight'
-    | '/terms'
     | '/typography'
     | '/verified'
     | '/.well-known/security.txt'
@@ -501,7 +471,6 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/auth'
-    | '/code-of-conduct'
     | '/colors'
     | '/components'
     | '/contact'
@@ -513,12 +482,10 @@ export interface FileRouteTypes {
     | '/members'
     | '/neighborhoods'
     | '/partnerships'
-    | '/privacy'
     | '/reset-password'
     | '/review'
     | '/sitemap.xml'
     | '/spotlight'
-    | '/terms'
     | '/typography'
     | '/verified'
     | '/.well-known/security.txt'
@@ -550,7 +517,6 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/about'
     | '/auth'
-    | '/code-of-conduct'
     | '/colors'
     | '/components'
     | '/contact'
@@ -562,12 +528,10 @@ export interface FileRouteTypes {
     | '/members'
     | '/neighborhoods'
     | '/partnerships'
-    | '/privacy'
     | '/reset-password'
     | '/review'
     | '/sitemap.xml'
     | '/spotlight'
-    | '/terms'
     | '/typography'
     | '/verified'
     | '/_authenticated/_admin'
@@ -601,7 +565,6 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   AuthRoute: typeof AuthRoute
-  CodeOfConductRoute: typeof CodeOfConductRoute
   ColorsRoute: typeof ColorsRoute
   ComponentsRoute: typeof ComponentsRoute
   ContactRoute: typeof ContactRoute
@@ -613,12 +576,10 @@ export interface RootRouteChildren {
   MembersRoute: typeof MembersRoute
   NeighborhoodsRoute: typeof NeighborhoodsRoute
   PartnershipsRoute: typeof PartnershipsRoute
-  PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ReviewRoute: typeof ReviewRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SpotlightRoute: typeof SpotlightRoute
-  TermsRoute: typeof TermsRoute
   TypographyRoute: typeof TypographyRoute
   VerifiedRoute: typeof VerifiedRoute
   DotwellKnownSecurityDottxtRoute: typeof DotwellKnownSecurityDottxtRoute
@@ -668,13 +629,6 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/code-of-conduct': {
-      id: '/code-of-conduct'
-      path: '/code-of-conduct'
-      fullPath: '/code-of-conduct'
-      preLoaderRoute: typeof CodeOfConductRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/colors': {
@@ -754,13 +708,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PartnershipsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/privacy': {
-      id: '/privacy'
-      path: '/privacy'
-      fullPath: '/privacy'
-      preLoaderRoute: typeof PrivacyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
@@ -787,13 +734,6 @@ declare module '@tanstack/react-router' {
       path: '/spotlight'
       fullPath: '/spotlight'
       preLoaderRoute: typeof SpotlightRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/terms': {
-      id: '/terms'
-      path: '/terms'
-      fullPath: '/terms'
-      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/typography': {
@@ -1023,7 +963,6 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   AuthRoute: AuthRoute,
-  CodeOfConductRoute: CodeOfConductRoute,
   ColorsRoute: ColorsRoute,
   ComponentsRoute: ComponentsRoute,
   ContactRoute: ContactRoute,
@@ -1035,12 +974,10 @@ const rootRouteChildren: RootRouteChildren = {
   MembersRoute: MembersRoute,
   NeighborhoodsRoute: NeighborhoodsRoute,
   PartnershipsRoute: PartnershipsRoute,
-  PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ReviewRoute: ReviewRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SpotlightRoute: SpotlightRoute,
-  TermsRoute: TermsRoute,
   TypographyRoute: TypographyRoute,
   VerifiedRoute: VerifiedRoute,
   DotwellKnownSecurityDottxtRoute: DotwellKnownSecurityDottxtRoute,

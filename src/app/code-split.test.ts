@@ -21,13 +21,3 @@ describe("CircularGallery code split (OGL + the WebGL engine load only with a mo
     for (const line of lines.filter((l) => !l.trim().startsWith("//"))) expect(line).toMatch(/^export type /);
   });
 });
-
-// A route's `head` stays in the unsplit route file, so it must not touch a whole LegalDoc (perf-7).
-describe("legal routes keep their documents out of the entry chunk", () => {
-  for (const [file, doc] of [["privacy", "privacy"], ["terms", "terms"], ["code-of-conduct", "codeOfConduct"]] as const) {
-    it(`/${file}'s head reads only legalHeads`, () => {
-      const head = read(`../routes/${file}.tsx`).match(/head:\s*\(\)\s*=>\s*([^\n]*)/)?.[1] ?? "";
-      expect(head).toBe(`legalHead(legalHeads.${doc}),`);
-    });
-  }
-});

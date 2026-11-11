@@ -1,6 +1,5 @@
 // The /partnerships inquiry form: inline errors from the shared check, then POST /api/partnerships; on success
 // a confirmation replaces the form. Same shape as ContactForm.
-import { Link } from "@tanstack/react-router";
 import { useRef, useState, type FormEvent } from "react";
 import { Icon } from "@/app/layout/twc";
 import { useCopy } from "@/features/form-copy/use-copy";
@@ -104,8 +103,7 @@ export function PartnershipForm({ send = sendPartnership }: { send?: (input: Par
       <div className="flex min-w-0 flex-col gap-2">
         <label className="twc-check" htmlFor="p-consent">
           <input id="p-consent" name="consent" type="checkbox" required aria-invalid={invalid("consent")} aria-describedby={describe("consent")} />
-          <span>I’m happy for The Women’s Collective to hold these details in order to reply. Nothing is added to any mailing list. See the{" "}
-            <Link to="/privacy" className="twc-inlink">privacy policy</Link>.</span>
+          <span>I’m happy for The Women’s Collective to hold these details in order to reply. Nothing is added to any mailing list.</span>
         </label>
         {error("consent")}
       </div>

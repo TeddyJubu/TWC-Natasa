@@ -118,10 +118,9 @@ describe("/faq", () => {
     expect(main().textContent).not.toMatch(/How much does membership cost|Is the headshot session paid|guest/i);
   });
 
-  it("links contact and privacy, and the ticket to /contact and /join", () => {
+  it("links contact, and the ticket to /contact and /join", () => {
     show(Faq);
     expect(href("get in touch")).toBe("/contact");
-    expect(href("privacy policy")).toBe("/privacy");
     expect(href(/Contact us/)).toBe("/contact");
     expect(href(/Start your application/)).toBe("/join");
   });

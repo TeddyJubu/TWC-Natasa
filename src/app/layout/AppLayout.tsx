@@ -121,13 +121,8 @@ const FOOTER: SiteLink[] = [
   { label: "Contact", to: "/contact" },
   { label: "Sign in", to: "/account" },
 ];
-const LEGAL = [
-  { label: "Privacy", to: "/privacy" },
-  { label: "Terms", to: "/terms" },
-  { label: "Code of conduct", to: "/code-of-conduct" },
-] as const;
-
-/** Lilac site footer: tagline + site links, the big wordmark, and the legal links on every live page. */
+/** Lilac site footer: tagline + site links, the big wordmark and the collective's name. No legal links until the
+ *  pages exist again (docs/LEGAL-PAGES-REQUIRED.md). */
 export function AppFooter() {
   return (
     <footer className="twc-footer">
@@ -141,9 +136,6 @@ export function AppFooter() {
         <p aria-hidden className="twc-footer__word">The Women’s Collective</p>
         <div className="twc-footer__legal">
           <span>The Women’s Collective · Western Queens</span>
-          <nav aria-label="Legal" className="twc-footer__links font-geist">
-            {LEGAL.map((l) => <Link key={l.to} to={l.to} className="twc-link">{l.label}</Link>)}
-          </nav>
         </div>
       </div>
     </footer>

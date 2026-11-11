@@ -68,13 +68,12 @@ describe.each([
 });
 
 describe("/fellowship", () => {
-  it("links to the application, the questions, the contact page and the code of conduct", () => {
+  it("links to the application, the questions, and the contact page", () => {
     show(Fellowship);
     expect(href("Start your application")).toBe("/join");
     expect(href("Come to something first")).toBe("/gatherings");
     expect(href("Read the questions")).toBe("/faq");
     expect(href("Write to us")).toBe("/contact");
-    expect(href("Read the code of conduct")).toBe("/code-of-conduct");
     expect(href("See how it works")).toBe("/about");
     expect(href("Who the collective is for")).toBe("/faq#membership");
   });

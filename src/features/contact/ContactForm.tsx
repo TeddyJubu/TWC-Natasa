@@ -1,7 +1,6 @@
 // The /contact form: inline errors from the shared check, then POST /api/contact; on success a confirmation
 // replaces the form. A hidden honeypot field travels with the message; the server ignores anything it fills.
 import { useRef, useState, type FormEvent } from "react";
-import { Link } from "@tanstack/react-router";
 import { Icon } from "@/app/layout/twc";
 import { useCopy } from "@/features/form-copy/use-copy";
 import { sendContact, type ContactMessage } from "./mutations";
@@ -100,7 +99,6 @@ export function ContactForm({ send = sendContact }: { send?: (input: ContactMess
           <input type="checkbox" name="consent" required aria-invalid={errors.consent ? true : undefined} aria-describedby={describe("consent")} />
           <span>
             I’m happy for The Women’s Collective to hold these details in order to reply. Nothing is added to any mailing list.
-            See the <Link to="/privacy" className="twc-inlink">privacy policy</Link>.
           </span>
         </label>
         {error("consent")}
