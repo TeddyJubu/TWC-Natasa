@@ -46,7 +46,10 @@ export function acceptsGzip(header: string | null): boolean {
   return (gzip ?? star ?? 0) > 0;
 }
 
-/** Gzips an app response when the client takes it and it's HTML, JSON or XML that nobody encoded yet. */
+/**
+ * Gzips an app response when the client takes it and it's HTML, JSON or XML that nobody encoded yet. Only a stated
+ * Content-Length under 1 KB skips it: a streamed body's size isn't known without buffering it, so it's compressed.
+ */
 export function compressResponse(request: Request, response: Response): Response {
   const type = response.headers.get("Content-Type") ?? "";
   const length = Number(response.headers.get("Content-Length") ?? NaN);

@@ -134,23 +134,28 @@ export function serveMedia(db: DB, actor: Actor, pathname: string, requestHeader
     open = bucket === "neighborhood-logos" || (bucket === "avatars" && isPublicAvatarFolder(db, rest[0]));
   } else return notFound();
   if (!file) return notFound();
-  let bytes: Buffer;
   let stat: { size: number; mtimeMs: number; ino: number };
   try {
     stat = statSync(file);
-    bytes = readFileSync(file);
   } catch {
     return notFound();
   }
-  const ext = sniffImage(bytes);
-  if (!ext) return notFound();
   const mtime = Math.floor(stat.mtimeMs);
   const cache = {
     "Cache-Control": open ? "public, max-age=60" : "private, max-age=3600",
     ETag: `W/"${stat.size.toString(16)}-${mtime.toString(16)}-${stat.ino.toString(16)}"`,
     "Last-Modified": new Date(mtime).toUTCString(),
   };
+  // A revalidation is answered from the stat alone: the 304 has no body, and visibility was checked above.
   if (requestHeaders && notModified(requestHeaders, cache.ETag, mtime)) return new Response(null, { status: 304, headers: cache });
+  let bytes: Buffer;
+  try {
+    bytes = readFileSync(file);
+  } catch {
+    return notFound();
+  }
+  const ext = sniffImage(bytes);
+  if (!ext) return notFound();
   return new Response(new Uint8Array(bytes), {
     headers: { "Content-Type": TYPES[ext], "X-Content-Type-Options": "nosniff", ...cache },
   });

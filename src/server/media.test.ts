@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, statSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
@@ -142,6 +142,19 @@ describe("serveMedia", () => {
     const owner = serveMedia(db, { id: OWNER, email: "o@x.test" }, path, new Headers({ "If-None-Match": etag }));
     expect([owner.status, owner.headers.get("Cache-Control")]).toEqual([304, "private, max-age=3600"]);
     db.prepare("update profiles set public_profile = 1 where id = ?").run(OWNER);
+  });
+
+  it("answers a revalidation from the file's stat, without reading its body", () => {
+    const path = `/media/avatars/${OWNER}/revalidate.png`;
+    writeMedia("avatars", `${OWNER}/revalidate.png`, PNG);
+    const file = mediaFile("avatars", `${OWNER}/revalidate.png`)!;
+    const when = 1_700_000_000; // a whole second, so restoring it keeps the ETag
+    utimesSync(file, when, when);
+    const etag = get(path).headers.get("ETag")!;
+    writeFileSync(file, new Uint8Array(statSync(file).size)); // same size and inode, no longer an image
+    utimesSync(file, when, when);
+    expect(serveMedia(db, null, path, new Headers({ "If-None-Match": etag })).status).toBe(304);
+    expect(get(path).status).toBe(404); // a full read still sniffs it
   });
 
   it("never serves a stored file that isn't an image", () => expect(get(`/media/avatars/${OWNER}/notes.png`).status).toBe(404));
