@@ -211,18 +211,20 @@ The `sqlite3` count is the authoritative cross-check.
 
 In this order; each step is done (and its check passes) before the next. Steps 1–4 can be done now, behind the PIN.
 
-1. **Remove the edge script injection (blocker).** Since at least 2026-11-11 every `text/html` response on `new.*`
-   and the apex, including Caddy's static coming-soon page and the PIN page, ends in a hidden inline script that
-   writes `betaflight.uk.com` and `convertmaister.com` links before `</body>`. The origin app and Caddy were checked
-   clean on 2026-11-11, so it is added at the Cloudflare edge. In the Cloudflare dashboard, for the
-   `thewomenscollective.club` zone and its account, look in: Workers Routes (any route on the zone) and the Workers
-   they point at; Rules → Snippets; Zaraz (tools, custom HTML, triggers); Apps; Rules → Transform rules, plus
-   Configuration, Origin and Page rules; Pages custom domains; then Manage Account → Members (anyone unknown),
-   API Tokens (user and account; revoke anything unknown or unused) and the Audit Log (who added what, when).
-   Remove it, then rotate: the Cloudflare password, 2FA and every API token (reissue `CF_EMAIL_API_TOKEN`), the
-   registrar login, the VPS's SSH keys and users, `BETTER_AUTH_SECRET` (signs everyone out), `BEEHIIV_API_KEY`,
-   `GOOGLE_CLIENT_SECRET` and `SITE_PIN`; update `app.env` and restart `twc-natasa.service`. Read the SSH auth log
-   and compare the database and uploads with a nightly backup from before the injection. Check:
+1. **Edge script injection (GAP-1): removed at the edge 2026-11-11; owner steps still open.** The hidden SEO-spam
+   script on every `text/html` response of `new.*` and the apex came from a malicious Cloudflare Worker,
+   `cf-w-416feb67` (created 2026-09-28, obfuscated), routed on `*thewomenscollective.club/*` and on two other zones in
+   the same account: it showed bots the spam links, proxied `/_r/*` with headers and cookies to
+   `svc-storage.bb69baa5.workers.dev` and redirected some visitors to `cocojambo.us.com`. All its routes are removed,
+   the HTML was verified clean, and every app session was revoked (backup
+   `/var/backups/twc-natasa/pre-session-revoke-20261111T111734Z.db`). Still to do, by the owner: rotate the Cloudflare
+   password, 2FA and every API token (reissue `CF_EMAIL_API_TOKEN`); review Manage Account → Members and the Audit
+   Log (remove anyone unknown); delete the `cf-w-416feb67` script itself; rotate `SITE_PIN` (and optionally
+   `BETTER_AUTH_SECRET`, which signs everyone out), update `app.env` and restart `twc-natasa.service`; after step 7,
+   request a recrawl in Search Console (step 9). While there, also check the other places an edge can inject:
+   Rules → Snippets, Zaraz, Apps, Transform/Configuration/Origin/Page rules, Pages custom domains. Keep Rocket
+   Loader, Email Obfuscation and any other zone feature that rewrites or injects into HTML **off**: with the nonce
+   CSP their inline scripts carry no nonce and are blocked, and the smoke check would fail on them. Check:
    `curl -s https://new.thewomenscollective.club/ | grep -ci betaflight` and the same for the apex give `0`, and
    `SMOKE_PIN=<the new PIN> bun scripts/smoke-cutover.ts` passes (it sends the PIN cookie to `new.*`, so it sees the
    app's pages, not the PIN page; it fails on an inline script without the app's nonce, or a link to a host outside
