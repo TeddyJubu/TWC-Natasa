@@ -1,7 +1,9 @@
 // Server-only: what Better Auth's user.deleteUser (POST /api/auth/delete-user, src/server/auth.server.ts) does
 // around removing the "user" row. Her profile, roles, sessions, accounts, RSVPs, bookings, member links, reviews,
 // Spotlight answers, feed posts, loves and replies go with it through `on delete cascade`; applications only lose
-// their user_id there, so they are deleted here, with every one sent from her email.
+// their user_id there, so they are deleted here, with every one sent from her email. Her imported record
+// (legacy_members, 0004) would only lose its user_id and, unclaimed again, approve and refill the next account
+// verified with that email (even after an admin's decline), so it goes here too.
 import { APIError } from "better-auth/api";
 import type { DB } from "./db.ts";
 import { isAdmin } from "./guard.ts";
@@ -13,12 +15,13 @@ type DeletedUser = { id: string; email: string };
 export const hasPassword = (db: DB, userId: string) =>
   !!db.prepare("select 1 from account where userId = ? and providerId = 'credential' and password is not null").get(userId);
 
-/** Before the row goes: admins can't delete themselves this way; then her applications (by account or email). */
+/** Before the row goes: admins can't delete themselves this way; then her applications and imported record (by account or email). */
 export function beforeAccountDelete(db: DB, user: DeletedUser): void {
   if (isAdmin(db, user.id)) {
     throw new APIError("FORBIDDEN", { code: "ADMIN_CANNOT_DELETE", message: "An admin account can’t be deleted from here." });
   }
   db.prepare("delete from applications where user_id = ? or lower(email) = lower(?)").run(user.id, user.email);
+  db.prepare("delete from legacy_members where user_id = ? or email = lower(?)").run(user.id, user.email);
 }
 
 /** After the row is gone: her upload folders (portraits and logos, newsfeed photos). */

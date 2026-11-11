@@ -241,6 +241,20 @@ describe("delete my account (POST /api/auth/delete-user)", () => {
     expect(users(lena.id)).toBe(1);
   });
 
+  it("deletes her imported record too, so a declined imported member can't come back approved by signing up again", async () => {
+    db.prepare(`insert into legacy_members (legacy_id, email, full_name, bio, member_since) values ('m-1', 'rosa@x.test', 'Rosa', 'Old bio', '2020-01-01')`).run();
+    db.prepare(`insert into legacy_members (legacy_id, email, full_name) values ('m-2', 'lena@x.test', 'Lena')`).run();
+    const rosa = await signedIn("rosa@x.test");
+    expect(row(`select status from profiles where id = ?`, rosa.id)).toEqual({ status: "approved" });
+    db.prepare(`update profiles set status = 'declined' where id = ?`).run(rosa.id);
+
+    expect((await del(rosa.cookie, { password: "correct horse" })).status).toBe(200);
+    expect(db.prepare(`select legacy_id from legacy_members`).all()).toEqual([{ legacy_id: "m-2" }]);
+
+    const again = await signedIn("rosa@x.test");
+    expect(row(`select status, bio, member_since from profiles where id = ?`, again.id)).toEqual({ status: "pending", bio: "", member_since: null });
+  });
+
   it("a password account needs its password: none or a wrong one deletes nothing", async () => {
     const rosa = await signedIn("rosa@x.test");
     db.prepare(`insert into applications (email, full_name) values ('rosa@x.test', 'Rosa')`).run();

@@ -20,7 +20,7 @@ const GENERIC = "We couldn’t delete your account right now. Please try again i
 /**
  * "Delete my account" at the foot of the Membership card: a confirm step, then her password (a Google-only account
  * has none, so Better Auth wants a sign-in from the last day instead). The server refuses admins and deletes her
- * profile, applications and upload folders with the account (src/server/account-delete.ts).
+ * profile, applications, imported record and upload folders with the account (src/server/account-delete.ts).
  */
 export function DeleteAccount() {
   const admin = useQuery(viewerQuery).data?.admin === true;
@@ -87,7 +87,7 @@ export function DeleteAccount() {
       <h3 id={headingId} className="air-lbl mb-0">Delete your account?</h3>
       <p className="text-[14px]/[1.5] text-ink">
         This deletes your account, your profile and card, your portrait and logo, your newsfeed posts, loves and replies,
-        and your membership applications, for good. It can’t be undone.
+        your membership applications and any record imported from the old site, for good. It can’t be undone.
       </p>
       {hasPassword ? (
         <div className="flex flex-col gap-1.5">
