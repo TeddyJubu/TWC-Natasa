@@ -1,6 +1,7 @@
 import { createFileRoute, notFound, redirect, useNavigate } from "@tanstack/react-router";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import { StatusPage } from "@/app/layout/StatusPages";
+import { DOOP_SYNC_SRC, doopSyncOn } from "@/app/doop-sync";
 import { CustomForm } from "@/features/forms/CustomForm";
 import { openFormFn } from "@/features/forms/fns";
 import { paragraphs } from "@/features/forms/schema";
@@ -19,8 +20,8 @@ export const Route = createFileRoute("/f/$slug")({
   head: ({ loaderData }) => ({
     // ponytail: every form is noindex until the CRM's "listed" switch (and the /forms list, OPS-426) is rebuilt.
     meta: [{ title: `${loaderData?.name ?? "Form"} — The Women’s Collective` }, { name: "robots", content: "noindex" }],
-    // Public capture key for the doop canvas. script-src and connect-src allow this origin.
-    scripts: [{ async: true, src: "https://doop.design/doop-sync.js?key=dk_43wWjXdIlAXKScXwf9wqhCzb" }],
+    // Design sync, only in a VITE_DOOP_SYNC=true build (src/app/doop-sync.ts); the CSP allows its origin only then.
+    scripts: doopSyncOn() ? [{ async: true, src: DOOP_SYNC_SRC }] : [],
   }),
   component: FormPage,
 });

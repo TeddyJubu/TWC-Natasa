@@ -48,13 +48,23 @@ describe("/f/$slug", () => {
     expect(fake.calls).toEqual([["openFormFn", { slug: "nope" }], ["openFormFn", { slug: "salon-rsvp-old" }], ["openFormFn", { slug: "salon-rsvp-old" }]]);
   });
 
-  it("is noindex, titled with the form's name, and loads the doop design sync", () => {
-    const { meta, scripts } = (Route.options.head as (c: { loaderData: PublicForm }) => {
-      meta: Record<string, string>[];
-      scripts: { async: boolean; src: string }[];
-    })({ loaderData: rsvp });
+  const head = () => (Route.options.head as (c: { loaderData: PublicForm }) => {
+    meta: Record<string, string>[];
+    scripts: { async: boolean; src: string }[];
+  })({ loaderData: rsvp });
+
+  it("is noindex, titled with the form's name, and loads no third-party script", () => {
+    vi.stubEnv("VITE_DOOP_SYNC", "");
+    const { meta, scripts } = head();
     expect(meta).toEqual([{ title: "Salon RSVP (demo) — The Women’s Collective" }, { name: "robots", content: "noindex" }]);
-    expect(scripts).toEqual([{ async: true, src: "https://doop.design/doop-sync.js?key=dk_43wWjXdIlAXKScXwf9wqhCzb" }]);
+    expect(scripts).toEqual([]);
+    vi.unstubAllEnvs();
+  });
+
+  it("loads the doop design sync only in a VITE_DOOP_SYNC=true build", () => {
+    vi.stubEnv("VITE_DOOP_SYNC", "true");
+    expect(head().scripts).toEqual([{ async: true, src: "https://doop.design/doop-sync.js?key=dk_43wWjXdIlAXKScXwf9wqhCzb" }]);
+    vi.unstubAllEnvs();
   });
 
   it("shows a closed form's words and no questions", () => {

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { csrfMiddleware, startInstance } from "../start";
 import { SECURITY_HEADERS, contentSecurityPolicy, isSignedInPage, securityHeadersMiddleware, withSecurityHeaders } from "./security-headers";
 
@@ -16,22 +16,34 @@ const run = (m: unknown, request: Request, handlerType: "router" | "serverFn", r
 const responseOf = (r: { response: Response } | Response) => (r instanceof Response ? r : r.response);
 
 describe("content security policy", () => {
-  it("is the full enforced policy: same origin, data:/blob: images, the doop design-sync host and the map tiles", () => {
+  it("is the full enforced policy: same origin, data:/blob: images and the map tiles", () => {
     expect(contentSecurityPolicy()).toBe(
-      "default-src 'self'; script-src 'self' 'unsafe-inline' https://doop.design; style-src 'self' 'unsafe-inline'; " +
-        "img-src 'self' data: blob:; connect-src 'self' https://doop.design https://tiles.openfreemap.org; font-src 'self'; " +
+      "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; " +
+        "img-src 'self' data: blob:; connect-src 'self' https://tiles.openfreemap.org; font-src 'self'; " +
         "frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'",
     );
   });
 
-  it("is what SECURITY_HEADERS sends; doop.design and the map's tile host are the only third-party origins", () => {
+  it("allows the doop design-sync host only in a VITE_DOOP_SYNC=true build", () => {
+    for (const value of [undefined, "", "false", "1", "TRUE"]) {
+      vi.stubEnv("VITE_DOOP_SYNC", value as string);
+      expect(contentSecurityPolicy(), String(value)).not.toContain("doop.design");
+    }
+    vi.stubEnv("VITE_DOOP_SYNC", "true");
+    const csp = contentSecurityPolicy();
+    expect(csp).toMatch(/script-src 'self' 'unsafe-inline' https:\/\/doop\.design;/);
+    expect(csp).toMatch(/connect-src 'self' https:\/\/doop\.design https:\/\/tiles\.openfreemap\.org;/);
+    vi.unstubAllEnvs();
+  });
+
+  it("is what SECURITY_HEADERS sends; the map's tile host is the only third-party origin", () => {
     const csp = SECURITY_HEADERS["Content-Security-Policy"];
     expect(csp).toBe(contentSecurityPolicy());
     // Tiles are fetched, never scripted: the map's host is in connect-src only.
     expect(csp).toMatch(/connect-src [^;]*https:\/\/tiles\.openfreemap\.org/);
     expect(csp).not.toMatch(/script-src [^;]*openfreemap/);
     expect(csp).not.toMatch(/supabase|lovable|gptengineer|wss?:|\*|http:\/\//);
-    expect(csp.match(/https:\/\/[^;\s]+/g)).toEqual(["https://doop.design", "https://doop.design", "https://tiles.openfreemap.org"]);
+    expect(csp.match(/https:\/\/[^;\s]+/g)).toEqual(["https://tiles.openfreemap.org"]);
   });
 });
 

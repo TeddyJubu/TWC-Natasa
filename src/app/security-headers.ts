@@ -1,19 +1,21 @@
 import { createMiddleware } from "@tanstack/react-start";
+import { DOOP_ORIGIN, doopSyncOn } from "./doop-sync";
 
 /**
  * The enforced CSP. Everything the app loads or fetches is same-origin: pages, server functions, /api/auth and
- * /media images, except the public form page's doop design-sync script, which also posts its capture to
- * `https://doop.design`. 'unsafe-inline' scripts and styles: SSR hydration emits inline scripts and components set
+ * /media images, except the map's tiles and, only in a VITE_DOOP_SYNC=true build, the /f/<slug> design-sync script,
+ * which also posts its capture to `https://doop.design`. 'unsafe-inline' scripts and styles: SSR hydration emits inline scripts and components set
  * inline `style` (e.g. `--hood`); per-request nonces would replace it. A new external origin goes here, with a test.
  */
-export function contentSecurityPolicy(): string {
+export function contentSecurityPolicy({ doop = doopSyncOn() }: { doop?: boolean } = {}): string {
+  const sync = doop ? ` ${DOOP_ORIGIN}` : "";
   return [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' https://doop.design",
+    `script-src 'self' 'unsafe-inline'${sync}`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob:",
     // OpenFreeMap: the /account neighborhood map's style, vector tiles, glyphs and sprites (NeighborhoodMap.tsx).
-    "connect-src 'self' https://doop.design https://tiles.openfreemap.org",
+    `connect-src 'self'${sync} https://tiles.openfreemap.org`,
     "font-src 'self'",
     "frame-ancestors 'self'",
     "base-uri 'self'",
