@@ -43,7 +43,8 @@ export function createAuth(db: DB) {
     database: db,
     baseURL: base,
     secret: authSecret(),
-    trustedOrigins: production ? [base] : [base, "http://localhost:8080"],
+    // Dev: localhost and 127.0.0.1 are different origins to a browser, so trust APP_URL under both names.
+    trustedOrigins: production ? [base] : [...new Set([base, base.replace("//127.0.0.1", "//localhost"), base.replace("//localhost", "//127.0.0.1"), "http://localhost:8080"])],
     advanced: {
       // UUIDs, so ids imported from Supabase and new ones look alike.
       database: { generateId: "uuid" },

@@ -178,6 +178,9 @@ describe("configuration", () => {
     expect(auth.options.trustedOrigins).toEqual([APP]);
     vi.stubEnv("NODE_ENV", "development");
     expect(createAuth(db).options.trustedOrigins).toEqual([APP, "http://localhost:8080"]);
+    // A loopback APP_URL is trusted under both names, which a browser treats as different origins.
+    vi.stubEnv("APP_URL", "http://127.0.0.1:5199");
+    expect(createAuth(db).options.trustedOrigins).toEqual(["http://127.0.0.1:5199", "http://localhost:5199", "http://localhost:8080"]);
   });
 
   it("offers Google only when both GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are set", () => {
