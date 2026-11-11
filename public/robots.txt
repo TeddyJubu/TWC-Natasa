@@ -1,4 +1,24 @@
+# One group, so every named crawler follows the same rules (RFC 9309: a named group does not inherit *).
+# Signed-in pages (/account, /directory, /feed, /admin) are not disallowed: they answer X-Robots-Tag: noindex,
+# which a crawler only sees if it may fetch them. /media/public/ and /media/neighborhood-logos/ stay open.
 User-agent: *
+User-agent: Googlebot
+User-agent: Bingbot
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-User
+User-agent: Claude-SearchBot
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+Allow: /
+Disallow: /api/
+Disallow: /_serverFn/
+Disallow: /media/avatars/
+Disallow: /media/feed/
 Disallow: /colors
 Disallow: /typography
 Disallow: /components

@@ -190,11 +190,29 @@ describe("account-access pages use the site chrome", () => {
 
 describe("robots.txt", () => {
   const robots = () => readFileSync(resolve(process.cwd(), "public/robots.txt"), "utf8");
+  const rules = () => robots().split("\n").map((l) => l.replace(/#.*/, "").trim()).filter(Boolean);
+  const values = (field: string) => rules().filter((l) => l.startsWith(`${field}:`)).map((l) => l.slice(field.length + 1).trim());
 
-  it("applies to every crawler and disallows the showcase and preview paths and personal review and Spotlight links", () => {
-    const lines = robots().split("\n").map((l) => l.trim());
-    expect(lines).toContain("User-agent: *");
-    const disallowed = lines.filter((l) => l.startsWith("Disallow:")).map((l) => l.slice("Disallow:".length).trim());
-    expect(disallowed.sort()).toEqual(["/colors", "/components", "/review", "/spotlight", "/typography"]);
+  it("disallows the showcase, personal links, the API, server functions and the private media buckets", () => {
+    expect(values("Disallow").sort()).toEqual(["/_serverFn/", "/api/", "/colors", "/components", "/media/avatars/", "/media/feed/", "/review", "/spotlight", "/typography"]);
+    expect(values("Allow")).toEqual(["/"]);
+  });
+
+  it("keeps public portraits, neighborhood logos and the signed-in pages' noindex header reachable", () => {
+    // A Disallow would hide the signed-in pages' X-Robots-Tag: noindex (security-headers.ts) from crawlers.
+    for (const path of ["/media/public/", "/media/neighborhood-logos/", "/account", "/directory", "/feed", "/admin"]) {
+      expect(values("Disallow").some((d) => path.startsWith(d))).toBe(false);
+    }
+  });
+
+  it("names every search and answer crawler in the one group with *, so they share its rules", () => {
+    // RFC 9309: a crawler follows only the group that names it, so a separate group would lose *'s Disallows.
+    const lines = rules();
+    const firstRule = lines.findIndex((l) => !l.startsWith("User-agent:"));
+    expect(lines.slice(firstRule).some((l) => l.startsWith("User-agent:"))).toBe(false);
+    expect(values("User-agent")).toEqual([
+      "*", "Googlebot", "Bingbot", "GPTBot", "OAI-SearchBot", "ChatGPT-User", "ClaudeBot", "Claude-User", "Claude-SearchBot",
+      "PerplexityBot", "Perplexity-User", "Google-Extended", "Applebot-Extended",
+    ]);
   });
 });
