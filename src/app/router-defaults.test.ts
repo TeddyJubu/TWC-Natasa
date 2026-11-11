@@ -26,6 +26,12 @@ describe("getRouter", () => {
     expect(router.options.defaultErrorComponent).toBe(ErrorPage);
   });
 
+  it("preloads a link's route on intent, leaving freshness to TanStack Query", () => {
+    const router = getRouter();
+    expect(router.options.defaultPreload).toBe("intent");
+    expect(router.options.defaultPreloadStaleTime).toBe(0);
+  });
+
   it("a real 404 gets no canonical or og:url, while a real page does", async () => {
     vi.stubEnv("VITE_SITE_URL", "https://example.com");
     // Prefer a page without a DB-backed loader (/join now loads forms_state).

@@ -10,6 +10,8 @@ export const getRouter = () => {
     routeTree,
     context: { queryClient },
     scrollRestoration: true,
+    // Hovering or focusing a link fetches its route chunk and loader; staleTime 0 leaves caching to TanStack Query.
+    defaultPreload: "intent",
     defaultPreloadStaleTime: 0,
     defaultNotFoundComponent: NotFound,
     defaultErrorComponent: ErrorPage,
