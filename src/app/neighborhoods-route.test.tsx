@@ -211,7 +211,9 @@ describe("/neighborhoods/:slug", () => {
   it("uses the bundled photo for a seed neighborhood and a color tile for one without a photo", () => {
     withLoaderData(SlugRoute, { hood: astoria });
     const { unmount } = renderWithQueries(<SlugPage />, [visitor, [["public-profiles"], []]]);
-    expect(screen.getByAltText("Astoria, Queens")).toBeTruthy();
+    // The hero photo is the page's largest paint: fetched first, never lazy.
+    expect(screen.getByAltText("Astoria, Queens").getAttribute("fetchpriority")).toBe("high");
+    expect(screen.getByAltText("Astoria, Queens").hasAttribute("loading")).toBe(false);
     unmount();
     withLoaderData(SlugRoute, { hood: woodside });
     renderWithQueries(<SlugPage />, [visitor, [["public-profiles"], []]]);

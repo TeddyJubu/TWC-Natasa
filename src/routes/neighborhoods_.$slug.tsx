@@ -112,6 +112,7 @@ function Hero({ hood }: { hood: Neighborhood }) {
           alt={`${hood.name}, Queens`}
           width={816}
           height={816}
+          fetchPriority="high"
           className="absolute inset-0 size-full object-cover"
         />
       ) : (
