@@ -136,6 +136,22 @@ describe("/ (home) structure", () => {
     expect((items[2].querySelector(".twc-dot") as HTMLElement).style.getPropertyValue("--hood")).toBe("#123456");
   });
 
+  it("the neighborhood ribbon names the active neighborhoods only, never a hard-coded one", () => {
+    const hoods = [...NEIGHBORHOOD_SEED.slice(0, 2), { slug: "woodside", name: "Woodside", color: "#123456", logoUrl: null, active: false }];
+    renderWithQueries(<Page />, [[["public-profiles"], []], [["neighborhoods"], hoods]]);
+    const band = screen.getByRole("region", { name: "Neighborhoods" });
+    expect(within(band).getByText(/^Across /).textContent).toBe("Across Long Island City, Astoria.");
+    expect(band.textContent).not.toContain("Woodside");
+    expect(band.querySelector(".sb-ribbon.bg-sb-lilac")!.textContent).toContain("Astoria");
+  });
+
+  it("the neighborhood ribbon falls back to the seed list (no Woodside) when none is active", () => {
+    renderWithQueries(<Page />, [[["public-profiles"], []], [["neighborhoods"], []]]);
+    const band = screen.getByRole("region", { name: "Neighborhoods" });
+    expect(within(band).getByText(/^Across /).textContent).toBe(`Across ${NEIGHBORHOOD_SEED.map((n) => n.name).join(", ")}.`);
+    expect(band.textContent).not.toContain("Woodside");
+  });
+
   it("FAQ: three questions, more on /faq, questions go to /contact", () => {
     renderWithQueries(<Page />, [[["public-profiles"], []]]);
     const faq = document.getElementById("faq")!;

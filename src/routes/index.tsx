@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState, type CSSProperties } from "react";
 import { ConstellationLogo, cn, type MemberProfile } from "@/index";
 import { loadPublicProfiles, publicProfilesQuery } from "@/features/members/queries";
-import { useNeighborhoods } from "@/features/neighborhoods/queries";
+import { NEIGHBORHOOD_SEED, useNeighborhoods, type Neighborhood } from "@/features/neighborhoods/queries";
 import heroRock from "@/assets/photography/home/hero-rock.webp";
 import queensPolaroid from "@/assets/photography/home/queens-polaroid.webp";
 import deskFlatlay from "@/assets/photography/home/desk-flatlay.webp";
@@ -48,7 +48,15 @@ export const Route = createFileRoute("/")({
 
 /* ── data ─────────────────────────────────────────────────────────────── */
 
-const NEIGHBORHOODS = ["Long Island City", "Astoria", "Sunnyside", "Woodside", "Jackson Heights", "Elmhurst", "Forest Hills", "Rego Park"];
+/** The ribbon's names: the active neighborhoods in list order (the seed's if none are), repeated until one half of
+ *  the loop is long enough to span the band. */
+function ribbonNames(list: Neighborhood[]): string[] {
+  const active = list.filter((n) => n.active).map((n) => n.name);
+  const names = active.length ? active : NEIGHBORHOOD_SEED.map((n) => n.name);
+  const items = [...names];
+  while (items.length < 14) items.push(...names);
+  return items;
+}
 const ROLES = [
   ["founders", "makers", "creatives"],
   ["career-builders", "neighbors", "artists"],
@@ -271,6 +279,8 @@ function NorthBrooklyn() {
 
 function Ribbons() {
   const [paused, setPaused] = useState(false);
+  const names = ribbonNames(useNeighborhoods().data);
+  const unique = [...new Set(names)];
   return (
     <section aria-label="Neighborhoods" className="relative h-[136px] lg:h-[170px]">
       {/* WCAG 2.2.2: the loops run past 5 s, so one control stills every looping animation on the page (styles.css). */}
@@ -283,9 +293,9 @@ function Ribbons() {
       >
         <Icon name={paused ? "play" : "pause"} className="size-3.5" />
       </button>
-      <p className="sr-only">Across {NEIGHBORHOODS.join(", ")}.</p>
+      <p className="sr-only">Across {unique.join(", ")}.</p>
       <Ribbon items={Array.from({ length: 10 }, () => "Find your people")} className="top-[62px] rotate-[2.5deg] bg-sb-mint lg:top-10" />
-      <Ribbon items={[...NEIGHBORHOODS, ...NEIGHBORHOODS]} className="top-6 z-10 -rotate-3 bg-sb-lilac lg:top-28" reverse />
+      <Ribbon items={names} className="top-6 z-10 -rotate-3 bg-sb-lilac lg:top-28" reverse />
     </section>
   );
 }
