@@ -42,7 +42,9 @@ const MENU: SiteLink[] = [...NAV_START, ...NAV_END, { label: "Contact", to: "/co
 const navLink = "twc-link whitespace-nowrap font-display text-[15px] tracking-[0.3px] text-sb-ink";
 const MENU_ID = "site-menu";
 
-/** Sticky site header: three links, the logo, two links + Sign in + Join us; a full-screen popover menu below lg. */
+/** Sticky site header: three links, the logo, two links + Sign in + Join us; a full-screen popover menu below xl.
+ *  The row needs about 990px (Gilda at 15px: the links, the 22px wordmark, the gaps, Join us) and `.twc-wrap` leaves
+ *  896px at 1024px wide, so it starts at xl, where the wrap's 1024px always fits it. */
 export function AppNav() {
   const menu = React.useRef<HTMLDivElement>(null);
   const close = () => menu.current?.hidePopover?.();
@@ -57,19 +59,19 @@ export function AppNav() {
   );
   return (
     <header className="sticky top-0 z-40 bg-sb-paper/85 backdrop-blur-md">
-      <div className="twc-wrap hidden min-h-[88px] grid-cols-[1fr_auto_1fr] items-center gap-6 lg:grid">
+      <div className="twc-wrap hidden min-h-[88px] grid-cols-[1fr_auto_1fr] items-center gap-6 xl:grid">
         <nav aria-label="Main" className="flex items-center gap-7 xl:gap-9">
           {NAV_START.map((l) => <Link key={l.to} to={l.to} className={navLink}>{l.label}</Link>)}
         </nav>
         {brand}
         <div className="flex items-center justify-end gap-7 xl:gap-9">
           {NAV_END.map((l) => <Link key={l.to} to={l.to} className={navLink}>{l.label}</Link>)}
-          <Link to="/account" className={cn(navLink, "hidden min-[1440px]:inline")}>Sign in</Link>
+          <Link to="/account" className={navLink}>Sign in</Link>
           {join("")}
         </div>
       </div>
 
-      <div className="flex min-h-16 items-center justify-between gap-3 px-4 lg:hidden">
+      <div className="flex min-h-16 items-center justify-between gap-3 px-4 xl:hidden">
         {brand}
         <div className="-mr-2 flex items-center gap-1">
           {join("min-h-9 px-3.5 py-2 text-[11px] tracking-[1.2px]")}

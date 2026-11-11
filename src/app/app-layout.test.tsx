@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { AppFooter, AppPage } from "@/app/layout/AppLayout";
+import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import type { Profile } from "@/features/members/queries";
 import { renderWithQueries } from "@/test/dom";
 
@@ -132,6 +132,24 @@ describe("root route", () => {
 });
 
 // The legal pages are gone until they're written for real (docs/LEGAL-PAGES-REQUIRED.md): nothing may link them.
+describe("AppNav", () => {
+  // The desktop row needs ~990px (measured in Gilda Display: links 15px + 0.3px tracking, the 22px wordmark, 36px gaps,
+  // Join us); `.twc-wrap` leaves 896px at 1024px and 1024px from 1152px up. So the row starts at xl, with Sign in.
+  it("shows the desktop row, Sign in included, only from xl and the menu button below it", () => {
+    render(<AppNav />);
+    const signIn = screen.getAllByRole("link", { name: "Sign in" });
+    const row = screen.getByRole("navigation", { name: "Main" }).parentElement!;
+    expect(row.className).toMatch(/(^| )hidden( |$)/);
+    expect(row.className).toContain("xl:grid");
+    expect(row.className).not.toMatch(/\blg:/);
+    const desktopSignIn = signIn.find((a) => row.contains(a))!;
+    expect(desktopSignIn.className).not.toMatch(/hidden|min-\[/);
+    const bar = screen.getByRole("button", { name: "Open menu" }).closest("div.flex.min-h-16")!;
+    expect(bar.className).toContain("xl:hidden");
+    expect(bar.className).not.toContain("lg:hidden");
+  });
+});
+
 describe("AppFooter", () => {
   const REMOVED = ["/privacy", "/terms", "/code-of-conduct"];
   it("the router has no legal routes, so they 404", () => {
