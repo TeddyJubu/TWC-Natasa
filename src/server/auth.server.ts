@@ -50,7 +50,11 @@ export function createAuth(db: DB) {
       ipAddress: { ipAddressHeaders: ["cf-connecting-ip", "x-forwarded-for"] },
     },
     // ponytail: in-memory counters, one server process; use Better Auth's database storage if that changes.
-    rateLimit: { enabled: true },
+    // Per client IP: 10 password sign-ins and 5 sign-ups per 10 minutes, not the default 3 per 10 s (~1,000 an hour).
+    rateLimit: {
+      enabled: true,
+      customRules: { "/sign-in/email": { window: 600, max: 10 }, "/sign-up/email": { window: 600, max: 5 } },
+    },
     emailAndPassword: {
       enabled: true,
       requireEmailVerification: true,

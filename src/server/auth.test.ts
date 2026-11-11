@@ -100,10 +100,33 @@ describe("email + password", () => {
     expect((await signIn("rosa@x.test", "correct horse")).status).toBe(401);
   });
 
-  it("rate-limits repeated sign-in attempts", async () => {
+  it("allows 10 password sign-ins per IP per 10 minutes, then refuses until the window passes", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    try {
+      const statuses: number[] = [];
+      for (let i = 0; i < 11; i++) statuses.push((await signIn("nobody@x.test", "wrong password", "198.51.100.7")).status);
+      expect(statuses.slice(0, 10)).toEqual(Array(10).fill(401));
+      expect(statuses[10]).toBe(429);
+      vi.advanceTimersByTime(9 * 60_000);
+      expect((await signIn("nobody@x.test", "wrong password", "198.51.100.7")).status).toBe(429);
+      vi.advanceTimersByTime(2 * 60_000);
+      expect((await signIn("nobody@x.test", "wrong password", "198.51.100.7")).status).toBe(401);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("allows 5 sign-ups per IP per 10 minutes", async () => {
     const statuses: number[] = [];
-    for (let i = 0; i < 6; i++) statuses.push((await signIn("nobody@x.test", "wrong password", "198.51.100.7")).status);
-    expect(statuses).toContain(429);
+    for (let i = 0; i < 6; i++) {
+      statuses.push((await auth.handler(new Request(`${APP}/api/auth/sign-up/email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Origin: APP, "X-Forwarded-For": "198.51.100.8" },
+        body: JSON.stringify({ email: `new${i}@x.test`, password: "correct horse", name: "New Member" }),
+      }))).status);
+    }
+    expect(statuses.slice(0, 5)).toEqual(Array(5).fill(200));
+    expect(statuses[5]).toBe(429);
   });
 });
 
@@ -119,14 +142,14 @@ describe("rate-limit buckets behind Cloudflare → Caddy", () => {
 
   it("count per cf-connecting-ip, not per shared x-forwarded-for", async () => {
     const first: number[] = [];
-    for (let i = 0; i < 6; i++) first.push(await attempt({ "cf-connecting-ip": "198.51.100.21", "x-forwarded-for": edge }));
+    for (let i = 0; i < 11; i++) first.push(await attempt({ "cf-connecting-ip": "198.51.100.21", "x-forwarded-for": edge }));
     expect(first).toContain(429);
     expect(await attempt({ "cf-connecting-ip": "198.51.100.22", "x-forwarded-for": edge })).toBe(401);
     expect(await attempt({ "cf-connecting-ip": "198.51.100.21", "x-forwarded-for": "172.70.9.9" })).toBe(429);
   });
 
   it("fall back to x-forwarded-for without cf-connecting-ip", async () => {
-    for (let i = 0; i < 6; i++) await attempt({ "x-forwarded-for": "198.51.100.31" });
+    for (let i = 0; i < 10; i++) await attempt({ "x-forwarded-for": "198.51.100.31" });
     expect(await attempt({ "x-forwarded-for": "198.51.100.31" })).toBe(429);
     expect(await attempt({ "x-forwarded-for": "198.51.100.32" })).toBe(401);
   });
