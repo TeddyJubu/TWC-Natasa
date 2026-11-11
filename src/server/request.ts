@@ -9,15 +9,26 @@ export function clientIp(headers: Headers): string {
   return headers.get("cf-connecting-ip")?.trim() || headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
 }
 
+/** A rate limiter: `allow(key)` counts one request; `size` is how many keys it is holding. */
+export type Limiter = ((ip: string, now?: number) => boolean) & { readonly size: number };
+
 /**
  * A per-client-IP limit: the returned `allow(ip)` is true while `ip` has made fewer than `limit` requests in the
- * last `windowMs` (and counts this one). Each endpoint makes its own, so the counts are separate.
+ * last `windowMs` (and counts this one). Each endpoint makes its own, so the counts are separate. Once it holds
+ * `maxKeys` keys it drops every key with nothing left in the window, so rotating addresses can't grow it forever.
  */
-export function rateLimit(limit: number, windowMs: number): (ip: string, now?: number) => boolean {
+export function rateLimit(limit: number, windowMs: number, maxKeys = 10_000): Limiter {
   // ponytail: in-memory, per process — the server is one process. Restarting it resets the counts; move this to
   // SQLite (or Caddy) if it ever runs as several processes.
   const recent = new Map<string, number[]>();
-  return (ip, now = Date.now()) => {
+  // The next size that triggers a sweep: at least maxKeys, and twice what a sweep kept, so a full window of live
+  // keys isn't swept on every request.
+  let sweepAt = maxKeys;
+  const allow = (ip: string, now = Date.now()) => {
+    if (recent.size >= sweepAt) {
+      for (const [key, times] of recent) if (now - times[times.length - 1] >= windowMs) recent.delete(key);
+      sweepAt = Math.max(maxKeys, recent.size * 2);
+    }
     const kept = (recent.get(ip) ?? []).filter((t) => now - t < windowMs);
     if (kept.length >= limit) {
       recent.set(ip, kept);
@@ -26,6 +37,7 @@ export function rateLimit(limit: number, windowMs: number): (ip: string, now?: n
     recent.set(ip, [...kept, now]);
     return true;
   };
+  return Object.defineProperty(allow, "size", { get: () => recent.size }) as Limiter;
 }
 
 /** Refuses a body over `max` bytes, or of unknown size, from its Content-Length alone (nothing is read). */

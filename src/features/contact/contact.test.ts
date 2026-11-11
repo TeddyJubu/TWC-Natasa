@@ -135,6 +135,16 @@ describe("rateLimit", () => {
     expect([allow("a", 0), allow("a", 1), allow("a", 2), allow("b", 2)]).toEqual([true, true, false, true]);
     expect(allow("a", 1001)).toBe(true);
   });
+
+  it("drops keys whose window has passed once it holds maxKeys, and keeps the live ones", () => {
+    const allow = rateLimit(1, 1000, 3);
+    ["a", "b", "c"].forEach((ip) => allow(ip, 0));
+    allow("d", 1200); // a, b and c are past their window
+    expect(allow.size).toBe(1);
+    ["e", "f", "g"].forEach((ip) => allow(ip, 1300)); // the sweep at "g" finds nothing expired
+    expect(allow.size).toBe(4);
+    expect([allow("d", 1300), allow("a", 1300)]).toEqual([false, true]);
+  });
 });
 
 describe("POST /api/contact", () => {
