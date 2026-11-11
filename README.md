@@ -195,9 +195,17 @@ demo) and rewinds the catalogue numbers if no real member was numbered after the
 
 Locally: `DATA_DIR=./.dev-data node --experimental-strip-types scripts/seed-demo.ts`.
 
-**Before launch** (lifting `SITE_PIN`): run the same command with `--remove --confirm`, then
-`node --experimental-strip-types scripts/seed-demo.ts --check` (exit 0) or
-`sqlite3 /var/lib/twc-natasa/data/twc.db "select count(*) from \"user\" where email like '%@demo.twc.invalid'"` (0).
+**Before launch** (lifting `SITE_PIN`), with the full `DATA_DIR` each time (`--check`, `--remove` and `--dry-run`
+refuse a database that doesn't exist, so a missing `DATA_DIR` fails instead of checking an empty one):
+
+```sh
+cd /opt/twc-natasa
+sudo -u www-data env DATA_DIR=/var/lib/twc-natasa/data node --experimental-strip-types scripts/seed-demo.ts --remove --confirm
+sudo -u www-data env DATA_DIR=/var/lib/twc-natasa/data node --experimental-strip-types scripts/seed-demo.ts --check  # exit 0
+sqlite3 /var/lib/twc-natasa/data/twc.db "select count(*) from \"user\" where email like '%@demo.twc.invalid'"  # 0
+```
+
+The `sqlite3` count is the authoritative cross-check.
 
 ### Backup
 

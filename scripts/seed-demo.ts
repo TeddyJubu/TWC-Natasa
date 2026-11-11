@@ -8,7 +8,9 @@
  *
  * `--db` defaults to ${DATA_DIR:-./data}/twc.db and `--cache` to ${DATA_DIR}/demo-cache (outside uploads/, so /media
  * never serves it). The password comes from --password or DEMO_PASSWORD, else a random one is printed once. A
- * database with any real account needs --confirm. --check exits 1 while demo rows exist.
+ * database with any real account needs --confirm. --check exits 1 while demo rows exist. --check, --remove and
+ * --dry-run refuse a database file that doesn't exist (a missing DATA_DIR would otherwise open a new, empty one and
+ * report no demo rows); only a seed creates it.
  */
 import { randomBytes } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -31,10 +33,13 @@ const { values: o } = parseArgs({
 });
 const dbPath = o.db ?? join(dataDir(), "twc.db");
 const cache = o.cache ?? join(dataDir(), "demo-cache");
+const fail = (message: string): never => { console.error(message); process.exit(1); };
+if ((o.check || o.remove || o["dry-run"]) && dbPath !== ":memory:" && !existsSync(dbPath)) {
+  fail(`No database at ${dbPath}: set DATA_DIR (or --db) to the live data directory.`);
+}
 if (dbPath !== ":memory:") mkdirSync(dirname(dbPath), { recursive: true });
 const db = openDb(dbPath);
 const show = (counts: Record<string, number>) => Object.entries(counts).map(([k, n]) => `${k} ${n}`).join(", ");
-const fail = (message: string): never => { console.error(message); process.exit(1); };
 
 const real = realUsers(db);
 console.log(`${dbPath}: ${real} real account(s); demo rows: ${show(demoCounts(db))}`);
@@ -64,7 +69,7 @@ if (o["dry-run"]) { console.log(`DRY RUN: nothing written${o.reseed ? " (would r
 
 await fillCache(plan);
 const media = readCache(cache, plan);
-const password = o.password ?? process.env.DEMO_PASSWORD ?? randomBytes(15).toString("base64url");
+const password = o.password || process.env.DEMO_PASSWORD || randomBytes(15).toString("base64url");
 if (password.length < 8) fail("The demo password needs at least 8 characters.");
 const hash = await hashPassword(password);
 if (o.reseed) console.log(`removed: ${show(removeDemo(db))}`);

@@ -203,6 +203,14 @@ describe("scripts/seed-demo.ts", () => {
     const run = (...args: string[]) => spawnSync(process.execPath, ["--experimental-strip-types", "--no-warnings", "scripts/seed-demo.ts", ...args],
       { encoding: "utf8", env: { ...process.env, DATA_DIR: data, DEMO_PASSWORD: "" } });
 
+    for (const mode of ["--check", "--remove", "--dry-run"]) {
+      const missing = run(mode);
+      expect(missing.status).toBe(1);
+      expect(missing.stderr).toContain("No database at");
+    }
+    expect(existsSync(join(data, "twc.db"))).toBe(false);
+    openDb(join(data, "twc.db")).close();
+
     const dry = run("--dry-run");
     expect(dry.status).toBe(0);
     expect(dry.stdout).toContain("plan: 100 members (approved 92, pending 5, declined 3)");
@@ -222,6 +230,10 @@ describe("scripts/seed-demo.ts", () => {
     const hash = (db2.prepare("select password from account limit 1").get() as { password: string }).password;
     expect(hash).toMatch(/^[0-9a-f]+:[0-9a-f]+$/); // Better Auth's scrypt salt:key, never the password
     db2.close();
+
+    const reseeded = run("--offline", "--reseed"); // DEMO_PASSWORD is empty and no --password: a random one
+    expect(reseeded.status, reseeded.stderr).toBe(0);
+    expect(reseeded.stdout).toContain("with this password (shown once): ");
 
     expect(run("--remove").status).toBe(0);
     expect(run("--check").status).toBe(0);
