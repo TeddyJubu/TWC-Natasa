@@ -8,6 +8,10 @@
  *                                         (a local Caddy run of the patched file).
  * Also checks the CSP nonce on the new host's `/`: every inline script must carry the header's nonce, or the page
  * doesn't hydrate (run it again after deploy, through Cloudflare, so a zone feature injecting scripts shows up).
+ * Also scans the HTML of a few pages on each public host for injected markup (`injectionProblems`): an inline script
+ * that isn't the app's own (the CSP nonce, or JSON-LD data), or a `href`/`src`/`action` to a host outside
+ * `KNOWN_HOSTS` (add more for one run with SMOKE_ALLOW_HOSTS=a.com,b.org). `--launch` (once SITE_PIN is gone) also
+ * fails on any `X-Robots-Tag` on the apex and new.* home pages.
  * Read-only: GETs only, never posts a form. Exit 1 on any mismatch.
  */
 import { readFileSync } from "node:fs";
@@ -83,6 +87,53 @@ export function nonceProblems(html: string, csp: string | null): string[] {
   return problems;
 }
 
+/** Hosts our pages may link to or load from (a subdomain of one counts as it). */
+export const KNOWN_HOSTS = [
+  "thewomenscollective.club",
+  "thewomenscollective.nyc",
+  "natasatuohy.com",
+  "instagram.com",
+  "doop.design",
+  "openfreemap.org",
+  "openmaptiles.org",
+  "openstreetmap.org",
+];
+
+/**
+ * Markup on a page that didn't come from us: an inline script (no src, not JSON-LD) that doesn't carry the CSP's
+ * nonce (with no nonce in the CSP, any inline script), or a `href`/`src`/`action` to an absolute http(s) URL whose host
+ * isn't in `allowed` or under one of them. Scans the raw HTML, so a link inside an injected script's string counts too.
+ */
+export function injectionProblems(html: string, csp: string | null, allowed: readonly string[] = KNOWN_HOSTS): string[] {
+  const nonce = /script-src[^;]*'nonce-([^']+)'/.exec(csp ?? "")?.[1];
+  const problems: string[] = [];
+  for (const [, attrs] of html.matchAll(/<script\b([^>]*)>/gi)) {
+    if (/\ssrc=/i.test(attrs) || /type=["']?application\/ld\+json/i.test(attrs)) continue;
+    const got = /\snonce=["']?([^"'\s>]+)/i.exec(attrs)?.[1];
+    if (!nonce || got !== nonce) problems.push(`inline <script${attrs}> is not the app's bootstrap`);
+  }
+  const hosts = new Set<string>();
+  for (const [, url] of html.matchAll(/\b(?:href|src|action)\s*=\s*\\?["']?(https?:\/\/[^"'\s>\\]+)/gi)) {
+    let host: string;
+    try {
+      host = new URL(url).hostname.toLowerCase();
+    } catch {
+      continue;
+    }
+    if (!allowed.some((h) => host === h || host.endsWith(`.${h}`))) hosts.add(host);
+  }
+  for (const host of hosts) problems.push(`links to unknown host ${host}`);
+  return problems;
+}
+
+/** Pages whose HTML `injectionProblems` scans: the home page and one other page on each public host. */
+export const HTML_PAGES: { host: string; path: string }[] = [
+  { host: "new.thewomenscollective.club", path: "/" },
+  { host: "new.thewomenscollective.club", path: "/about" },
+  { host: APEX, path: "/" },
+  { host: APEX, path: "/404.html" },
+];
+
 async function main(): Promise<number> {
   const md = readFileSync(join(import.meta.dirname, "../migration/redirects.md"), "utf8");
   const at = process.argv.indexOf("--form");
@@ -103,6 +154,18 @@ async function main(): Promise<number> {
   bad += problems.length;
   for (const p of problems) console.log(`FAIL ${NEW}/ CSP nonce: ${p}`);
   if (!problems.length) console.log(`ok   ${NEW}/ every inline script carries the CSP nonce`);
+  const allowed = [...KNOWN_HOSTS, ...(process.env.SMOKE_ALLOW_HOSTS ?? "").split(",").map((h) => h.trim()).filter(Boolean)];
+  const launch = process.argv.includes("--launch");
+  for (const page of HTML_PAGES) {
+    const url = connect ? connect + page.path : `https://${page.host}${page.path}`;
+    const r = await fetch(url, { headers: connect ? { host: page.host } : {} });
+    const found = injectionProblems(await r.text(), r.headers.get("content-security-policy"), allowed);
+    const robots = r.headers.get("x-robots-tag");
+    if (launch && page.path === "/" && robots) found.push(`X-Robots-Tag: ${robots}`);
+    bad += found.length;
+    for (const p of found) console.log(`FAIL ${page.host}${page.path} ${p}`);
+    if (!found.length) console.log(`ok   ${page.host}${page.path} no injected scripts or unknown hosts`);
+  }
   console.log(bad ? `smoke-cutover: ${bad} failed` : "smoke-cutover: ok");
   return bad ? 1 : 0;
 }
