@@ -33,3 +33,6 @@ data/
 *.njsproj
 *.sln
 *.sw?
+
+# Promo films (HyperFrames projects with baked map video, licensed music and renders): local only
+promo/
