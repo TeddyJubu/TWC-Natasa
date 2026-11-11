@@ -26,15 +26,27 @@ export function Composer({ name, image }: { name: string; image?: string }) {
   urls.current = photos.map((p) => p.url);
   React.useEffect(() => () => urls.current.forEach((u) => URL.revokeObjectURL(u)), []);
 
+  // A pick waits on its resize, so two picks can overlap: `count` is the draft's size including picks already
+  // taken but not yet rendered, and `preparing` holds Post back until every picked photo is in the draft.
+  const count = React.useRef(0);
+  count.current = photos.length;
+  const [preparing, setPreparing] = React.useState(0);
   async function pick(e: React.ChangeEvent<HTMLInputElement>) {
     const picked = [...(e.target.files ?? [])];
     e.target.value = "";
-    const files = await Promise.all(picked.map(preparePhoto)); // shrunk and upright before the checks and previews
-    const bad = files.map(photoProblem).find(Boolean);
-    const room = MAX_PHOTOS - photos.length;
-    setProblem(bad ?? (files.length > room ? `Up to ${MAX_PHOTOS} photos a post.` : null));
-    if (bad) return;
-    setPhotos((ps) => [...ps, ...files.slice(0, room).map((file) => ({ file, alt: "", url: URL.createObjectURL(file) }))]);
+    setPreparing((n) => n + 1);
+    try {
+      const files = await Promise.all(picked.map(preparePhoto)); // shrunk and upright before the checks and previews
+      const bad = files.map(photoProblem).find(Boolean);
+      const room = MAX_PHOTOS - count.current;
+      setProblem(bad ?? (files.length > room ? `Up to ${MAX_PHOTOS} photos a post.` : null));
+      if (bad) return;
+      const added = files.slice(0, Math.max(0, room)).map((file) => ({ file, alt: "", url: URL.createObjectURL(file) }));
+      count.current += added.length;
+      setPhotos((ps) => [...ps, ...added]);
+    } finally {
+      setPreparing((n) => n - 1);
+    }
   }
   function drop(i: number) {
     URL.revokeObjectURL(photos[i].url);
@@ -56,7 +68,7 @@ export function Composer({ name, image }: { name: string; image?: string }) {
   const empty = !body.trim() && photos.length === 0;
   const error = problem ?? (create.isError ? errorMessage(create.error) : null);
   return (
-    <form onSubmit={submit} aria-labelledby="compose-title" className="air-entry air-compose">
+    <form onSubmit={submit} aria-labelledby="compose-title" aria-busy={preparing > 0} className="air-entry air-compose">
       <h2 id="compose-title" className="sr-only">Write a post</h2>
       <div className="air-compose-row">
         <MiniStamp name={name} image={image} size="l" />
@@ -100,7 +112,7 @@ export function Composer({ name, image }: { name: string; image?: string }) {
             <input type="file" multiple accept={AVATAR_TYPES.join(",")} onChange={pick} disabled={photos.length >= MAX_PHOTOS} className="sr-only" />
             <Icon name="image" className="size-4.5" /><span className="sr-only">Add photos (up to {MAX_PHOTOS})</span>
           </label>
-          <button type="submit" disabled={empty || create.isPending} className={redButton}>
+          <button type="submit" disabled={empty || preparing > 0 || create.isPending} className={redButton}>
             {create.isPending ? "Posting…" : "Post"}<Icon name="arrow-right" />
           </button>
         </div>

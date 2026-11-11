@@ -10,11 +10,12 @@ vi.mock("@/features/members/fns", async (orig) => (await import("@/test/fake-fns
 vi.mock("@/features/events/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 vi.mock("@/features/auth/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 vi.mock("@/app/api", async () => (await import("@/test/fake-fns")).fakeApi);
-const resize = vi.hoisted(() => ({ calls: [] as [string, number][] }));
+const resize = vi.hoisted(() => ({ calls: [] as [string, number][], gate: null as Promise<void> | null }));
 vi.mock("@/app/resize-image", async (orig) => ({
   ...(await orig<object>()),
   resizeImage: async (file: File, { maxEdge }: { maxEdge: number }) => {
     resize.calls.push([file.name, maxEdge]);
+    await resize.gate; // a test can hold every resize back until it opens the gate
     return new File(["small"], file.name.replace(/\.\w+$/, ".webp"), { type: "image/webp" });
   },
 }));
@@ -127,6 +128,29 @@ describe("/feed", () => {
     await waitFor(() => expect(fake.calls.some(([path]) => path === "/api/feed")).toBe(true));
     const form = fake.calls.find(([path]) => path === "/api/feed")![1] as FormData;
     expect(form.getAll("photo").map((f) => [(f as File).name, (f as File).type])).toEqual([["IMG_0001.webp", "image/webp"]]);
+  });
+
+  it("keeps two overlapping picks to four photos and holds Post until both are ready", async () => {
+    Object.assign(URL, { createObjectURL: () => "blob:preview", revokeObjectURL: () => {} });
+    let open!: () => void;
+    resize.calls = [];
+    resize.gate = new Promise((done) => { open = done; });
+    const { container } = renderWithQueries(<Page />, seed());
+    fireEvent.change(screen.getByRole("textbox", { name: "What’s new, Rosa?" }), { target: { value: "Market day" } });
+    const input = container.querySelector<HTMLInputElement>("input[type=file]")!;
+    const three = (n: number) => [1, 2, 3].map((i) => new File(["x"], `p${n}-${i}.jpg`, { type: "image/jpeg" }));
+    fireEvent.change(input, { target: { files: three(1) } });
+    fireEvent.change(input, { target: { files: three(2) } });
+    const send = screen.getByRole("button", { name: "Post" });
+    await waitFor(() => expect(resize.calls.length).toBe(6));
+    expect(send.hasAttribute("disabled")).toBe(true); // her words are there, but the photos aren't yet
+    expect(container.querySelector("form[aria-busy=true]")).not.toBeNull();
+    open();
+    await waitFor(() => expect(send.hasAttribute("disabled")).toBe(false));
+    resize.gate = null;
+    expect(container.querySelectorAll('img[src="blob:preview"]')).toHaveLength(4);
+    expect(screen.getByText("Up to 4 photos a post.")).toBeTruthy();
+    expect(container.querySelector("form[aria-busy=true]")).toBeNull();
   });
 
   it("filters to her own neighborhood", async () => {
