@@ -168,3 +168,42 @@ describe("internal-page app shell (scrapbook app palette)", () => {
     expect(src).not.toMatch(/(?:bg|text|border|fill|stroke|ring|outline)-\[#|(?:bg|text|border)-(?:zinc|gray|neutral|slate|blue)-\d/);
   });
 });
+
+describe("public scrapbook palette (--color-sb-* in styles.css)", () => {
+  const css = readFileSync(`${process.cwd()}/src/styles.css`, "utf8");
+  const sb: Record<string, string> = {
+    ...Object.fromEntries([...css.matchAll(/--color-sb-([\w-]+):\s*(#[0-9a-f]{6})\b/gi)].map((m) => [m[1], m[2].toLowerCase()])),
+    white: "#ffffff",
+  };
+  const twc = readFileSync(`${process.cwd()}/src/app/twc.css`, "utf8");
+  const layout = readFileSync(`${process.cwd()}/src/app/layout/AppLayout.tsx`, "utf8");
+
+  // [text, background]: olive and terracotta stamps carry white text; mustard, shell, sun and lilac carry ink.
+  const pairs: [string, string][] = [
+    ["white", "olive"], ["white", "terracotta"],
+    ["ink", "mustard"], ["ink", "shell"], ["ink", "sun"], ["ink", "lilac"],
+    ["muted", "paper"], ["muted", "cream"], ["blue-ink", "paper"], ["blue-ink", "cream"],
+  ];
+  it.each(pairs)("%s on %s clears AA", (fg, bg) => {
+    expect(sb[fg]).toBeDefined();
+    expect(sb[bg]).toBeDefined();
+    expect(contrast(sb[fg], sb[bg])).toBeGreaterThanOrEqual(AA);
+  });
+
+  it("olive and terracotta stamps use white text and a full-opacity index", () => {
+    expect(twc).toMatch(/\.twc-stamp--olive \{[^}]*color: #fff;/);
+    expect(twc).toMatch(/\.twc-stamp--terracotta \{[^}]*color: #fff;/);
+    expect(twc).toMatch(/\.twc-stamp--olive \.twc-index, \.twc-stamp--terracotta \.twc-index \{ opacity: 1; \}/);
+  });
+
+  it("links on the lilac band are ink, since blue-ink misses AA on lilac", () => {
+    expect(twc).toMatch(/\.twc-band--lilac \.twc-inlink \{ color: var\(--color-sb-ink\); \}/);
+  });
+
+  it("the mobile menu's ordinals are decorative and their ink blend clears AA on lilac", () => {
+    const ordinal = layout.match(/<span aria-hidden="true" className="[^"]*text-sb-ink\/(\d+)">0\{i \+ 1\}<\/span>/);
+    expect(ordinal).not.toBeNull();
+    const alpha = Number(ordinal![1]) / 100;
+    expect(contrast(blend(sb.ink, sb.lilac, alpha), sb.lilac)).toBeGreaterThanOrEqual(AA);
+  });
+});

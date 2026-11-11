@@ -143,10 +143,11 @@
 .twc-stamp h3 { font: 400 40px/1.09 var(--font-editorial); letter-spacing: 1px; margin: 0; }
 .twc-stamp p { margin: 0; font: 400 16px/1.6 var(--font-geist); max-width: 36ch; }
 .twc-stamp .twc-index { color: inherit; opacity: 0.8; }
-.twc-stamp--olive { background-color: var(--color-sb-olive); color: var(--color-sb-paper); }
+.twc-stamp--olive .twc-index, .twc-stamp--terracotta .twc-index { opacity: 1; }
+.twc-stamp--olive { background-color: var(--color-sb-olive); color: #fff; }
 .twc-stamp--mustard { background-color: var(--color-sb-mustard); }
 .twc-stamp--rose { background-color: var(--color-sb-rose); }
-.twc-stamp--terracotta { background-color: var(--color-sb-terracotta); color: var(--color-sb-paper); }
+.twc-stamp--terracotta { background-color: var(--color-sb-terracotta); color: #fff; }
 .twc-stamp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 8px; padding: 8px; background: var(--color-sb-cream); }
 @media (max-width: 720px) { .twc-stamp { padding: 24px; min-height: 240px; } .twc-stamp h3 { font-size: 32px; } }
 
@@ -166,6 +167,7 @@
 .twc-band--night { background: var(--color-sb-night); color: var(--color-sb-paper); }
 .twc-band--mint { background: var(--color-sb-mint); }
 .twc-band--lilac { background: var(--color-sb-lilac); }
+.twc-band--lilac .twc-inlink { color: var(--color-sb-ink); }
 @media (max-width: 720px) { .twc-band { padding-block: 64px 80px; } }
 
 /* FAQ item: native <details name> accordion */

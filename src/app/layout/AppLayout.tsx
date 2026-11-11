@@ -96,7 +96,7 @@ export function AppNav() {
                 className="sb-menu-item flex items-baseline justify-between border-b border-sb-ink/15 py-3.5 font-display text-[30px] leading-tight outline-none focus-visible:text-sb-blue-ink"
                 style={{ "--d": `${60 + i * 45}ms` } as React.CSSProperties}
               >
-                {l.label}<span className="font-fragment text-xs text-sb-ink/60">0{i + 1}</span>
+                {l.label}<span aria-hidden="true" className="font-fragment text-xs text-sb-ink/75">0{i + 1}</span>
               </Link>
             ))}
           </nav>
