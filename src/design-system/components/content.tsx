@@ -2,7 +2,9 @@ import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../lib/utils";
 import { Badge, Blossom, Heading, Text } from "./typography";
-import { CircularGalleryEngine } from "./circular-gallery";
+
+// OGL and the WebGL engine (~65 KB) load only when a CurvedGallery with motion mounts, not with the barrel.
+const CircularGalleryEngine = React.lazy(() => import("./circular-gallery").then((m) => ({ default: m.CircularGalleryEngine })));
 
 /* ---------- ImageFrame ---------- */
 const frameVariants = cva("overflow-hidden bg-surface", {
@@ -103,14 +105,16 @@ export const CurvedGallery = React.forwardRef<HTMLDivElement, CurvedGalleryProps
         </div>
       ) : (
         <>
-          <CircularGalleryEngine
-            items={images.map((image) => ({ image: image.src, text: image.alt }))}
-            bend={bend}
-            borderRadius={0.06}
-            font={'400 30px "Gilda Display"'}
-            scrollSpeed={scrollSpeed}
-            scrollEase={scrollEase}
-          />
+          <React.Suspense fallback={null}>
+            <CircularGalleryEngine
+              items={images.map((image) => ({ image: image.src, text: image.alt }))}
+              bend={bend}
+              borderRadius={0.06}
+              font={'400 30px "Gilda Display"'}
+              scrollSpeed={scrollSpeed}
+              scrollEase={scrollEase}
+            />
+          </React.Suspense>
           {/* The canvas has no accessible content; the reduced-motion strip above already uses real <img alt>. */}
           <ul className="sr-only">
             {images.map((image, index) => <li key={image.src + index}><img src={image.src} alt={image.alt} /></li>)}

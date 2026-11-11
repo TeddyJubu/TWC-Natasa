@@ -1,6 +1,5 @@
 import { Camera, Mesh, Plane, Program, Renderer, Texture, Transform } from 'ogl';
 import * as React from 'react';
-import { cn } from '../lib/utils';
 
 type GL = Renderer['gl'];
 
@@ -795,7 +794,8 @@ export const CircularGalleryEngine = React.forwardRef<HTMLDivElement, CircularGa
   }, [itemsKey, bend, textColor, borderRadius, font, scrollSpeed, scrollEase]);
   return (
     <div
-      className={cn("size-full cursor-grab overflow-hidden active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", className)}
+      // No cn(): importing ../lib/utils here pulls tailwind-merge into this lazy chunk and every page then imports it.
+      className={["size-full cursor-grab overflow-hidden active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", className].filter(Boolean).join(" ")}
       ref={setContainerRef}
       {...props}
       tabIndex={0}

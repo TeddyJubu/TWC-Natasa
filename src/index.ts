@@ -6,7 +6,8 @@ export * from "./design-system/components/typography";
 export * from "./design-system/components/button";
 export * from "./design-system/components/layout";
 export * from "./design-system/components/content";
-export * from "./design-system/components/circular-gallery";
+// Type only: the engine (with OGL) is lazy-loaded by CurvedGallery, so a runtime re-export would put it back in every page.
+export type { CircularGalleryEngineProps } from "./design-system/components/circular-gallery";
 export * from "./design-system/components/form";
 export * from "./design-system/components/motion";
 export * from "./design-system/components/image-trail";

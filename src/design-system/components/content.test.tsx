@@ -56,10 +56,10 @@ describe("CurvedGallery", () => {
   const motion = (reduce: boolean) =>
     vi.stubGlobal("matchMedia", (media: string) => ({ media, matches: reduce, addEventListener() {}, removeEventListener() {} }));
 
-  it("with motion, renders the WebGL engine plus one sr-only list of the images", () => {
+  it("with motion, renders the WebGL engine plus one sr-only list of the images", async () => {
     motion(false);
     render(<CurvedGallery images={images} />);
-    expect(screen.getByTestId("engine")).toBeTruthy();
+    expect(await screen.findByTestId("engine")).toBeTruthy();
     expect(screen.getAllByRole("img").map((i) => i.getAttribute("alt"))).toEqual(["Pia Lund", "Rosa Diaz"]);
   });
 
