@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -170,5 +171,14 @@ describe("/media route", () => {
     const etag = ok.headers.get("ETag")!;
     const revalidated = await GET({ request: new Request("http://x.test/media/neighborhood-logos/astoria.webp", { headers: { "If-None-Match": etag } }) });
     expect(revalidated.status).toBe(304);
+  });
+});
+
+describe("under plain Node", () => {
+  it("loads with strip-only TypeScript, so scripts (scripts/seed-demo.ts) store files through writeMedia", () => {
+    const code = `const m = await import("./src/server/media.ts"); const g = await import("./src/server/guard.ts");
+      const e = new g.AccessError("x", 404); console.log(typeof m.writeMedia, e.status, e.name);`;
+    const out = execFileSync(process.execPath, ["--experimental-strip-types", "--no-warnings", "--input-type=module", "-e", code], { encoding: "utf8" });
+    expect(out.trim()).toBe("function 404 AccessError");
   });
 });

@@ -3,9 +3,9 @@
 // `feed/<author id>/<post id>-<n>.<ext>` (newsfeed photos, members only) and `neighborhood-logos/<slug>.<ext>` (public brand assets).
 import { mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve, sep } from "node:path";
-import { dataDir, type DB } from "./db";
-import { AccessError, isAdmin, isMember, type Actor } from "./guard";
-import { imageSize, stripMetadata } from "./image-meta";
+import { dataDir, type DB } from "./db.ts";
+import { AccessError, isAdmin, isMember, type Actor } from "./guard.ts";
+import { imageSize, stripMetadata } from "./image-meta.ts";
 
 export const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
 export type Bucket = "avatars" | "feed" | "neighborhood-logos";

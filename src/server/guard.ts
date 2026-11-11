@@ -1,7 +1,7 @@
 // Who may do what: the access rules the Postgres RLS policies used to enforce. Every server function's domain
 // code (the *.server.ts modules) starts with one of requireSession / requireMember / requireAdmin, or takes an
 // optional actor where anonymous visitors are allowed. Tests call these with a fixed actor.
-import type { DB } from "./db";
+import type { DB } from "./db.ts";
 
 /** The signed-in account behind a request, or null for an anonymous visitor. */
 export type Actor = { id: string; email: string } | null;
@@ -9,8 +9,11 @@ export type SignedIn = NonNullable<Actor>;
 
 /** A refusal the browser may see: a fixed message and an HTTP-ish status, never internals. */
 export class AccessError extends Error {
-  constructor(message: string, readonly status: 401 | 403 | 400 | 404 | 409 = 403) {
+  // A plain field, not a parameter property, so scripts load this under Node's strip-only TypeScript.
+  readonly status: 401 | 403 | 400 | 404 | 409;
+  constructor(message: string, status: 401 | 403 | 400 | 404 | 409 = 403) {
     super(message);
+    this.status = status;
     this.name = "AccessError";
   }
 }

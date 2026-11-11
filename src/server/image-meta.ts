@@ -1,7 +1,7 @@
 // Strips location-bearing metadata (Exif, XMP, IPTC, text chunks) from an uploaded image before it is stored, and reads
 // its pixel size. Walks each format's own container and copies every other byte as it was; pixels are never decoded.
 // A JPEG's Exif Orientation is the one tag kept (in a fresh, minimal Exif block), so a phone photo stays upright.
-import { AccessError } from "./guard";
+import { AccessError } from "./guard.ts";
 
 const unreadable = () => new AccessError("That image couldn’t be read. Please choose another JPG, PNG or WebP.", 400);
 const ascii = (b: Uint8Array, at: number) => String.fromCharCode(b[at], b[at + 1], b[at + 2], b[at + 3]);
