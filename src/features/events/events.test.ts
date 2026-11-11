@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { MutationObserver, QueryClient } from "@tanstack/react-query";
+import { MutationObserver, QueryClient, QueryObserver } from "@tanstack/react-query";
 import { fake } from "@/test/fake-fns";
 
 vi.mock("@/features/events/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 
-import { bookingQuery, eventsQuery, rsvpsQuery } from "./queries";
+import { bookingQuery, eventsQuery, loadPublicEvents, publicEventsQuery, rsvpsQuery } from "./queries";
 import { bookHeadshot, bookHeadshotMutation, setRsvp, toggleRsvpMutation } from "./mutations";
 
 const run = (q: { queryFn?: unknown }) => (q.queryFn as (c: unknown) => Promise<unknown>)({});
@@ -26,6 +26,18 @@ describe("eventsQuery", () => {
   it("throws the server's error", async () => {
     fake.results = [denied];
     await expect(run(eventsQuery)).rejects.toBe(denied);
+  });
+});
+
+describe("publicEventsQuery", () => {
+  it("stays fresh after the loader, so the page's query does not fetch again", async () => {
+    const qc = new QueryClient();
+    fake.results = [[{ id: "e1" }], [{ id: "e1" }]];
+    expect(await loadPublicEvents(qc)).toEqual([{ id: "e1" }]);
+    const unsubscribe = new QueryObserver(qc, publicEventsQuery).subscribe(() => {});
+    await new Promise((r) => setTimeout(r, 10));
+    unsubscribe();
+    expect(fake.calls.map((c) => c[0])).toEqual(["publicEventsFn"]);
   });
 });
 

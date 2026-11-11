@@ -26,6 +26,8 @@ export const viewerQuery = queryOptions({
 export const publicProfilesQuery = queryOptions({
   queryKey: ["public-profiles"],
   queryFn: (): Promise<MemberProfile[]> => publicProfilesFn(),
+  // Fresh for a minute, so a page's useQuery does not fetch again what its loader just loaded.
+  staleTime: 60_000,
 });
 
 /**

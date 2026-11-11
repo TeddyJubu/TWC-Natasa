@@ -113,6 +113,15 @@ describe("/members", () => {
     expect(fake.calls).toEqual([["viewerFn"], ["directoryFn"]]);
   });
 
+  it("keeps the loader's public cards on screen while a member's directory loads, with no loading step", async () => {
+    loaderData = [card("Pia Lund", 21, "public-21")];
+    fake.results = [{ signedIn: true, member: true, admin: false }, new Promise(() => {})]; // the directory never settles
+    renderWithQueries(<Page />);
+    await waitFor(() => expect(fake.calls).toEqual([["viewerFn"], ["directoryFn"]]));
+    expect(screen.getByText("Pia Lund")).toBeTruthy();
+    expect(screen.queryByText(/loading members/i)).toBeNull();
+  });
+
   it("shows a loading status, not an empty state, while the viewer is unknown", () => {
     fake.results = [new Promise(() => {})]; // the viewer never settles
     renderWithQueries(<Page />);

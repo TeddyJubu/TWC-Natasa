@@ -38,7 +38,8 @@ function MembersPage() {
   const directory = useQuery({ ...directoryQuery, enabled: member });
   // The loader's public cards show while the viewer is still unknown (and in the server's HTML).
   const publicCards = useQuery({ ...publicProfilesQuery, initialData: Route.useLoaderData(), enabled: viewer.isSuccess && !member });
-  const list = member ? directory : publicCards;
+  // A member keeps the server-rendered public cards on screen until her directory arrives (no loading flash).
+  const list = member && (!directory.isPending || publicCards.data === undefined) ? directory : publicCards;
   const all = list.data ?? [];
   const audience = member ? "member" : viewer.data?.signedIn ? "pending" : "visitor";
   // A filter chosen in one audience can match nothing in the other.

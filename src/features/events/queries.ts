@@ -14,6 +14,8 @@ export const eventsQuery = queryOptions({
 export const publicEventsQuery = queryOptions({
   queryKey: ["public-events"],
   queryFn: () => publicEventsFn({ data: { from: new Date().toISOString() } }),
+  // Fresh for a minute, so a page's useQuery does not fetch again what its loader just loaded.
+  staleTime: 60_000,
 });
 
 /** For the /gatherings loader, so the server renders the calendar: undefined when that fails (the client then loads it). */

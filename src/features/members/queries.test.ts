@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { MutationObserver, QueryClient } from "@tanstack/react-query";
+import { MutationObserver, QueryClient, QueryObserver } from "@tanstack/react-query";
 import { fake } from "@/test/fake-fns";
 
 vi.mock("@/features/members/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
@@ -57,6 +57,16 @@ describe("publicProfilesQuery", () => {
     expect(publicProfilesQuery.queryKey).toEqual(["public-profiles"]);
     fake.results = [[{ ...card, id: "catalogue-3" }]];
     expect(await run(publicProfilesQuery)).toEqual([{ ...card, id: "catalogue-3" }]);
+    expect(fake.calls).toEqual([["publicProfilesFn"]]);
+  });
+
+  it("stays fresh after the loader, so the page's query does not fetch again", async () => {
+    const qc = new QueryClient();
+    fake.results = [[card], [card]];
+    await qc.ensureQueryData(publicProfilesQuery);
+    const unsubscribe = new QueryObserver(qc, publicProfilesQuery).subscribe(() => {});
+    await new Promise((r) => setTimeout(r, 10));
+    unsubscribe();
     expect(fake.calls).toEqual([["publicProfilesFn"]]);
   });
 });
