@@ -82,6 +82,31 @@ describe("/ (home) structure", () => {
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
   });
 
+  it("describes the collective as an Organization and WebSite, with absolute URLs and no guessed sameAs", () => {
+    vi.stubEnv("VITE_SITE_URL", "https://example.com/");
+    try {
+      const { scripts } = (Route.options.head as () => { scripts: { type: string; children: string }[] })();
+      expect(scripts).toHaveLength(1);
+      expect(scripts[0].type).toBe("application/ld+json");
+      const graph = JSON.parse(scripts[0].children)["@graph"];
+      expect(graph.map((n: { "@type": string }) => n["@type"])).toEqual(["Organization", "WebSite"]);
+      expect(graph[0]).toMatchObject({ name: "The Women’s Collective", url: "https://example.com/", logo: "https://example.com/apple-touch-icon.png" });
+      expect(graph[0].sameAs).toBeUndefined();
+      expect(graph[1].url).toBe("https://example.com/");
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it("has no structured data without a site URL", () => {
+    vi.stubEnv("VITE_SITE_URL", "");
+    try {
+      expect((Route.options.head as () => { scripts: unknown[] })().scripts).toEqual([]);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
   it("is indexable: no noindex", () => {
     const { meta } = (Route.options.head as () => { meta: Record<string, string>[] })();
     expect(meta.find((m) => m.name === "robots")).toBeUndefined();

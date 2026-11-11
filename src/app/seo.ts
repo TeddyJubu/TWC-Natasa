@@ -93,3 +93,20 @@ export function breadcrumbLd(site: string, trail: readonly (readonly [name: stri
     itemListElement: trail.map(([name, path], i) => ({ "@type": "ListItem", position: i + 1, name, item: absolute(site, path) })),
   };
 }
+
+/**
+ * The collective as an Organization: only facts the site states (its name, the home description, Western Queens,
+ * its founder, the constellation star). No sameAs: the site links no social profiles.
+ */
+export function organizationLd(site: string) {
+  return {
+    "@type": "Organization",
+    "@id": `${site}/#organization`,
+    name: "The Women’s Collective",
+    url: `${site}/`,
+    logo: `${site}/apple-touch-icon.png`,
+    description: "A community for women building businesses, careers, creative work, and real relationships close to home in Western Queens.",
+    areaServed: { "@type": "Place", name: "Western Queens, New York" },
+    founder: { "@type": "Person", name: "Nataša Tuohy" },
+  };
+}

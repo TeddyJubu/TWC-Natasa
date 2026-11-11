@@ -16,21 +16,33 @@ import { eventSizes, eventSrcSet } from "@/app/responsive-images";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import { Icon, Scallop } from "@/app/layout/twc";
 import caveatUrl from "@/assets/fonts/home/caveat-400.woff2?url";
+import { jsonLdScript, organizationLd, parseSiteUrl } from "@/app/seo";
 
 export const Route = createFileRoute("/")({
   // The portrait row's public cards, so the server renders it.
   loader: ({ context }) => loadPublicProfiles(context.queryClient),
-  head: () => ({
-    meta: [
-      { title: "The Women’s Collective — Find your people in Queens" },
-      { name: "description", content: "A community for women building businesses, careers, creative work, and real relationships close to home in Western Queens." },
-      { property: "og:title", content: "The Women’s Collective — Find your people in Queens" },
-      { property: "og:description", content: "Find your people, share what you do, and help someone else shine." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-    links: [{ rel: "preload", href: caveatUrl, as: "font", type: "font/woff2", crossOrigin: "anonymous" }],
-  }),
+  head: () => {
+    // Absolute URLs only: without a valid VITE_SITE_URL there is no structured data at all.
+    const site = parseSiteUrl(import.meta.env.VITE_SITE_URL as string | undefined);
+    const scripts = site
+      ? [jsonLdScript({
+          "@context": "https://schema.org",
+          "@graph": [organizationLd(site), { "@type": "WebSite", name: "The Women’s Collective", url: `${site}/`, publisher: { "@id": `${site}/#organization` } }],
+        })]
+      : [];
+    return {
+      meta: [
+        { title: "The Women’s Collective — Find your people in Queens" },
+        { name: "description", content: "A community for women building businesses, careers, creative work, and real relationships close to home in Western Queens." },
+        { property: "og:title", content: "The Women’s Collective — Find your people in Queens" },
+        { property: "og:description", content: "Find your people, share what you do, and help someone else shine." },
+        { property: "og:type", content: "website" },
+        { name: "twitter:card", content: "summary_large_image" },
+      ],
+      links: [{ rel: "preload", href: caveatUrl, as: "font", type: "font/woff2", crossOrigin: "anonymous" }],
+      scripts,
+    };
+  },
   component: HomePage,
 });
 
