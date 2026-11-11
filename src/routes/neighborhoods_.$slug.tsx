@@ -11,6 +11,7 @@ import { fetchNeighborhoods, type Neighborhood } from "@/features/neighborhoods/
 import { hasColor, textOn, toneFor } from "@/features/neighborhoods/tone";
 import { neighborhoodPhoto } from "@/features/neighborhoods/photos";
 import { HoodLogo } from "@/features/neighborhoods/HoodLogo";
+import { breadcrumbLd, canonicalTags, jsonLdScript, parseSiteUrl } from "@/app/seo";
 
 export const Route = createFileRoute("/neighborhoods_/$slug")({
   // Unknown or inactive slugs are a real 404. The public cards come along so the server renders them.
@@ -24,6 +25,10 @@ export const Route = createFileRoute("/neighborhoods_/$slug")({
     const name = loaderData?.hood.name;
     const title = `${name ?? "Neighborhood"} — The Women’s Collective`;
     const description = `Meet the women of The Women’s Collective in ${name ?? "Queens"}, and find gatherings close to home.`;
+    const raw = import.meta.env.VITE_SITE_URL as string | undefined;
+    const site = parseSiteUrl(raw);
+    const path = loaderData ? `/neighborhoods/${loaderData.hood.slug}` : undefined;
+    const canonical = path ? canonicalTags(raw, path) : { meta: [], links: [] };
     return {
       meta: [
         { title },
@@ -32,7 +37,12 @@ export const Route = createFileRoute("/neighborhoods_/$slug")({
         { property: "og:description", content: description },
         { property: "og:type", content: "website" },
         { name: "twitter:card", content: "summary_large_image" },
+        ...canonical.meta,
       ],
+      links: canonical.links,
+      scripts: site && path && name
+        ? [jsonLdScript({ "@context": "https://schema.org", ...breadcrumbLd(site, [["Home", "/"], ["Neighborhoods", "/neighborhoods"], [name, path]]) })]
+        : [],
     };
   },
   component: NeighborhoodPage,

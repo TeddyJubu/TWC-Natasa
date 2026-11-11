@@ -113,6 +113,42 @@ describe("/neighborhoods/:slug loader", () => {
   });
 });
 
+describe("/neighborhoods/:slug head", () => {
+  type Head = { meta: Record<string, string>[]; links: Record<string, string>[]; scripts: { type: string; children: string }[] };
+  const head = (loaderData?: unknown) => (SlugRoute.options.head as unknown as (ctx: { loaderData?: unknown }) => Head)({ loaderData });
+
+  it("has an absolute canonical, og:url and a Home > Neighborhoods > name breadcrumb when VITE_SITE_URL is set", () => {
+    vi.stubEnv("VITE_SITE_URL", "https://example.com");
+    try {
+      const { meta, links, scripts } = head({ hood: astoria });
+      expect(links).toEqual([{ rel: "canonical", href: "https://example.com/neighborhoods/astoria" }]);
+      expect(meta.find((m) => m.property === "og:url")?.content).toBe("https://example.com/neighborhoods/astoria");
+      expect(scripts).toHaveLength(1);
+      const ld = JSON.parse(scripts[0].children);
+      expect(ld["@type"]).toBe("BreadcrumbList");
+      expect(ld.itemListElement.map((i: { name: string; item: string }) => [i.name, i.item])).toEqual([
+        ["Home", "https://example.com/"],
+        ["Neighborhoods", "https://example.com/neighborhoods"],
+        ["Astoria", "https://example.com/neighborhoods/astoria"],
+      ]);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it("has neither without a site URL", () => {
+    vi.stubEnv("VITE_SITE_URL", "");
+    try {
+      const { meta, links, scripts } = head({ hood: astoria });
+      expect(links).toEqual([]);
+      expect(scripts).toEqual([]);
+      expect(meta.find((m) => m.property === "og:url")).toBeUndefined();
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+});
+
 describe("/neighborhoods/:slug", () => {
   const visitor = [["viewer"], { signedIn: false, member: false, admin: false }] as [unknown[], unknown];
 

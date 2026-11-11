@@ -5,6 +5,7 @@ import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import { Scallop } from "@/app/layout/twc";
 import { memberPageFn } from "@/features/members/fns";
 import { memberSlug } from "@/features/members/queries";
+import { breadcrumbLd, canonicalTags, jsonLdScript, parseSiteUrl } from "@/app/seo";
 import { useNeighborhoods } from "@/features/neighborhoods/queries";
 import { toneFor } from "@/features/neighborhoods/tone";
 
@@ -28,7 +29,31 @@ export const Route = createFileRoute("/members_/$slug")({
     const title = `${member.name} — The Women’s Collective`;
     const description = [member.role && member.business ? `${member.role} at ${member.business}` : member.role || member.business, member.neighborhood]
       .filter(Boolean).join(", ") || "A member of The Women’s Collective in Queens.";
+    // Only a public page gets a canonical and structured data; a members-only one stays noindex without them.
+    const raw = import.meta.env.VITE_SITE_URL as string | undefined;
+    const site = parseSiteUrl(raw);
+    const path = `/members/${memberSlug(member)}`;
+    const canonical = isPublic ? canonicalTags(raw, path) : { meta: [], links: [] };
+    // Only facts she published on her card; a missing one is left out, never filled in.
+    const person = {
+      "@type": "Person",
+      name: member.name,
+      ...(member.role ? { jobTitle: member.role } : {}),
+      ...(member.business ? { worksFor: { "@type": "Organization", name: member.business } } : {}),
+      ...(member.neighborhood ? { homeLocation: { "@type": "Place", name: member.neighborhood } } : {}),
+    };
+    const scripts = isPublic && site
+      ? [jsonLdScript({
+          "@context": "https://schema.org",
+          "@graph": [
+            { "@type": "ProfilePage", url: site + path, mainEntity: person },
+            breadcrumbLd(site, [["Home", "/"], ["Members", "/members"], [member.name, path]]),
+          ],
+        })]
+      : [];
     return {
+      links: canonical.links,
+      scripts,
       meta: [
         { title },
         { name: "description", content: description },
@@ -38,6 +63,7 @@ export const Route = createFileRoute("/members_/$slug")({
         { name: "twitter:card", content: "summary_large_image" },
         // A members-only page (listed, not public) is never for search engines.
         ...(isPublic ? [] : [{ name: "robots", content: "noindex" }]),
+        ...canonical.meta,
       ],
     };
   },

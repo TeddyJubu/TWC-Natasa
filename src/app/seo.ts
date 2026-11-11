@@ -80,3 +80,16 @@ export function siteSeo(rawSiteUrl: string | undefined, pathname: string | undef
   }
   return { meta, links };
 }
+
+/** A JSON-LD head script. `<` is escaped so a database string can never close the script element. */
+export function jsonLdScript(data: unknown) {
+  return { type: "application/ld+json", children: JSON.stringify(data).replace(/</g, "\\u003c") };
+}
+
+/** A BreadcrumbList of absolute URLs, from the home page down. */
+export function breadcrumbLd(site: string, trail: readonly (readonly [name: string, path: string])[]) {
+  return {
+    "@type": "BreadcrumbList",
+    itemListElement: trail.map(([name, path], i) => ({ "@type": "ListItem", position: i + 1, name, item: absolute(site, path) })),
+  };
+}

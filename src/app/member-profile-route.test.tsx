@@ -15,7 +15,8 @@ import { Route } from "@/routes/members_.$slug";
 
 const Page = Route.options.component as React.ComponentType;
 const loader = Route.options.loader as unknown as (opts: { params: { slug: string } }) => Promise<MemberPage>;
-const head = Route.options.head as unknown as (opts: { loaderData?: MemberPage }) => { meta?: Record<string, string>[] };
+type Head = { meta?: Record<string, string>[]; links?: Record<string, string>[]; scripts?: { type: string; children: string }[] };
+const head = Route.options.head as unknown as (opts: { loaderData?: MemberPage }) => Head;
 
 afterEach(() => {
   cleanup();
@@ -59,6 +60,39 @@ describe("/members/:slug head", () => {
   it("indexes public profiles and never a members-only page", () => {
     expect(robots(page())).toBeUndefined();
     expect(robots(page({ isPublic: false, audience: "member" }))?.content).toBe("noindex");
+  });
+
+  it("gives a public page a canonical, og:url, and ProfilePage + breadcrumb data of only her published facts", () => {
+    vi.stubEnv("VITE_SITE_URL", "https://example.com");
+    try {
+      const { meta, links, scripts } = head({ loaderData: page({ member: card("Rosa Diaz", 12, { business: "", role: "Baker <b>" }) }) });
+      expect(links).toEqual([{ rel: "canonical", href: "https://example.com/members/rosa-diaz-12" }]);
+      expect(meta?.find((m) => m.property === "og:url")?.content).toBe("https://example.com/members/rosa-diaz-12");
+      expect(scripts).toHaveLength(1);
+      // Database strings can never close the script element.
+      expect(scripts![0].children).not.toContain("<");
+      const graph = JSON.parse(scripts![0].children)["@graph"];
+      expect(graph[0]).toEqual({
+        "@type": "ProfilePage",
+        url: "https://example.com/members/rosa-diaz-12",
+        mainEntity: { "@type": "Person", name: "Rosa Diaz", jobTitle: "Baker <b>", homeLocation: { "@type": "Place", name: "Astoria" } },
+      });
+      expect(graph[1].itemListElement.map((i: { name: string }) => i.name)).toEqual(["Home", "Members", "Rosa Diaz"]);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it("gives a members-only page no canonical and no structured data", () => {
+    vi.stubEnv("VITE_SITE_URL", "https://example.com");
+    try {
+      const { meta, links, scripts } = head({ loaderData: page({ isPublic: false, audience: "member" }) });
+      expect(links).toEqual([]);
+      expect(scripts).toEqual([]);
+      expect(meta?.find((m) => m.property === "og:url")).toBeUndefined();
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 });
 
