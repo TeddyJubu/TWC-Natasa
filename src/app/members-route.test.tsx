@@ -213,12 +213,18 @@ describe("/members", () => {
     fireEvent.click(screen.getByRole("radio", { name: "Sunnyside" }));
     expect(screen.queryByText("Rosa Diaz")).toBeNull();
     expect(screen.getByText("Lena Ortiz")).toBeTruthy();
-    expect(screen.getByText("01 profiles")).toBeTruthy();
+    expect(screen.getByText("1 profile")).toBeTruthy();
   });
 
   it("counts the profiles shown", () => {
     renderWithQueries(<Page />, [viewer(true, true), [["directory"], [card("Rosa Diaz", 12), card("Lena Ortiz", 15)]]]);
-    expect(within(document.body).getByText("02 profiles")).toBeTruthy();
+    expect(within(document.body).getByText("2 profiles")).toBeTruthy();
+  });
+
+  it("says 0 profiles when the filter leaves none", () => {
+    renderWithQueries(<Page />, [viewer(true, true), [["directory"], [card("Rosa Diaz", 12)]]]);
+    fireEvent.click(screen.getByRole("radio", { name: "Sunnyside" }));
+    expect(screen.getByText("0 profiles")).toBeTruthy();
   });
 
   it.each([

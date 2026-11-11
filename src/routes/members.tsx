@@ -100,7 +100,7 @@ function MembersPage() {
                 <span className="twc-eyebrow">The directory</span>
                 <h2 className="twc-h2">A catalogue of women building nearby.</h2>
               </div>
-              <p aria-live="polite" className="twc-index">{list.isSuccess && `${String(members.length).padStart(2, "0")} profiles`}</p>
+              <p aria-live="polite" className="twc-index">{list.isSuccess && `${members.length} ${members.length === 1 ? "profile" : "profiles"}`}</p>
             </div>
 
             <fieldset className="m-0 flex min-w-0 flex-col gap-3 border-0 p-0">
