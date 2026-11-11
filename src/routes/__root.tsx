@@ -10,9 +10,8 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 import { handleAuthEvent, onAuthEvent } from "@/app/auth-events";
-import { currentPathname, siteSeo } from "@/app/seo";
+import { OG_IMAGE, currentPathname, siteSeo } from "@/app/seo";
 import { useRouteFocus } from "@/app/layout/route-focus";
-import hero from "@/assets/photography/hero.jpg";
 
 import appCss from "../styles.css?url";
 import { displayFontUrl } from "@/index";
@@ -20,7 +19,7 @@ import { displayFontUrl } from "@/index";
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: ({ matches }) => {
     // Read per call so tests can stub it; unset or invalid means no absolute-URL tags at all.
-    const seo = siteSeo(import.meta.env.VITE_SITE_URL as string | undefined, currentPathname(matches), hero);
+    const seo = siteSeo(import.meta.env.VITE_SITE_URL as string | undefined, currentPathname(matches), OG_IMAGE);
     return {
       meta: [
         { charSet: "utf-8" },
@@ -28,6 +27,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         { title: "The Women’s Collective — Find Your People in Queens" },
         { name: "description", content: "A community for women founders, entrepreneurs, creatives, freelancers, professionals, and neighbors across Western Queens." },
         { property: "og:type", content: "website" },
+        { property: "og:site_name", content: "The Women’s Collective" },
+        { property: "og:locale", content: "en_US" },
         { name: "twitter:card", content: "summary_large_image" },
         ...seo.meta,
       ],

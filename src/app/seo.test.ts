@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { currentPathname, parseSiteUrl, siteSeo } from "@/app/seo";
+import { OG_IMAGE, canonicalTags, currentPathname, parseSiteUrl, siteSeo } from "@/app/seo";
 
 describe("parseSiteUrl", () => {
   it("accepts an absolute http(s) URL", () => {
@@ -45,15 +45,20 @@ describe("currentPathname", () => {
 });
 
 describe("siteSeo", () => {
-  const image = "/assets/hero-abc123.jpg";
+  const image = { ...OG_IMAGE, src: "/og-image.jpg" };
+  const imageMeta = (url: string) => [
+    { property: "og:image", content: url },
+    { property: "og:image:width", content: "1200" },
+    { property: "og:image:height", content: "630" },
+    { property: "og:image:type", content: "image/jpeg" },
+    { property: "og:image:alt", content: OG_IMAGE.alt },
+    { name: "twitter:image:alt", content: OG_IMAGE.alt },
+  ];
 
-  it("emits absolute canonical, og:url and og:image for a valid site URL", () => {
+  it("emits absolute canonical, og:url and og:image with its size, type and alt for a valid site URL", () => {
     const { meta, links } = siteSeo("https://example.com/", "/members", image);
     expect(links).toEqual([{ rel: "canonical", href: "https://example.com/members" }]);
-    expect(meta).toEqual([
-      { property: "og:url", content: "https://example.com/members" },
-      { property: "og:image", content: "https://example.com/assets/hero-abc123.jpg" },
-    ]);
+    expect(meta).toEqual([{ property: "og:url", content: "https://example.com/members" }, ...imageMeta("https://example.com/og-image.jpg")]);
   });
 
   it("gives canonical and og:url only to indexable public pages", () => {
@@ -64,7 +69,7 @@ describe("siteSeo", () => {
     for (const path of ["/colors", "/typography", "/components", "/admin", "/account", "/reset-password"]) {
       const { meta, links } = siteSeo("https://example.com", path, image);
       expect(links, path).toEqual([]);
-      expect(meta, path).toEqual([{ property: "og:image", content: "https://example.com/assets/hero-abc123.jpg" }]);
+      expect(meta, path).toEqual(imageMeta("https://example.com/og-image.jpg"));
     }
   });
 
@@ -78,16 +83,36 @@ describe("siteSeo", () => {
   });
 
   it("omits canonical and og:url without a current path", () => {
-    expect(siteSeo("https://example.com", undefined, image)).toEqual({
-      meta: [{ property: "og:image", content: "https://example.com/assets/hero-abc123.jpg" }],
-      links: [],
+    expect(siteSeo("https://example.com", undefined, image)).toEqual({ meta: imageMeta("https://example.com/og-image.jpg"), links: [] });
+  });
+
+  it("keeps an already-absolute image and never emits a relative or inlined one, nor its size or alt", () => {
+    expect(siteSeo("https://example.com", undefined, { ...image, src: "https://cdn.example.net/og.jpg" }).meta)
+      .toEqual(imageMeta("https://cdn.example.net/og.jpg"));
+    expect(siteSeo("https://example.com", undefined, { ...image, src: "data:image/jpeg;base64,AAAA" }).meta).toEqual([]);
+    expect(siteSeo("https://example.com", undefined, { ...image, src: "assets/og.jpg" }).meta).toEqual([]);
+  });
+
+  it("points at a 1200x630 file that exists in public/", async () => {
+    const { readFileSync } = await import("node:fs");
+    const jpg = readFileSync(new URL("../../public/og-image.jpg", import.meta.url));
+    // JPEG SOF0/SOF2 frame header: height then width, big-endian.
+    let i = 2;
+    while (i < jpg.length && !(jpg[i] === 0xff && (jpg[i + 1] === 0xc0 || jpg[i + 1] === 0xc2))) i += 2 + jpg.readUInt16BE(i + 2);
+    expect([jpg.readUInt16BE(i + 7), jpg.readUInt16BE(i + 5)]).toEqual([OG_IMAGE.width, OG_IMAGE.height]);
+  });
+});
+
+describe("canonicalTags", () => {
+  it("is an absolute canonical and og:url for any path", () => {
+    expect(canonicalTags("https://example.com/", "/neighborhoods/astoria")).toEqual({
+      meta: [{ property: "og:url", content: "https://example.com/neighborhoods/astoria" }],
+      links: [{ rel: "canonical", href: "https://example.com/neighborhoods/astoria" }],
     });
   });
 
-  it("keeps an already-absolute image and never emits a relative or inlined one", () => {
-    expect(siteSeo("https://example.com", undefined, "https://cdn.example.net/hero.jpg").meta)
-      .toEqual([{ property: "og:image", content: "https://cdn.example.net/hero.jpg" }]);
-    expect(siteSeo("https://example.com", undefined, "data:image/jpeg;base64,AAAA").meta).toEqual([]);
-    expect(siteSeo("https://example.com", undefined, "assets/hero.jpg").meta).toEqual([]);
+  it("is empty without a valid site URL", () => {
+    expect(canonicalTags(undefined, "/members/rosa-diaz-12")).toEqual({ meta: [], links: [] });
+    expect(canonicalTags("example.com", "/members/rosa-diaz-12")).toEqual({ meta: [], links: [] });
   });
 });

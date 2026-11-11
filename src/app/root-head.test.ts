@@ -49,7 +49,17 @@ describe("root head", () => {
     expect(links.find((l) => l.rel === "canonical")?.href).toBe("https://example.com/members");
     expect(metaContent(meta, "og:url")).toBe("https://example.com/members");
     const image = metaContent(meta, "og:image");
-    expect(image).toMatch(/^https:\/\/example\.com\/.+hero.*\.jpg$/);
+    expect(image).toBe("https://example.com/og-image.jpg");
+    expect(metaContent(meta, "og:image:width")).toBe("1200");
+    expect(metaContent(meta, "og:image:height")).toBe("630");
+    expect(metaContent(meta, "og:image:alt")).toBeTruthy();
     expect(metaContent(meta, "twitter:site")).toBeUndefined();
+  });
+
+  it("names the site and its locale on every page", () => {
+    vi.stubEnv("VITE_SITE_URL", "");
+    const { meta } = head(["/"]);
+    expect(metaContent(meta, "og:site_name")).toBe("The Women’s Collective");
+    expect(metaContent(meta, "og:locale")).toBe("en_US");
   });
 });

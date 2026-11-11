@@ -36,9 +36,27 @@ export const INDEXED = new Set([
 
 const absolute = (site: string, path: string) => site + (path.startsWith("/") ? path : `/${path}`);
 
+/** The share card: public/og-image.jpg, a 1200x630 crop of the home hero (hero-rock.webp), at a stable URL. */
+export const OG_IMAGE = {
+  src: "/og-image.jpg",
+  width: 1200,
+  height: 630,
+  type: "image/jpeg",
+  alt: "A woman in sunglasses sitting on a sunlit rock beneath a wide blue sky",
+};
+export type OgImage = typeof OG_IMAGE;
+
+/** Canonical link and og:url for one path; empty when the site URL is missing or invalid. For pages outside INDEXED. */
+export function canonicalTags(rawSiteUrl: string | undefined, path: string) {
+  const site = parseSiteUrl(rawSiteUrl);
+  if (!site) return { meta: [] as { property: string; content: string }[], links: [] as { rel: string; href: string }[] };
+  const url = absolute(site, path);
+  return { meta: [{ property: "og:url", content: url }], links: [{ rel: "canonical", href: url }] };
+}
+
 /** Canonical link, og:url and og:image tags; empty when the site URL is missing or invalid. */
-export function siteSeo(rawSiteUrl: string | undefined, pathname: string | undefined, image: string) {
-  const meta: { property: string; content: string }[] = [];
+export function siteSeo(rawSiteUrl: string | undefined, pathname: string | undefined, image: OgImage) {
+  const meta: ({ property: string; content: string } | { name: string; content: string })[] = [];
   const links: { rel: string; href: string }[] = [];
   const site = parseSiteUrl(rawSiteUrl);
   if (!site) return { meta, links };
@@ -48,7 +66,17 @@ export function siteSeo(rawSiteUrl: string | undefined, pathname: string | undef
     meta.push({ property: "og:url", content: url });
   }
   // A root-relative asset path is resolved against the site; an inlined (data:) or relative asset is skipped.
-  const imageUrl = /^https?:\/\//i.test(image) ? image : image.startsWith("/") && !image.startsWith("//") ? absolute(site, image) : undefined;
-  if (imageUrl) meta.push({ property: "og:image", content: imageUrl });
+  const src = image.src;
+  const imageUrl = /^https?:\/\//i.test(src) ? src : src.startsWith("/") && !src.startsWith("//") ? absolute(site, src) : undefined;
+  if (imageUrl) {
+    meta.push(
+      { property: "og:image", content: imageUrl },
+      { property: "og:image:width", content: String(image.width) },
+      { property: "og:image:height", content: String(image.height) },
+      { property: "og:image:type", content: image.type },
+      { property: "og:image:alt", content: image.alt },
+      { name: "twitter:image:alt", content: image.alt },
+    );
+  }
   return { meta, links };
 }

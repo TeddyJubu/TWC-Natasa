@@ -66,7 +66,7 @@ In a sandbox, bun may need writable temp and cache directories, e.g.
 
 | Variable | What it does |
 |---|---|
-| `VITE_SITE_URL` | The site's public origin, e.g. `https://example.com`. When set, every page gets an absolute `og:image`, and the indexable public pages (`/`, `/members`, `/join`, `/auth`; the list is in `src/app/seo.ts`) get an absolute canonical and `og:url`. Unset or invalid means none of them, never a guessed URL. |
+| `VITE_SITE_URL` | The site's public origin, e.g. `https://example.com`. When set, every page gets an absolute `og:image` (`public/og-image.jpg`, a 1200×630 crop of the home hero, with its size and alt), and the indexable public pages (`/`, `/members`, `/join`, `/auth`; the list is in `src/app/seo.ts`) get an absolute canonical and `og:url`. Unset or invalid means none of them, never a guessed URL. |
 | `VITE_GOOGLE_AUTH` | `true` shows "Continue with Google" on `/auth`. Anything else, or unset, hides it. Set the two `GOOGLE_*` server values first. |
 
 **Server (never in a tracked file):** set them in the service's environment or in `.env.local` at the repo root
