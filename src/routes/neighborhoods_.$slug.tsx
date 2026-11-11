@@ -142,7 +142,7 @@ function Members({ hood, initial, onOpen }: { hood: Neighborhood; initial?: Memb
     <section aria-labelledby="hood-members" className="flex flex-col gap-7">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <h2 id="hood-members" className="twc-h3 min-w-0 text-[clamp(2rem,5vw,2.5rem)]">Women building in {hood.name}</h2>
-        <Link to="/members" className="twc-link font-display text-[13px] uppercase leading-5 tracking-[1.6px] text-sb-blue-ink">See them in the directory →</Link>
+        <Link to="/members" className="twc-link font-display text-[13px] uppercase leading-5 tracking-[1.6px] text-sb-blue-ink">See them in the directory <span aria-hidden>→</span></Link>
       </div>
       {profiles.isPending ? (
         <p role="status" className="text-sm text-sb-muted">Loading members…</p>
@@ -206,7 +206,7 @@ function Gatherings({ hood }: { hood: Neighborhood }) {
   const member = viewer.data?.member === true || viewer.data?.admin === true;
   const events = useQuery({ ...eventsQuery, enabled: member });
   const here = (events.data ?? []).filter((e) => e.neighborhood === hood.name).slice(0, MAX_EVENTS);
-  const across = <Link to="/gatherings" className="twc-inlink">See what’s happening across Queens →</Link>;
+  const across = <Link to="/gatherings" className="twc-inlink">See what’s happening across Queens <span aria-hidden>→</span></Link>;
   return (
     <section aria-labelledby="hood-gatherings" className="flex flex-col gap-5">
       <h2 id="hood-gatherings" className="twc-h3 text-[clamp(2rem,5vw,2.5rem)]">Coming up in {hood.name}</h2>
