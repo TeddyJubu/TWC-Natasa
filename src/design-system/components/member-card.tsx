@@ -143,6 +143,7 @@ export const MemberCard = React.forwardRef<HTMLElement, MemberCardProps>(({ cata
               <ConstellationLogo
                 variant="white"
                 alt="The Women’s Collective"
+                sizes="48px"
                 className="absolute left-1/2 top-1/2 size-12 -translate-x-1/2 -translate-y-1/2"
               />
             </div>

@@ -44,7 +44,7 @@ function Confirmed() {
   return (
     <div className={cn(authCard, "items-center text-center")}>
       <span aria-hidden className="grid size-20 place-items-center rounded-full bg-sb-sun">
-        <ConstellationLogo variant="ink" alt="" className="w-11" />
+        <ConstellationLogo variant="ink" alt="" sizes="44px" className="w-11" />
       </span>
       <div className="flex flex-col items-center gap-2.5">
         <p className={cn(authScript, "inline-flex items-center gap-2")}>email verified <Icon name="sparkle" className="size-6" /></p>

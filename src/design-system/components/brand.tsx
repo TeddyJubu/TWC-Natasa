@@ -1,7 +1,7 @@
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../lib/utils";
-import { constellationLogoSources } from "../lib/logo-sources";
+import { CONSTELLATION_LOGO_SIZE, constellationLogoSources, constellationLogoSrcSets } from "../lib/logo-sources";
 
 const logoVariants = cva("block h-auto object-contain", {
   variants: {
@@ -15,6 +15,9 @@ const logoVariants = cva("block h-auto object-contain", {
   defaultVariants: { size: "md" },
 });
 
+/** Each size's drawn width, for `sizes`. A caller that sets its own width in `className` passes its own `sizes`. */
+const logoSizes = { sm: "36px", md: "64px", lg: "112px", display: "(min-width: 48rem) 240px, 176px" } as const;
+
 export interface ConstellationLogoProps
   extends Omit<React.ImgHTMLAttributes<HTMLImageElement>, "src" | "alt">,
     VariantProps<typeof logoVariants> {
@@ -23,8 +26,17 @@ export interface ConstellationLogoProps
 }
 
 export const ConstellationLogo = React.forwardRef<HTMLImageElement, ConstellationLogoProps>(
-  ({ className, size, variant = "ink", alt = "The Women’s Collective constellation", ...props }, ref) => (
-    <img ref={ref} src={constellationLogoSources[variant]} alt={alt} className={cn(logoVariants({ size }), className)} {...props} />
+  ({ className, size, variant = "ink", alt = "The Women’s Collective constellation", sizes, ...props }, ref) => (
+    <img
+      ref={ref}
+      src={constellationLogoSources[variant]}
+      srcSet={constellationLogoSrcSets[variant]}
+      sizes={sizes ?? logoSizes[size ?? "md"]}
+      {...CONSTELLATION_LOGO_SIZE}
+      alt={alt}
+      className={cn(logoVariants({ size }), className)}
+      {...props}
+    />
   ),
 );
 ConstellationLogo.displayName = "ConstellationLogo";

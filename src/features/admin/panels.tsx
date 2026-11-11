@@ -2,7 +2,7 @@
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { cn, initials } from "@/index";
+import { cn, constellationLogoSrcSet, initials } from "@/index";
 import { fieldClass, linkClass, primaryButton, ring, secondaryButton } from "@/app/layout/app-classes";
 import { Card, Chip, InlineError, Toggle, type ChipTone } from "@/app/layout/app-ui";
 import { Icon } from "@/app/layout/icons";
@@ -1564,7 +1564,7 @@ function NeighborhoodRow({ hood }: { hood: AdminNeighborhood }) {
       aria-label={`Edit ${hood.name}`} className={cn(pad, "flex flex-col gap-5 py-5")}>
       <div className="flex flex-wrap items-center gap-x-3.5 gap-y-2">
         <span aria-hidden className="grid size-7 shrink-0 place-items-center overflow-hidden rounded-full bg-(--hood)" style={hoodStyle(hood.color)}>
-          {logoSrc && <img src={logoSrc} alt="" className="size-5.5 object-contain" />}
+          {logoSrc && <img src={logoSrc} srcSet={constellationLogoSrcSet(logoSrc)} sizes="22px" alt="" className="size-5.5 object-contain" />}
         </span>
         <h3 className="min-w-0 font-gilda text-xl/[1.3] break-words text-ink">{hood.name}</h3>
         <span className="twc-index mr-auto">{hood.slug} · order {hood.sort_order}</span>

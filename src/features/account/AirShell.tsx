@@ -24,7 +24,7 @@ export function AirShell({ page = "/account", admin, name, avatar, catalogueNumb
       <div className="air-wrap">
         <header className="air-top">
           <Link to="/" aria-label="The Women’s Collective home" className={cn("air-brand", ring)}>
-            <ConstellationLogo variant="ink" alt="" className="w-6.5 lg:w-7.5" />The Women’s Collective
+            <ConstellationLogo variant="ink" alt="" sizes="30px" className="w-6.5 lg:w-7.5" />The Women’s Collective
           </Link>
           <div className="air-who">
             <AccountMenu page={page} admin={admin} active={page === "/account" ? active : null} name={name} avatar={avatar} catalogueNumber={catalogueNumber} />

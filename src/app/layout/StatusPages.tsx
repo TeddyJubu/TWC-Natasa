@@ -23,7 +23,7 @@ export function StatusPage({ script, tilt, title, intro, children }: {
         <div className="twc-band twc-band--cream pb-24 pt-16">
           <div className="twc-wrap flex justify-center">
             <section aria-labelledby="status-title" className="flex w-full max-w-[520px] flex-col items-center gap-4 rounded-md bg-sb-paper px-5 py-8 text-center shadow-[inset_0_0_0_1px_rgb(31_31_28/0.15)] md:px-10 md:py-12">
-              <ConstellationLogo alt="" className="w-24" />
+              <ConstellationLogo alt="" sizes="96px" className="w-24" />
               <p aria-hidden className={cn("font-script text-5xl leading-none text-sb-blue md:text-[64px]", tilt)}>{script}</p>
               <h1 id="status-title" className="text-balance font-display text-[34px] leading-[1.08] tracking-[-0.5px] md:text-[44px]">{title}</h1>
               <p className="max-w-[40ch] text-sb-muted">{intro}</p>

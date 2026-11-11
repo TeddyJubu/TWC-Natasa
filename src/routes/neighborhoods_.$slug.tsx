@@ -115,7 +115,7 @@ function Hero({ hood }: { hood: Neighborhood }) {
           className="absolute inset-0 size-full object-cover"
         />
       ) : (
-        <HoodLogo hood={hood} className="size-28 self-end p-5 sm:absolute sm:right-10 sm:top-1/2 sm:size-48 sm:-translate-y-1/2 sm:p-8" />
+        <HoodLogo hood={hood} sizes="(min-width: 40rem) 128px, 72px" className="size-28 self-end p-5 sm:absolute sm:right-10 sm:top-1/2 sm:size-48 sm:-translate-y-1/2 sm:p-8" />
       )}
       <div
         className={cn(

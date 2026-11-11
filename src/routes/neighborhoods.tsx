@@ -44,7 +44,7 @@ function NeighborhoodsPage() {
         <section className="twc-band twc-band--sun pb-24 pt-16">
           <div className="twc-wrap flex max-w-[860px] flex-col items-center gap-[18px] text-center">
             <span className="grid size-[110px] place-items-center rounded-full bg-sb-paper p-6">
-              <ConstellationLogo alt="" className="size-full" />
+              <ConstellationLogo alt="" sizes="62px" className="size-full" />
             </span>
             <p className="twc-eyebrow-script text-sb-ink">our constellation</p>
             <h1 className="twc-display">{headline(hoods.length)}</h1>
@@ -95,7 +95,7 @@ function Tile({ hood, index }: { hood: Neighborhood; index: number }) {
     >
       <span className="flex items-start justify-between">
         <span aria-hidden className="font-fragment text-[13px] leading-[19.5px] tracking-[1px]">{String(index).padStart(2, "0")}</span>
-        <HoodLogo hood={hood} className="size-11" />
+        <HoodLogo hood={hood} sizes="28px" className="size-11" />
       </span>
       <span className="font-display text-[34px] leading-[1.1] tracking-[-0.3px]">{hood.name}</span>
     </Link>

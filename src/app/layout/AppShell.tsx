@@ -13,7 +13,7 @@ import { useButtonSparkles } from "./sparkles";
 function Brand({ className }: { className?: string }) {
   return (
     <Link to="/" aria-label="The Women’s Collective home" className={cn("air-brand min-w-0 px-1.5 leading-tight whitespace-normal text-ink", ring, className)}>
-      <ConstellationLogo variant="ink" alt="" className="w-7 shrink-0" />
+      <ConstellationLogo variant="ink" alt="" sizes="28px" className="w-7 shrink-0" />
       <span className="min-w-0">The Women’s Collective</span>
     </Link>
   );

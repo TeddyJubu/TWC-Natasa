@@ -117,7 +117,7 @@ function MemberPass({ facts: f, nameId }: { facts: PassFacts; nameId: string }) 
           <div className="pass-stamp-paper">
             <div className="pass-stamp-face">
               <span className="pass-stamp-val">{number ? `${Number(f.catalogue_number)}¢` : ""}</span>
-              <ConstellationLogo variant="white" alt="" className="w-7" />
+              <ConstellationLogo variant="white" alt="" sizes="28px" className="w-7" />
               <span className="pass-stamp-name">{f.specialty.trim()}</span>
               <span className="pass-stamp-foot">{hood ? `${hood} post` : ""}</span>
             </div>

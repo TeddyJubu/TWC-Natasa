@@ -7,7 +7,7 @@
 - Form primitives use editorial and boxed variants from one shared family — keeps long applications expressive and compact forms consistent.
 - Motion uses shared CSS timing tokens and reduced-motion fallbacks — keeps interactions consistent and accessible without adding a runtime dependency.
 - Long membership forms compose reusable field, choice, notice, progress, section, and action primitives — keeps dense applications consistent and accessible.
-- The uploaded constellation artwork is the canonical logo and `ConstellationLogo` owns its fixed color variants — preserves the original geometry across every brand context.
+- The uploaded constellation artwork is the canonical logo and `ConstellationLogo` owns its fixed color variants, each with 128w/256w lossless WebP downscales in its `srcset` (`logo-sources.ts`; a caller that sets its own width passes `sizes`) — preserves the original geometry across every brand context without shipping the 471px PNG to a 28px mark.
 - Immersive image strips use the self-contained OGL circular gallery with a static reduced-motion fallback — preserves the editorial arc while remaining accessible and attach-safe.
 - Decorative pointer motion uses the self-contained star `ImageTrail` (glittering sparkles) on public pages only (internal pages pass `trail={false}` to `AppPage`), disabled for touch and reduced motion — keeps the playful flourish accessible and attach-safe.
 - Clicking an enabled button in the app shell scatters a tiny star burst (`useButtonSparkles` in `src/app/layout/sparkles.ts`, `.twc-spark` in `twc.css`): `aria-hidden`, no pointer events, gone in 0.7 s, none under reduced motion — click feedback without a library or an inline-style CSP exception.

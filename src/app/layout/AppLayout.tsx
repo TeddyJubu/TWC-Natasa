@@ -48,7 +48,7 @@ export function AppNav() {
   const close = () => menu.current?.hidePopover?.();
   const brand = (
     <Link to="/" activeOptions={{ exact: true }} className="group flex items-center gap-2.5 text-sb-ink outline-none focus-visible:text-sb-blue-ink" aria-label="The Women’s Collective home">
-      <ConstellationLogo variant="ink" alt="" className="w-7 transition-[rotate] duration-500 ease-[var(--ease-snap)] group-hover:rotate-[24deg] motion-reduce:transition-none xl:w-[34px]" />
+      <ConstellationLogo variant="ink" alt="" sizes="(min-width: 80rem) 34px, 28px" className="w-7 transition-[rotate] duration-500 ease-[var(--ease-snap)] group-hover:rotate-[24deg] motion-reduce:transition-none xl:w-[34px]" />
       <span className="whitespace-nowrap font-display text-[15px] max-[359px]:sr-only sm:text-base lg:text-[18px] xl:text-[22px]">The Women’s Collective</span>
     </Link>
   );

@@ -147,7 +147,7 @@ export function WordsCard({ editor, catalogueNumber }: { editor: ProfileEditor; 
           <div aria-hidden className="air-mini">
             <div><div className="air-mini-face">
               <span>{catalogueNumber !== null ? `${catalogueNumber}¢` : ""}</span>
-              <ConstellationLogo variant="white" alt="" className="w-6.5" />
+              <ConstellationLogo variant="white" alt="" sizes="26px" className="w-6.5" />
               <b>TWC</b>
             </div></div>
           </div>

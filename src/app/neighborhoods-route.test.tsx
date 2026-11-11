@@ -88,6 +88,17 @@ describe("/neighborhoods", () => {
     expect(tile("East Elmhurst").className).toContain("bg-sb-cream");
     expect(tile("East Elmhurst").className).toContain("border-dashed");
   });
+
+  it("a bundled logo loads a downscale for its 28px mark; an uploaded one has no srcset", () => {
+    const uploaded = { ...woodside, logoUrl: "/media/neighborhood-logos/woodside.png" };
+    withLoaderData(IndexRoute, [astoria, uploaded]);
+    renderWithQueries(<IndexPage />);
+    const mark = (name: string) => screen.getByRole("link", { name: new RegExp(name) }).querySelector("img")!;
+    expect(mark("Astoria").getAttribute("srcset")).toMatch(/astoria-128\.webp 128w/);
+    expect(mark("Astoria").getAttribute("sizes")).toBe("28px");
+    expect(mark("Woodside").getAttribute("src")).toBe("/media/neighborhood-logos/woodside.png");
+    expect(mark("Woodside").hasAttribute("srcset")).toBe(false);
+  });
 });
 
 describe("/neighborhoods/:slug loader", () => {
