@@ -1,7 +1,7 @@
 // Uploaded images under `${DATA_DIR}/uploads/<bucket>/…` and the visibility rules of the old storage policies.
 // Buckets: `avatars/<owner id>/<kind>-<ts>.<ext>` (portraits and business logos, private),
 // `feed/<author id>/<post id>-<n>.<ext>` (newsfeed photos, members only) and `neighborhood-logos/<slug>.<ext>` (public brand assets).
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve, sep } from "node:path";
 import { dataDir, type DB } from "./db";
 import { AccessError, isAdmin, isMember, type Actor } from "./guard";
@@ -98,9 +98,11 @@ function publicFile(db: DB, rest: string[]): string | null {
 /**
  * Serves `/media/<bucket>/<name>` and `/media/public/<catalogue number>/<avatar|logo>`. Anything not visible to this
  * actor is a 404 (as if it didn't exist), so the route can't be used to probe for files. `pathname` is the raw URL
- * path, not yet decoded.
+ * path, not yet decoded. A visible file carries a weak ETag and Last-Modified, and a matching If-None-Match (or, without
+ * one, If-Modified-Since) gets a 304; visibility is checked first, so a hidden file is still a 404. Only files anyone may
+ * see are `public`; the rest are `private` (the browser's own cache, never a shared one).
  */
-export function serveMedia(db: DB, actor: Actor, pathname: string): Response {
+export function serveMedia(db: DB, actor: Actor, pathname: string, requestHeaders?: Headers): Response {
   let segments: string[];
   try {
     segments = pathname.replace(/^\/media\//, "").split("/").map(decodeURIComponent);
@@ -121,20 +123,36 @@ export function serveMedia(db: DB, actor: Actor, pathname: string): Response {
   } else return notFound();
   if (!file) return notFound();
   let bytes: Buffer;
+  let stat: { size: number; mtimeMs: number; ino: number };
   try {
+    stat = statSync(file);
     bytes = readFileSync(file);
   } catch {
     return notFound();
   }
   const ext = sniffImage(bytes);
   if (!ext) return notFound();
+  const mtime = Math.floor(stat.mtimeMs);
+  const cache = {
+    "Cache-Control": open ? "public, max-age=60" : "private, max-age=3600",
+    ETag: `W/"${stat.size.toString(16)}-${mtime.toString(16)}-${stat.ino.toString(16)}"`,
+    "Last-Modified": new Date(mtime).toUTCString(),
+  };
+  if (requestHeaders && notModified(requestHeaders, cache.ETag, mtime)) return new Response(null, { status: 304, headers: cache });
   return new Response(new Uint8Array(bytes), {
-    headers: {
-      "Content-Type": TYPES[ext],
-      "X-Content-Type-Options": "nosniff",
-      "Cache-Control": open ? "public, max-age=60" : "private, max-age=3600",
-    },
+    headers: { "Content-Type": TYPES[ext], "X-Content-Type-Options": "nosniff", ...cache },
   });
+}
+
+/** RFC 9110 13.2.2: If-None-Match (weak comparison) wins; If-Modified-Since only counts without it. */
+export function notModified(headers: Headers, etag: string, mtimeMs: number): boolean {
+  const ifNoneMatch = headers.get("if-none-match");
+  if (ifNoneMatch !== null) {
+    const bare = etag.replace(/^W\//, "");
+    return ifNoneMatch.split(",").some((tag) => { const t = tag.trim(); return t === "*" || t.replace(/^W\//, "") === bare; });
+  }
+  const since = Date.parse(headers.get("if-modified-since") ?? "");
+  return Number.isFinite(since) && Math.floor(mtimeMs / 1000) * 1000 <= since;
 }
 
 /** The URL a stored file is served at. */

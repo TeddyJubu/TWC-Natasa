@@ -96,6 +96,34 @@ describe("serveMedia", () => {
     db.prepare("update profiles set directory_visible = 1, public_profile = 1 where id = ?").run(OWNER);
   });
 
+  it("sends a weak ETag and Last-Modified, and answers a matching revalidation with a 304", () => {
+    const path = `/media/avatars/${OWNER}/avatar-1.png`;
+    const first = get(path);
+    const etag = first.headers.get("ETag")!;
+    const lastModified = first.headers.get("Last-Modified")!;
+    expect(etag).toMatch(/^W\/"[0-9a-f]+-[0-9a-f]+-[0-9a-f]+"$/);
+    expect(Number.isFinite(Date.parse(lastModified))).toBe(true);
+    const again = (h: Record<string, string>) => serveMedia(db, null, path, new Headers(h));
+    const hit = again({ "If-None-Match": `"other", ${etag}` });
+    expect([hit.status, hit.headers.get("ETag"), hit.headers.get("Cache-Control")]).toEqual([304, etag, "public, max-age=60"]);
+    expect(hit.body).toBeNull();
+    expect(again({ "If-None-Match": etag.slice(2) }).status).toBe(304); // weak comparison
+    expect(again({ "If-None-Match": '"stale"' }).status).toBe(200);
+    expect(again({ "If-Modified-Since": lastModified }).status).toBe(304);
+    expect(again({ "If-Modified-Since": new Date(0).toUTCString() }).status).toBe(200);
+    expect(again({ "If-None-Match": '"stale"', "If-Modified-Since": lastModified }).status).toBe(200); // ETag wins
+  });
+
+  it("checks visibility before revalidating: a hidden file is a 404 even with its ETag, and a private one stays private", () => {
+    const path = `/media/avatars/${OWNER}/avatar-1.png`;
+    const etag = get(path).headers.get("ETag")!;
+    db.prepare("update profiles set public_profile = 0 where id = ?").run(OWNER);
+    expect(serveMedia(db, null, path, new Headers({ "If-None-Match": etag })).status).toBe(404);
+    const owner = serveMedia(db, { id: OWNER, email: "o@x.test" }, path, new Headers({ "If-None-Match": etag }));
+    expect([owner.status, owner.headers.get("Cache-Control")]).toEqual([304, "private, max-age=3600"]);
+    db.prepare("update profiles set public_profile = 1 where id = ?").run(OWNER);
+  });
+
   it("never serves a stored file that isn't an image", () => expect(get(`/media/avatars/${OWNER}/notes.png`).status).toBe(404));
 
   it.each([
@@ -120,5 +148,8 @@ describe("/media route", () => {
     expect(ok.status).toBe(200);
     const traversal = await GET({ request: new Request("http://x.test/media/avatars/%2e%2e/%2e%2e/secret.txt") });
     expect(traversal.status).toBe(404);
+    const etag = ok.headers.get("ETag")!;
+    const revalidated = await GET({ request: new Request("http://x.test/media/neighborhood-logos/astoria.webp", { headers: { "If-None-Match": etag } }) });
+    expect(revalidated.status).toBe(304);
   });
 });

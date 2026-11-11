@@ -8,7 +8,7 @@ export const Route = createFileRoute("/media/$")({
         const [{ getDb }, { actorFrom }, { serveMedia }] = await Promise.all([
           import("@/server/db"), import("@/server/context.server"), import("@/server/media"),
         ]);
-        return serveMedia(getDb(), await actorFrom(request.headers), new URL(request.url).pathname);
+        return serveMedia(getDb(), await actorFrom(request.headers), new URL(request.url).pathname, request.headers);
       },
     },
   },
