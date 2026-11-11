@@ -39,6 +39,16 @@ describe("/sitemap.xml", () => {
     expect(locs.every((l) => l.startsWith("https://new.thewomenscollective.club/"))).toBe(true);
   });
 
+  it("dates only member pages, with her profile's last change, and never the fixed pages or neighborhoods", () => {
+    const db = seeded();
+    db.prepare("update profiles set updated_at = '2026-10-02T09:30:15.123Z' where id = 'a'").run();
+    const xml = sitemapXml(db, "https://example.com");
+    const lines = xml.split("\n").filter((l) => l.includes("<url>"));
+    const dated = lines.filter((l) => l.includes("<lastmod>"));
+    expect(dated).toHaveLength(1);
+    expect(dated[0]).toMatch(/<loc>https:\/\/example\.com\/members\/rosa-diaz-\d+<\/loc><lastmod>2026-10-02T09:30:15Z<\/lastmod>/);
+  });
+
   it("is no longer a static file that would shadow the route", () => {
     expect(() => read("public/sitemap.xml")).toThrow();
   });
