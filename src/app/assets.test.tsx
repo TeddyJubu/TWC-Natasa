@@ -35,6 +35,14 @@ describe("fonts", () => {
     const { links } = (Root.options.head as (ctx: unknown) => { links: Record<string, string>[] })({ matches: [{ pathname: "/" }] });
     expect(links).toContainEqual({ rel: "preload", href: displayFontUrl, as: "font", type: "font/woff2", crossOrigin: "anonymous" });
   });
+
+  it("the root preloads Geist, the body face, at the URL styles.css's @font-face resolves", () => {
+    const css = readFileSync(`${cwd}/src/styles.css`, "utf8");
+    expect(css).toMatch(/@font-face \{ font-family: "Geist"; src: url\("\.\/assets\/fonts\/home\/geist-variable\.woff2"\)/);
+    const { links } = (Root.options.head as (ctx: unknown) => { links: Record<string, string>[] })({ matches: [{ pathname: "/" }] });
+    const fonts = links.filter((l) => l.rel === "preload" && l.as === "font");
+    expect(fonts).toContainEqual({ rel: "preload", href: expect.stringMatching(/geist-variable.*\.woff2$/), as: "font", type: "font/woff2", crossOrigin: "anonymous" });
+  });
 });
 
 describe("homepage images", () => {
