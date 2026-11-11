@@ -56,7 +56,8 @@ export function createAuth(db: DB) {
     // Room for a gathering on one venue Wi-Fi (one cf-connecting-ip); the page shows a 429 as a failed sign-in.
     rateLimit: {
       enabled: true,
-      customRules: { "/sign-in/email": { window: 600, max: 20 }, "/sign-up/email": { window: 600, max: 10 } },
+      // /delete-user checks her password, so it can't be a faster password oracle than sign-in.
+      customRules: { "/sign-in/email": { window: 600, max: 20 }, "/sign-up/email": { window: 600, max: 10 }, "/delete-user": { window: 600, max: 5 } },
     },
     emailAndPassword: {
       enabled: true,

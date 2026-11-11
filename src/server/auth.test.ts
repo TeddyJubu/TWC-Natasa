@@ -267,6 +267,14 @@ describe("delete my account (POST /api/auth/delete-user)", () => {
     expect(existsSync(join(dir, "uploads", "avatars", rosa.id, "portrait-1.webp"))).toBe(true);
   });
 
+  it("allows 5 delete attempts per IP per 10 minutes, so it can't be used to guess her password", async () => {
+    const rosa = await signedIn("rosa@x.test");
+    const statuses: number[] = [];
+    for (let i = 0; i < 6; i++) statuses.push((await del(rosa.cookie, { password: `wrong ${i}` })).status);
+    expect(statuses).toEqual([400, 400, 400, 400, 400, 429]);
+    expect(users(rosa.id)).toBe(1);
+  }, 30_000); // every attempt hashes a password
+
   it("signed out, or with a deletion token, deletes nothing", async () => {
     const rosa = await signedIn("rosa@x.test");
     expect((await del("", { password: "correct horse" })).status).toBe(401);
