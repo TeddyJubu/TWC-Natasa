@@ -28,6 +28,9 @@ import { Route as Components } from "@/routes/components";
 
 vi.spyOn(Account, "useRouteContext").mockReturnValue({ user: { id: "u1" } } as never);
 vi.spyOn(Admin, "useRouteContext").mockReturnValue({ user: { id: "u1", email: "rosa@x.test", name: "Rosa Diaz" } } as never);
+// Without a loader run, the seeded queries below stand in for the loaders' data.
+vi.spyOn(Home, "useLoaderData").mockReturnValue(undefined as never);
+vi.spyOn(Members, "useLoaderData").mockReturnValue(undefined as never);
 vi.spyOn(Join, "useLoaderData").mockReturnValue({ kind: "application", open: true, closed: null } as never);
 afterEach(() => {
   cleanup();

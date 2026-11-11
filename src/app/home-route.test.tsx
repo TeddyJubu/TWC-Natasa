@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, screen, within } from "@testing-library/react";
 import type { MemberProfile } from "@/index";
 import { NEIGHBORHOOD_SEED } from "@/features/neighborhoods/queries";
 import { demoMembers } from "@/showcase/demo-members";
+import { QueryClient } from "@tanstack/react-query";
 import { renderWithQueries } from "@/test/dom";
 import { expectNoSkippedHeadings } from "@/test/headings";
 import { fake } from "@/test/fake-fns";
@@ -12,6 +13,13 @@ vi.mock("@/features/members/fns", async (orig) => (await import("@/test/fake-fns
 vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs }));
 
 import { Route } from "@/routes/index";
+
+// No router here: each test seeds the query itself unless it sets the loader's data.
+let loaderData: unknown;
+beforeEach(() => {
+  loaderData = undefined;
+  vi.spyOn(Route, "useLoaderData").mockImplementation(() => loaderData as never);
+});
 
 const Page = Route.options.component as React.ComponentType;
 afterEach(() => {
@@ -27,6 +35,16 @@ const strip = () => screen.getByRole("heading", { name: "Women doing remarkable 
 const polaroids = () => [...strip().querySelectorAll("figure")];
 
 describe("/ (home) meet the members", () => {
+  it("renders the loader's public portraits without a client fetch (server-rendered)", async () => {
+    const run = () => (Route.options.loader as (c: unknown) => Promise<unknown>)({ context: { queryClient: new QueryClient() } });
+    fake.results = [[card("Pia Lund", 21)]];
+    loaderData = await run();
+    renderWithQueries(<Page />);
+    expect(polaroids().map((f) => f.textContent)).toEqual(["Pia, Astoria"]);
+    fake.results = [new Error("down")];
+    expect(await run()).toBeUndefined();
+  });
+
   it("shows only opted-in public profiles, captioned first name and neighborhood", () => {
     renderWithQueries(<Page />, [[["public-profiles"], [card("Pia Lund", 21, "Sunnyside"), card("Rosa Diaz", 12)]]]);
     expect(polaroids().map((f) => f.querySelector("img")!.getAttribute("src"))).toEqual(["https://signed/21", "https://signed/12"]);

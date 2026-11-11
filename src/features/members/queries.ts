@@ -1,4 +1,4 @@
-import { queryOptions } from "@tanstack/react-query";
+import { queryOptions, type QueryClient } from "@tanstack/react-query";
 import type { MemberProfile } from "@/index";
 import { viewerFn } from "@/features/auth/fns";
 import { directoryFn, introsFn, ownProfileFn, publicProfilesFn } from "./fns";
@@ -27,6 +27,13 @@ export const publicProfilesQuery = queryOptions({
   queryKey: ["public-profiles"],
   queryFn: (): Promise<MemberProfile[]> => publicProfilesFn(),
 });
+
+/**
+ * For route loaders, so the server renders the public cards: from the cache or the server, or undefined when that
+ * fails (the page's query then loads them on the client). Public data only; members still read directoryQuery.
+ */
+export const loadPublicProfiles = (queryClient: QueryClient): Promise<MemberProfile[] | undefined> =>
+  queryClient.ensureQueryData(publicProfilesQuery).catch(() => undefined);
 
 /** Her own profile with image URLs (keyed by her id; the server reads the session, never a passed id). */
 export const profileQuery = (userId: string) =>

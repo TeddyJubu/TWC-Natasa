@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import type { MemberProfile } from "@/index";
 import { demoMembers } from "@/showcase/demo-members";
 import { NEIGHBORHOOD_SEED } from "@/features/neighborhoods/queries";
+import { QueryClient } from "@tanstack/react-query";
 import { renderWithQueries, stubDialog } from "@/test/dom";
 
 vi.mock("@/features/members/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
@@ -12,6 +13,13 @@ vi.mock("@/features/auth/fns", async (orig) => (await import("@/test/fake-fns"))
 
 import { fake } from "@/test/fake-fns";
 import { Route } from "@/routes/members";
+
+// No router here: each test seeds the query itself unless it sets the loader's data.
+let loaderData: unknown;
+beforeEach(() => {
+  loaderData = undefined;
+  vi.spyOn(Route, "useLoaderData").mockImplementation(() => loaderData as never);
+});
 
 const Page = Route.options.component as React.ComponentType;
 let restoreDialog: (() => void) | undefined;
@@ -77,6 +85,32 @@ describe("/members", () => {
     expect(screen.getByText(/your directory unlocks once you’re welcomed in/i)).toBeTruthy();
     expect(screen.queryByRole("link", { name: /sign in to see the full directory/i })).toBeNull();
     await neverFetched(queryClient, "directory", "directoryFn");
+  });
+
+  it("loads only the public cards in the loader, and undefined when that fails", async () => {
+    const run = () => (Route.options.loader as (c: unknown) => Promise<unknown>)({ context: { queryClient: new QueryClient() } });
+    fake.results = [[card("Pia Lund", 21, "public-21")]];
+    expect(await run()).toEqual([card("Pia Lund", 21, "public-21")]);
+    expect(fake.calls).toEqual([["publicProfilesFn"]]);
+    fake.results = [new Error("down")];
+    expect(await run()).toBeUndefined();
+  });
+
+  it("renders the loader's public cards while the viewer is unknown (server-rendered)", () => {
+    loaderData = [card("Pia Lund", 21, "public-21")];
+    fake.results = [new Promise(() => {})]; // the viewer never settles
+    renderWithQueries(<Page />);
+    expect(screen.getByText("Pia Lund")).toBeTruthy();
+    expect(screen.queryByText(/loading members/i)).toBeNull();
+    expect(screen.queryByText(/sign in to see the full directory/i)).toBeNull();
+  });
+
+  it("members still switch from the loader's public cards to the full directory", async () => {
+    loaderData = [card("Pia Lund", 21, "public-21")];
+    fake.results = [{ signedIn: true, member: true, admin: false }, [card("Pia Lund", 21), card("Rosa Diaz", 12)]];
+    renderWithQueries(<Page />);
+    expect(await screen.findByText("Rosa Diaz")).toBeTruthy();
+    expect(fake.calls).toEqual([["viewerFn"], ["directoryFn"]]);
   });
 
   it("shows a loading status, not an empty state, while the viewer is unknown", () => {

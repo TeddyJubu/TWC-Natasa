@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { QueryClient } from "@tanstack/react-query";
 import { renderWithQueries } from "@/test/dom";
 import { expectNoSkippedHeadings } from "@/test/headings";
 
@@ -10,6 +11,13 @@ vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), 
 
 import { fake } from "@/test/fake-fns";
 import { Route } from "@/routes/gatherings";
+
+// No router here: each test seeds the query itself unless it sets the loader's data.
+let loaderData: unknown;
+beforeEach(() => {
+  loaderData = undefined;
+  vi.spyOn(Route, "useLoaderData").mockImplementation(() => loaderData as never);
+});
 
 const Page = Route.options.component as React.ComponentType;
 afterEach(() => {
@@ -35,6 +43,24 @@ describe("/gatherings", () => {
     const meta = (Route.options.head as () => { meta: Record<string, string>[] })().meta;
     expect(meta).not.toContainEqual({ name: "robots", content: "noindex" });
     expect(meta.find((m) => m.name === "description")?.content).toMatch(/Queens/);
+  });
+
+  it("loads the public calendar in the loader, and undefined when that fails", async () => {
+    const run = () => (Route.options.loader as (c: unknown) => Promise<unknown>)({ context: { queryClient: new QueryClient() } });
+    fake.results = [EVENTS];
+    expect(await run()).toEqual(EVENTS);
+    expect(fake.calls).toEqual([["publicEventsFn", { from: expect.any(String) }]]);
+    fake.results = [new Error("down")];
+    expect(await run()).toBeUndefined();
+  });
+
+  it("renders the loader's gatherings before the viewer is known (server-rendered), with no seat buttons yet", () => {
+    loaderData = EVENTS;
+    fake.results = [new Promise(() => {})]; // the viewer never settles
+    renderWithQueries(<Page />);
+    expect(row("Founders Supper Club")).toBeTruthy();
+    expect(screen.queryByText(/Loading gatherings/)).toBeNull();
+    expect(screen.queryByRole("link", { name: /sign in to save a seat/i })).toBeNull();
   });
 
   it("lists upcoming gatherings with New York day and time, kind, neighborhood and place, under one h1", () => {

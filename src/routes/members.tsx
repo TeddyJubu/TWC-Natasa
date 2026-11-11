@@ -7,11 +7,13 @@ import { Scallop } from "@/app/layout/twc";
 import { useNeighborhoods } from "@/features/neighborhoods/queries";
 import { pickerNames } from "@/features/neighborhoods/options";
 import { toneFor } from "@/features/neighborhoods/tone";
-import { directoryQuery, memberSlug, publicProfilesQuery, viewerQuery } from "@/features/members/queries";
+import { directoryQuery, loadPublicProfiles, memberSlug, publicProfilesQuery, viewerQuery } from "@/features/members/queries";
 import balconyFriends from "@/assets/photography/home/balcony-friends.webp";
 import gathering from "@/assets/photography/event-800.webp";
 
 export const Route = createFileRoute("/members")({
+  // The public cards only, so the server renders them; members and admins switch to the directory on the client.
+  loader: ({ context }) => loadPublicProfiles(context.queryClient),
   head: () => ({
     meta: [
       { title: "Member directory — The Women’s Collective" },
@@ -34,7 +36,8 @@ function MembersPage() {
   const member = viewer.data?.member === true || viewer.data?.admin === true;
   // Two audiences (§2.10): approved members get the full directory; everyone else, opted-in public cards.
   const directory = useQuery({ ...directoryQuery, enabled: member });
-  const publicCards = useQuery({ ...publicProfilesQuery, enabled: viewer.isSuccess && !member });
+  // The loader's public cards show while the viewer is still unknown (and in the server's HTML).
+  const publicCards = useQuery({ ...publicProfilesQuery, initialData: Route.useLoaderData(), enabled: viewer.isSuccess && !member });
   const list = member ? directory : publicCards;
   const all = list.data ?? [];
   const audience = member ? "member" : viewer.data?.signedIn ? "pending" : "visitor";
@@ -45,7 +48,7 @@ function MembersPage() {
   const members = activeNeighborhood === "All"
     ? all
     : all.filter((m) => m.neighborhood === activeNeighborhood);
-  const loading = viewer.isPending || (!viewer.isError && list.isPending);
+  const loading = !viewer.isError && list.isPending;
   const failed = viewer.isError || list.isError;
   const retry = () => void (viewer.isError ? viewer.refetch() : list.refetch());
   // Every listed card has a page its viewer may open: public cards for anyone, directory cards for members.

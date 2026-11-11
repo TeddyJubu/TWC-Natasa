@@ -8,7 +8,7 @@ import { sessionFn } from "@/features/auth/fns";
 import { viewerQuery } from "@/features/members/queries";
 import { useNeighborhoods } from "@/features/neighborhoods/queries";
 import { toneFor } from "@/features/neighborhoods/tone";
-import { publicEventsQuery, rsvpsQuery, type PublicEvent } from "@/features/events/queries";
+import { loadPublicEvents, publicEventsQuery, rsvpsQuery, type PublicEvent } from "@/features/events/queries";
 import { useToggleRsvp } from "@/features/events/mutations";
 import { eventWhen, kindLabel } from "@/features/events/format";
 
@@ -16,6 +16,8 @@ const TITLE = "Gatherings — The Women’s Collective";
 const DESCRIPTION = "Coffee introductions, supper clubs and headshot days across Queens. See what’s coming up at The Women’s Collective.";
 
 export const Route = createFileRoute("/gatherings")({
+  // The calendar is public, so it is in the server's HTML; who is looking (the seat buttons) waits for the client.
+  loader: ({ context }) => loadPublicEvents(context.queryClient),
   head: () => ({
     meta: [
       { title: TITLE },
@@ -34,7 +36,7 @@ type Audience = "loading" | "visitor" | "pending" | "member";
 
 function GatheringsPage() {
   const viewer = useQuery(viewerQuery);
-  const events = useQuery(publicEventsQuery);
+  const events = useQuery({ ...publicEventsQuery, initialData: Route.useLoaderData() });
   const { data: hoodList = [] } = useNeighborhoods();
   // Admins pass requireMember, so they save seats like approved members.
   const member = viewer.data?.member === true || viewer.data?.admin === true;

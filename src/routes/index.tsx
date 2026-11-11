@@ -2,7 +2,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState, type CSSProperties } from "react";
 import { ConstellationLogo, cn, type MemberProfile } from "@/index";
-import { publicProfilesQuery } from "@/features/members/queries";
+import { loadPublicProfiles, publicProfilesQuery } from "@/features/members/queries";
 import { useNeighborhoods } from "@/features/neighborhoods/queries";
 import heroRock from "@/assets/photography/home/hero-rock.webp";
 import queensPolaroid from "@/assets/photography/home/queens-polaroid.webp";
@@ -18,6 +18,8 @@ import { Icon, Scallop } from "@/app/layout/twc";
 import caveatUrl from "@/assets/fonts/home/caveat-400.woff2?url";
 
 export const Route = createFileRoute("/")({
+  // The portrait row's public cards, so the server renders it.
+  loader: ({ context }) => loadPublicProfiles(context.queryClient),
   head: () => ({
     meta: [
       { title: "The Women’s Collective — Find your people in Queens" },
@@ -328,7 +330,7 @@ const TILTS = ["-rotate-5", "rotate-3 lg:mt-7", "-rotate-2 lg:mt-11", "rotate-4 
 function MeetTheMembers() {
   // Only members who opted in (§2.10), and only those with a portrait: never a stand-in, never demo people.
   // Loading, empty or failed: the row is left out and the heading and directory link stand alone.
-  const portraits = (useQuery(publicProfilesQuery).data ?? [])
+  const portraits = (useQuery({ ...publicProfilesQuery, initialData: Route.useLoaderData() }).data ?? [])
     .filter((m): m is MemberProfile & { image: string } => !!m.image)
     .slice(0, TILTS.length);
   return (

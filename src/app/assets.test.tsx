@@ -12,6 +12,7 @@ import { Route as Root } from "@/routes/__root";
 import { Route as Home } from "@/routes/index";
 
 afterEach(cleanup);
+vi.spyOn(Home, "useLoaderData").mockReturnValue(undefined as never);
 
 const cwd = process.cwd();
 const theme = readFileSync(`${cwd}/src/design-system/styles/theme.css`, "utf8");

@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { MemberDialog, cn, initials, memberDialogActionClass, type MemberProfile } from "@/index";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import { Icon } from "@/app/layout/twc";
-import { memberSlug, publicProfilesQuery, viewerQuery } from "@/features/members/queries";
+import { loadPublicProfiles, memberSlug, publicProfilesQuery, viewerQuery } from "@/features/members/queries";
 import { eventsQuery } from "@/features/events/queries";
 import { eventWhen } from "@/features/events/format";
 import { fetchNeighborhoods, type Neighborhood } from "@/features/neighborhoods/queries";
@@ -13,15 +13,17 @@ import { neighborhoodPhoto } from "@/features/neighborhoods/photos";
 import { HoodLogo } from "@/features/neighborhoods/HoodLogo";
 
 export const Route = createFileRoute("/neighborhoods_/$slug")({
-  // Unknown or inactive slugs are a real 404.
+  // Unknown or inactive slugs are a real 404. The public cards come along so the server renders them.
   loader: async ({ context, params }) => {
-    const hood = (await fetchNeighborhoods(context.queryClient)).find((n) => n.slug === params.slug && n.active);
+    const [hoods, profiles] = await Promise.all([fetchNeighborhoods(context.queryClient), loadPublicProfiles(context.queryClient)]);
+    const hood = hoods.find((n) => n.slug === params.slug && n.active);
     if (!hood) throw notFound();
-    return hood;
+    return { hood, profiles };
   },
   head: ({ loaderData }) => {
-    const title = `${loaderData?.name ?? "Neighborhood"} — The Women’s Collective`;
-    const description = `Meet the women of The Women’s Collective in ${loaderData?.name ?? "Queens"}, and find gatherings close to home.`;
+    const name = loaderData?.hood.name;
+    const title = `${name ?? "Neighborhood"} — The Women’s Collective`;
+    const description = `Meet the women of The Women’s Collective in ${name ?? "Queens"}, and find gatherings close to home.`;
     return {
       meta: [
         { title },
@@ -39,7 +41,7 @@ export const Route = createFileRoute("/neighborhoods_/$slug")({
 const MAX_EVENTS = 3;
 
 function NeighborhoodPage() {
-  const hood = Route.useLoaderData();
+  const { hood, profiles } = Route.useLoaderData();
   const [open, setOpen] = React.useState<MemberProfile | null>(null);
   const openSlug = open ? memberSlug(open) : undefined;
   const colored = hasColor(hood.color);
@@ -53,7 +55,7 @@ function NeighborhoodPage() {
             <Icon name="arrowLeft" />All neighborhoods
           </Link>
           <Hero hood={hood} />
-          <Members hood={hood} onOpen={setOpen} />
+          <Members hood={hood} initial={profiles} onOpen={setOpen} />
           <Gatherings hood={hood} />
           <div className="flex flex-wrap items-center justify-between gap-x-10 gap-y-6 rounded-[6px] bg-sb-cream p-6 sm:p-10">
             <div className="flex min-w-0 flex-[1_1_420px] flex-col gap-2.5">
@@ -121,9 +123,9 @@ function Hero({ hood }: { hood: Neighborhood }) {
   );
 }
 
-function Members({ hood, onOpen }: { hood: Neighborhood; onOpen: (m: MemberProfile) => void }) {
+function Members({ hood, initial, onOpen }: { hood: Neighborhood; initial?: MemberProfile[]; onOpen: (m: MemberProfile) => void }) {
   // Only members who opted into a public profile (§2.10) — never the members-only directory.
-  const profiles = useQuery(publicProfilesQuery);
+  const profiles = useQuery({ ...publicProfilesQuery, initialData: initial });
   const members = (profiles.data ?? []).filter((m) => m.neighborhood === hood.name);
   return (
     <section aria-labelledby="hood-members" className="flex flex-col gap-7">
