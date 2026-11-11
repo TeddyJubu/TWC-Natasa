@@ -11,9 +11,12 @@ type Mode = "signin" | "signup" | "forgot";
 const MODES: readonly string[] = ["signin", "signup", "forgot"];
 
 export const Route = createFileRoute("/auth")({
-  // `/auth?mode=signup` opens Create account and `/auth?mode=forgot` the reset form (e.g. from an expired link).
-  validateSearch: (search: Record<string, unknown>): { mode?: Mode } =>
-    typeof search.mode === "string" && MODES.includes(search.mode) ? { mode: search.mode as Mode } : {},
+  // `/auth?mode=signup` opens Create account and `/auth?mode=forgot` the reset form (e.g. from an expired link);
+  // `/auth?reset=done` is where a successful password reset lands, to say so above the sign-in form.
+  validateSearch: (search: Record<string, unknown>): { mode?: Mode; reset?: "done" } => ({
+    ...(typeof search.mode === "string" && MODES.includes(search.mode) ? { mode: search.mode as Mode } : {}),
+    ...(search.reset === "done" ? { reset: "done" as const } : {}),
+  }),
   head: () => ({
     meta: [
       { title: "Member Sign In — The Women’s Collective" },
@@ -32,6 +35,7 @@ const SIGN_IN_FAILED = "That email or password didn’t match. Try again, or res
 // New and existing emails get the same sign-up notice, so the form can't be used to probe for accounts.
 const SIGNUP_SENT = "Check your inbox: if this email is new to us, a confirmation link is on its way. Once confirmed, sign in to finish your profile. Already have an account? Sign in, or reset your password.";
 const RESET_SENT = "If that email belongs to a member, a reset link is on its way.";
+const PASSWORD_CHANGED = "Your password is changed. Sign in with your new one.";
 const ALREADY_EXISTS = ["USER_ALREADY_EXISTS", "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL"];
 const PASSWORD_RULES = ["PASSWORD_TOO_SHORT", "PASSWORD_TOO_LONG"];
 
@@ -44,10 +48,14 @@ const TABS = [["signin", "Sign in"], ["signup", "Create account"]] as const;
 
 function AuthPage() {
   const navigate = useNavigate();
-  const [mode, setModeState] = React.useState<Mode>(Route.useSearch().mode ?? "signin");
+  const search = Route.useSearch();
+  const [mode, setModeState] = React.useState<Mode>(search.mode ?? "signin");
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const [notice, setNotice] = React.useState<string | null>(null);
+  const [notice, setNotice] = React.useState<{ title: string; text: string } | null>(
+    search.reset === "done" && (search.mode ?? "signin") === "signin" ? { title: "Password changed", text: PASSWORD_CHANGED } : null,
+  );
+  const sent = (text: string) => setNotice({ title: "Almost there", text });
   const tabs = React.useRef<(HTMLButtonElement | null)[]>([]);
   const setMode = (next: Mode) => {
     setModeState(next);
@@ -87,13 +95,13 @@ function AuthPage() {
       // The emailed link lands on /verified whatever this says (auth.server.ts); kept in step for clarity.
       const { error } = await auth.signUp.email({ email, password, name: String(f.get("name") ?? ""), callbackURL: "/verified" });
       // An existing email gets the same notice as a new one: no account disclosure.
-      if (!error || ALREADY_EXISTS.includes(error.code ?? "")) setNotice(SIGNUP_SENT);
+      if (!error || ALREADY_EXISTS.includes(error.code ?? "")) sent(SIGNUP_SENT);
       else if (PASSWORD_RULES.includes(error.code ?? "")) setError(error.message ?? "Please choose a password of 8 to 128 characters."); // the password rule, nothing about the email
       else setError("We couldn’t create your account right now. Please try again in a minute.");
     } else {
       const { error } = await auth.requestPasswordReset({ email, redirectTo: "/reset-password" });
       // Rate limits are per address, so reporting one would confirm the account exists.
-      if (!error || error.status === 429) setNotice(RESET_SENT);
+      if (!error || error.status === 429) sent(RESET_SENT);
       else setError("We couldn’t send a link right now. Please try again in a minute.");
     }
     setBusy(false);
@@ -186,8 +194,8 @@ function AuthPage() {
               {error && <p id="auth-error" role="alert" className={authAlert}>{error}</p>}
               {notice && (
                 <div role="status" className="twc-notice twc-notice--mint">
-                  <h2 className="twc-notice__title">Almost there</h2>
-                  <p className="text-[15px]">{notice}</p>
+                  <h2 className="twc-notice__title">{notice.title}</h2>
+                  <p className="text-[15px]">{notice.text}</p>
                 </div>
               )}
               <button type="submit" disabled={busy} aria-busy={busy || undefined} className="twc-btn mt-1 w-full">

@@ -45,8 +45,8 @@ function ResetPassword() {
     const password = String(new FormData(e.currentTarget).get("password") ?? "");
     const { error } = await (await getAuthClient()).resetPassword({ newPassword: password, token: token ?? "" });
     setBusy(false);
-    // Sessions are revoked on reset, so she signs in with the new password.
-    if (!error) navigate({ to: "/auth" });
+    // Sessions are revoked on reset, so she signs in with the new password; /auth says it worked.
+    if (!error) navigate({ to: "/auth", search: { reset: "done" } });
     else if (error.code === "INVALID_TOKEN") setStatus("expired");
     else setError(error.code?.startsWith("PASSWORD_TOO") && error.message ? error.message : SAVE_FAILED); // the rule, or one safe line
   }

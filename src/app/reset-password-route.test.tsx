@@ -68,7 +68,7 @@ describe("/reset-password", () => {
     auth.resetPassword.mockResolvedValue({ data: { status: true }, error: null });
     renderWithQueries(<Page />);
     await save();
-    await waitFor(() => expect(navigate).toHaveBeenCalledWith({ to: "/auth" }));
+    await waitFor(() => expect(navigate).toHaveBeenCalledWith({ to: "/auth", search: { reset: "done" } }));
     expect(auth.resetPassword).toHaveBeenCalledWith({ newPassword: "a-new-password", token: "tok-123" });
   });
 

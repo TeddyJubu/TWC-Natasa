@@ -240,3 +240,31 @@ describe("/auth focus", () => {
     await vi.waitFor(() => expect(document.activeElement).toBe(screen.getByLabelText(/email/i)));
   });
 });
+
+describe("/auth after a password reset", () => {
+  it("?reset=done shows that the password is changed, as a status notice above Sign in", () => {
+    search.mockReturnValue({ reset: "done" });
+    renderWithQueries(<Page />);
+    const note = screen.getByRole("status");
+    expect(within(note).getByRole("heading", { name: "Password changed" })).toBeTruthy();
+    expect(note.textContent).toContain("Your password is changed. Sign in with your new one.");
+    expect(screen.getByRole("tab", { name: "Sign in" }).getAttribute("aria-selected")).toBe("true");
+  });
+
+  it("goes when she switches tabs, and never shows without the flag", () => {
+    search.mockReturnValue({ reset: "done" });
+    renderWithQueries(<Page />);
+    fireEvent.click(screen.getByRole("tab", { name: "Create account" }));
+    expect(screen.queryByRole("status")).toBeNull();
+    cleanup();
+    search.mockReturnValue({});
+    renderWithQueries(<Page />);
+    expect(screen.queryByText(/password is changed/)).toBeNull();
+  });
+
+  it("validateSearch keeps only reset=done", () => {
+    const validate = Route.options.validateSearch as (s: Record<string, unknown>) => unknown;
+    expect(validate({ reset: "done" })).toEqual({ reset: "done" });
+    expect(validate({ reset: "yes", mode: "forgot" })).toEqual({ mode: "forgot" });
+  });
+});
