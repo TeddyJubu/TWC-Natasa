@@ -28,8 +28,8 @@ const MANIFEST_PATH = join(ROOT, "migration/manifest.json");
 const LEGACY_SITE = join(ROOT, ".migration/legacy/site");
 const ROUTES_DIR = join(ROOT, "src/routes");
 
-/** Old pages that stay on the apex (coming soon). */
-const KEEP_ON_APEX = new Set(["index.html"]);
+/** Old pages that stay on the apex: coming soon, and the legal pages until docs/LEGAL-PAGES-REQUIRED.md is done. */
+export const KEEP_ON_APEX = new Set(["index.html", "privacy.html", "terms.html", "code-of-conduct.html"]);
 
 /** Old slug → new path (or null when the page is only archived with a generic landing). */
 export const OLD_TO_NEW: Record<string, string> = {
@@ -40,9 +40,6 @@ export const OLD_TO_NEW: Record<string, string> = {
   "fellowship.html": "/fellowship",
   "partnerships.html": "/partnerships",
   "editing.html": "/account",
-  "privacy.html": "/privacy",
-  "terms.html": "/terms",
-  "code-of-conduct.html": "/code-of-conduct",
   "message-sent.html": "/contact",
   "subscribed.html": "/contact",
   "thanks-contact.html": "/contact",
@@ -155,18 +152,10 @@ function main(): number {
         errors++;
         continue;
       }
-      const covered =
-        routeExists(mapped) ||
-        manifest.items.some(
-          (i) =>
-            i.id.startsWith("SITE-") &&
-            (i.source.includes(page) || i.target === mapped) &&
-            (i.status === "built" || i.status === "verified"),
-        );
-      // Gate for URLs: route file must exist OR a verified/built SITE item targets it.
-      // Final cutover still requires every item verified above.
-      if (!routeExists(mapped) && !covered) {
-        fail(`old URL for ${page} → ${mapped}: no route file and no SITE manifest coverage`);
+      // Gate for URLs: the new path must have a route file. A SITE item that targets a removed route is no
+      // coverage, so taking a page away fails here until its old URL stays on the apex or points elsewhere.
+      if (!routeExists(mapped)) {
+        fail(`old URL for ${page} → ${mapped}: no route file`);
         errors++;
       }
     }

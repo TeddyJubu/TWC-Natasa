@@ -24,9 +24,9 @@ Source of truth for the `vps-cutover` workstream (SITE-100, SITE-162, SITE-164).
 | `/fellowship` | `/fellowship.html` | `/fellowship` | Built in this workstream (SITE-006). Western Queens only; no eligibility lists. |
 | `/partnerships` | `/partnerships.html` | `/partnerships` | Built in this workstream (SITE-007). No "current partners" block. |
 | `/editing` | `/editing.html` | `/account` | Editor guide; no equivalent screen yet (SITE-143). `/account` is behind sign-in. |
-| `/privacy` | `/privacy.html` | `/privacy` | |
-| `/terms` | `/terms.html` | `/terms` | |
-| `/code-of-conduct` | `/code-of-conduct.html` | `/code-of-conduct` | |
+| `/privacy` | `/privacy.html` | *(stays on apex)* | Stays on apex until docs/LEGAL-PAGES-REQUIRED.md is done (the app 404s it). Then `/privacy` again, here, in the Caddy file and in `OLD_TO_NEW`. |
+| `/terms` | `/terms.html` | *(stays on apex)* | Stays on apex until docs/LEGAL-PAGES-REQUIRED.md is done (the app 404s it). Then `/terms` again, here, in the Caddy file and in `OLD_TO_NEW`. |
+| `/code-of-conduct` | `/code-of-conduct.html` | *(stays on apex)* | Stays on apex until docs/LEGAL-PAGES-REQUIRED.md is done (the app 404s it). Then `/code-of-conduct` again, here, in the Caddy file and in `OLD_TO_NEW`. |
 | `/message-sent` | `/message-sent.html` | `/contact` | Generic thank-you; the new form confirms inline. |
 | `/thanks-contact` | `/thanks-contact.html` | `/contact` | |
 | `/thanks-newsletter` | `/thanks-newsletter.html` | `/contact` | The new app has no newsletter sign-up page; lands on the nearest working page. |

@@ -33,7 +33,7 @@ describe("vps-cutover Caddy snippet", () => {
   const rows = pageRows(md);
 
   it("covers every page row, both URLs, one 301 hop, GET/HEAD only", () => {
-    expect(rows.length).toBe(15);
+    expect(rows.length).toBe(12);
     for (const [tidy, html, to] of rows) {
       for (const p of [tidy, html]) {
         const r = apex.get(p);

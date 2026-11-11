@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { routeExists } from "../../scripts/migration-check.ts";
+import { KEEP_ON_APEX, OLD_TO_NEW, routeExists } from "../../scripts/migration-check.ts";
 
 describe("migration-check routeExists", () => {
   it("finds public top-level routes", () => {
@@ -19,5 +19,19 @@ describe("migration-check routeExists", () => {
 
   it("rejects unknown paths", () => {
     expect(routeExists("/no-such-page-xyz")).toBe(false);
+  });
+});
+
+describe("migration-check old URL map", () => {
+  it("points every old page at a route that exists, so a removed route can't hide behind manifest items", () => {
+    for (const [page, path] of Object.entries(OLD_TO_NEW)) expect(routeExists(path), `${page} → ${path}`).toBe(true);
+  });
+
+  it("keeps the legal pages on the apex while the app has none", () => {
+    for (const page of ["privacy.html", "terms.html", "code-of-conduct.html"]) {
+      expect(KEEP_ON_APEX.has(page)).toBe(true);
+      expect(OLD_TO_NEW[page]).toBeUndefined();
+      expect(routeExists(`/${page.replace(".html", "")}`)).toBe(false);
+    }
   });
 });

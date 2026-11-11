@@ -60,23 +60,8 @@
 	}
 	redir @old_editing https://new.thewomenscollective.club/account 301
 
-	@old_privacy {
-		method GET HEAD
-		path /privacy /privacy.html
-	}
-	redir @old_privacy https://new.thewomenscollective.club/privacy 301
-
-	@old_terms {
-		method GET HEAD
-		path /terms /terms.html
-	}
-	redir @old_terms https://new.thewomenscollective.club/terms 301
-
-	@old_coc {
-		method GET HEAD
-		path /code-of-conduct /code-of-conduct.html
-	}
-	redir @old_coc https://new.thewomenscollective.club/code-of-conduct 301
+	# /privacy, /terms and /code-of-conduct (and .html) stay on the apex until the app has them again
+	# (docs/LEGAL-PAGES-REQUIRED.md): the app 404s them, so a redirect there would lose the old pages.
 
 	# Apex `/` stays the coming-soon page (BRIEF 1); /index.html is the same page, one canonical form.
 	@old_index {

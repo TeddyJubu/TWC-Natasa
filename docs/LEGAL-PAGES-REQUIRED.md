@@ -76,5 +76,6 @@ When the pages come back, restore each of these (all removed in the same commit)
 - `/join`: consider linking the privacy policy and code of conduct from the "Privacy and membership" notice and the
   community guidelines (it never linked them).
 - Not touched: custom forms imported from the CRM (`/f/<slug>`, `scripts/import-forms.ts`) whose consent label says
-  "See the privacy policy." as plain text (form rows, editable in `/admin/forms`; check them when the policy returns), and the apex Caddy redirects (`/privacy` → `new.*/privacy`, etc., in
-  `migration/caddy-twc-redirects.caddy`), which now land on a 404 until the pages return.
+  "See the privacy policy." as plain text (form rows, editable in `/admin/forms`; check them when the policy returns), and the apex: its old legal pages stay served there (the three
+  redirects were taken out of `migration/caddy-twc-redirects.caddy`, the rows in `migration/redirects.md` say "stays on
+  apex", and the pages are in `KEEP_ON_APEX` in `scripts/migration-check.ts`). When the pages return, put all three back.
