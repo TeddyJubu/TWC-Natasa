@@ -29,10 +29,10 @@ export const SECURITY_HEADERS = {
   "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=()",
 } as const;
 
-/** Adds any security header the response doesn't already set. */
-export function withSecurityHeaders(response: Response): Response {
+/** Adds any of `extra` the response doesn't already set. */
+function addHeaders(response: Response, extra: Record<string, string>): Response {
   const apply = (headers: Headers) => {
-    for (const [name, value] of Object.entries(SECURITY_HEADERS)) if (!headers.has(name)) headers.set(name, value);
+    for (const [name, value] of Object.entries(extra)) if (!headers.has(name)) headers.set(name, value);
   };
   try {
     apply(response.headers);
@@ -46,8 +46,19 @@ export function withSecurityHeaders(response: Response): Response {
   }
 }
 
+/** Adds any security header the response doesn't already set. */
+export function withSecurityHeaders(response: Response): Response {
+  return addHeaders(response, SECURITY_HEADERS);
+}
+
+// The signed-in pages render client-side only (`_authenticated` is ssr: false), so their own robots meta never
+// reaches a crawler; the header does. Not a robots.txt Disallow, which would hide this header from Google.
+const SIGNED_IN_PAGES = /^\/(account|directory|feed|admin)(\/|$)/;
+export const isSignedInPage = (pathname: string) => SIGNED_IN_PAGES.test(pathname);
+
 /** Request middleware: every page and server-function response Start produces gets the headers. */
-export const securityHeadersMiddleware = createMiddleware().server(async ({ next }) => {
+export const securityHeadersMiddleware = createMiddleware().server(async ({ pathname, next }) => {
   const result = await next();
-  return { ...result, response: withSecurityHeaders(result.response) };
+  const response = withSecurityHeaders(result.response);
+  return { ...result, response: isSignedInPage(pathname) ? addHeaders(response, { "X-Robots-Tag": "noindex" }) : response };
 });

@@ -107,4 +107,9 @@ describe("/reset-password", () => {
     expect(screen.getByRole("banner")).toBeTruthy();
     expect(screen.getByRole("contentinfo")).toBeTruthy();
   });
+
+  it("is never indexed", () => {
+    const { meta } = (Route.options.head as () => { meta: Record<string, string>[] })();
+    expect(meta.find((m) => m.name === "robots")?.content).toBe("noindex");
+  });
 });

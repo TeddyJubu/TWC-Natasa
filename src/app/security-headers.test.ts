@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { csrfMiddleware, startInstance } from "../start";
-import { SECURITY_HEADERS, contentSecurityPolicy, securityHeadersMiddleware, withSecurityHeaders } from "./security-headers";
+import { SECURITY_HEADERS, contentSecurityPolicy, isSignedInPage, securityHeadersMiddleware, withSecurityHeaders } from "./security-headers";
 
 // The middleware objects keep their server function on `options.server`; call it the way Start does.
 type ServerFn = (opts: Record<string, unknown>) => Promise<unknown> | unknown;
@@ -49,6 +49,19 @@ describe("security headers", () => {
     const res = responseOf(await run(securityHeadersMiddleware, new Request("https://example.com/"), "router"));
     for (const [name, value] of Object.entries(SECURITY_HEADERS)) expect(res.headers.get(name)).toBe(value);
     expect(await res.text()).toBe("ok");
+  });
+
+  it("mark the client-rendered signed-in pages noindex, and no public page", async () => {
+    for (const path of ["/account", "/directory", "/feed", "/admin", "/admin/forms", "/admin/forms/application"]) {
+      expect(isSignedInPage(path), path).toBe(true);
+      const res = responseOf(await run(securityHeadersMiddleware, new Request(`https://example.com${path}`), "router"));
+      expect(res.headers.get("X-Robots-Tag"), path).toBe("noindex");
+    }
+    for (const path of ["/", "/members", "/members/rosa-diaz-12", "/administer", "/feeds", "/accounts", "/faq"]) {
+      expect(isSignedInPage(path), path).toBe(false);
+      const res = responseOf(await run(securityHeadersMiddleware, new Request(`https://example.com${path}`), "router"));
+      expect(res.headers.get("X-Robots-Tag"), path).toBeNull();
+    }
   });
 
   it("keep a header a route already set", () => {
