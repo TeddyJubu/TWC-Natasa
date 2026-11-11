@@ -1,6 +1,7 @@
 // The private-preview gate (site-pin.ts): off without SITE_PIN; otherwise every path but the icons and /healthz needs
 // the PIN cookie, the PIN page returns her to where she was going, and the cookie never holds the PIN itself.
 import { describe, expect, it } from "vitest";
+import { pinCookie } from "../../scripts/smoke-cutover";
 import { PIN_COOKIE, PIN_PATH, pinGate } from "./site-pin";
 
 const PIN = "test-pin";
@@ -74,5 +75,10 @@ describe("pinGate", () => {
     for (let i = 0; i < 11; i++) statuses.push((await submit("guess", "/", ip))!.status);
     expect(statuses.slice(0, 10).every((s) => s === 401)).toBe(true);
     expect(statuses[10]).toBe(429);
+  });
+
+  it("opens for the cookie scripts/smoke-cutover.ts sends with SMOKE_PIN, the same one the PIN form sets", async () => {
+    expect(await signedCookie()).toBe(`${PIN_COOKIE}=${pinCookie(PIN)}`);
+    expect(await get("/about", { cookie: `${PIN_COOKIE}=${pinCookie(PIN)}` })).toBeNull();
   });
 });

@@ -224,8 +224,12 @@ In this order; each step is done (and its check passes) before the next. Steps 1
    `GOOGLE_CLIENT_SECRET` and `SITE_PIN`; update `app.env` and restart `twc-natasa.service`. Read the SSH auth log
    and compare the database and uploads with a nightly backup from before the injection. Check:
    `curl -s https://new.thewomenscollective.club/ | grep -ci betaflight` and the same for the apex give `0`, and
-   `bun scripts/smoke-cutover.ts` passes (it fails on an inline script without the app's nonce, or a link to a host
-   outside `KNOWN_HOSTS`, on `new.*` `/` and `/about` and the apex `/` and `/404.html`).
+   `SMOKE_PIN=<the new PIN> bun scripts/smoke-cutover.ts` passes (it sends the PIN cookie to `new.*`, so it sees the
+   app's pages, not the PIN page; it fails on an inline script without the app's nonce, or a link to a host outside
+   `KNOWN_HOSTS`, on `new.*` `/` and `/about`; on the apex `/` and `/404.html`, which have no nonce, on an inline
+   script whose hash isn't in `STATIC_SCRIPTS` or a host outside `KNOWN_HOSTS` and `STATIC_HOSTS`). A FAIL line names the script's SHA-256: if it is one of
+   the apex page's own (compare with `/opt/nbwc/site/index.html` and `404.html`), add it to `STATIC_SCRIPTS`; an
+   inline script with `__CF$cv$params` is Cloudflare's JS detections (Security → Bots), which is an edge injection too.
 2. **Off-site backups.** Make `twc-natasa-backup` also copy the nightly `nightly-*.db` and `uploads-*.tgz` off the
    VPS (for example rclone to a Cloudflare R2 bucket with object lock, its key only on the VPS), then do one restore
    drill from that copy into a scratch `DATA_DIR` (Backup, below).
