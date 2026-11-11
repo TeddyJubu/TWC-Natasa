@@ -70,6 +70,14 @@ export function removeMedia(bucket: Bucket, name: string): void {
   if (file) rmSync(file, { force: true });
 }
 
+/** Deletes a member's whole folder in an avatars or feed bucket (account deletion); a missing one is fine. */
+export function removeMediaFolder(bucket: "avatars" | "feed", folder: string): void {
+  if (!SEGMENT.test(folder)) return;
+  const root = resolve(uploadsDir(), bucket);
+  const dir = resolve(root, folder);
+  if (dir.startsWith(root + sep)) rmSync(dir, { recursive: true, force: true });
+}
+
 /**
  * The old "Avatar read" policy: the owner, admins, approved members while the owner is approved and listed,
  * and everyone once she is also public. Hiding from the directory hides every file in her folder.

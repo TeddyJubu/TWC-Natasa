@@ -15,6 +15,7 @@ import { GatheringsList } from "@/features/account/GatheringsList";
 import { HeadshotBooking } from "@/features/account/HeadshotBooking";
 import { IntroductionsSection } from "@/features/account/IntroductionsSection";
 import { WhereCard } from "@/features/account/WhereCard";
+import { DeleteAccount } from "@/features/account/DeleteAccount";
 import { SaveActions } from "@/features/account/SaveActions";
 import { PassDialog } from "@/features/account/MemberPass";
 import { PROFILE_FORM, changedFields, errorMessage, fieldId, type CardKey, type ProfileEditor } from "@/features/account/helpers";
@@ -155,7 +156,7 @@ function ProfileEditorPage({ userId, profile, avatar, logoUrl, hoodList, applied
         <WhereCard editor={editor} userId={userId} hood={profile.neighborhood || null} approved={approved} avatar={avatar} hoodList={hoodList} />
         <PublicCard editor={editor} userId={userId} logoPath={profile.business_logo_url} logoUrl={logoUrl} hoodList={hoodList} />
         <WordsCard editor={editor} catalogueNumber={approved ? profile.catalogue_number : null} />
-        <MembershipCard profile={profile} />
+        <MembershipCard profile={profile}><DeleteAccount /></MembershipCard>
         <VisibilityCard editor={editor} profile={profile} />
         <HeadshotBooking userId={userId} approved={approved} applied={applied} />
         <GatheringsList userId={userId} approved={approved} applied={applied} hoodList={hoodList} />

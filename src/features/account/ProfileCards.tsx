@@ -169,7 +169,7 @@ export function WordsCard({ editor, catalogueNumber }: { editor: ProfileEditor; 
 }
 
 /** Status, catalogue number and member since: read-only, set by admins. The rubber stamp is decoration. */
-export function MembershipCard({ profile }: { profile: Profile }) {
+export function MembershipCard({ profile, children }: { profile: Profile; children?: React.ReactNode }) {
   const approved = profile.status === "approved";
   const declined = profile.status === "declined";
   const since = approved ? monthYear(profile.member_since) : null;
@@ -198,6 +198,7 @@ export function MembershipCard({ profile }: { profile: Profile }) {
           <dd className={cn(!since && "text-app-muted")}>{since || "—"}</dd>
         </div>
       </dl>
+      {children}
     </Letter>
   );
 }

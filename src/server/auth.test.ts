@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { readFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { openDb, type DB } from "./db";
 
 const sent = vi.hoisted(() => [] as { to: string; subject: string; text: string }[]);
@@ -184,5 +186,101 @@ describe("configuration", () => {
     expect(createAuth(db).options.socialProviders).toEqual({});
     vi.stubEnv("GOOGLE_CLIENT_SECRET", "secret");
     expect(createAuth(db).options.socialProviders).toMatchObject({ google: { clientId: "id", clientSecret: "secret" } });
+  });
+});
+
+describe("delete my account (POST /api/auth/delete-user)", () => {
+  let dir: string;
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), "twc-delete-"));
+    vi.stubEnv("DATA_DIR", dir);
+  });
+  afterEach(() => rmSync(dir, { recursive: true, force: true }));
+
+  async function signedIn(email: string) {
+    const id = await signUp(email);
+    await auth.api.verifyEmail({ query: { token: tokenIn(linkIn(sent.at(-1)!.text)) } });
+    const res = await signIn(email, "correct horse");
+    const cookie = res.headers.getSetCookie().map((c) => c.split(";")[0]).join("; ");
+    return { id, cookie };
+  }
+  const del = async (cookie: string, body: Record<string, unknown>) => {
+    const res = await auth.handler(new Request(`${APP}/api/auth/delete-user`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Origin: APP, Cookie: cookie, "X-Forwarded-For": `203.0.113.${testIp}` },
+      body: JSON.stringify(body),
+    }));
+    return { status: res.status, body: (await res.json().catch(() => null)) as { code?: string } | null };
+  };
+  const users = (id: string) => (db.prepare(`select count(*) as n from "user" where id = ?`).get(id) as { n: number }).n;
+  const put = (...parts: string[]) => {
+    mkdirSync(join(dir, "uploads", ...parts.slice(0, -1)), { recursive: true });
+    writeFileSync(join(dir, "uploads", ...parts), "x");
+  };
+
+  it("with her password: deletes her, her profile, her applications (by account or email) and her upload folders", async () => {
+    const rosa = await signedIn("rosa@x.test");
+    const lena = await signedIn("lena@x.test");
+    const app = (email: string, user: string | null) =>
+      db.prepare(`insert into applications (email, full_name, user_id) values (?, 'A', ?) returning id`).get(email, user) as { id: string };
+    const mine = app("ROSA@x.test", null);
+    app("rosa.old@x.test", rosa.id);
+    app("lena@x.test", lena.id);
+    db.prepare(`insert into admin_notes (application_id, body) values (?, 'note')`).run(mine.id);
+    put("avatars", rosa.id, "portrait-1.webp"); put("feed", rosa.id, "p-1.webp"); put("avatars", lena.id, "portrait-1.webp");
+
+    expect(await del(rosa.cookie, { password: "correct horse" })).toEqual({ status: 200, body: { success: true, message: "User deleted" } });
+    expect(users(rosa.id)).toBe(0);
+    expect(row(`select count(*) as n from profiles where id = ?`, rosa.id)).toEqual({ n: 0 });
+    expect(row(`select count(*) as n from session where userId = ?`, rosa.id)).toEqual({ n: 0 });
+    expect(db.prepare(`select email from applications`).all()).toEqual([{ email: "lena@x.test" }]);
+    expect(row(`select count(*) as n from admin_notes`)).toEqual({ n: 0 });
+    expect(existsSync(join(dir, "uploads", "avatars", rosa.id))).toBe(false);
+    expect(existsSync(join(dir, "uploads", "feed", rosa.id))).toBe(false);
+    expect(existsSync(join(dir, "uploads", "avatars", lena.id, "portrait-1.webp"))).toBe(true);
+    expect(users(lena.id)).toBe(1);
+  });
+
+  it("a password account needs its password: none or a wrong one deletes nothing", async () => {
+    const rosa = await signedIn("rosa@x.test");
+    db.prepare(`insert into applications (email, full_name) values ('rosa@x.test', 'Rosa')`).run();
+    put("avatars", rosa.id, "portrait-1.webp");
+    expect(await del(rosa.cookie, {})).toMatchObject({ status: 400, body: { code: "PASSWORD_REQUIRED" } });
+    expect(await del(rosa.cookie, { password: "" })).toMatchObject({ status: 400, body: { code: "PASSWORD_REQUIRED" } });
+    expect(await del(rosa.cookie, { password: "wrong password" })).toMatchObject({ status: 400, body: { code: "INVALID_PASSWORD" } });
+    expect(users(rosa.id)).toBe(1);
+    expect(row(`select count(*) as n from applications`)).toEqual({ n: 1 });
+    expect(existsSync(join(dir, "uploads", "avatars", rosa.id, "portrait-1.webp"))).toBe(true);
+  });
+
+  it("signed out, or with a deletion token, deletes nothing", async () => {
+    const rosa = await signedIn("rosa@x.test");
+    expect((await del("", { password: "correct horse" })).status).toBe(401);
+    expect(await del(rosa.cookie, { password: "correct horse", token: "abc" })).toMatchObject({ status: 400, body: { code: "TOKEN_NOT_SUPPORTED" } });
+    expect(users(rosa.id)).toBe(1);
+  });
+
+  it("an admin can't delete herself this way, even with her password", async () => {
+    const rosa = await signedIn("rosa@x.test");
+    db.prepare(`insert into user_roles (user_id, role) values (?, 'admin')`).run(rosa.id);
+    db.prepare(`insert into applications (email, full_name) values ('rosa@x.test', 'Rosa')`).run();
+    put("avatars", rosa.id, "portrait-1.webp");
+    expect(await del(rosa.cookie, { password: "correct horse" })).toMatchObject({ status: 403, body: { code: "ADMIN_CANNOT_DELETE" } });
+    expect(users(rosa.id)).toBe(1);
+    expect(row(`select count(*) as n from applications`)).toEqual({ n: 1 });
+    expect(existsSync(join(dir, "uploads", "avatars", rosa.id, "portrait-1.webp"))).toBe(true);
+  });
+
+  it("a Google-only account (no password) needs a fresh session: within a day it deletes, after that it's refused", async () => {
+    const rosa = await signedIn("rosa@x.test");
+    db.prepare(`update account set providerId = 'google', password = null where userId = ?`).run(rosa.id);
+    const created = row<{ createdAt: string | number }>(`select createdAt from session where userId = ?`, rosa.id).createdAt;
+    const old = new Date(Date.now() - 2 * 86_400_000);
+    db.prepare(`update session set createdAt = ? where userId = ?`).run(typeof created === "number" ? old.getTime() : old.toISOString(), rosa.id);
+    expect(await del(rosa.cookie, {})).toMatchObject({ status: 400, body: { code: "SESSION_EXPIRED" } });
+    expect(users(rosa.id)).toBe(1);
+    db.prepare(`update session set createdAt = ? where userId = ?`).run(created, rosa.id);
+    expect((await del(rosa.cookie, {})).status).toBe(200);
+    expect(users(rosa.id)).toBe(0);
   });
 });

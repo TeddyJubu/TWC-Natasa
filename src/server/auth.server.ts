@@ -1,6 +1,8 @@
 // Server-only: Better Auth on the app's SQLite database. Served at /api/auth/* (src/routes/api/auth/$.ts);
 // server functions read the session through src/server/context.server.ts.
 import { betterAuth } from "better-auth";
+import { APIError, createAuthMiddleware, getSessionFromCtx } from "better-auth/api";
+import { afterAccountDelete, beforeAccountDelete, hasPassword } from "./account-delete";
 import { getDb, type DB } from "./db";
 import { appUrl, sendEmail } from "./email";
 import { authSecret } from "./secret";
@@ -75,6 +77,28 @@ export function createAuth(db: DB) {
       },
     },
     socialProviders: googleId && googleSecret ? { google: { clientId: googleId, clientSecret: googleSecret } } : {},
+    // "Delete my account" on /account. A password account must re-enter its password (Better Auth checks it); a
+    // Google-only one has none, so Better Auth's fresh-session rule applies (signed in within the last day).
+    // No emailed confirmation, so no deletion tokens either. Admins are refused in beforeDelete.
+    user: {
+      deleteUser: {
+        enabled: true,
+        beforeDelete: async (user) => beforeAccountDelete(db, user),
+        afterDelete: async (user) => afterAccountDelete(user),
+      },
+    },
+    hooks: {
+      before: createAuthMiddleware(async (ctx) => {
+        if (ctx.path !== "/delete-user") return;
+        const body = (ctx.body ?? {}) as { password?: unknown; token?: unknown };
+        if (body.token !== undefined) throw new APIError("BAD_REQUEST", { code: "TOKEN_NOT_SUPPORTED", message: "Deletion links aren’t used here." });
+        if (typeof body.password === "string" && body.password) return;
+        const session = await getSessionFromCtx(ctx);
+        if (session && hasPassword(db, session.user.id)) {
+          throw new APIError("BAD_REQUEST", { code: "PASSWORD_REQUIRED", message: "Enter your password to delete your account." });
+        }
+      }),
+    },
   });
 }
 
