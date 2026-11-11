@@ -40,9 +40,37 @@ const row = (title: string) => screen.getByRole("heading", { name: title }).clos
 
 describe("/gatherings", () => {
   it("is indexable, with its own title and description", () => {
-    const meta = (Route.options.head as () => { meta: Record<string, string>[] })().meta;
+    const meta = (Route.options.head as (c: unknown) => { meta: Record<string, string>[] })({}).meta;
     expect(meta).not.toContainEqual({ name: "robots", content: "noindex" });
     expect(meta.find((m) => m.name === "description")?.content).toMatch(/Queens/);
+  });
+
+  it("marks up real gatherings as Events, escaped, and never the seeded demo ones", () => {
+    const head = (loaderData: unknown) =>
+      (Route.options.head as (c: unknown) => { scripts: { type: string; children: string }[] })({ loaderData });
+    vi.stubEnv("VITE_SITE_URL", "https://example.com");
+    try {
+      const demo = event("d1", "Founders Supper Club", "Jackson Heights", "2026-11-06T23:00:00.000Z", "supper");
+      const real = { ...event("r1", "Book club </script>", "Astoria", "2026-12-02T23:30:00.000Z"), location: "Astoria Library" };
+      const { scripts } = head([demo, real]);
+      expect(scripts).toHaveLength(1);
+      expect(scripts[0].children).not.toContain("<");
+      const graph = JSON.parse(scripts[0].children)["@graph"];
+      expect(graph.map((n: { "@type": string }) => n["@type"])).toEqual(["Organization", "Event"]);
+      expect(graph[1]).toMatchObject({
+        name: "Book club </script>",
+        startDate: "2026-12-02T23:30:00.000Z",
+        location: { "@type": "Place", name: "Astoria Library", address: { addressLocality: "Astoria", addressRegion: "NY", addressCountry: "US" } },
+        organizer: { "@id": "https://example.com/#organization" },
+      });
+      // Only the demo seed, or nothing loaded: no structured data at all.
+      expect(head([demo]).scripts).toEqual([]);
+      expect(head(undefined).scripts).toEqual([]);
+      vi.stubEnv("VITE_SITE_URL", "");
+      expect(head([real]).scripts).toEqual([]);
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 
   it("loads the public calendar in the loader, and undefined when that fails", async () => {

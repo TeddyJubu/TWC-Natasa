@@ -11,6 +11,8 @@ import { toneFor } from "@/features/neighborhoods/tone";
 import { loadPublicEvents, publicEventsQuery, rsvpsQuery, type PublicEvent } from "@/features/events/queries";
 import { useToggleRsvp } from "@/features/events/mutations";
 import { eventWhen, kindLabel } from "@/features/events/format";
+import { gatheringsLd } from "@/features/events/structured-data";
+import { jsonLdScript, parseSiteUrl } from "@/app/seo";
 
 const TITLE = "Gatherings — The Women’s Collective";
 const DESCRIPTION = "Coffee introductions, supper clubs and headshot days across Queens. See what’s coming up at The Women’s Collective.";
@@ -18,16 +20,21 @@ const DESCRIPTION = "Coffee introductions, supper clubs and headshot days across
 export const Route = createFileRoute("/gatherings")({
   // The calendar is public, so it is in the server's HTML; who is looking (the seat buttons) waits for the client.
   loader: ({ context }) => loadPublicEvents(context.queryClient),
-  head: () => ({
-    meta: [
-      { title: TITLE },
-      { name: "description", content: DESCRIPTION },
-      { property: "og:title", content: TITLE },
-      { property: "og:description", content: DESCRIPTION },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
+  head: ({ loaderData }) => {
+    const site = parseSiteUrl(import.meta.env.VITE_SITE_URL as string | undefined);
+    const ld = site && loaderData ? gatheringsLd(site, loaderData) : undefined;
+    return {
+      meta: [
+        { title: TITLE },
+        { name: "description", content: DESCRIPTION },
+        { property: "og:title", content: TITLE },
+        { property: "og:description", content: DESCRIPTION },
+        { property: "og:type", content: "website" },
+        { name: "twitter:card", content: "summary_large_image" },
+      ],
+      scripts: ld ? [jsonLdScript(ld)] : [],
+    };
+  },
   component: GatheringsPage,
 });
 
