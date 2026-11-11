@@ -60,3 +60,47 @@ export const WITH_GPS = {
   ),
   webp: webp(vp8x(0x08 | 0x04), VP8_CHUNK, riffChunk("EXIF", GPS_TIFF), riffChunk("XMP ", XMP)), // 93 bytes: odd, so padded
 };
+
+/** A little-endian Exif TIFF whose IFD0 holds Orientation (`orientation`) and a GPS IFD: 40° 44' 30" N. */
+export const orientedTiff = (orientation: number) => {
+  const b = new Uint8Array(92);
+  const v = new DataView(b.buffer);
+  b.set(ascii("II*\0"), 0);
+  v.setUint32(4, 8, true); // IFD0
+  v.setUint16(8, 2, true); // Orientation, then GPSInfo → the GPS IFD at 38
+  v.setUint16(10, 0x0112, true); v.setUint16(12, 3, true); v.setUint32(14, 1, true); v.setUint16(18, orientation, true);
+  v.setUint16(22, 0x8825, true); v.setUint16(24, 4, true); v.setUint32(26, 1, true); v.setUint32(30, 38, true);
+  v.setUint16(38, 2, true); // GPS IFD: latitude ref "N" and latitude (3 rationals at 68)
+  v.setUint16(40, 1, true); v.setUint16(42, 2, true); v.setUint32(44, 2, true); b.set(ascii("N"), 48);
+  v.setUint16(52, 2, true); v.setUint16(54, 5, true); v.setUint32(56, 3, true); v.setUint32(60, 68, true);
+  [40, 1, 44, 1, 3000, 100].forEach((n, i) => v.setUint32(68 + i * 4, n, true));
+  return b;
+};
+/** TINY.jpg as a phone takes it on its side: Exif Orientation and GPS right after JFIF, plus XMP. */
+export const rotatedJpeg = (orientation: number) => cat(
+  TINY.jpg.slice(0, 20),
+  jpegSegment(0xe1, cat(ascii("Exif\0\0"), orientedTiff(orientation))),
+  jpegSegment(0xe1, cat(ascii("http://ns.adobe.com/xap/1.0/\0"), XMP)),
+  TINY.jpg.slice(20),
+);
+
+/** TINY images whose headers claim `width` × `height` (the pixel data stays 2×2: nothing here decodes it). */
+export const sized = (width: number, height: number) => {
+  const jpg = TINY.jpg.slice();
+  const sof = Buffer.from(jpg).indexOf(Buffer.from([0xff, 0xc0]));
+  new DataView(jpg.buffer).setUint16(sof + 5, height);
+  new DataView(jpg.buffer).setUint16(sof + 7, width);
+  const png = TINY.png.slice();
+  new DataView(png.buffer).setUint32(16, width);
+  new DataView(png.buffer).setUint32(20, height);
+  const canvas = new Uint8Array(10); // flags, 3 reserved, then width − 1 and height − 1 as 24-bit little-endian
+  [width - 1, height - 1].forEach((n, k) => canvas.set([n & 0xff, (n >> 8) & 0xff, (n >> 16) & 0xff], 4 + k * 3));
+  return { jpg, png, webp: webp(riffChunk("VP8X", canvas), VP8_CHUNK) };
+};
+/** A VP8L (lossless WebP) header for `width` × `height`; enough for the size reader, not a whole image. */
+export const losslessWebp = (width: number, height: number) => {
+  const data = new Uint8Array(5);
+  data[0] = 0x2f;
+  new DataView(data.buffer).setUint32(1, ((width - 1) | ((height - 1) << 14)) >>> 0, true);
+  return webp(riffChunk("VP8L", data));
+};

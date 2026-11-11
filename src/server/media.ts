@@ -5,7 +5,7 @@ import { mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:f
 import { dirname, join, resolve, sep } from "node:path";
 import { dataDir, type DB } from "./db";
 import { AccessError, isAdmin, isMember, type Actor } from "./guard";
-import { stripMetadata } from "./image-meta";
+import { imageSize, stripMetadata } from "./image-meta";
 
 export const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
 export type Bucket = "avatars" | "feed" | "neighborhood-logos";
@@ -23,11 +23,23 @@ export function sniffImage(bytes: Uint8Array): ImageExt | null {
   return null;
 }
 
-/** Validates an upload: a real PNG, JPEG or WebP of at most 5 MB. Returns its extension. */
-export function checkImage(bytes: Uint8Array): ImageExt {
+/**
+ * The longest side an upload may have. The app shrinks every photo in the browser first (`resizeImage`: portraits to
+ * 1600px, logos to 512px, feed photos to 2048px), so these only stop a direct upload or a browser that couldn't.
+ */
+export const MAX_IMAGE_EDGE = 2560;
+export const MAX_FEED_IMAGE_EDGE = 4096;
+
+/** Validates an upload: a real PNG, JPEG or WebP of at most 5 MB and `maxEdge` pixels a side. Returns its extension. */
+export function checkImage(bytes: Uint8Array, maxEdge = MAX_IMAGE_EDGE): ImageExt {
   if (bytes.byteLength > MAX_UPLOAD_BYTES) throw new AccessError("That image is over 5 MB. Please choose a smaller one.", 400);
   const ext = sniffImage(bytes);
   if (!ext) throw new AccessError("Please choose a JPG, PNG or WebP image.", 400);
+  const size = imageSize(bytes);
+  if (!size) throw new AccessError("That image couldn’t be read. Please choose another JPG, PNG or WebP.", 400);
+  if (Math.max(size.width, size.height) > maxEdge) {
+    throw new AccessError(`That image is over ${maxEdge} pixels on its longest side. Please choose a smaller one.`, 400);
+  }
   return ext;
 }
 

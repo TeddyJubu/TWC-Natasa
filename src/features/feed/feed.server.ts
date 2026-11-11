@@ -6,7 +6,7 @@ import { randomUUID } from "node:crypto";
 import type { Ctx } from "@/server/context.server";
 import type { DB } from "@/server/db";
 import { AccessError, isAdmin, requireMember } from "@/server/guard";
-import { canSeeAvatarFolder, checkImage, MAX_UPLOAD_BYTES, mediaUrl, removeMedia, writeMedia } from "@/server/media";
+import { canSeeAvatarFolder, checkImage, MAX_FEED_IMAGE_EDGE, MAX_UPLOAD_BYTES, mediaUrl, removeMedia, writeMedia } from "@/server/media";
 import { checkSize, HttpError, rateLimit, readForm, respond } from "@/server/request";
 import { bad, isObject, oneOf, str } from "@/server/validate";
 import { memberSlug } from "@/features/members/map";
@@ -146,7 +146,7 @@ export function createPost(c: Ctx, input: NewPost): { id: string } {
   if (!body && input.photos.length === 0) throw new AccessError("Write something or add a photo.", 400);
   const id = randomUUID();
   const photos = input.photos.map((p, i) => ({
-    name: `${me.id}/${id}-${i + 1}.${checkImage(p.bytes)}`,
+    name: `${me.id}/${id}-${i + 1}.${checkImage(p.bytes, MAX_FEED_IMAGE_EDGE)}`,
     alt: str(p.alt ?? "", "photo description", MAX_ALT).trim(),
   }));
   try {

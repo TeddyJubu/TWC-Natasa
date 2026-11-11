@@ -1,16 +1,60 @@
-// Strips location-bearing metadata (Exif, XMP, IPTC, text chunks) from an uploaded image before it is stored.
-// Walks each format's own container and copies every other byte as it was; pixels are never decoded.
+// Strips location-bearing metadata (Exif, XMP, IPTC, text chunks) from an uploaded image before it is stored, and reads
+// its pixel size. Walks each format's own container and copies every other byte as it was; pixels are never decoded.
+// A JPEG's Exif Orientation is the one tag kept (in a fresh, minimal Exif block), so a phone photo stays upright.
 import { AccessError } from "./guard";
 
 const unreadable = () => new AccessError("That image couldn’t be read. Please choose another JPG, PNG or WebP.", 400);
 const ascii = (b: Uint8Array, at: number) => String.fromCharCode(b[at], b[at + 1], b[at + 2], b[at + 3]);
 const join = (parts: Uint8Array[]) => new Uint8Array(Buffer.concat(parts));
 
-/** JPEG: drops APP1 (Exif, XMP) and APP13 (Photoshop/IPTC) segments and anything after end-of-image. */
+const EXIF_HEADER = [0x45, 0x78, 0x69, 0x66, 0, 0]; // "Exif\0\0"
+
+/** The Exif Orientation (0x0112) in IFD0 of an APP1 segment's data, when it is a turn or flip (2–8); else null. */
+export function exifOrientation(data: Uint8Array): number | null {
+  if (data.length < 14 || !EXIF_HEADER.every((c, j) => data[j] === c)) return null;
+  const tiff = data.subarray(6);
+  const v = new DataView(tiff.buffer, tiff.byteOffset, tiff.byteLength);
+  const order = ascii(tiff, 0).slice(0, 2);
+  if (order !== "II" && order !== "MM") return null;
+  const le = order === "II";
+  if (v.getUint16(2, le) !== 42) return null;
+  const ifd = v.getUint32(4, le);
+  if (ifd < 8 || ifd + 2 > tiff.length) return null;
+  const count = v.getUint16(ifd, le);
+  for (let e = ifd + 2, n = 0; n < count && e + 12 <= tiff.length; n++, e += 12) {
+    if (v.getUint16(e, le) !== 0x0112) continue;
+    if (v.getUint16(e + 2, le) !== 3 || v.getUint32(e + 4, le) !== 1) return null; // one SHORT
+    const value = v.getUint16(e + 8, le);
+    return value >= 2 && value <= 8 ? value : null;
+  }
+  return null;
+}
+
+/** An APP1 segment holding only an Exif IFD0 with one entry: Orientation. */
+function orientationSegment(value: number): Uint8Array {
+  const b = new Uint8Array(4 + 6 + 26);
+  const v = new DataView(b.buffer);
+  b.set([0xff, 0xe1], 0);
+  v.setUint16(2, b.length - 2);
+  b.set(EXIF_HEADER, 4);
+  b.set([0x4d, 0x4d, 0, 42], 10); // "MM", 42
+  v.setUint32(14, 8); // IFD0 right after the header
+  v.setUint16(18, 1); // one entry
+  v.setUint16(20, 0x0112); v.setUint16(22, 3); v.setUint32(24, 1); v.setUint16(28, value);
+  v.setUint32(32, 0); // no next IFD
+  return b;
+}
+
+/**
+ * JPEG: drops APP1 (Exif, XMP) and APP13 (Photoshop/IPTC) segments and anything after end-of-image. The first Exif
+ * block's Orientation, when it turns or flips the picture, comes back as a minimal Exif block in the same place, and
+ * nothing else from it (no GPS, camera, maker notes or thumbnail).
+ */
 function jpeg(b: Uint8Array): Uint8Array {
   const keep: Uint8Array[] = [b.subarray(0, 2)];
   let i = 2;
   let scanned = false;
+  let oriented = false;
   for (;;) {
     if (i + 1 >= b.length || b[i] !== 0xff) throw unreadable();
     const m = b[i + 1];
@@ -32,6 +76,10 @@ function jpeg(b: Uint8Array): Uint8Array {
       while (end + 1 < b.length && !(b[end] === 0xff && b[end + 1] !== 0 && (b[end + 1] < 0xd0 || b[end + 1] > 0xd7))) end++;
     }
     if (m !== 0xe1 && m !== 0xed) keep.push(b.subarray(i, end));
+    else if (m === 0xe1 && !oriented && !scanned) {
+      const value = exifOrientation(b.subarray(i + 4, end));
+      if (value) { keep.push(orientationSegment(value)); oriented = true; }
+    }
     i = end;
   }
 }
@@ -97,4 +145,57 @@ export function stripMetadata(bytes: Uint8Array): Uint8Array {
   if (at(0, 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a)) return png(bytes);
   if (at(0, 0x52, 0x49, 0x46, 0x46) && at(8, 0x57, 0x45, 0x42, 0x50)) return webp(bytes);
   throw unreadable();
+}
+
+/** JPEG: the frame header's size (any SOFn; not DHT C4, JPG C8 or DAC CC), or null if a scan comes first. */
+function jpegSize(b: Uint8Array): { width: number; height: number } | null {
+  for (let i = 2; i + 3 < b.length; ) {
+    if (b[i] !== 0xff) return null;
+    const m = b[i + 1];
+    if (m === 0xff) { i++; continue; }
+    if (m === 0x01 || (m >= 0xd0 && m <= 0xd7)) { i += 2; continue; }
+    if (m === 0xd9 || m === 0xda) return null;
+    const length = (b[i + 2] << 8) | b[i + 3];
+    if (m >= 0xc0 && m <= 0xcf && m !== 0xc4 && m !== 0xc8 && m !== 0xcc) {
+      if (length < 7 || i + 9 > b.length) return null;
+      return { height: (b[i + 5] << 8) | b[i + 6], width: (b[i + 7] << 8) | b[i + 8] };
+    }
+    if (length < 2) return null;
+    i += 2 + length;
+  }
+  return null;
+}
+
+/** WebP: the VP8X canvas, or the size in the first VP8 (lossy) or VP8L (lossless) bitstream's header. */
+function webpSize(b: Uint8Array): { width: number; height: number } | null {
+  if (b.length < 25) return null;
+  const type = ascii(b, 12);
+  if (type !== "VP8L" && b.length < 30) return null;
+  const u24 = (at: number) => b[at] | (b[at + 1] << 8) | (b[at + 2] << 16);
+  if (type === "VP8X") return { width: u24(24) + 1, height: u24(27) + 1 };
+  if (type === "VP8 ") {
+    if (b[23] !== 0x9d || b[24] !== 0x01 || b[25] !== 0x2a) return null;
+    return { width: (b[26] | (b[27] << 8)) & 0x3fff, height: (b[28] | (b[29] << 8)) & 0x3fff };
+  }
+  if (type === "VP8L") {
+    if (b[20] !== 0x2f) return null;
+    const bits = b[21] | (b[22] << 8) | (b[23] << 16) | (b[24] << 24);
+    return { width: (bits & 0x3fff) + 1, height: ((bits >>> 14) & 0x3fff) + 1 };
+  }
+  return null;
+}
+
+/**
+ * The image's stored width and height in pixels (before any Exif turn), read from its header; null when the header
+ * can't be read or says zero.
+ */
+export function imageSize(bytes: Uint8Array): { width: number; height: number } | null {
+  const at = (i: number, ...sig: number[]) => sig.every((s, j) => bytes[i + j] === s);
+  let size: { width: number; height: number } | null = null;
+  if (at(0, 0xff, 0xd8)) size = jpegSize(bytes);
+  else if (at(0, 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a) && bytes.length >= 24 && ascii(bytes, 12) === "IHDR") {
+    const v = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    size = { width: v.getUint32(16), height: v.getUint32(20) };
+  } else if (at(0, 0x52, 0x49, 0x46, 0x46) && at(8, 0x57, 0x45, 0x42, 0x50)) size = webpSize(bytes);
+  return size && size.width > 0 && size.height > 0 ? size : null;
 }

@@ -3,8 +3,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { openDb, type DB } from "./db";
-import { TINY, WITH_GPS } from "@/test/images";
-import { checkImage, mediaFile, serveMedia, sniffImage, writeMedia } from "./media";
+import { rotatedJpeg, sized, TINY, WITH_GPS } from "@/test/images";
+import { checkImage, MAX_FEED_IMAGE_EDGE, MAX_IMAGE_EDGE, mediaFile, serveMedia, sniffImage, writeMedia } from "./media";
 
 const { png: PNG, jpg: JPG, webp: WEBP } = TINY;
 const OWNER = "00000000-0000-4000-8000-0000000000aa";
@@ -40,6 +40,25 @@ describe("uploads", () => {
     big.set(PNG);
     expect(() => checkImage(big)).toThrow(/over 5 MB/);
     expect(() => checkImage(new TextEncoder().encode("GIF89a"))).toThrow(/JPG, PNG or WebP/);
+  });
+
+  it("refuse an image wider or taller than the edge cap, and one whose size can't be read", () => {
+    for (const ext of ["jpg", "png", "webp"] as const) {
+      expect(checkImage(sized(MAX_IMAGE_EDGE, 100)[ext])).toBe(ext);
+      expect(() => checkImage(sized(MAX_IMAGE_EDGE + 1, 100)[ext]), ext).toThrow(/over 2560 pixels/);
+      expect(() => checkImage(sized(100, MAX_IMAGE_EDGE + 1)[ext]), ext).toThrow(/over 2560 pixels/);
+    }
+    expect(checkImage(sized(4032, 3024).jpg, MAX_FEED_IMAGE_EDGE)).toBe("jpg"); // feed photos may be larger
+    expect(() => checkImage(sized(MAX_FEED_IMAGE_EDGE + 1, 10).jpg, MAX_FEED_IMAGE_EDGE)).toThrow(/over 4096 pixels/);
+    expect(() => checkImage(new Uint8Array([0xff, 0xd8, 0xff, 0xda, 0, 2]))).toThrow(/couldn’t be read/);
+  });
+
+  it("keep a phone photo's Exif Orientation, so it isn't stored on its side", () => {
+    writeMedia("avatars", `${OWNER}/turned.jpg`, rotatedJpeg(6));
+    const stored = new Uint8Array(readFileSync(mediaFile("avatars", `${OWNER}/turned.jpg`)!));
+    expect(Buffer.from(stored).indexOf(Buffer.from("Exif"))).toBeGreaterThan(0);
+    expect(Buffer.from(stored).indexOf(Buffer.from("GPSLatitude"))).toBe(-1);
+    expect(stored.length).toBe(TINY.jpg.length + 36);
   });
 
   it("are stored without their location metadata, and refused when they don't parse", () => {
