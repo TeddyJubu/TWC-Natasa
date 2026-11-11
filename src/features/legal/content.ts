@@ -1,6 +1,8 @@
 // The legal pages (/privacy, /terms, /code-of-conduct) as data, rendered by LegalPage. Still drafts: the
 // template box, [BRACKETS] and attorney notes stay visible until counsel signs them off.
 
+import { legalHeads, type LegalHeadText } from "./heads";
+
 /** A run of text: plain, a bold lead-in, or an in-app link. */
 export type Inline = string | { strong: string } | { href: string; text: string };
 export type Rich = string | readonly Inline[];
@@ -25,7 +27,7 @@ export interface LegalDoc {
   version: string;
   template: { title: string; text: string };
   sections: readonly LegalSection[];
-  head: { title: string; description: string };
+  head: LegalHeadText;
 }
 
 const b = (strong: string) => ({ strong });
@@ -42,10 +44,7 @@ export const privacy: LegalDoc = {
     title: "TEMPLATE — NOT YET LEGAL ADVICE.",
     text: "This describes what The Women's Collective system actually does, so a lawyer can work from something real rather than boilerplate. Before publishing: fill every [BRACKET], confirm the retention periods are what you actually intend, and have a New York attorney review the whole thing. Delete this box when it's signed off.",
   },
-  head: {
-    title: "Privacy Policy — The Women’s Collective",
-    description: "What The Women’s Collective holds about applicants and members, why we hold it, who can see it, and how to ask us about it.",
-  },
+  head: legalHeads.privacy,
   sections: [
     {
       id: "who", toc: "Who we are", title: "Who we are", blocks: [
@@ -173,10 +172,7 @@ export const terms: LegalDoc = {
     title: "TEMPLATE — NOT YET LEGAL ADVICE.",
     text: "Written to reflect how The Women's Collective actually operates so an attorney has something concrete to work from. Before publishing: fill every [BRACKET], and have a New York attorney review sections 8 and 9 in particular — liability and governing law are where templates do real damage.",
   },
-  head: {
-    title: "Terms of Membership — The Women’s Collective",
-    description: "The terms for using this site and being a member of The Women’s Collective: membership, your account, the directory, what you post, events and leaving.",
-  },
+  head: legalHeads.terms,
   sections: [
     {
       id: "agree", toc: "What you're agreeing to", title: "What you're agreeing to", blocks: [
@@ -282,10 +278,7 @@ export const codeOfConduct: LegalDoc = {
     title: "TEMPLATE — NEEDS THE WOMEN’S COLLECTIVE’S DECISIONS.",
     text: "The structure and language are ready to use. What needs filling in: who sits on the review group, the reporting address, and whether the escalation path below matches what you'd actually do. An attorney should read the consequences and appeals sections before publishing.",
   },
-  head: {
-    title: "Code of Conduct — The Women’s Collective",
-    description: "What members of The Women’s Collective expect of each other, the directory rule, and how to report something and what happens next.",
-  },
+  head: legalHeads.codeOfConduct,
   sections: [
     {
       id: "applies", toc: "Who this applies to", title: "Who this applies to", blocks: [
@@ -389,15 +382,3 @@ export const codeOfConduct: LegalDoc = {
     },
   ],
 };
-
-/** The route's head: title, description and their Open Graph twins. */
-export const legalHead = (doc: LegalDoc) => ({
-  meta: [
-    { title: doc.head.title },
-    { name: "description", content: doc.head.description },
-    { property: "og:title", content: doc.head.title },
-    { property: "og:description", content: doc.head.description },
-    { property: "og:type", content: "website" },
-    { name: "twitter:card", content: "summary" },
-  ],
-});
