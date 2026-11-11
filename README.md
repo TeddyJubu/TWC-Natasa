@@ -163,6 +163,41 @@ While `SITE_PIN` is set in `app.env`, every request — pages, `/api`, `/media`,
 holding a hash of the PIN for 30 days and returns the visitor to the page she asked for (so emailed links still work
 after the PIN). Only the icons and `/healthz` are open. Changing the PIN signs everyone out of the preview; removing
 it (and restarting `twc-natasa.service`) opens the site. The PIN lives only in `app.env`: this repository is public.
+**Before removing it, remove the demo members** (below): they are public on `/members`, the sitemap and
+`/media/public` the moment the PIN is gone.
+
+### Demo data (preview only)
+
+`scripts/seed-demo.ts` fills the preview with exactly 100 made-up members so the directory, member pages, `/account`
+and the newsfeed have something to show: every name ends in " (Demo)", every email is `demo-NNN@demo.twc.invalid`
+(`.invalid` never receives mail), 92 approved (80 public, 8 listed only, 4 unlisted), 5 pending and 3 declined, with
+stock portraits (randomuser.me, women 0–99; ten left on the initials mat), about 160 feed posts over 60 days with
+Picsum (Unsplash) photos, loves, replies, and their applications (newsletter always "no"). The email domain is the
+only marker: the script never updates or deletes anything else, never creates an admin, and never sends mail or calls
+Beehiiv. All demo accounts share one password. Images download once into `${DATA_DIR}/demo-cache/` (outside
+`uploads/`, so `/media` never serves it and the backup skips it); `--offline` uses only the cache. If the VPS can't
+reach those hosts, fill the cache locally and `scp` it to the same path.
+
+On the VPS (as the service user, so uploads and cache belong to it; the live server can keep running):
+
+```sh
+sqlite3 /var/lib/twc-natasa/data/twc.db ".backup '/var/backups/twc-natasa/pre-demo-$(date +%F).db'"
+cd /opt/twc-natasa
+sudo -u www-data env DATA_DIR=/var/lib/twc-natasa/data DEMO_PASSWORD='…' \
+  node --experimental-strip-types scripts/seed-demo.ts --confirm            # add --dry-run to see the plan first
+```
+
+`--confirm` is required whenever the database holds a real account. It refuses to seed twice: `--remove` deletes every
+demo account, application, post, love, reply, session and upload folder (including anything a tester posted as a
+demo) and rewinds the catalogue numbers if no real member was numbered after them; `--reseed` does both in one go;
+`--check` prints the counts and exits 1 while any demo row is left. Admin activity rows testers created stay
+(append-only). Without `--password`/`DEMO_PASSWORD` it prints a random password once; never commit it or the cache.
+
+Locally: `DATA_DIR=./.dev-data node --experimental-strip-types scripts/seed-demo.ts`.
+
+**Before launch** (lifting `SITE_PIN`): run the same command with `--remove --confirm`, then
+`node --experimental-strip-types scripts/seed-demo.ts --check` (exit 0) or
+`sqlite3 /var/lib/twc-natasa/data/twc.db "select count(*) from \"user\" where email like '%@demo.twc.invalid'"` (0).
 
 ### Backup
 
