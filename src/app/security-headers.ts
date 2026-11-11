@@ -34,8 +34,9 @@ export const SECURITY_HEADERS = {
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=()",
-  // A year of https-only, subdomains too; no preload. Browsers ignore it over plain http, so local dev is unaffected.
-  "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+  // A year of https-only for this host only: no includeSubDomains (or preload) until every subdomain of the zone is
+  // confirmed to serve https. Browsers ignore it over plain http, so local dev is unaffected.
+  "Strict-Transport-Security": "max-age=31536000",
 } as const;
 
 /** Adds any of `extra` the response doesn't already set. */
