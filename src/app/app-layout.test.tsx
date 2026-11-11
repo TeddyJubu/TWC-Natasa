@@ -133,20 +133,22 @@ describe("root route", () => {
 
 // The legal pages are gone until they're written for real (docs/LEGAL-PAGES-REQUIRED.md): nothing may link them.
 describe("AppNav", () => {
-  // The desktop row needs ~990px (measured in Gilda Display: links 15px + 0.3px tracking, the 22px wordmark, 36px gaps,
-  // Join us); `.twc-wrap` leaves 896px at 1024px and 1024px from 1152px up. So the row starts at xl, with Sign in.
-  it("shows the desktop row, Sign in included, only from xl and the menu button below it", () => {
+  // Measured in Gilda Display at lg: links 15px + 0.3px tracking, the 18px wordmark, 20px link gaps and 16px column
+  // gaps make ~845px, inside the 896px `.twc-wrap` leaves at 1024px. So the row starts at lg, Sign in included.
+  it("shows the desktop row, Sign in included, from lg (tight gaps there) and the menu button below it", () => {
     render(<AppNav />);
     const signIn = screen.getAllByRole("link", { name: "Sign in" });
-    const row = screen.getByRole("navigation", { name: "Main" }).parentElement!;
+    const nav = screen.getByRole("navigation", { name: "Main" });
+    const row = nav.parentElement!;
     expect(row.className).toMatch(/(^| )hidden( |$)/);
-    expect(row.className).toContain("xl:grid");
-    expect(row.className).not.toMatch(/\blg:/);
+    expect(row.className.split(" ")).toEqual(expect.arrayContaining(["lg:grid", "gap-4", "xl:gap-6"]));
+    expect(nav.className.split(" ")).toEqual(expect.arrayContaining(["gap-5", "xl:gap-9"]));
     const desktopSignIn = signIn.find((a) => row.contains(a))!;
     expect(desktopSignIn.className).not.toMatch(/hidden|min-\[/);
+    expect(desktopSignIn.parentElement!.className.split(" ")).toEqual(expect.arrayContaining(["gap-5", "xl:gap-9"]));
     const bar = screen.getByRole("button", { name: "Open menu" }).closest("div.flex.min-h-16")!;
-    expect(bar.className).toContain("xl:hidden");
-    expect(bar.className).not.toContain("lg:hidden");
+    expect(bar.className).toContain("lg:hidden");
+    expect(bar.className).not.toContain("xl:hidden");
   });
 });
 
