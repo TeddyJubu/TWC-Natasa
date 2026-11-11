@@ -74,10 +74,10 @@ In a sandbox, bun may need writable temp and cache directories, e.g.
 
 | Variable | Required | What it does |
 |---|---|---|
-| `APP_URL` | Yes | The public origin, e.g. `https://thewomenscollective.club`. Links in emails use it, and Better Auth trusts it as the only origin (plus `http://localhost:8080` outside production). |
+| `APP_URL` | Yes | The public origin, e.g. `https://thewomenscollective.club`. Links in emails use it, and Better Auth trusts it as the only origin (plus `http://localhost:8080` outside production). In production the server refuses to start unless it is an `https://` origin. |
 | `BETTER_AUTH_SECRET` | Yes | **Secret**, at least 32 characters: `openssl rand -base64 32`. Signs sessions and tokens; the server refuses to start without it (in every environment, tests included). Changing it signs everyone out. |
 | `DATA_DIR` | No | Where `twc.db` and `uploads/` live; default `./data`. |
-| `NODE_ENV` | On the server | `production`: without Cloudflare email settings, emails are skipped (not printed). |
+| `NODE_ENV` | On the server | `production`: without Cloudflare email settings, emails are skipped (not printed) and the server warns once at startup. |
 | `HOST`, `PORT` | No | Where `bun run start` listens; default `127.0.0.1:8788`. |
 | `CF_EMAIL_ACCOUNT_ID` | For email | Cloudflare account id for the Email Sending API. |
 | `CF_EMAIL_API_TOKEN` | For email | **Secret.** Cloudflare API token with email sending permission. |
