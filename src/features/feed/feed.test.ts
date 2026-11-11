@@ -135,6 +135,15 @@ describe("reading", () => {
     love(as(BEA), { postId: p, on: true }); // her own love isn't one she received
     expect(feed(as(BEA), {})).toMatchObject({ week: 1, mine: { posts: 2, loves: 1 }, neighborhood: "Astoria" });
   });
+
+  it("drops a love from her tally, as from the post, once the lover is no longer approved", () => {
+    const p = post(BEA, "Bread");
+    love(as(CARA), { postId: p, on: true });
+    run("update profiles set status = 'declined' where id = ?", CARA);
+    const page = feed(as(BEA), {});
+    run("update profiles set status = 'approved' where id = ?", CARA);
+    expect([page.posts[0].loves, page.mine.loves]).toEqual([0, 0]);
+  });
 });
 
 describe("loves and replies", () => {

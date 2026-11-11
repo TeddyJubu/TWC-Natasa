@@ -127,7 +127,10 @@ export function feed(c: Ctx, input: unknown): FeedPage {
     week: count(`select count(*) as n from feed_posts p join profiles a on a.id = p.author_id where ${ACTIVE} and p.created_at >= ?`, weekAgo),
     mine: {
       posts: count("select count(*) as n from feed_posts where author_id = ?", me.id),
-      loves: count("select count(*) as n from feed_loves l join feed_posts p on p.id = l.post_id where p.author_id = ? and l.member_id <> ?", me.id, me.id),
+      // Only lovers still in, like each post's own count (lovesOf).
+      loves: count(
+        `select count(*) as n from feed_loves l join feed_posts p on p.id = l.post_id join profiles a on a.id = l.member_id
+         where p.author_id = ? and l.member_id <> ? and ${ACTIVE}`, me.id, me.id),
     },
   };
 }
