@@ -5,6 +5,7 @@ import type { MembershipStatus } from "@/features/members/members.server";
 import { checkLogo, validateNeighborhood } from "./format";
 import { emailApproval, type ApprovalNotice } from "./approval-email";
 import { postApi } from "@/app/api";
+import { LOGO_RESIZE, resizeImage } from "@/app/resize-image";
 import {
   addLoggedActionFn, addNoteFn, adminCsvFn, archiveMessageFn, createEventFn, deleteNoteFn, createNeighborhoodFn, deleteEventFn,
   editLoggedActionFn, removeLoggedActionFn, restoreLoggedActionFn, reviewApplicationFn, setBookingStatusFn,
@@ -80,8 +81,13 @@ async function saveLogoAfter(saved: string, slug: string, logo: File): Promise<s
   }
 }
 
+/** A PNG or WebP logo at most 512px a side (still transparent); any other type is left for checkLogo to refuse. */
+const shrinkLogo = async (logo?: File) =>
+  logo && (logo.type === "image/png" || logo.type === "image/webp") ? resizeImage(logo, LOGO_RESIZE) : logo;
+
 /** Inserts the row (no logo), then adds the logo. A duplicate slug or name fails before any upload. */
-export async function createNeighborhood({ logo, ...input }: NewNeighborhood): Promise<void> {
+export async function createNeighborhood({ logo: picked, ...input }: NewNeighborhood): Promise<void> {
+  const logo = await shrinkLogo(picked);
   assertValid({ ...input, logo });
   await createNeighborhoodFn({ data: { ...input, name: input.name.trim() } });
   if (logo) await saveLogoAfter("Neighborhood added", input.slug, logo);
@@ -91,7 +97,8 @@ export async function createNeighborhood({ logo, ...input }: NewNeighborhood): P
  * Saves the row fields first (never the slug: it's the key; a rename cascades to profiles and events through
  * the foreign keys), then the logo; the server removes an old logo saved under another extension.
  */
-export async function updateNeighborhood({ slug, logo, previousLogoPath: _previous, ...patch }: NeighborhoodEdit): Promise<SaveOutcome> {
+export async function updateNeighborhood({ slug, logo: picked, previousLogoPath: _previous, ...patch }: NeighborhoodEdit): Promise<SaveOutcome> {
+  const logo = await shrinkLogo(picked);
   assertValid({ ...patch, logo });
   await updateNeighborhoodFn({ data: { slug, ...patch, name: patch.name.trim() } });
   if (logo) await saveLogoAfter("Changes saved", slug, logo);

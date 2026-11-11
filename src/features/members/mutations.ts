@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import type { Profile, ProfileData } from "./queries";
 import { postApi } from "@/app/api";
+import { LOGO_RESIZE, PORTRAIT_RESIZE, resizeImage } from "@/app/resize-image";
 import { removeLogoFn, saveProfileFn } from "./fns";
 import type { ProfilePatch } from "./members.server";
 
@@ -13,9 +14,10 @@ export const saveProfile = (_id: string, patch: ProfilePatch): Promise<Profile> 
 export const AVATAR_MAX_BYTES = 5 * 1024 * 1024;
 export const AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
-/** Uploads a portrait or logo to her own folder; the server points her card at it. */
-async function uploadImage(file: File, kind: "avatar" | "logo"): Promise<Profile> {
-  if (!AVATAR_TYPES.includes(file.type)) throw new Error("Please choose a JPG, PNG or WebP image.");
+/** Uploads a portrait or logo to her own folder, shrunk and upright first; the server points her card at it. */
+async function uploadImage(picked: File, kind: "avatar" | "logo"): Promise<Profile> {
+  if (!AVATAR_TYPES.includes(picked.type)) throw new Error("Please choose a JPG, PNG or WebP image.");
+  const file = await resizeImage(picked, kind === "avatar" ? PORTRAIT_RESIZE : LOGO_RESIZE);
   if (file.size > AVATAR_MAX_BYTES) throw new Error("That image is over 5 MB. Please choose a smaller one.");
   const form = new FormData();
   form.set("kind", kind);

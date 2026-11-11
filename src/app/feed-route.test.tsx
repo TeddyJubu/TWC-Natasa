@@ -10,6 +10,14 @@ vi.mock("@/features/members/fns", async (orig) => (await import("@/test/fake-fns
 vi.mock("@/features/events/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 vi.mock("@/features/auth/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 vi.mock("@/app/api", async () => (await import("@/test/fake-fns")).fakeApi);
+const resize = vi.hoisted(() => ({ calls: [] as [string, number][] }));
+vi.mock("@/app/resize-image", async (orig) => ({
+  ...(await orig<object>()),
+  resizeImage: async (file: File, { maxEdge }: { maxEdge: number }) => {
+    resize.calls.push([file.name, maxEdge]);
+    return new File(["small"], file.name.replace(/\.\w+$/, ".webp"), { type: "image/webp" });
+  },
+}));
 vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs }));
 
 import { Route } from "@/routes/_authenticated/feed";
@@ -102,6 +110,23 @@ describe("/feed", () => {
     await waitFor(() => expect(fake.calls.some(([path]) => path === "/api/feed")).toBe(true));
     const form = fake.calls.find(([path]) => path === "/api/feed")![1] as FormData;
     expect([form.get("kind"), form.get("body"), form.getAll("photo")]).toEqual(["gathering", "Kiln night Thursday", []]);
+  });
+
+  it("shrinks each picked photo to 2048px before checking and posting it", async () => {
+    Object.assign(URL, { createObjectURL: () => "blob:preview", revokeObjectURL: () => {} }); // jsdom has neither
+    resize.calls = [];
+    const { container } = renderWithQueries(<Page />, seed());
+    const input = container.querySelector<HTMLInputElement>("input[type=file]")!;
+    const big = new File([new Uint8Array(8 * 1024 * 1024)], "IMG_0001.jpg", { type: "image/jpeg" }); // over 5 MB as picked
+    fireEvent.change(input, { target: { files: [big] } });
+    await waitFor(() => expect(screen.getByRole("button", { name: "Post" }).hasAttribute("disabled")).toBe(false));
+    expect(resize.calls).toEqual([["IMG_0001.jpg", 2048]]);
+    expect(screen.queryByText(/over 5 MB/)).toBeNull();
+    fake.results = [{ id: "p3" }, page];
+    fireEvent.click(screen.getByRole("button", { name: "Post" }));
+    await waitFor(() => expect(fake.calls.some(([path]) => path === "/api/feed")).toBe(true));
+    const form = fake.calls.find(([path]) => path === "/api/feed")![1] as FormData;
+    expect(form.getAll("photo").map((f) => [(f as File).name, (f as File).type])).toEqual([["IMG_0001.webp", "image/webp"]]);
   });
 
   it("filters to her own neighborhood", async () => {

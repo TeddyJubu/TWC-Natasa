@@ -8,7 +8,7 @@ import { errorMessage } from "@/features/account/helpers";
 import { AVATAR_TYPES } from "@/features/members/mutations";
 import { FEED_KINDS, KINDS, MAX_ALT, MAX_PHOTOS, MAX_POST, type FeedKind } from "./kinds";
 import { MiniStamp } from "./FeedPost";
-import { photoProblem, useCreatePost, type DraftPhoto } from "./mutations";
+import { photoProblem, preparePhoto, useCreatePost, type DraftPhoto } from "./mutations";
 
 type Picked = DraftPhoto & { url: string };
 
@@ -26,9 +26,10 @@ export function Composer({ name, image }: { name: string; image?: string }) {
   urls.current = photos.map((p) => p.url);
   React.useEffect(() => () => urls.current.forEach((u) => URL.revokeObjectURL(u)), []);
 
-  function pick(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = [...(e.target.files ?? [])];
+  async function pick(e: React.ChangeEvent<HTMLInputElement>) {
+    const picked = [...(e.target.files ?? [])];
     e.target.value = "";
+    const files = await Promise.all(picked.map(preparePhoto)); // shrunk and upright before the checks and previews
     const bad = files.map(photoProblem).find(Boolean);
     const room = MAX_PHOTOS - photos.length;
     setProblem(bad ?? (files.length > room ? `Up to ${MAX_PHOTOS} photos a post.` : null));

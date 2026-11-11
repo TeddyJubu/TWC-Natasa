@@ -5,6 +5,11 @@ import { fake } from "@/test/fake-fns";
 vi.mock("@/features/members/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 vi.mock("@/features/auth/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 vi.mock("@/app/api", async () => (await import("@/test/fake-fns")).fakeApi);
+const resize = vi.hoisted(() => ({ fn: null as null | ((file: File, options: { maxEdge: number }) => Promise<File>) }));
+vi.mock("@/app/resize-image", async (orig) => {
+  const real = await orig<typeof import("@/app/resize-image")>();
+  return { ...real, resizeImage: (file: File, options: { maxEdge: number }) => (resize.fn ?? real.resizeImage)(file, options) };
+});
 
 import { directoryQuery, introsQuery, profileQuery, publicProfilesQuery, viewerQuery } from "./queries";
 import { removeLogo, saveProfile, saveProfileMutation, uploadAvatar, uploadAvatarMutation, uploadLogo } from "./mutations";
@@ -14,7 +19,7 @@ const card = { id: "u1", name: "Rosa Diaz", role: "Founder", business: "Bakery",
   bio: "", lookingFor: "", image: "/media/avatars/u1/avatar-1.png", imageAlt: "Portrait of Rosa Diaz", catalogueNumber: 3 };
 const profileRow = { id: "u1", full_name: "Rosa Diaz", status: "approved", directory_visible: true };
 
-beforeEach(() => fake.reset());
+beforeEach(() => { fake.reset(); resize.fn = null; });
 
 describe("directoryQuery", () => {
   it("uses the directory key and returns the server's cards as they are", async () => {
@@ -122,6 +127,16 @@ describe("image uploads", () => {
     fake.results = [profileRow];
     await uploadAvatar("u1", new File([new Uint8Array(5 * 1024 * 1024)], "me.webp", { type: "image/webp" }));
     expect(fake.calls[0][0]).toBe("/api/images");
+  });
+
+  it("shrink a portrait to 1600px and a logo to 512px before the size check and the upload", async () => {
+    const seen: number[] = [];
+    resize.fn = async (_file, { maxEdge }) => { seen.push(maxEdge); return new File(["small"], "me.webp", { type: "image/webp" }); };
+    fake.results = [profileRow, profileRow];
+    await uploadAvatar("u1", new File([new Uint8Array(8 * 1024 * 1024)], "big.jpg", { type: "image/jpeg" })); // over 5 MB as picked
+    await uploadLogo("u1", file);
+    expect(seen).toEqual([1600, 512]);
+    expect((fake.calls[0][1] as FormData).get("file")).toMatchObject({ name: "me.webp", type: "image/webp" });
   });
 
   it("throw the server's error", async () => {

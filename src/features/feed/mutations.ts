@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient, type InfiniteData, type QueryClient } from "@tanstack/react-query";
 import { postApi } from "@/app/api";
+import { FEED_RESIZE, resizeImage } from "@/app/resize-image";
 import { AVATAR_MAX_BYTES, AVATAR_TYPES } from "@/features/members/mutations";
 import { deletePostFn, deleteReplyFn, loveFn, replyFn } from "./fns";
 import type { FeedKind } from "./kinds";
@@ -18,6 +19,9 @@ function patchPost(qc: QueryClient, id: string, patch: (post: FeedPost) => FeedP
 
 export type DraftPhoto = { file: File; alt: string };
 export type Draft = { kind: FeedKind; body: string; photos: DraftPhoto[] };
+
+/** A picked photo, upright and at most 2048px a side (big enough for "open full size"), ready for photoProblem. */
+export const preparePhoto = (file: File): Promise<File> => resizeImage(file, FEED_RESIZE);
 
 /** The same checks the server makes on every photo, so a member hears about a bad file before the upload. */
 export function photoProblem(file: File): string | null {
