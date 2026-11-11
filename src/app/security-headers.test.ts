@@ -1,24 +1,24 @@
 import { describe, expect, it, vi } from "vitest";
 import { csrfMiddleware, startInstance } from "../start";
-import { SECURITY_HEADERS, contentSecurityPolicy, isSignedInPage, securityHeadersMiddleware, withSecurityHeaders } from "./security-headers";
+import { SECURITY_HEADERS, contentSecurityPolicy, createNonce, isSignedInPage, securityHeadersMiddleware, withSecurityHeaders } from "./security-headers";
 
 // The middleware objects keep their server function on `options.server`; call it the way Start does.
 type ServerFn = (opts: Record<string, unknown>) => Promise<unknown> | unknown;
 const serverOf = (m: unknown) => (m as { options: { server: ServerFn } }).options.server;
-const run = (m: unknown, request: Request, handlerType: "router" | "serverFn", response = new Response("ok")) =>
+const run = (m: unknown, request: Request, handlerType: "router" | "serverFn", response = new Response("ok"), seen: unknown[] = []) =>
   serverOf(m)({
     request,
     pathname: new URL(request.url).pathname,
     context: {},
     handlerType,
-    next: async () => ({ request, pathname: "/", context: {}, response }),
+    next: async (opts?: unknown) => (seen.push(opts), { request, pathname: "/", context: {}, response }),
   }) as Promise<{ response: Response } | Response>;
 const responseOf = (r: { response: Response } | Response) => (r instanceof Response ? r : r.response);
 
 describe("content security policy", () => {
-  it("is the full enforced policy: same origin, data:/blob: images and the map tiles", () => {
+  it("is the full enforced policy: same origin, no inline scripts, data:/blob: images and the map tiles", () => {
     expect(contentSecurityPolicy()).toBe(
-      "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; " +
+      "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; " +
         "img-src 'self' data: blob:; connect-src 'self' https://tiles.openfreemap.org; font-src 'self'; " +
         "frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'",
     );
@@ -31,9 +31,25 @@ describe("content security policy", () => {
     }
     vi.stubEnv("VITE_DOOP_SYNC", "true");
     const csp = contentSecurityPolicy();
-    expect(csp).toMatch(/script-src 'self' 'unsafe-inline' https:\/\/doop\.design;/);
+    expect(csp).toMatch(/script-src 'self' https:\/\/doop\.design;/);
+    expect(contentSecurityPolicy({ nonce: "abc" })).toMatch(/script-src 'self' 'nonce-abc' https:\/\/doop\.design;/);
     expect(csp).toMatch(/connect-src 'self' https:\/\/doop\.design https:\/\/tiles\.openfreemap\.org;/);
     vi.unstubAllEnvs();
+  });
+
+  it("lets inline scripts run only with the page's nonce, or on the dev server", () => {
+    expect(contentSecurityPolicy({ nonce: "abc" })).toMatch(/script-src 'self' 'nonce-abc';/);
+    // A nonce wins: 'unsafe-inline' would be ignored next to it anyway.
+    expect(contentSecurityPolicy({ nonce: "abc", inline: true })).toMatch(/script-src 'self' 'nonce-abc';/);
+    expect(contentSecurityPolicy({ inline: true })).toMatch(/script-src 'self' 'unsafe-inline';/);
+    // Styles keep 'unsafe-inline' (inline `style` attributes), with or without a script nonce.
+    expect(contentSecurityPolicy({ nonce: "abc" })).toMatch(/style-src 'self' 'unsafe-inline';/);
+  });
+
+  it("makes a fresh 128-bit base64 nonce each time", () => {
+    const nonces = new Set(Array.from({ length: 50 }, createNonce));
+    expect(nonces.size).toBe(50);
+    for (const n of nonces) expect(atob(n)).toHaveLength(16);
   });
 
   it("is what SECURITY_HEADERS sends; the map's tile host is the only third-party origin", () => {
@@ -58,10 +74,34 @@ describe("security headers", () => {
     expect(SECURITY_HEADERS["Permissions-Policy"]).toBe("camera=(), microphone=(), geolocation=(), payment=()");
   });
 
-  it("are added to page responses by the middleware", async () => {
-    const res = responseOf(await run(securityHeadersMiddleware, new Request("https://example.com/"), "router"));
-    for (const [name, value] of Object.entries(SECURITY_HEADERS)) expect(res.headers.get(name)).toBe(value);
-    expect(await res.text()).toBe("ok");
+  it("are added to page responses by the middleware, each page with its own nonce passed on to the router", async () => {
+    vi.stubEnv("DEV", false);
+    try {
+      const seen: unknown[] = [];
+      const page = async () => responseOf(await run(securityHeadersMiddleware, new Request("https://example.com/"), "router", new Response("ok"), seen));
+      const [a, b] = [await page(), await page()];
+      const nonces = seen.map((opts) => (opts as { context: { nonce: string } }).context.nonce);
+      expect(nonces[0]).toMatch(/^[A-Za-z0-9+/]{22}==$/);
+      expect(nonces[1]).not.toBe(nonces[0]);
+      expect(a.headers.get("Content-Security-Policy")).toBe(contentSecurityPolicy({ nonce: nonces[0] }));
+      expect(b.headers.get("Content-Security-Policy")).toBe(contentSecurityPolicy({ nonce: nonces[1] }));
+      for (const [name, value] of Object.entries(SECURITY_HEADERS)) if (name !== "Content-Security-Policy") expect(a.headers.get(name)).toBe(value);
+      expect(await a.text()).toBe("ok");
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it("give server-function responses the nonce-less policy, and the dev server's pages 'unsafe-inline'", async () => {
+    const seen: unknown[] = [];
+    vi.stubEnv("DEV", false);
+    const fn = responseOf(await run(securityHeadersMiddleware, new Request("https://example.com/_serverFn/x"), "serverFn", new Response("ok"), seen));
+    expect(fn.headers.get("Content-Security-Policy")).toBe(SECURITY_HEADERS["Content-Security-Policy"]);
+    vi.stubEnv("DEV", true);
+    const dev = responseOf(await run(securityHeadersMiddleware, new Request("https://example.com/"), "router", new Response("ok"), seen));
+    expect(dev.headers.get("Content-Security-Policy")).toBe(contentSecurityPolicy({ inline: true }));
+    expect(seen).toEqual([{ context: { nonce: undefined } }, { context: { nonce: undefined } }]);
+    vi.unstubAllEnvs();
   });
 
   it("mark the client-rendered signed-in pages noindex, and no public page", async () => {
