@@ -69,6 +69,8 @@ export async function resizeImage(file: File, { maxEdge, keepAlpha = false, maxB
     if (!scaled && blob.size >= file.size) return file; // re-encoding only made it bigger
     const name = `${file.name.replace(/\.[^./]*$/, "") || "image"}.${EXT[blob.type]}`;
     return new File([blob], name, { type: blob.type, lastModified: file.lastModified });
+  } catch {
+    return file; // e.g. a phone out of memory for the canvas: the original goes, as with a failed decode
   } finally {
     bitmap.close();
   }

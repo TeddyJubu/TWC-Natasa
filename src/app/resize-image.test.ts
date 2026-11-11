@@ -118,4 +118,16 @@ describe("resizeImage", () => {
     const old = photo(4 * MB);
     expect(await resizeImage(old, PORTRAIT_RESIZE)).toBe(old); // no createImageBitmap
   });
+
+  it("hands back the original, and still frees the bitmap, when drawing or encoding throws", async () => {
+    const create = document.createElement.bind(document);
+    vi.spyOn(document, "createElement").mockImplementation(((tag: string) => tag !== "canvas" ? create(tag) : {
+      width: 0, height: 0,
+      getContext: () => ({ drawImage: () => { throw new DOMException("out of memory", "EncodingError"); } }),
+      toBlob: () => {},
+    }) as typeof document.createElement);
+    const file = photo(4 * MB);
+    expect(await resizeImage(file, PORTRAIT_RESIZE)).toBe(file);
+    expect(bitmap.close).toHaveBeenCalled();
+  });
 });
