@@ -1,6 +1,7 @@
 // What server.mjs does at the HTTP edge besides the security headers and the PIN gate: a permanent redirect off a
-// trailing slash, a year's immutable caching for the content-hashed files under /assets/, and gzip for the app's own
-// HTML, JSON and XML (srvx's static middleware already compresses static files). Web APIs only, no secrets.
+// trailing slash, a year's immutable caching for the content-hashed files under /assets/, a UTF-8 charset on plain
+// text files, and gzip for the app's own HTML, JSON and XML (srvx's static middleware already compresses static
+// files). Web APIs only, no secrets.
 
 /** A 308 from `/about/?x=1` to `/about?x=1` for GET/HEAD page paths, or null. Never for /api or /media, and never a
  * path that would turn into a protocol-relative `//host` Location. */
@@ -19,6 +20,12 @@ export const IMMUTABLE = "public, max-age=31536000, immutable";
 export function withAssetCaching(pathname: string, response: Response): Response {
   if (!pathname.startsWith("/assets/") || (response.status !== 200 && response.status !== 304)) return response;
   return setHeaders(response, { "Cache-Control": IMMUTABLE });
+}
+
+/** srvx serves .txt as bare `text/plain`; robots.txt and llms.txt are UTF-8 (curly quotes, "Nataša"), so say so. */
+export function withTextCharset(response: Response): Response {
+  if ((response.headers.get("Content-Type") ?? "").trim().toLowerCase() !== "text/plain") return response;
+  return setHeaders(response, { "Content-Type": "text/plain; charset=utf-8" });
 }
 
 const COMPRESSIBLE = /^(text\/html|application\/json|application\/(?:[\w.+-]+\+)?xml|text\/xml)\b/i;

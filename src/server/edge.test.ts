@@ -2,7 +2,7 @@
 // and gzip for the app's own HTML/JSON/XML when the client takes it.
 import { gunzipSync } from "node:zlib";
 import { describe, expect, it } from "vitest";
-import { IMMUTABLE, acceptsGzip, compressResponse, trailingSlashRedirect, withAssetCaching } from "./edge";
+import { IMMUTABLE, acceptsGzip, compressResponse, trailingSlashRedirect, withAssetCaching, withTextCharset } from "./edge";
 
 const req = (path: string, init: RequestInit = {}) => new Request(`http://club.test${path}`, init);
 
@@ -97,5 +97,14 @@ describe("compressResponse", () => {
       [req("/", gz), new Response("x".repeat(5000), { headers: { "Content-Type": "text/event-stream" } })],
     ];
     for (const [request, response] of cases) expect(compressResponse(request, response)).toBe(response);
+  });
+});
+
+describe("withTextCharset", () => {
+  it("marks bare text/plain as UTF-8 and leaves other types and explicit charsets alone", () => {
+    expect(withTextCharset(new Response("x", { headers: { "Content-Type": "text/plain" } })).headers.get("Content-Type")).toBe("text/plain; charset=utf-8");
+    expect(withTextCharset(new Response("x", { headers: { "Content-Type": "text/plain; charset=iso-8859-1" } })).headers.get("Content-Type")).toBe("text/plain; charset=iso-8859-1");
+    expect(withTextCharset(new Response("x", { headers: { "Content-Type": "text/html" } })).headers.get("Content-Type")).toBe("text/html");
+    expect(withTextCharset(Response.redirect("http://club.test/", 302)).headers.get("Content-Type")).toBeNull();
   });
 });

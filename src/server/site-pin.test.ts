@@ -24,7 +24,7 @@ describe("pinGate", () => {
   });
 
   it("answers every page, API call, upload and asset with the PIN page, but not the icons or the health check", async () => {
-    for (const path of ["/", "/account", "/feed?x=1", "/media/avatars/a/b.png", "/assets/app.js", "/robots.txt", "/sitemap.xml"]) {
+    for (const path of ["/", "/account", "/feed?x=1", "/media/avatars/a/b.png", "/assets/app.js", "/robots.txt", "/llms.txt", "/llms-full.txt", "/sitemap.xml"]) {
       const res = (await get(path))!;
       expect(res.status).toBe(401);
       expect(res.headers.get("X-Robots-Tag")).toBe("noindex, nofollow");
