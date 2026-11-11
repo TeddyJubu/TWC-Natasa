@@ -39,36 +39,63 @@ const AUTHOR = "a.full_name, a.role_title, a.business, a.neighborhood, a.avatar_
 const ACTIVE = "(a.status = 'approved' or exists (select 1 from user_roles r where r.user_id = a.id and r.role = 'admin'))";
 const GONE = () => new AccessError("That post has been removed.", 404);
 
-function author(c: Ctx, row: AuthorRow): FeedAuthor {
+/** Whether the reader may see an author's portrait, asked once per author for one request. */
+type Avatars = (authorId: string) => boolean;
+function avatarRule(c: Ctx): Avatars {
+  const seen = new Map<string, boolean>();
+  return (id) => {
+    if (!seen.has(id)) seen.set(id, canSeeAvatarFolder(c.db, c.actor, id));
+    return seen.get(id)!;
+  };
+}
+
+function author(row: AuthorRow, avatars: Avatars): FeedAuthor {
   const listed = row.status === "approved" && row.directory_visible === 1 && row.catalogue_number !== null;
   return {
     name: row.full_name || "A member",
     line: [row.role_title, row.business].filter(Boolean).join(", "),
     neighborhood: row.neighborhood ?? "",
     // The avatar rule itself, so the feed never links a portrait the reader would get a 404 for.
-    image: row.avatar_path && canSeeAvatarFolder(c.db, c.actor, row.author_id) ? mediaUrl("avatars", row.avatar_path) : undefined,
+    image: row.avatar_path && avatars(row.author_id) ? mediaUrl("avatars", row.avatar_path) : undefined,
     slug: listed ? memberSlug({ name: row.full_name, catalogueNumber: row.catalogue_number! }) : undefined,
   };
 }
 
-function lovesOf(db: DB, me: string, postId: string): PostLoves {
-  const { n, mine } = db.prepare(
-    `select count(*) as n, coalesce(max(l.member_id = ?), 0) as mine from feed_loves l join profiles a on a.id = l.member_id
-     where l.post_id = ? and ${ACTIVE}`,
-  ).get(me, postId) as { n: number; mine: number };
+const marks = (ids: string[]) => ids.map(() => "?").join(", ");
+
+/** Each post's loves as she sees them, two queries for any number of posts. */
+function lovesOf(db: DB, me: string, postIds: string[]): Map<string, PostLoves> {
+  const out = new Map(postIds.map((id): [string, PostLoves] => [id, { loves: 0, loved: false, lovedBy: [] }]));
+  if (postIds.length === 0) return out;
+  const counts = db.prepare(
+    `select l.post_id, count(*) as n, coalesce(max(l.member_id = ?), 0) as mine from feed_loves l join profiles a on a.id = l.member_id
+     where l.post_id in (${marks(postIds)}) and ${ACTIVE} group by l.post_id`,
+  ).all(me, ...postIds) as { post_id: string; n: number; mine: number }[];
+  for (const r of counts) Object.assign(out.get(r.post_id)!, { loves: r.n, loved: r.mine === 1 });
+  // Up to two other lovers per post, most recent first.
   const names = db.prepare(
-    `select a.full_name as name from feed_loves l join profiles a on a.id = l.member_id
-     where l.post_id = ? and l.member_id <> ? and a.full_name <> '' and ${ACTIVE} order by l.created_at desc limit 2`,
-  ).all(postId, me) as { name: string }[];
-  return { loves: n, loved: mine === 1, lovedBy: names.map((r) => r.name) };
+    `select post_id, name from (
+       select l.post_id, a.full_name as name, row_number() over (partition by l.post_id order by l.created_at desc) as k
+       from feed_loves l join profiles a on a.id = l.member_id
+       where l.post_id in (${marks(postIds)}) and l.member_id <> ? and a.full_name <> '' and ${ACTIVE}
+     ) where k <= 2 order by post_id, k`,
+  ).all(...postIds, me) as { post_id: string; name: string }[];
+  for (const r of names) out.get(r.post_id)!.lovedBy.push(r.name);
+  return out;
 }
 
-function repliesOf(c: Ctx, me: string, admin: boolean, postId: string): FeedReply[] {
+/** Each post's replies in order, one query for any number of posts. */
+function repliesOf(c: Ctx, me: string, admin: boolean, postIds: string[], avatars = avatarRule(c)): Map<string, FeedReply[]> {
+  const out = new Map(postIds.map((id): [string, FeedReply[]] => [id, []]));
+  if (postIds.length === 0) return out;
   const rows = c.db.prepare(
-    `select r.id, r.body, r.created_at, r.author_id, ${AUTHOR} from feed_replies r join profiles a on a.id = r.author_id
-     where r.post_id = ? and ${ACTIVE} order by r.created_at, r.rowid`,
-  ).all(postId) as ReplyRow[];
-  return rows.map((r) => ({ id: r.id, author: author(c, r), body: r.body, createdAt: r.created_at, canDelete: admin || r.author_id === me }));
+    `select r.post_id, r.id, r.body, r.created_at, r.author_id, ${AUTHOR} from feed_replies r join profiles a on a.id = r.author_id
+     where r.post_id in (${marks(postIds)}) and ${ACTIVE} order by r.post_id, r.created_at, r.rowid`,
+  ).all(...postIds) as (ReplyRow & { post_id: string })[];
+  for (const r of rows) {
+    out.get(r.post_id)!.push({ id: r.id, author: author(r, avatars), body: r.body, createdAt: r.created_at, canDelete: admin || r.author_id === me });
+  }
+  return out;
 }
 
 /** A post that exists and whose author is still in, or a 404. */
@@ -108,13 +135,16 @@ export function feed(c: Ctx, input: unknown): FeedPage {
   const page = rows.slice(0, PAGE);
   const last = page.at(-1);
 
-  // ponytail: three small queries per post (loves, lovers, replies); a page is 20 posts on an in-process SQLite. Batch
-  // them by post id if the feed ever gets slow.
+  // A fixed number of queries per page, however many posts: loves and replies by post id, each author's portrait rule once.
+  const ids = page.map((r) => r.id);
+  const avatars = avatarRule(c);
+  const loves = lovesOf(db, me.id, ids);
+  const replies = repliesOf(c, me.id, admin, ids, avatars);
   const posts = page.map((r): FeedPost => ({
-    id: r.id, kind: r.kind, body: r.body, createdAt: r.created_at, author: author(c, r),
+    id: r.id, kind: r.kind, body: r.body, createdAt: r.created_at, author: author(r, avatars),
     photos: (JSON.parse(r.photos) as { name: string; alt: string }[]).map((p) => ({ url: mediaUrl("feed", p.name)!, alt: p.alt })),
-    ...lovesOf(db, me.id, r.id),
-    replies: repliesOf(c, me.id, admin, r.id),
+    ...loves.get(r.id)!,
+    replies: replies.get(r.id)!,
     canDelete: admin || r.author_id === me.id,
   }));
 
@@ -169,7 +199,7 @@ export function love(c: Ctx, input: unknown): PostLoves {
   const postId = livePost(c.db, input.postId);
   if (input.on) c.db.prepare("insert into feed_loves (post_id, member_id) values (?, ?) on conflict do nothing").run(postId, me.id);
   else c.db.prepare("delete from feed_loves where post_id = ? and member_id = ?").run(postId, me.id);
-  return lovesOf(c.db, me.id, postId);
+  return lovesOf(c.db, me.id, [postId]).get(postId)!;
 }
 
 /** Replies as her; returns the post's replies. */
@@ -180,7 +210,7 @@ export function reply(c: Ctx, input: unknown): FeedReply[] {
   const body = str(input.body, "reply", MAX_REPLY).trim();
   if (!body) throw new AccessError("Write a reply first.", 400);
   c.db.prepare("insert into feed_replies (id, post_id, author_id, body) values (?, ?, ?, ?)").run(randomUUID(), postId, me.id, body);
-  return repliesOf(c, me.id, isAdmin(c.db, me.id), postId);
+  return repliesOf(c, me.id, isAdmin(c.db, me.id), [postId]).get(postId)!;
 }
 
 /** Her own post, or any post for an admin; its loves, replies and photos go with it. */
@@ -204,7 +234,7 @@ export function deleteReply(c: Ctx, input: unknown): FeedReply[] {
   const admin = isAdmin(c.db, me.id);
   if (row.author_id !== me.id && !admin) throw new AccessError("You can only delete your own replies.");
   c.db.prepare("delete from feed_replies where id = ?").run(id);
-  return repliesOf(c, me.id, admin, row.post_id);
+  return repliesOf(c, me.id, admin, [row.post_id]).get(row.post_id)!;
 }
 
 /** Four full-size photos plus the words and the multipart overhead. */

@@ -179,6 +179,42 @@ describe("loves and replies", () => {
   });
 });
 
+it("reads a page in a fixed number of queries, however many posts, loves and replies it holds", () => {
+  writeMedia("avatars", `${CARA}/avatar-1.png`, TINY.png);
+  run("update profiles set avatar_path = ? where id = ?", `${CARA}/avatar-1.png`, CARA);
+  const busy = (n: number) => {
+    for (let i = 0; i < n; i++) {
+      const p = post(i % 2 ? BEA : CARA, `Post ${i}`);
+      love(as(CARA), { postId: p, on: true });
+      if (i % 3 === 0) love(as(ADMIN), { postId: p, on: true });
+      reply(as(BEA), { postId: p, body: `Reply ${i}` });
+      reply(as(CARA), { postId: p, body: `Again ${i}` });
+    }
+  };
+  const queries = () => {
+    const spy = vi.spyOn(db, "prepare");
+    try {
+      return { page: feed(as(BEA), {}), n: spy.mock.calls.length };
+    } finally {
+      spy.mockRestore();
+    }
+  };
+  busy(2);
+  const few = queries();
+  busy(10);
+  const many = queries();
+  expect(many.page.posts).toHaveLength(12);
+  expect(many.n).toBe(few.n);
+  // Each post keeps its own loves, lovers and replies.
+  for (const p of many.page.posts) {
+    const i = Number(p.body.split(" ")[1]);
+    expect(p).toMatchObject({ loves: i % 3 === 0 ? 2 : 1, loved: false });
+    expect([...p.lovedBy].sort()).toEqual(i % 3 === 0 ? ["Ada", "Cara"] : ["Cara"]); // same-millisecond loves may tie
+    expect(p.replies.map((r) => r.body)).toEqual([`Reply ${i}`, `Again ${i}`]);
+  }
+  run("update profiles set avatar_path = null where id = ?", CARA);
+});
+
 it("hides a member's posts, replies and photos once she is no longer approved, and shows them again if she is", () => {
   const p = post(CARA, "", { photos: [{ bytes: TINY.png, alt: "" }] });
   const q = post(BEA, "Hi");
