@@ -50,8 +50,9 @@ describe("content security policy", () => {
 describe("security headers", () => {
   it("are the CSP plus the headers that can't break the site", () => {
     expect(Object.keys(SECURITY_HEADERS)).toEqual([
-      "Content-Security-Policy", "X-Content-Type-Options", "Referrer-Policy", "Permissions-Policy",
+      "Content-Security-Policy", "X-Content-Type-Options", "Referrer-Policy", "Permissions-Policy", "Strict-Transport-Security",
     ]);
+    expect(SECURITY_HEADERS["Strict-Transport-Security"]).toBe("max-age=31536000; includeSubDomains");
     expect(SECURITY_HEADERS["X-Content-Type-Options"]).toBe("nosniff");
     expect(SECURITY_HEADERS["Referrer-Policy"]).toBe("strict-origin-when-cross-origin");
     expect(SECURITY_HEADERS["Permissions-Policy"]).toBe("camera=(), microphone=(), geolocation=(), payment=()");
