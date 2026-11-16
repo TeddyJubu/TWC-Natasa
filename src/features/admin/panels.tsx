@@ -1974,7 +1974,7 @@ const TILE_TINT: Record<AdminSection | "forms", keyof typeof TINT> = {
 
 /** The whole tile is its section's link (the heading's link stretches over it), like the form cards. */
 function OverviewTile({ section, tile }: { section: AdminSection | "forms"; tile: TileData }) {
-  const item = section === "forms" ? { label: "Forms", icon: "notebook-pen" as const } : sectionItem(section);
+  const item = section === "forms" ? { label: "Forms", icon: "pencil" as const } : sectionItem(section);
   const headingId = `overview-${section}`;
   const linkCls = "outline-none after:absolute after:inset-0 after:content-['']";
   const note = tile.query.isError ? "Couldn’t load this. Open it to try again." : tile.note;
@@ -2068,10 +2068,11 @@ export function AdminOverview() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">{waiting.map(([section, tile]) => <OverviewTile key={section} section={section} tile={tile} />)}</div>
       </section>
       <section aria-labelledby="overview-club" className="flex flex-col gap-4">
-        <SectionHead id="overview-club" title="The club">Members, the calendar and the records. Open one to change it.</SectionHead>
+        <SectionHead id="overview-club" title="The club">Forms, members, the calendar and the records. Open one to change it.</SectionHead>
         <div className={cardGrid}>
-          {club.map(([section, tile]) => <OverviewTile key={section} section={section} tile={tile} />)}
+          {/* Forms first: the other half of the system, after the people. */}
           <OverviewTile section="forms" tile={{ figure: openForms, unit: "open", note: "Your /f/… forms and the site’s own", query: forms }} />
+          {club.map(([section, tile]) => <OverviewTile key={section} section={section} tile={tile} />)}
         </div>
         {/* A record, not something to manage, so a line rather than a card. */}
         <p className={meta}>

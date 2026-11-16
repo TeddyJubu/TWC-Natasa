@@ -166,7 +166,9 @@ describe("/admin", () => {
       expect(link("Inbox").getAttribute("href")).toBe("/admin/inbox");
       expect(link("Inbox").getAttribute("aria-current")).toBeNull();
       expect(link("Profile").getAttribute("href")).toBe("/account#profile");
-      expect(link("All forms").getAttribute("href")).toBe("/admin/forms#forms");
+      expect(link("Forms").getAttribute("href")).toBe("/admin/forms#forms");
+      // Forms come second in the Admin list, right after the overview.
+      expect(within(nav).getAllByRole("link").map((a) => a.textContent).slice(4, 7)).toEqual(["Overview", "Forms", "Inbox"]);
       expect(screen.getByRole("button", { name: /sign out/i })).toBeTruthy();
     });
 
@@ -240,8 +242,8 @@ describe("/admin", () => {
       expect(card("Your forms").textContent).toMatch(/1 form at \/f\/…, 2 answers in all/);
       const nav = screen.getAllByRole("navigation", { name: "Main" })[0];
       const link = (name: string) => within(nav).getByRole("link", { name });
-      expect(link("All forms").getAttribute("href")).toBe("#forms");
-      expect(link("All forms").getAttribute("aria-current")).toBe("location");
+      expect(link("Forms").getAttribute("href")).toBe("#forms");
+      expect(link("Forms").getAttribute("aria-current")).toBe("location");
       expect(link("Inbox").getAttribute("href")).toBe("/admin/inbox");
     });
 

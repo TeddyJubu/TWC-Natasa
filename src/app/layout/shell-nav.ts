@@ -25,6 +25,8 @@ export type AdminSection = (typeof ADMIN_SECTIONS)[number];
 export const isAdminSection = (s: string): s is AdminSection => (ADMIN_SECTIONS as readonly string[]).includes(s);
 export const ADMIN: NavItem[] = [
   { label: "Overview", icon: "house", to: "/admin" },
+  // Forms are their own pages (/admin/forms), and second only to the overview.
+  { label: "Forms", icon: "pencil", to: "/admin/forms", hash: "forms" },
   { label: "Inbox", icon: "mail", to: "/admin", section: "inbox" },
   { label: "Applications", icon: "notebook-pen", to: "/admin", section: "applications" },
   { label: "Member reviews", icon: "message-circle", to: "/admin", section: "reviews" },
@@ -38,16 +40,13 @@ export const ADMIN: NavItem[] = [
 ];
 /** A section's sidebar entry (its label and icon). */
 export const sectionItem = (section: AdminSection) => ADMIN.find((i) => i.section === section)!;
-export const FORMS: NavItem[] = [
-  { label: "All forms", icon: "notebook-pen", to: "/admin/forms", hash: "forms" },
-];
 
 /**
- * The Admin and Forms groups only for admins; UX only, since /admin's guard and every admin server function check again.
+ * The Admin group only for admins; UX only, since /admin's guard and every admin server function check again.
  */
 export const groups = (admin: boolean): NavGroup[] => [
   { label: "My account", items: MY_ACCOUNT },
-  ...(admin ? [{ label: "Admin", items: ADMIN }, { label: "Forms", items: FORMS }] : []),
+  ...(admin ? [{ label: "Admin", items: ADMIN }] : []),
 ];
 
 /**
@@ -56,7 +55,7 @@ export const groups = (admin: boolean): NavGroup[] => [
  */
 export function useActiveSection(page: ShellPage) {
   // Page groups first, so the top card (Profile, Applications) is "here" before anything scrolls.
-  const anchors = [...MY_ACCOUNT, ...ADMIN, ...FORMS].filter((i) => i.to === page && i.hash).map((i) => i.hash!);
+  const anchors = [...MY_ACCOUNT, ...ADMIN].filter((i) => i.to === page && i.hash).map((i) => i.hash!);
   const key = anchors.join(" ");
   const [active, setActive] = React.useState(anchors[0]);
   React.useEffect(() => {
