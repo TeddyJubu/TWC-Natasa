@@ -124,6 +124,9 @@ function DirectoryPage() {
                   <EmptySlot>
                     <p className="air-empty-title">{all.length === 0 ? "No one is listed yet." : "No stamps match."}</p>
                     <p>{all.length === 0 ? "Members choose whether they appear here. Check back soon." : "Try another neighborhood or search."}</p>
+                    {all.length > 0 && (
+                      <button type="button" onClick={() => filter(() => { setHood("All"); setQuery(""); })} className={cn(secondaryButton, "mt-3")}>Show everyone</button>
+                    )}
                   </EmptySlot>
                 ) : (
                   <div role="group" aria-label={`Member stamps, sheet ${page + 1}`} className="air-sheet">

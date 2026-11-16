@@ -72,4 +72,14 @@ describe("/directory", () => {
     expect(within(sheet()).getAllByRole("button").map((b) => b.getAttribute("aria-label"))).toEqual(["Lucía Ferreira, Owner, in Woodside"]);
     expect(screen.getByText("1 of 13 match")).toBeTruthy();
   });
+
+  it("offers a way back from a search nobody matches", () => {
+    renderWithQueries(<Page />, seed);
+    fireEvent.click(screen.getByRole("button", { name: "Woodside 1" }));
+    fireEvent.change(screen.getByRole("searchbox", { name: "Search members" }), { target: { value: "nobody-here" } });
+    expect(screen.getByText("No stamps match.")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Show everyone" }));
+    expect((screen.getByRole("searchbox", { name: "Search members" }) as HTMLInputElement).value).toBe("");
+    expect(screen.getByRole("button", { name: "All 13" }).getAttribute("aria-pressed")).toBe("true");
+  });
 });
