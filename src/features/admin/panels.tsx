@@ -1966,10 +1966,12 @@ const TINT = {
   rose: "[--bl-app:color-mix(in_srgb,var(--color-sb-rose)_25%,var(--color-air-paper))]",
   lilac: "[--bl-app:color-mix(in_srgb,var(--color-sb-lilac)_25%,var(--color-air-paper))]",
   mint: "[--bl-app:color-mix(in_srgb,var(--color-sb-mint)_25%,var(--color-air-paper))]",
+  // Forms stand out: lilac at 70% (muted text 4.8:1; full lilac would drop it under AA's 4.5).
+  "lilac-bright": "[--bl-app:color-mix(in_srgb,var(--color-sb-lilac)_70%,var(--color-air-paper))]",
 } as const;
 const TILE_TINT: Record<AdminSection | "forms", keyof typeof TINT> = {
   inbox: "lilac", applications: "rose", reviews: "mint", bookings: "mustard",
-  members: "mint", newsletter: "lilac", spotlight: "mustard", gatherings: "rose", neighborhoods: "mint", forms: "lilac", activity: "lilac",
+  members: "mint", newsletter: "lilac", spotlight: "mustard", gatherings: "rose", neighborhoods: "mint", forms: "lilac-bright", activity: "lilac",
 };
 
 /** The whole tile is its section's link (the heading's link stretches over it), like the form cards. */
