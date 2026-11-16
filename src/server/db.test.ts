@@ -10,7 +10,7 @@ const one = <T,>(db: ReturnType<typeof openDb>, sql: string, ...args: (string | 
 describe("database", () => {
   it("migrates a fresh database to the newest user_version, with foreign keys on", () => {
     const db = openDb(":memory:");
-    expect(one<{ user_version: number }>(db, "pragma user_version").user_version).toBe(14);
+    expect(one<{ user_version: number }>(db, "pragma user_version").user_version).toBe(15);
     expect(one<{ foreign_keys: number }>(db, "pragma foreign_keys").foreign_keys).toBe(1);
     expect(one<{ busy_timeout?: number; timeout?: number }>(db, "pragma busy_timeout")).toEqual({ timeout: 5000 });
   });
@@ -43,11 +43,12 @@ describe("database", () => {
     writeFileSync(join(dir, "0012_card_color.sql"), "this would fail if it ran again");
     writeFileSync(join(dir, "0013_feed.sql"), "this would fail if it ran again");
     writeFileSync(join(dir, "0014_feed_indexes.sql"), "this would fail if it ran again");
-    writeFileSync(join(dir, "0015_bad.sql"), "create table half (id integer); select * from missing_table;");
-    expect(() => migrate(db, dir)).toThrow(/0015_bad\.sql/);
-    expect(one<{ user_version: number }>(db, "pragma user_version").user_version).toBe(14);
+    writeFileSync(join(dir, "0015_form_schedule.sql"), "this would fail if it ran again");
+    writeFileSync(join(dir, "0016_bad.sql"), "create table half (id integer); select * from missing_table;");
+    expect(() => migrate(db, dir)).toThrow(/0016_bad\.sql/);
+    expect(one<{ user_version: number }>(db, "pragma user_version").user_version).toBe(15);
     expect(one(db, "select name from sqlite_master where name = 'half'")).toBeUndefined();
-    expect(() => migrate(db, dir)).toThrow(/0015/);
+    expect(() => migrate(db, dir)).toThrow(/0016/);
   });
 
   it("0014: a profile's feed loves and replies are found by index, not a scan, when she is deleted or counted", () => {

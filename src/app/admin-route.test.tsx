@@ -96,7 +96,8 @@ function renderFormPage(formId: string, over: Partial<Record<AdminKey, unknown>>
 }
 const demoForm = (over: Record<string, unknown> = {}) => ({
   id: "demo0001", name: "Salon RSVP (demo)", slug: "salon-rsvp", open: true, closed_message: "", intro: "", thanks: "", one_per_email: false, version: 1,
-  questions: [{ key: "name", type: "short", label: "Your name", required: true }], total: 0, newest_at: null, responses: [], ...over,
+  questions: [{ key: "name", type: "short", label: "Your name", required: true }], total: 0, newest_at: null, responses: [],
+  opens_at: null, closes_at: null, max_responses: null, confirm: false, state: over.open === false ? "closed" : "open", ...over,
 });
 const card = (name: string) => screen.getByRole("region", { name });
 
@@ -840,6 +841,30 @@ describe("/admin", () => {
       await waitFor(() => expect(fake.calls[0]).toEqual(["saveAdminFormFn", expect.objectContaining({
         id: "demo0001", name: "Salon RSVP (demo)", slug: "salon", one_per_email: true, open: false, closed_message: "Shut.", intro: "Hi",
       })]));
+    });
+
+    it("your own form: Schedule saves its times as UTC and its limit as a number, keeping everything else", async () => {
+      renderFormPage("demo0001", { "form-responses": [rsvp({ open: false, closed_message: "Shut.", total: 3 })] }, undefined, "settings");
+      const schedule = within(screen.getByRole("form", { name: "Schedule and limit" }));
+      expect(schedule.getByText(/it has 3 now/)).toBeTruthy();
+      fireEvent.change(schedule.getByLabelText("Opens"), { target: { value: "2027-01-05T18:30" } });
+      fireEvent.change(schedule.getByLabelText("Answer limit"), { target: { value: "40" } });
+      fake.results = [{ id: "demo0001" }, []];
+      fireEvent.click(schedule.getByRole("button", { name: "Save schedule" }));
+      await waitFor(() => expect(fake.calls[0]).toEqual(["saveAdminFormFn", expect.objectContaining({
+        id: "demo0001", open: false, closed_message: "Shut.", opens_at: new Date("2027-01-05T18:30").toISOString(), closes_at: null, max_responses: 40,
+      })]));
+    });
+
+    it("your own form: a scheduled or full form says so on its ticket, and Link saves the confirmation switch", async () => {
+      renderFormPage("demo0001", { "form-responses": [rsvp({ state: "full", max_responses: 2, total: 2 })] }, undefined, "settings");
+      expect(screen.getByText(/all the answers its limit allows/)).toBeTruthy();
+      const details = within(screen.getByRole("form", { name: "Link" }));
+      expect(details.getByText(/Add an email question on the Questions tab first/)).toBeTruthy();
+      fireEvent.click(details.getByRole("switch", { name: /Email a confirmation/ }));
+      fake.results = [{ id: "demo0001" }, []];
+      fireEvent.click(details.getByRole("button", { name: "Save link" }));
+      await waitFor(() => expect(fake.calls[0]).toEqual(["saveAdminFormFn", expect.objectContaining({ confirm: true, max_responses: 2 })]));
     });
 
     it("your own form: Download CSV asks the server for that form's export", async () => {

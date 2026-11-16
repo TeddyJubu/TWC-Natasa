@@ -1,10 +1,14 @@
 // Custom forms (migration 0005): the question and answer checks, the table's guards, the public reads, and POST
 // /api/forms/<slug> (slug, size, per-visitor-per-form limit, honeypot, closed, one per email, storage).
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { openDb, type DB } from "@/server/db";
+import type { Email } from "@/server/email";
+
+const sent = vi.hoisted(() => ({ mails: [] as Email[] }));
+vi.mock("@/server/email", () => ({ sendEmail: async (mail: Email) => (sent.mails.push(mail), { sent: true }) }));
 import { DEMO_FORMS } from "./fixtures";
 import { toCsv } from "@/features/admin/format";
-import { adminFormResponses, CLOSED, CLOSED_MESSAGE_MAX, deleteAdminForm, DUPLICATE, formRequest, formResponsesCsv, openForm, responseEntries, saveAdminForm, setFormOpen } from "./forms.server";
+import { adminFormResponses, availability, CLOSED, CLOSED_MESSAGE_MAX, confirmationEmail, FULL, deleteAdminForm, DUPLICATE, formRequest, formResponsesCsv, openForm, responseEntries, saveAdminForm, setFormOpen } from "./forms.server";
 import { checkAnswers, checkQuestions, type Question } from "./schema";
 import { saveForm } from "./store";
 
@@ -16,6 +20,7 @@ const questions = DEMO_FORMS[0]!.questions as Question[];
 const good = { name: "Rosa Diaz", email: "Rosa@X.test", coming: "yes" };
 
 beforeEach(() => {
+  sent.mails = [];
   db = openDb(":memory:");
   for (const form of DEMO_FORMS) saveForm(db, form);
   const at = new Date().toISOString();
@@ -341,5 +346,73 @@ describe("formResponsesCsv", () => {
       .run(JSON.stringify({ a: "one", b: "two" }));
     const { csv } = formResponsesCsv(admin(), { id: "demo0003" });
     expect(csv.replace(/^\uFEFF/, "").split("\r\n")[0]).toBe('"Received (UTC)","Same (a)","Same (b)"');
+  });
+});
+
+describe("schedule, answer limit and confirmation (0015)", () => {
+  const admin = () => ({ db, actor: ADMIN });
+  const salon = () => adminFormResponses(admin()).find((f) => f.id === "demo0001")!;
+  const resave = (patch: Record<string, unknown>) => saveAdminForm(admin(), { ...salon(), ...patch });
+  const answer = (email: string) => send("salon-rsvp", { answers: { ...good, email } });
+  const base = { open: 1, opens_at: null, closes_at: null, max_responses: null, closed_message: "" };
+
+  it("decides in order: the switch, then the opening time, the closing time and the limit", () => {
+    const now = "2026-12-01T12:00:00.000Z";
+    const never = () => { throw new Error("counted without a limit"); };
+    expect(availability(base, never, now)).toEqual({ state: "open", message: null });
+    expect(availability({ ...base, open: 0, opens_at: "2027-01-01T00:00:00.000Z" }, never, now).state).toBe("closed");
+    const later = availability({ ...base, opens_at: "2026-12-02T00:00:00.000Z" }, never, now);
+    expect(later.state).toBe("scheduled");
+    expect(later.message).toMatch(/opens on Tuesday, December 1 at 7:00 PM \(New York time\)/);
+    expect(availability({ ...base, closes_at: now }, never, now)).toEqual({ state: "ended", message: CLOSED });
+    expect(availability({ ...base, max_responses: 2 }, () => 2, now)).toEqual({ state: "full", message: FULL });
+    expect(availability({ ...base, max_responses: 2, closed_message: "Sold out." }, () => 2, now).message).toBe("Sold out.");
+    expect(availability({ ...base, max_responses: 2 }, () => 1, now).state).toBe("open");
+  });
+
+  it("serves a not-yet-open or ended form without questions, and refuses its answers with 410", async () => {
+    resave({ opens_at: new Date(Date.now() + 86_400_000).toISOString() });
+    expect(openForm(ctx(), { slug: "salon-rsvp" })!.closed).toMatch(/opens on/);
+    expect(openForm(ctx(), { slug: "salon-rsvp" })!.questions).toEqual([]);
+    expect((await answer("a@x.test")).status).toBe(410);
+    resave({ opens_at: null, closes_at: new Date(Date.now() - 1000).toISOString() });
+    expect(salon().state).toBe("ended");
+    expect((await answer("a@x.test")).status).toBe(410);
+    expect(rows()).toEqual([]);
+  });
+
+  it("takes answers up to the limit, then shows the form as full", async () => {
+    resave({ max_responses: 2 });
+    expect((await answer("a@x.test")).status).toBe(204);
+    expect((await answer("b@x.test")).status).toBe(204);
+    expect(salon().state).toBe("full");
+    expect(await answer("c@x.test")).toEqual({ status: 410, body: { error: FULL } });
+    expect(rows()).toHaveLength(2);
+  });
+
+  it("refuses a closing time before the opening time, an unreadable date and a bad limit", () => {
+    expect(() => resave({ opens_at: "2027-01-02T00:00:00Z", closes_at: "2027-01-01T00:00:00Z" })).toThrow(/after the opening/);
+    expect(() => resave({ opens_at: "next tuesday" })).toThrow(/date we can read/);
+    for (const max_responses of [0, 1.5, "10", 100_001]) expect(() => resave({ max_responses })).toThrow(/whole number/);
+    resave({ opens_at: "2027-01-01T05:00:00Z", max_responses: 50 });
+    expect(salon()).toMatchObject({ opens_at: "2027-01-01T05:00:00.000Z", max_responses: 50, state: "scheduled" });
+  });
+
+  it("emails a confirmation only when the form asks for one, with the form's name and never the answers", async () => {
+    expect((await answer("a@x.test")).status).toBe(204);
+    expect(sent.mails).toEqual([]);
+    resave({ confirm: true });
+    expect((await send("salon-rsvp", { answers: { ...good, email: "B@X.test", note: "visit https://spam.test" } })).status).toBe(204);
+    expect(sent.mails).toHaveLength(1);
+    const mail = sent.mails[0]!;
+    expect(mail).toMatchObject({ to: "b@x.test", subject: "We got your answers: Salon RSVP (demo)" });
+    expect(mail.text).toMatch(/^Hi Rosa,/);
+    expect(mail.text).not.toMatch(/spam\.test/);
+  });
+
+  it("greets a forged name as 'there' and keeps the subject on one line", () => {
+    const mail = confirmationEmail({ to: "a@x.test", name: "http://evil.test", form: "Two\nlines" });
+    expect(mail.text).toMatch(/^Hi there,/);
+    expect(mail.subject).toBe("We got your answers: Two lines");
   });
 });

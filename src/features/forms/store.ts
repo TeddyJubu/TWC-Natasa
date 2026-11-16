@@ -15,6 +15,12 @@ export type FormDefinition = {
   version?: number;
   open?: boolean;
   one_per_email?: boolean;
+  /** Schedule and cap (0015): ISO UTC times and an answer limit; null or missing is none. */
+  opens_at?: string | null;
+  closes_at?: string | null;
+  max_responses?: number | null;
+  /** Email a confirmation to whoever answers (0015). */
+  confirm?: boolean;
   /** Names the form used to have; each redirects to `slug`. */
   old_slugs?: string[];
 };
@@ -23,13 +29,16 @@ export type FormDefinition = {
 export function saveForm(db: DB, def: FormDefinition): void {
   const questions = checkQuestions(def.questions);
   tx(db, () => {
-    db.prepare(`insert into custom_forms (id, slug, name, intro, thanks, closed_message, questions, version, open, one_per_email)
-      values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    db.prepare(`insert into custom_forms (id, slug, name, intro, thanks, closed_message, questions, version, open, one_per_email,
+        opens_at, closes_at, max_responses, confirm)
+      values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       on conflict (id) do update set slug = excluded.slug, name = excluded.name, intro = excluded.intro, thanks = excluded.thanks,
         closed_message = excluded.closed_message, questions = excluded.questions, version = excluded.version, open = excluded.open,
-        one_per_email = excluded.one_per_email, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')`)
+        one_per_email = excluded.one_per_email,
+        opens_at = excluded.opens_at, closes_at = excluded.closes_at, max_responses = excluded.max_responses, confirm = excluded.confirm, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')`)
       .run(def.id, def.slug, def.name.trim(), def.intro ?? "", def.thanks ?? "", def.closed_message ?? "", JSON.stringify(questions),
-        def.version ?? 1, def.open === false ? 0 : 1, def.one_per_email ? 1 : 0);
+        def.version ?? 1, def.open === false ? 0 : 1, def.one_per_email ? 1 : 0,
+        def.opens_at ?? null, def.closes_at ?? null, def.max_responses ?? null, def.confirm ? 1 : 0);
     db.prepare("delete from custom_form_old_slugs where form_id = ?").run(def.id);
     const old = db.prepare("insert into custom_form_old_slugs (slug, form_id) values (?, ?)");
     for (const slug of def.old_slugs ?? []) old.run(slug, def.id);

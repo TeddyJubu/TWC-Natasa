@@ -1013,7 +1013,7 @@ export function FormsListPanel() {
         <QueryGate query={forms} what="your forms">
           <div className={cardGrid}>
             {custom.map((f) => (
-              <FormCard key={f.id} id={f.id} title={f.name} status={f.open ? "open" : "closed"} where={formPath(f.slug)}
+              <FormCard key={f.id} id={f.id} title={f.name} status={f.state} where={formPath(f.slug)}
                 onDelete={() => confirmDelete(f)} deleting={remove.isPending}
                 stub={<><span className="font-gilda text-lg/none text-ink tabular-nums">{f.total}</span> {f.total === 1 ? "answer" : "answers"}{f.newest_at ? ` · newest ${formatDate(f.newest_at)}` : ""}</>} />
             ))}
@@ -1108,6 +1108,8 @@ function NotFound() {
 /** A form's state in a sentence, next to its chip. */
 const STATUS_LINE: Record<string, string> = {
   open: "Visitors can fill it in now.", closed: "Visitors see your closed message.",
+  scheduled: "Not open yet: visitors see when it opens.", ended: "Its closing time has passed: visitors see your closed message.",
+  full: "It has all the answers its limit allows: visitors see your closed message.",
   always_on: "Always on; it can’t be closed.", no_page: "No public page yet.",
 };
 
@@ -1270,7 +1272,7 @@ function FormWorkspace({ form: f, tab, onTab }: { form: AdminForm; tab: FormTab;
   const [current, setCurrent] = React.useState(tab);
   React.useEffect(() => { setCurrent(tab); }, [tab]);
   const select = (next: FormTab) => { setCurrent(next); onTab(next); };
-  const status = f.open ? "open" : "closed";
+  const status = f.state;
   // Every panel stays mounted (just hidden), so unsaved questions survive a look at the answers.
   const panel = (name: FormTab, children: React.ReactNode) => (
     <div role="tabpanel" id={`form-panel-${name}`} aria-labelledby={`form-tab-${name}`} hidden={current !== name} className="flex flex-col gap-6">{children}</div>
@@ -1302,7 +1304,8 @@ function FormWorkspace({ form: f, tab, onTab }: { form: AdminForm; tab: FormTab;
 /** Everything saveAdminForm needs, from the form as the server last sent it, with `patch` on top. */
 const formPayload = (f: AdminForm, patch: Partial<SaveAdminFormInput>): SaveAdminFormInput => ({
   id: f.id, name: f.name, slug: f.slug, intro: f.intro, thanks: f.thanks, closed_message: f.closed_message,
-  open: f.open, one_per_email: f.one_per_email, questions: f.questions, ...patch,
+  open: f.open, one_per_email: f.one_per_email, questions: f.questions,
+  opens_at: f.opens_at, closes_at: f.closes_at, max_responses: f.max_responses, confirm: f.confirm, ...patch,
 });
 
 const entryText = (e: AnswerEntry) => (Array.isArray(e.value) ? e.value.join(", ") : e.value).trim();
@@ -1318,7 +1321,7 @@ function AnswersCard({ form: f }: { form: AdminForm }) {
         <div className={cn(pad, "flex flex-col gap-2 py-8")}>
           <p className="font-script text-[30px]/[1.1] text-app-accent">no answers yet</p>
           <p className="max-w-[60ch] text-[15px] text-ink">
-            {f.open ? "Share the link above. Each answer lands here the moment it’s sent." : "This form is closed. Open it in Settings, then share the link above."}
+            {f.state === "open" ? "Share the link above. Each answer lands here the moment it’s sent." : "Nobody can answer it right now. Check Settings, then share the link above."}
           </p>
         </div>
       </Card>
@@ -1396,8 +1399,10 @@ function SettingsCards({ form: f }: { form: AdminForm }) {
   const save = useSaveAdminForm();
   const [slug, setSlug] = React.useState(f.slug);
   const [onePer, setOnePer] = React.useState(f.one_per_email);
-  React.useEffect(() => { setSlug(f.slug); setOnePer(f.one_per_email); }, [f.slug, f.one_per_email]);
-  const dirty = slug !== f.slug || onePer !== f.one_per_email;
+  const [confirm, setConfirm] = React.useState(f.confirm);
+  React.useEffect(() => { setSlug(f.slug); setOnePer(f.one_per_email); setConfirm(f.confirm); }, [f.slug, f.one_per_email, f.confirm]);
+  const dirty = slug !== f.slug || onePer !== f.one_per_email || confirm !== f.confirm;
+  const hasEmail = f.questions.some((q) => q.type === "email");
   const id = (field: string) => `form-${f.id}-${field}`;
   return (
     <>
@@ -1408,7 +1413,7 @@ function SettingsCards({ form: f }: { form: AdminForm }) {
       </Card>
       <Card id="details" title="Link" subtitle="Where the form lives, and who can answer. Its name is on the Questions tab.">
         <form aria-label="Link" className="flex flex-col divide-y divide-app-rule"
-          onSubmit={(e) => { e.preventDefault(); save.mutate(formPayload(f, { slug: slug.trim(), one_per_email: onePer })); }}>
+          onSubmit={(e) => { e.preventDefault(); save.mutate(formPayload(f, { slug: slug.trim(), one_per_email: onePer, confirm })); }}>
           <div className={cn(pad, "py-5")}>
             <Field id={id("slug")} label="Web address" className="max-w-120"
               hint={`Link: /f/${slug || "…"}. Lowercase letters, numbers and hyphens.${slug !== f.slug ? ` The old link, /f/${f.slug}, will keep working.` : ""}`}>
@@ -1418,13 +1423,63 @@ function SettingsCards({ form: f }: { form: AdminForm }) {
           </div>
           <Toggle label="One answer per email" checked={onePer} disabled={save.isPending} onChange={(e) => setOnePer(e.currentTarget.checked)}
             description="A second answer from the same email address is turned away, with a note saying why." />
+          <Toggle label="Email a confirmation" checked={confirm} disabled={save.isPending} onChange={(e) => setConfirm(e.currentTarget.checked)}
+            description={hasEmail
+              ? "Whoever answers gets a short “we got your answers” email naming this form. Their answers are never in it."
+              : "Add an email question on the Questions tab first: the confirmation goes to that address."} />
           <div className={cn(pad, "flex flex-wrap items-center justify-end gap-3 py-4")}>
             {save.isError ? <MutationError mutation={save} /> : save.isSuccess && !dirty && <p role="status" className="text-sm text-app-muted">Saved.</p>}
             <button type="submit" className={primaryButton} disabled={!dirty || save.isPending}>Save link</button>
           </div>
         </form>
       </Card>
+      <ScheduleCard form={f} />
     </>
+  );
+}
+
+/** ISO UTC ⇄ the browser's `datetime-local` value (the admin's own clock). */
+const toLocalInput = (iso: string | null) => {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
+};
+const fromLocalInput = (value: string) => (value ? new Date(value).toISOString() : null);
+
+/** When an open form takes answers, and how many. Only narrows the Open switch above; never opens a form. */
+function ScheduleCard({ form: f }: { form: AdminForm }) {
+  const save = useSaveAdminForm();
+  const saved = { opens: toLocalInput(f.opens_at), closes: toLocalInput(f.closes_at), max: f.max_responses === null ? "" : String(f.max_responses) };
+  const [draft, setDraft] = React.useState(saved);
+  React.useEffect(() => { setDraft(saved); }, [f.opens_at, f.closes_at, f.max_responses]); // eslint-disable-line react-hooks/exhaustive-deps
+  const dirty = draft.opens !== saved.opens || draft.closes !== saved.closes || draft.max !== saved.max;
+  const set = (key: keyof typeof draft) => (e: React.ChangeEvent<HTMLInputElement>) => { const value = e.currentTarget.value; setDraft((d) => ({ ...d, [key]: value })); };
+  const id = (field: string) => `form-${f.id}-${field}`;
+  return (
+    <Card id="schedule" title="Schedule and limit" subtitle="Optional. While the form is open, these decide when it takes answers and how many. Leave blank for none.">
+      <form aria-label="Schedule and limit" className="flex flex-col divide-y divide-app-rule"
+        onSubmit={(e) => {
+          e.preventDefault();
+          save.mutate(formPayload(f, { opens_at: fromLocalInput(draft.opens), closes_at: fromLocalInput(draft.closes), max_responses: draft.max ? Number(draft.max) : null }));
+        }}>
+        <div className={cn(pad, "grid gap-5 py-5 sm:grid-cols-2")}>
+          <Field id={id("opens")} label="Opens" hint="Your computer’s time. Before this, visitors see when it opens.">
+            <input id={id("opens")} type="datetime-local" value={draft.opens} disabled={save.isPending} aria-describedby={`${id("opens")}-hint`} onChange={set("opens")} className={fieldClass} />
+          </Field>
+          <Field id={id("closes")} label="Closes" hint="Your computer’s time. After this, visitors see your closed message.">
+            <input id={id("closes")} type="datetime-local" value={draft.closes} min={draft.opens || undefined} disabled={save.isPending} aria-describedby={`${id("closes")}-hint`} onChange={set("closes")} className={fieldClass} />
+          </Field>
+          <Field id={id("max")} label="Answer limit" hint={`Stops taking answers at this many (it has ${f.total} now).`} className="max-w-60">
+            <input id={id("max")} type="number" inputMode="numeric" min={1} max={100000} step={1} value={draft.max} disabled={save.isPending} aria-describedby={`${id("max")}-hint`} onChange={set("max")} className={fieldClass} />
+          </Field>
+        </div>
+        <div className={cn(pad, "flex flex-wrap items-center justify-end gap-3 py-4")}>
+          {save.isError ? <MutationError mutation={save} /> : save.isSuccess && !dirty && <p role="status" className="text-sm text-app-muted">Saved.</p>}
+          {dirty && <button type="button" className={secondaryButton} disabled={save.isPending} onClick={() => setDraft(saved)}>Undo</button>}
+          <button type="submit" className={primaryButton} disabled={!dirty || save.isPending}>Save schedule</button>
+        </div>
+      </form>
+    </Card>
   );
 }
 

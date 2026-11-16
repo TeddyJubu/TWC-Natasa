@@ -14,6 +14,10 @@ export type SaveAdminFormInput = {
   closed_message?: string;
   open?: boolean;
   one_per_email?: boolean;
+  opens_at?: string | null;
+  closes_at?: string | null;
+  max_responses?: number | null;
+  confirm?: boolean;
   questions: Question[];
 };
 

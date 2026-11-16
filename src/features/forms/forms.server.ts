@@ -7,11 +7,13 @@ import { AccessError, requireAdmin } from "@/server/guard";
 import { checkSize, clientIp, HttpError, rateLimit, respond } from "@/server/request";
 import { bad, isObject, str } from "@/server/validate";
 import { toCsv, type AnswerEntry } from "@/features/admin/format";
+import { confirmFooter, confirmSubmitter, firstName, oneLine } from "@/server/notify";
 import { checkAnswers, choicesOf, type Answers, type Question } from "./schema";
 import { saveForm } from "./store";
 
 export const CLOSED = "This form is closed for now. Thank you for your interest.";
 export const THANKS = "Thank you — we’ve got your answers. A person reads every one.";
+export const FULL = "This form has all the answers it can take. Thank you for your interest.";
 export const DUPLICATE = "We already have an answer from this email address for this form, so we didn’t save this one. If something has changed, email us at hello@thewomenscollective.club.";
 /** CRM-100's closed-message cap (the column allows 2,000; the switch keeps the shorter one). */
 export const CLOSED_MESSAGE_MAX = 1000;
@@ -23,15 +25,21 @@ export const THANKS_MAX = 600;
 /** What the /f/<slug> and /f/<slug>/thanks pages need. `moved`: the slug asked for is an old name of `slug`. */
 export type PublicForm = { slug: string; name: string; intro: string; thanks: string; closed: string | null; questions: Question[]; moved: boolean };
 export type AdminFormResponse = { id: string; created_at: string; entries: AnswerEntry[] };
+/** Whether a form takes answers right now: `open` is the admin's switch; the rest are its schedule and cap (0015). */
+export type FormState = "open" | "closed" | "scheduled" | "ended" | "full";
 export type AdminForm = {
-  id: string; name: string; slug: string; open: boolean; closed_message: string;
+  id: string; name: string; slug: string; open: boolean; closed_message: string; state: FormState;
+  opens_at: string | null; closes_at: string | null; max_responses: number | null; confirm: boolean;
   intro: string; thanks: string; one_per_email: boolean; version: number; questions: Question[];
   total: number; newest_at: string | null; responses: AdminFormResponse[];
 };
 export type CsvExport = { filename: string; csv: string };
 export type SavedForm = { id: string };
 
-type Row = { id: string; slug: string; name: string; intro: string; thanks: string; closed_message: string; questions: string; version: number; open: number; one_per_email: number };
+type Row = {
+  id: string; slug: string; name: string; intro: string; thanks: string; closed_message: string; questions: string; version: number;
+  open: number; one_per_email: number; opens_at: string | null; closes_at: string | null; max_responses: number | null; confirm: number;
+};
 const SLUG = /^[a-z0-9-]{1,40}$/;
 /** Live slug shape (table CHECK + old SLUG_RE): 1–40, no leading/trailing hyphen, no "--". */
 const SLUG_SHAPE = /^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?$/;
@@ -46,12 +54,32 @@ function formBySlug(db: DB, slug: unknown): { row: Row; moved: boolean } | undef
   return old && { row: old, moved: true };
 }
 
+/** "Tuesday, December 1 at 7:00 PM" in New York, where the club meets. */
+export const whenNY = (iso: string) =>
+  new Date(iso).toLocaleString("en-US", { timeZone: "America/New_York", weekday: "long", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" }).replace(/, (\d{1,2}:)/, " at $1");
+
+const countAnswers = (db: DB, id: string) => Number((db.prepare("select count(*) as n from custom_form_responses where form_id = ?").get(id) as { n: number }).n);
+
+/**
+ * Whether a form takes answers now, and what a visitor sees when it doesn't. The switch wins, then the schedule,
+ * then the cap; the page and POST /api/forms/<slug> both ask here, so they can't disagree. `count` is read only
+ * when there is a cap.
+ */
+export function availability(row: Pick<Row, "open" | "opens_at" | "closes_at" | "max_responses" | "closed_message">, count: () => number, now = new Date().toISOString()): { state: FormState; message: string | null } {
+  const closedWords = row.closed_message || CLOSED;
+  if (!row.open) return { state: "closed", message: closedWords };
+  if (row.opens_at && now < row.opens_at) return { state: "scheduled", message: `This form opens on ${whenNY(row.opens_at)} (New York time). Please come back then.` };
+  if (row.closes_at && now >= row.closes_at) return { state: "ended", message: closedWords };
+  if (row.max_responses !== null && count() >= row.max_responses) return { state: "full", message: row.closed_message || FULL };
+  return { state: "open", message: null };
+}
+
 /** A form for its public pages, or null for a name no form has. A closed form keeps its name and thank-you, not its questions. */
 export function openForm({ db }: Ctx, input: unknown): PublicForm | null {
   const found = formBySlug(db, isObject(input) ? input.slug : undefined);
   if (!found) return null;
   const { row, moved } = found;
-  const closed = row.open ? null : row.closed_message || CLOSED;
+  const closed = availability(row, () => countAnswers(db, row.id)).message;
   return { slug: row.slug, name: row.name, intro: row.intro, thanks: row.thanks || THANKS, closed, questions: closed ? [] : JSON.parse(row.questions), moved };
 }
 
@@ -62,13 +90,14 @@ const isBot = (input: Record<string, unknown>) => input.honeypot !== undefined &
  * success with nothing stored (OPS-195, OPS-242). Answers sent to an old name land on the form (a page opened before
  * a rename). node:sqlite is synchronous, so the one-per-email check and the insert can't interleave with another request.
  */
-export function submitResponse({ db }: Ctx, slug: string, input: unknown): void {
+export function submitResponse({ db }: Ctx, slug: string, input: unknown): Confirmation | null {
   if (!isObject(input)) throw bad("answers");
-  if (isBot(input)) return;
+  if (isBot(input)) return null;
   const found = formBySlug(db, slug);
   if (!found) throw new HttpError("We couldn’t find that form.", 404);
   const { row } = found;
-  if (!row.open) throw new HttpError(row.closed_message || CLOSED, 410);
+  const closed = availability(row, () => countAnswers(db, row.id)).message;
+  if (closed) throw new HttpError(closed, 410);
   const checked = checkAnswers(JSON.parse(row.questions) as Question[], isObject(input.answers) ? input.answers : {});
   if ("errors" in checked) throw new AccessError(Object.values(checked.errors)[0]!, 400);
   if (row.one_per_email && checked.email
@@ -77,6 +106,28 @@ export function submitResponse({ db }: Ctx, slug: string, input: unknown): void 
   }
   db.prepare("insert into custom_form_responses (form_id, form_version, answers, email) values (?, ?, ?, ?)")
     .run(row.id, row.version, JSON.stringify(checked.value), checked.email);
+  if (!row.confirm || !checked.email) return null;
+  const questions = JSON.parse(row.questions) as Question[];
+  const nameKey = questions.find((q) => q.type === "short" && /\bname\b/i.test(q.label))?.key;
+  const name = nameKey && typeof checked.value[nameKey] === "string" ? checked.value[nameKey] as string : "";
+  return { to: checked.email, name, form: row.name };
+}
+
+/** Who to thank after a stored answer, when the form asks for it (CRM-141). */
+export type Confirmation = { to: string; name: string; form: string };
+
+/**
+ * The "we got your answers" email. Only the form's name (an admin's words) and a checked first name go in, never the
+ * answers themselves: anyone can type any address into a form, so this mail must be useless as a relay.
+ */
+export function confirmationEmail({ to, name, form }: Confirmation) {
+  const title = oneLine(form);
+  const text = [
+    `Hi ${firstName(name)},`, "",
+    `Thanks for filling in “${title}”. We’ve got your answers, and a person reads every one.`, "",
+    confirmFooter(`“${title}” form`),
+  ].join("\n");
+  return { to, subject: `We got your answers: ${title}`, text };
 }
 
 // ponytail: 10 per visitor per form per 10 minutes, in memory (see rateLimit). The old service counted only stored
@@ -95,7 +146,8 @@ export function formRequest(c: Ctx, request: Request, slug: string): Promise<Res
     } catch {
       throw bad("answers");
     }
-    submitResponse(c, slug, input);
+    const confirmation = submitResponse(c, slug, input);
+    if (confirmation) await confirmSubmitter(confirmationEmail(confirmation), `[forms] ${slug} answer`);
   });
 }
 
@@ -119,9 +171,10 @@ const SHOWN = 100;
 export function adminFormResponses({ db, actor }: Ctx): AdminForm[] {
   requireAdmin(db, actor);
   const forms = db.prepare(`select f.id, f.name, f.slug, f.open, f.closed_message, f.intro, f.thanks, f.one_per_email, f.version, f.questions,
+      f.opens_at, f.closes_at, f.max_responses, f.confirm,
       (select count(*) from custom_form_responses r where r.form_id = f.id) as total,
       (select max(r.created_at) from custom_form_responses r where r.form_id = f.id) as newest_at
-    from custom_forms f order by f.name collate nocase`).all() as (Pick<Row, "id" | "name" | "slug" | "open" | "closed_message" | "intro" | "thanks" | "one_per_email" | "version" | "questions"> & { total: number; newest_at: string | null })[];
+    from custom_forms f order by f.name collate nocase`).all() as (Row & { total: number; newest_at: string | null })[];
   const recent = db.prepare(`select id, answers, created_at from custom_form_responses where form_id = ? order by created_at desc, rowid desc limit ${SHOWN}`);
   return forms.map((f) => {
     const questions = JSON.parse(f.questions) as Question[];
@@ -129,10 +182,20 @@ export function adminFormResponses({ db, actor }: Ctx): AdminForm[] {
       .map((r) => ({ id: r.id, created_at: r.created_at, entries: responseEntries(questions, JSON.parse(r.answers) as Answers) }));
     return {
       id: f.id, name: f.name, slug: f.slug, open: f.open === 1, closed_message: f.closed_message,
+      state: availability(f, () => Number(f.total)).state,
+      opens_at: f.opens_at, closes_at: f.closes_at, max_responses: f.max_responses, confirm: f.confirm === 1,
       intro: f.intro, thanks: f.thanks, one_per_email: f.one_per_email === 1, version: f.version, questions,
       total: Number(f.total), newest_at: f.newest_at, responses,
     };
   });
+}
+
+/** A schedule time: blank/null is none; anything else must be a real date, stored as ISO UTC. */
+function when(value: unknown, what: string): string | null {
+  if (value === undefined || value === null || value === "") return null;
+  const date = typeof value === "string" && value.length <= 40 ? new Date(value) : null;
+  if (!date || Number.isNaN(date.getTime())) throw new AccessError(`The ${what} isn’t a date we can read.`, 400);
+  return date.toISOString();
 }
 
 /** Mint an unused 8-character [a-z0-9] form id (CRM-117). */
@@ -163,6 +226,14 @@ export function saveAdminForm({ db, actor }: Ctx, input: unknown): SavedForm {
   const closed_message = str(input.closed_message ?? "", "closed message", CLOSED_MESSAGE_MAX);
   const open = input.open === undefined ? true : input.open === true;
   const one_per_email = input.one_per_email === true;
+  const confirm = input.confirm === true;
+  const opens_at = when(input.opens_at, "opening time");
+  const closes_at = when(input.closes_at, "closing time");
+  if (opens_at && closes_at && closes_at <= opens_at) throw new AccessError("The closing time must come after the opening time.", 400);
+  const max_responses = input.max_responses === undefined || input.max_responses === null || input.max_responses === "" ? null : input.max_responses;
+  if (max_responses !== null && !(Number.isInteger(max_responses) && (max_responses as number) >= 1 && (max_responses as number) <= 100000)) {
+    throw new AccessError("The answer limit must be a whole number from 1 to 100,000, or blank for no limit.", 400);
+  }
   if (!("questions" in input)) throw bad("questions");
 
   const existingId = input.id === undefined || input.id === null || input.id === "" ? null : str(input.id, "form", 8);
@@ -184,7 +255,8 @@ export function saveAdminForm({ db, actor }: Ctx, input: unknown): SavedForm {
   }
 
   try {
-    saveForm(db, { id, slug, name, intro, thanks, closed_message, questions: input.questions, version, open, one_per_email, old_slugs });
+    saveForm(db, { id, slug, name, intro, thanks, closed_message, questions: input.questions, version, open, one_per_email, old_slugs,
+      opens_at, closes_at, max_responses: max_responses as number | null, confirm });
   } catch (error) {
     const message = (error as Error | null)?.message ?? "";
     if (/UNIQUE constraint/.test(message)) throw new AccessError("That slug is already taken.", 400);
