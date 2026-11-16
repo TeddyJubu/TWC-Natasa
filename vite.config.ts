@@ -2,6 +2,7 @@ import { defineConfig, loadEnv } from "vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
+import { publicFnId } from "./src/server/pin-open";
 
 // Builds a Node server (dist/server/server.js, from src/server.ts) and the client assets (dist/client);
 // server.mjs serves both (`bun run start`).
@@ -12,6 +13,7 @@ export default defineConfig(({ mode }) => {
     server: { host: "localhost", port: 8080 },
     // `@/*` comes from tsconfig.json `paths` (Vite's native resolver; no plugin, no duplicate alias).
     resolve: { tsconfigPaths: true },
-    plugins: [tailwindcss(), tanstackStart(), viteReact()],
+    // The form pages' few browser-called functions get fixed ids, so the PIN gate can leave just those open.
+    plugins: [tailwindcss(), tanstackStart({ serverFns: { generateFunctionId: publicFnId } }), viteReact()],
   };
 });

@@ -1,7 +1,8 @@
-// The private-preview gate (site-pin.ts): off without SITE_PIN; otherwise every path but the icons and /healthz needs
+// The private-preview gate (site-pin.ts): off without SITE_PIN; otherwise every path but the icons, /healthz and the forms of pin-open.ts needs
 // the PIN cookie, the PIN page returns her to where she was going, and the cookie never holds the PIN itself.
 import { describe, expect, it } from "vitest";
 import { pinCookie } from "../../scripts/smoke-cutover";
+import { publicFnId } from "./pin-open";
 import { PIN_COOKIE, PIN_PATH, pinGate } from "./site-pin";
 
 const PIN = "test-pin";
@@ -25,14 +26,31 @@ describe("pinGate", () => {
   });
 
   it("answers every page, API call, upload and asset with the PIN page, but not the icons or the health check", async () => {
-    for (const path of ["/", "/account", "/feed?x=1", "/media/avatars/a/b.png", "/assets/app.js", "/robots.txt", "/llms.txt", "/llms-full.txt", "/sitemap.xml"]) {
+    for (const path of ["/", "/account", "/feed?x=1", "/media/avatars/a/b.png", "/robots.txt", "/llms.txt", "/llms-full.txt", "/sitemap.xml",
+      "/about", "/members", "/directory", "/admin", "/admin/forms", "/joinx", "/fx", "/api/feed", "/api/images", "/_serverFn/abc123", "/_serverFn/open-adminCsvFn"]) {
       const res = (await get(path))!;
       expect(res.status).toBe(401);
       expect(res.headers.get("X-Robots-Tag")).toBe("noindex, nofollow");
     }
-    const post = await pinGate(new Request("http://club.test/api/contact", { method: "POST", body: "{}" }), PIN);
+    const post = await pinGate(new Request("http://club.test/api/feed", { method: "POST", body: "{}" }), PIN);
     expect(post!.status).toBe(401);
     for (const path of ["/favicon.ico", "/favicon.png", "/apple-touch-icon.png", "/healthz"]) expect(await get(path)).toBeNull();
+  });
+
+  it("leaves the form pages, sign-in, their posts, the assets and only their server functions open", async () => {
+    for (const path of ["/join", "/join/", "/review?t=x", "/contact", "/partnerships", "/spotlight?t=x", "/f/salon", "/f/salon/thanks", "/auth?mode=signup",
+      "/reset-password", "/verified", "/assets/app-abc.js", "/_serverFn/open-openFormFn", "/_serverFn/open-applicantFn?payload=x"]) expect(await get(path)).toBeNull();
+    for (const path of ["/api/applications", "/api/contact", "/api/partnerships", "/api/review", "/api/spotlight", "/api/forms/salon", "/api/auth/sign-up/email", "/_serverFn/open-openReviewFn"]) {
+      expect(await pinGate(new Request(`http://club.test${path}`, { method: "POST", body: "{}" }), PIN)).toBeNull();
+    }
+    // A dot-dot path is resolved before the gate sees it.
+    expect((await get("/f/../admin"))!.status).toBe(401);
+  });
+
+  it("gives exactly the public functions a fixed id, and every other one the default", () => {
+    expect(publicFnId({ filename: "src/features/forms/fns.ts", functionName: "openFormFn_createServerFn_handler" })).toBe("open-openFormFn");
+    expect(publicFnId({ filename: "src/features/forms/fns.ts", functionName: "adminFormResponsesFn_createServerFn_handler" })).toBeUndefined();
+    expect(publicFnId({ filename: "src/features/admin/fns.ts", functionName: "openFormFn_createServerFn_handler" })).toBeUndefined();
   });
 
   it("remembers where she was going, escaped", async () => {

@@ -161,7 +161,7 @@ applications) key on `CF-Connecting-IP`, falling back to `X-Forwarded-For`. Some
 While `SITE_PIN` is set in `app.env`, every request — pages, `/api`, `/media`, static files — needs the PIN first
 (`src/server/site-pin.ts`, run first in `server.mjs`). The PIN page posts to `/__pin`, which sets an HttpOnly cookie
 holding a hash of the PIN for 30 days and returns the visitor to the page she asked for (so emailed links still work
-after the PIN). Only the icons and `/healthz` are open. Changing the PIN signs everyone out of the preview; removing
+after the PIN). Only the icons, `/healthz` and the forms are open: `/join`, `/review`, `/contact`, `/partnerships`, `/spotlight`, `/f/*`, sign-in, what they post to and the six server functions they call (`src/server/pin-open.ts`). Changing the PIN signs everyone out of the preview; removing
 it (and restarting `twc-natasa.service`) opens the site. The PIN lives only in `app.env`: this repository is public.
 **Before removing it, remove the demo members** (below): they are public on `/members`, the sitemap and
 `/media/public` the moment the PIN is gone.

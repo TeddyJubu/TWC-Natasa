@@ -1,7 +1,8 @@
 // The private-preview gate: while SITE_PIN is set in the server's environment, every request (pages, /api, /media and
-// static files; server.mjs runs it first) needs the PIN cookie or gets the PIN page. The PIN itself never leaves the
+// static files; server.mjs runs it first) except the form pages of pin-open.ts needs the PIN cookie or gets the PIN page. The PIN itself never leaves the
 // environment: the cookie holds its hash, and a new PIN signs everyone out of the preview. Unset, the site is open.
 import { createHash, timingSafeEqual } from "node:crypto";
+import { isPinOpen } from "./pin-open";
 import { clientIp, rateLimit } from "./request";
 
 export const PIN_COOKIE = "twc_pin";
@@ -25,7 +26,7 @@ const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)
 export async function pinGate(request: Request, pin = process.env.SITE_PIN): Promise<Response | null> {
   if (!pin) return null;
   const url = new URL(request.url);
-  if (OPEN.has(url.pathname)) return null;
+  if (OPEN.has(url.pathname) || isPinOpen(url.pathname)) return null;
   const cookie = cookieOf(request, PIN_COOKIE);
   if (cookie && same(cookie, token(pin))) return null;
 
