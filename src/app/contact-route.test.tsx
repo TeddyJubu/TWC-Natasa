@@ -36,11 +36,11 @@ describe("/contact", () => {
     expect(meta().find((m) => m.name === "robots")).toBeUndefined();
   });
 
-  it("has one main and h1, the FAQ link, and no skipped headings", () => {
+  it("has one main and h1, no link into the unpublished site, and no skipped headings", () => {
     renderWithQueries(<Page />);
     expect(screen.getByRole("main").id).toBe("main");
     expect(screen.getAllByRole("heading", { level: 1 }).map((h) => h.textContent)).toEqual(["Say hello, neighbor."]);
-    expect(screen.getByRole("link", { name: "questions page" }).getAttribute("href")).toBe("/faq");
+    expect(screen.queryByRole("link", { name: "questions page" })).toBeNull();
     expectNoSkippedHeadings();
   });
 

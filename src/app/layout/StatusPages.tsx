@@ -12,12 +12,12 @@ const QUICK = [
 ] as const;
 
 /** One centred card on a cream band: logo, Caveat line, h1, message, actions. */
-export function StatusPage({ script, tilt, title, intro, children }: {
-  script: string; tilt: string; title: string; intro: string; children: React.ReactNode;
+export function StatusPage({ script, tilt, title, intro, children, bare }: {
+  script: string; tilt: string; title: string; intro: string; children: React.ReactNode; bare?: boolean;
 }) {
   return (
     <AppPage>
-      <AppNav />
+      <AppNav bare={bare} />
       <main id="main" tabIndex={-1} className="outline-none">
         <Scallop from="#fcfcfa" to="#f3f0e8" />
         <div className="twc-band twc-band--cream pb-24 pt-16">
@@ -34,7 +34,7 @@ export function StatusPage({ script, tilt, title, intro, children }: {
         <Scallop from="#f3f0e8" to="#fcfcfa" />
         <div className="h-12" />
       </main>
-      <AppFooter />
+      <AppFooter bare={bare} />
     </AppPage>
   );
 }

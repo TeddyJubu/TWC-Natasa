@@ -1,4 +1,4 @@
-import { createFileRoute, Link, notFound, redirect } from "@tanstack/react-router";
+import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
 import { StatusPage } from "@/app/layout/StatusPages";
 import { openFormFn } from "@/features/forms/fns";
 import { paragraphs } from "@/features/forms/schema";
@@ -21,9 +21,8 @@ function ThanksPage() {
   const { name, thanks } = Route.useLoaderData();
   const [first = "", ...rest] = paragraphs(thanks);
   return (
-    <StatusPage script="thank you" tilt="-rotate-2" title={name} intro={first}>
+    <StatusPage bare script="thank you" tilt="-rotate-2" title={name} intro={first}>
       {rest.map((p, i) => <p key={i} className="max-w-[40ch] text-sb-muted">{p}</p>)}
-      <Link to="/" className="twc-btn mt-2">Back to the site</Link>
     </StatusPage>
   );
 }

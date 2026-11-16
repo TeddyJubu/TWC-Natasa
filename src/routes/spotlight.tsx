@@ -33,14 +33,14 @@ export const Route = createFileRoute("/spotlight")({
 });
 
 function InvalidLink() {
-  return <StatusPage script="weekly spotlight" tilt="-rotate-2" title="This link isn’t valid." intro={INVALID_SPOTLIGHT}>{null}</StatusPage>;
+  return <StatusPage bare script="weekly spotlight" tilt="-rotate-2" title="This link isn’t valid." intro={INVALID_SPOTLIGHT}>{null}</StatusPage>;
 }
 
 function SpotlightPage() {
   const { token, prefill } = Route.useLoaderData();
   return (
     <AppPage>
-      <AppNav />
+      <AppNav bare />
       <main id="main" tabIndex={-1} className="twc-wrap flex max-w-[960px] flex-col gap-8 pb-[104px] pt-14 outline-none">
         <div className="flex flex-col gap-4">
           <span className="twc-eyebrow">Weekly Spotlight</span>
@@ -52,7 +52,7 @@ function SpotlightPage() {
         </div>
         <SpotlightForm token={token} prefill={prefill} />
       </main>
-      <AppFooter />
+      <AppFooter bare />
     </AppPage>
   );
 }

@@ -46,8 +46,20 @@ const MENU_ID = "site-menu";
  *  At lg the row is measured at ~845px (Gilda at 15px, the 18px wordmark, 20px link gaps, 16px column gaps) in the
  *  896px `.twc-wrap` leaves at 1024px; the right group is the wider one, so the logo sits up to ~38px left of centre
  *  until ~1100px, then centred. xl widens the gaps and the wordmark into the wrap's 1024px. */
-export function AppNav() {
+export function AppNav({ bare = false }: { bare?: boolean }) {
   const menu = React.useRef<HTMLDivElement>(null);
+  // ponytail: pre-launch, the form pages (and sign-in, where /join leads) show only the name, so nobody browses the
+  // unpublished site from them. Drop `bare` from the form routes at launch.
+  if (bare) {
+    return (
+      <header className="sticky top-0 z-40 bg-sb-paper/85 backdrop-blur-md">
+        <div className="flex min-h-16 items-center justify-center gap-2.5 px-4 text-sb-ink lg:min-h-[88px]">
+          <ConstellationLogo variant="ink" alt="" sizes="(min-width: 80rem) 34px, 28px" className="w-7 xl:w-[34px]" />
+          <span className="whitespace-nowrap font-display text-[15px] sm:text-base lg:text-[18px] xl:text-[22px]">The Women’s Collective</span>
+        </div>
+      </header>
+    );
+  }
   const close = () => menu.current?.hidePopover?.();
   const brand = (
     <Link to="/" activeOptions={{ exact: true }} className="group flex items-center gap-2.5 text-sb-ink outline-none focus-visible:text-sb-blue-ink" aria-label="The Women’s Collective home">
@@ -126,15 +138,17 @@ const FOOTER: SiteLink[] = [
 ];
 /** Lilac site footer: tagline + site links, the big wordmark and the collective's name. No legal links until the
  *  pages exist again (docs/LEGAL-PAGES-REQUIRED.md). */
-export function AppFooter() {
+export function AppFooter({ bare = false }: { bare?: boolean }) {
   return (
     <footer className="twc-footer">
       <div className="twc-wrap">
         <div className="twc-footer__top">
           <p className="twc-footer__tag">find your people, share what you do &amp; help someone else shine</p>
-          <nav aria-label="Footer" className="twc-footer__links">
-            {FOOTER.map((l) => <Link key={l.to} to={l.to} className="twc-link">{l.label}</Link>)}
-          </nav>
+          {!bare && (
+            <nav aria-label="Footer" className="twc-footer__links">
+              {FOOTER.map((l) => <Link key={l.to} to={l.to} className="twc-link">{l.label}</Link>)}
+            </nav>
+          )}
         </div>
         <p aria-hidden className="twc-footer__word">The Women’s Collective</p>
         <div className="twc-footer__legal">

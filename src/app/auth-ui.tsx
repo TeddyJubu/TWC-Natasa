@@ -16,14 +16,14 @@ export const authAlert = "twc-error rounded-md px-4 py-3.5 text-[15px] shadow-[i
 export function AuthFrame({ children }: { children: React.ReactNode }) {
   return (
     <AppPage>
-      <AppNav />
+      <AppNav bare />
       <main id="main" tabIndex={-1} className="outline-none">
         <Scallop from="#fcfcfa" to="#f3f0e8" />
         <section className="twc-band twc-band--cream pb-24 pt-16">{children}</section>
         <Scallop from="#f3f0e8" to="#fcfcfa" />
         <div className="h-12" />
       </main>
-      <AppFooter />
+      <AppFooter bare />
     </AppPage>
   );
 }

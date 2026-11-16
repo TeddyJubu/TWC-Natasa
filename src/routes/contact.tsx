@@ -1,4 +1,4 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import { ContactForm } from "@/features/contact/ContactForm";
 import { FormCopyProvider } from "@/features/form-copy/FormCopy";
@@ -25,7 +25,7 @@ function ContactPage() {
   return (
     <FormCopyProvider copy={copy}>
     <AppPage>
-      <AppNav />
+      <AppNav bare />
       <main id="main" tabIndex={-1} className="twc-wrap flex flex-wrap items-start gap-x-16 gap-y-14 pt-12 pb-20 outline-none md:pt-[72px] md:pb-[104px]">
         <div className="flex min-w-0 flex-[1_1_380px] flex-col gap-[22px]">
           <p className="twc-eyebrow-script">{t("say hello")}</p>
@@ -39,15 +39,12 @@ function ContactPage() {
               Reports about a member or an event go straight to the people who handle them, confidentially. Choose “Reporting conduct” as the topic of your message.
             </p>
           </div>
-          <p className="text-[15px] text-sb-muted">
-            Looking for quick answers? Try the <Link to="/faq" className="twc-inlink">questions page</Link>.
-          </p>
         </div>
         <div className="flex min-w-0 flex-[1_1_460px] flex-col gap-8">
           <ContactForm />
         </div>
       </main>
-      <AppFooter />
+      <AppFooter bare />
     </AppPage>
     </FormCopyProvider>
   );

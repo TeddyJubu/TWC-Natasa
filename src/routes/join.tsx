@@ -42,15 +42,14 @@ function JoinPage() {
   if (state.closed) {
     const [first = "", ...rest] = paragraphs(state.closed);
     return (
-      <StatusPage script="closed for now" tilt="-rotate-2" title={CLOSED_TITLE.application} intro={first}>
+      <StatusPage bare script="closed for now" tilt="-rotate-2" title={CLOSED_TITLE.application} intro={first}>
         {rest.map((p, i) => <p key={i} className="max-w-[40ch] text-sb-muted">{p}</p>)}
-        <Link to="/" className="twc-btn mt-2">Back to The Women’s Collective <Icon name="arrow" className="twc-arrow" /></Link>
       </StatusPage>
     );
   }
   return (
     <AppPage>
-      <AppNav />
+      <AppNav bare />
       <FormCopyProvider copy={state.copy}>
       <main id="main" tabIndex={-1} className="twc-wrap flex max-w-[960px] flex-col gap-8 pb-[104px] pt-14 outline-none">
         <div className="twc-ticket bg-[linear-gradient(160deg,#16213f_0%,#0b0b0a_100%)]">
@@ -86,7 +85,7 @@ function JoinPage() {
         />
       </main>
       </FormCopyProvider>
-      <AppFooter />
+      <AppFooter bare />
     </AppPage>
   );
 }

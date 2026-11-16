@@ -1,4 +1,4 @@
-import { createFileRoute, Link, notFound, redirect, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, notFound, redirect, useNavigate } from "@tanstack/react-router";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import { StatusPage } from "@/app/layout/StatusPages";
 import { doopSyncScripts } from "@/app/doop-sync";
@@ -32,15 +32,14 @@ function FormPage() {
   if (form.closed) {
     const [first = "", ...rest] = paragraphs(form.closed);
     return (
-      <StatusPage script="closed for now" tilt="-rotate-2" title={form.name} intro={first}>
+      <StatusPage bare script="closed for now" tilt="-rotate-2" title={form.name} intro={first}>
         {rest.map((p, i) => <p key={i} className="max-w-[40ch] text-sb-muted">{p}</p>)}
-        <Link to="/" className="twc-btn mt-2">Back to the site</Link>
       </StatusPage>
     );
   }
   return (
     <AppPage>
-      <AppNav />
+      <AppNav bare />
       <main id="main" tabIndex={-1} className="twc-wrap flex max-w-[960px] flex-col gap-8 pb-[104px] pt-14 outline-none">
         <div className="flex flex-col gap-4">
           <span className="twc-eyebrow">The Women’s Collective</span>
@@ -49,7 +48,7 @@ function FormPage() {
         </div>
         <CustomForm form={form} onSent={() => void navigate({ to: "/f/$slug/thanks", params: { slug: form.slug } })} />
       </main>
-      <AppFooter />
+      <AppFooter bare />
     </AppPage>
   );
 }

@@ -64,7 +64,8 @@ describe("live pages carry no showcase toolbar", () => {
     it(`${path} renders its site navigation but no dark-theme toggle`, () => {
       const Page = component(route);
       renderWithQueries(<Page />, seed);
-      expect(screen.getAllByRole("link", { name: "The Women’s Collective home" })[0].getAttribute("href")).toBe("/");
+      // The form pages show the bare name until launch (see "bare chrome").
+      if (path !== "/join") expect(screen.getAllByRole("link", { name: "The Women’s Collective home" })[0].getAttribute("href")).toBe("/");
       expect(screen.queryByRole("button", { name: "Toggle dark theme" })).toBeNull();
       expect(screen.queryByRole("link", { name: "Typography" })).toBeNull();
     });
@@ -152,6 +153,19 @@ describe("AppNav", () => {
   });
 });
 
+// Pre-launch: the form pages (and sign-in, where /join leads) carry the name only, no site links.
+describe("bare chrome", () => {
+  it("AppNav and AppFooter link nowhere", () => {
+    render(<><AppNav bare /><AppFooter bare /></>);
+    expect(screen.queryAllByRole("link")).toEqual([]);
+    expect(screen.getAllByText("The Women’s Collective").length).toBeGreaterThan(0);
+  });
+  it.each(["join", "review", "contact", "partnerships", "spotlight", "f.$slug", "f.$slug_.thanks"])("src/routes/%s.tsx uses only the bare chrome", (f) => {
+    const src = readFileSync(resolve(process.cwd(), `src/routes/${f}.tsx`), "utf8");
+    expect(src).not.toMatch(/<AppNav \/>|<AppFooter \/>|<StatusPage (?!bare)|<Link to="\/"/);
+  });
+});
+
 describe("AppFooter", () => {
   const REMOVED = ["/privacy", "/terms", "/code-of-conduct"];
   it("the router has no legal routes, so they 404", () => {
@@ -195,7 +209,7 @@ describe("AppPage", () => {
 describe("account-access pages use the site chrome", () => {
   // AuthFrame is AppPage → AppNav → main → AppFooter, so they get the skip link and the trail from AppPage.
   it("AuthFrame wraps AppPage, AppNav and AppFooter", () => {
-    expect(readFileSync(resolve(process.cwd(), "src/app/auth-ui.tsx"), "utf8")).toMatch(/<AppPage>\s*<AppNav \/>[\s\S]*<AppFooter \/>\s*<\/AppPage>/);
+    expect(readFileSync(resolve(process.cwd(), "src/app/auth-ui.tsx"), "utf8")).toMatch(/<AppPage>\s*<AppNav bare \/>[\s\S]*<AppFooter bare \/>\s*<\/AppPage>/);
   });
   it.each(["src/routes/auth.tsx", "src/routes/reset-password.tsx", "src/routes/verified.tsx"])("%s renders in AuthFrame, not its own trail", (file) => {
     const source = readFileSync(resolve(process.cwd(), file), "utf8");

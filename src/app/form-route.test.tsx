@@ -75,9 +75,9 @@ describe("/f/$slug", () => {
     expect(screen.queryByRole("button", { name: /Send/ })).toBeNull();
   });
 
-  it("leads a closed form back to the site, and names an unknown one 'Page not found' in the tab", () => {
+  it("gives a closed form no way into the unpublished site, and names an unknown one 'Page not found' in the tab", () => {
     show({ ...rsvp, closed: "Closed.", questions: [] });
-    expect(screen.getByRole("link", { name: "Back to the site" }).getAttribute("href")).toBe("/");
+    expect(screen.queryAllByRole("link").map((a) => a.getAttribute("href"))).toEqual(["#main"]);
     const head = Route.options.head as (ctx: { loaderData?: unknown }) => { meta: { title?: string }[] };
     expect(head({}).meta[0]!.title).toBe("Page not found — The Women’s Collective");
   });

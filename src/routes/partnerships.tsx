@@ -39,7 +39,7 @@ function PartnershipsPage() {
   return (
     <FormCopyProvider copy={copy}>
     <AppPage>
-      <AppNav />
+      <AppNav bare />
       <main id="main" tabIndex={-1} className="outline-none">
         <section className="twc-wrap flex flex-wrap items-center gap-14 pb-[88px] pt-[72px]">
           <div className="flex min-w-0 flex-[1_1_520px] flex-col gap-5">
@@ -107,7 +107,7 @@ function PartnershipsPage() {
         <Scallop from="#d8cdf8" to="#fcfcfa" />
         <div className="pb-24" />
       </main>
-      <AppFooter />
+      <AppFooter bare />
     </AppPage>
     </FormCopyProvider>
   );

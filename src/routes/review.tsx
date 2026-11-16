@@ -1,7 +1,6 @@
-import { Link, createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute, notFound } from "@tanstack/react-router";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import { StatusPage } from "@/app/layout/StatusPages";
-import { Icon } from "@/app/layout/twc";
 import { CLOSED_TITLE } from "@/features/forms-state/constants";
 import { publicFormStateFn } from "@/features/forms-state/fns";
 import { FormCopyProvider } from "@/features/form-copy/FormCopy";
@@ -57,15 +56,14 @@ function ReviewPage() {
   if (closed) {
     const [first = "", ...rest] = paragraphs(closed);
     return (
-      <StatusPage script="closed for now" tilt="-rotate-2" title={CLOSED_TITLE.review} intro={first}>
+      <StatusPage bare script="closed for now" tilt="-rotate-2" title={CLOSED_TITLE.review} intro={first}>
         {rest.map((p, i) => <p key={i} className="max-w-[40ch] text-sb-muted">{p}</p>)}
-        <Link to="/" className="twc-btn mt-2">Back to The Women’s Collective <Icon name="arrow" className="twc-arrow" /></Link>
       </StatusPage>
     );
   }
   return (
     <AppPage>
-      <AppNav />
+      <AppNav bare />
       <FormCopyProvider copy={copy}>
       <main id="main" tabIndex={-1} className="twc-wrap flex max-w-[960px] flex-col gap-8 pb-[104px] pt-14 outline-none">
         <div className="flex flex-col gap-4">
@@ -78,7 +76,7 @@ function ReviewPage() {
         <ReviewForm token={token} prefill={prefill} />
       </main>
       </FormCopyProvider>
-      <AppFooter />
+      <AppFooter bare />
     </AppPage>
   );
 }
