@@ -311,6 +311,15 @@ describe("/admin", () => {
   });
 
   describe("filters, member detail and neighborhood (CRM-062, CRM-060, CRM-059)", () => {
+    it("long cards show 20 rows, then Show more", () => {
+      renderAdmin({ members: Array.from({ length: 25 }, (_, i) => member(`m${i}`, `Member ${i}`)) });
+      const all = card("All members");
+      expect(within(all).getAllByRole("rowheader")).toHaveLength(20);
+      fireEvent.click(within(all).getByRole("button", { name: "Show 5 more · 5 not shown" }));
+      expect(within(all).getAllByRole("rowheader")).toHaveLength(25);
+      expect(within(all).queryByRole("button", { name: /Show \d+ more/ })).toBeNull();
+    });
+
     it("status filters compose with the search box", () => {
       renderAdmin({
         applications: [application("a1", "Pia Baker"), application("a2", "Pia Stone", { status: "approved" }), application("a3", "Lu Smith", { status: "approved" })],

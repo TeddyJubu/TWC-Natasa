@@ -197,6 +197,21 @@ export function AdminSearch({ value, onChange }: { value: string; onChange: (val
 /** "3 of 12 shown" while a search or filter hides some rows. */
 const shownOf = (shown: number, total: number) => (shown < total ? `${shown} of ${total} shown · ` : "");
 
+/** Long cards show a page of rows, then "Show more", so 100 members don't bury every card below them. */
+const PAGE = 20;
+function usePage<T>(list: T[]) {
+  const [limit, setLimit] = React.useState(PAGE);
+  const left = list.length - limit;
+  const more = left > 0 && (
+    <div className={cn(pad, "py-4")}>
+      <button type="button" className={secondaryButton} onClick={() => setLimit(limit + PAGE)}>
+        Show {Math.min(left, PAGE)} more · {left} not shown
+      </button>
+    </div>
+  );
+  return { rows: list.slice(0, limit), more };
+}
+
 /** Downloads the card's rows as CSV (admins only, checked on the server). */
 function CsvButton({ kind }: { kind: "applications" | "members" }) {
   const csv = useDownloadCsv();
@@ -441,6 +456,7 @@ export function ApplicationsPanel({ query = "" }: { query?: string }) {
     && matchesSearch(query, [a.full_name, a.email, typeof a.answers.business === "string" ? a.answers.business : null]));
   const pending = all.filter((a) => a.status === "pending").length;
   const duplicates = all.filter((a) => a.duplicate).length;
+  const page = usePage(list);
   return (
     <Card id="applications" title="Applications" action={<CsvButton kind="applications" />}
       subtitle={apps.data ? `${shownOf(list.length, all.length)}${pending} pending${duplicates ? ` · ${duplicates} possible ${duplicates === 1 ? "duplicate" : "duplicates"}` : ""} · ${all.length} in total` : "Who has asked to join"}>
@@ -453,10 +469,11 @@ export function ApplicationsPanel({ query = "" }: { query?: string }) {
         {logged.isError && <InlineError message="We couldn’t load logged actions right now." onRetry={() => void logged.refetch()} />}
         {list.length === 0
           ? <Empty>{all.length ? "No applications match." : "No applications yet."}</Empty>
-          : list.map((app) => (
+          : page.rows.map((app) => (
             <ApplicationRow key={app.id} app={app} members={members.data ?? []} notes={notesFor(notes.data, "application_id", app.id)}
               actions={actionsFor(logged.data, "application_id", app.id)} />
           ))}
+        {page.more}
       </QueryGate>
     </Card>
   );
@@ -544,6 +561,7 @@ export function MembersPanel({ query = "" }: { query?: string }) {
   const list = all.filter((m) => (!status || m.status === status)
     && (!hood || (hood === NO_HOOD ? !m.neighborhood : m.neighborhood === hood))
     && matchesSearch(query, [m.full_name, m.email, m.business]));
+  const page = usePage(list);
   return (
     <Card id="members" title="All members" action={<CsvButton kind="members" />}
       subtitle={members.data ? `${shownOf(list.length, all.length)}${all.length} profiles · approve or decline directly` : "Every member profile"}>
@@ -569,13 +587,14 @@ export function MembersPanel({ query = "" }: { query?: string }) {
                   <th scope="col" className={headCell}><span className="sr-only">Actions</span></th>
                 </tr>
               </thead>
-              <tbody>{list.map((m) => (
+              <tbody>{page.rows.map((m) => (
                 <MemberRow key={m.id} member={m} link={links.data?.[m.id] ?? null} spotlight={spotlightLinks.data?.[m.id] ?? null}
                   notes={notesFor(notes.data, "member_id", m.id)} actions={actionsFor(logged.data, "member_id", m.id)} app={appFor.get(m.id) ?? null} />
               ))}</tbody>
             </table>
           </div>
         )}
+        {page.more}
       </QueryGate>
     </Card>
   );
