@@ -120,6 +120,7 @@ Left for the owner because they change the deployment, the live database or the 
 13. **Contact details (open):** the Contact board's `[CONTACT EMAIL]`, `[@HANDLE]` and `[RESPONSE TIME]` rows are left out until they're known. The form itself works once `CF_EMAIL_*` is set and an admin exists; until then visitors see "couldn't send".
 14. **Woodside (open):** no neighborhood colour or photo yet, and the `neighborhoods.color` CHECK requires a colour, so the canvas's "colour to choose" (cream, dashed ring) state can't be saved. Relaxing it is migration 0006 plus an admin form change.
 15. **`/verified` without a link (open, minor):** opening it directly shows the "confirmed" card although nothing was verified.
+16. ~~**Framework**~~ **Resolved (2026-11-16):** stay on TanStack Start + Router + Query. It came with the Lovable template and no alternative was compared at the time; Start's server functions, middleware and SSR now carry the app. The record is in `docs/decisions/0001-tanstack-start.md`.
 
 Also before go-live, by hand in a browser: tap a hash link (`#constellation`) in the mobile menu and check the page still scrolls to it once the menu's scroll lock is released.
 
