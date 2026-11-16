@@ -105,7 +105,7 @@ export function QuestionsEditor({ idPrefix, initial, busy, error, saved, onSave 
 
   return (
     <form onSubmit={submit} onKeyDown={noEnterSubmit} aria-label="Questions" className="mx-auto flex w-full max-w-185 flex-col">
-      <p className="mb-2 px-1 font-script text-[26px]/[1.2] text-app-accent">psst — click any words to change them</p>
+      <p className="mb-2 px-1 font-script text-[26px]/[1.2] text-app-accent">psst — <span className="pointer-coarse:hidden">click</span><span className="hidden pointer-coarse:inline">tap</span> any words to change them</p>
 
       <div className="flex flex-col gap-7 rounded-md bg-app px-5 py-8 shadow-[0_10px_28px_color-mix(in_srgb,var(--color-ink)_12%,transparent)] sm:px-12 sm:py-12">
         <div className="flex flex-col gap-3">

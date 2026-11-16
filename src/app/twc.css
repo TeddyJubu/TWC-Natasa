@@ -858,7 +858,9 @@ a.air-entry-name:hover { text-decoration: underline; }
 .air-opts > label { padding-inline: 0; }
 .air-opts > label + label { border-top: 1px solid var(--bl-air-line); }
 /* Rows sit flush on their lines too (their insets are utilities); a notice or a filled sub-panel keeps its own. */
-.air-rows > :not(ol, ul, .twc-notice, [class*="bg-"]), .air-rows > :is(ol, ul) > li:not([class*="bg-"]) { padding-inline: 0; }
+/* A card whose rows are one <form> (Settings' Link, Schedule) gets the same: its rows are the form's children. */
+.air-rows > :not(ol, ul, form, .twc-notice, [class*="bg-"]), .air-rows > :is(ol, ul) > li:not([class*="bg-"]),
+.air-rows > form > :not(.twc-notice, [class*="bg-"]) { padding-inline: 0; }
 
 @keyframes twc-marquee { to { translate: -50% 0; } }
 

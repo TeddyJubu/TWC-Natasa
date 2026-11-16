@@ -75,6 +75,21 @@ describe("/f/$slug", () => {
     expect(screen.queryByRole("button", { name: /Send/ })).toBeNull();
   });
 
+  it("leads a closed form back to the site, and names an unknown one 'Page not found' in the tab", () => {
+    show({ ...rsvp, closed: "Closed.", questions: [] });
+    expect(screen.getByRole("link", { name: "Back to the site" }).getAttribute("href")).toBe("/");
+    const head = Route.options.head as (ctx: { loaderData?: unknown }) => { meta: { title?: string }[] };
+    expect(head({}).meta[0]!.title).toBe("Page not found — The Women’s Collective");
+  });
+
+  it("reads an optional question as 'Label Optional' and asks a required pick-one for one option", () => {
+    show(rsvp);
+    expect(screen.getByLabelText("Anything else? Optional")).toBeTruthy();
+    const coming = screen.getByRole("group", { name: "Are you coming?" });
+    expect((coming.querySelector("input") as HTMLInputElement).validationMessage).toBe("Choose one option.");
+    expect((screen.getByLabelText("Vegetarian") as HTMLInputElement).validationMessage).toBe("");
+  });
+
   it("labels every question, then sends only the answers and moves on to the thank-you page", async () => {
     show(rsvp);
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);

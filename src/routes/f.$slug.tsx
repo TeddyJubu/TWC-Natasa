@@ -1,4 +1,4 @@
-import { createFileRoute, notFound, redirect, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, redirect, useNavigate } from "@tanstack/react-router";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import { StatusPage } from "@/app/layout/StatusPages";
 import { doopSyncScripts } from "@/app/doop-sync";
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/f/$slug")({
   },
   head: ({ loaderData }) => ({
     // ponytail: every form is noindex until the CRM's "listed" switch (and the /forms list, OPS-426) is rebuilt.
-    meta: [{ title: `${loaderData?.name ?? "Form"} — The Women’s Collective` }, { name: "robots", content: "noindex" }],
+    meta: [{ title: `${loaderData?.name ?? "Page not found"} — The Women’s Collective` }, { name: "robots", content: "noindex" }],
     // Design sync, only in a VITE_DOOP_SYNC=true build (src/app/doop-sync.ts); the CSP allows its origin only then.
     scripts: doopSyncScripts(),
   }),
@@ -34,6 +34,7 @@ function FormPage() {
     return (
       <StatusPage script="closed for now" tilt="-rotate-2" title={form.name} intro={first}>
         {rest.map((p, i) => <p key={i} className="max-w-[40ch] text-sb-muted">{p}</p>)}
+        <Link to="/" className="twc-btn mt-2">Back to the site</Link>
       </StatusPage>
     );
   }

@@ -4,7 +4,8 @@ import { cn } from "@/index";
 import { useCopy } from "@/features/form-copy/use-copy";
 import { LIMITS } from "./schema";
 
-const Optional = () => <span className="ml-2 text-[13px] font-normal normal-case tracking-normal text-sb-muted">Optional</span>;
+// The space keeps a screen reader's name "Anything else? Optional", not "Anything else?Optional".
+const Optional = () => <>{" "}<span className="ml-1 text-[13px] font-normal normal-case tracking-normal text-sb-muted">Optional</span></>;
 
 export const Input = (props: React.ComponentProps<"input">) => <input className="twc-input" {...props} />;
 export const Select = (props: React.ComponentProps<"select">) => <select className="twc-input cursor-pointer" {...props} />;
@@ -31,7 +32,8 @@ export function Check({ label, className, ...props }: Omit<React.ComponentProps<
 }
 
 export type Option = string | { value: string; label: string };
-const REQUIRED = "Choose at least one option.";
+/** What a required group says while empty: a radio group takes exactly one. */
+const emptyMessage = (type: "checkbox" | "radio") => (type === "radio" ? "Choose one option." : "Choose at least one option.");
 
 export interface ChoicesProps {
   name: string;
@@ -59,7 +61,7 @@ export function Choices({ name, legend, options, type = "checkbox", hint, option
   const syncValidity = () => {
     const boxes = [...(group.current?.querySelectorAll("input") ?? [])];
     const empty = !!required && !boxes.some((box) => box.checked);
-    boxes.forEach((box, i) => box.setCustomValidity(empty && i === 0 ? REQUIRED : ""));
+    boxes.forEach((box, i) => box.setCustomValidity(empty && i === 0 ? emptyMessage(type) : ""));
     return boxes;
   };
   React.useLayoutEffect(() => void syncValidity());
@@ -94,7 +96,7 @@ export function Choices({ name, legend, options, type = "checkbox", hint, option
           );
         })}
       </div>
-      {showError && <p id={errorId} role="alert" className="twc-error mt-2.5">{REQUIRED}</p>}
+      {showError && <p id={errorId} role="alert" className="twc-error mt-2.5">{emptyMessage(type)}</p>}
     </fieldset>
   );
 }

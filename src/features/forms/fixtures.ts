@@ -17,7 +17,7 @@ export const DEMO_FORMS: FormDefinition[] = [
       { key: "coming", type: "radio", label: "Are you coming?", required: true, choices: [{ value: "yes", label: "Yes" }, { value: "maybe", label: "Maybe" }, { value: "no", label: "No" }] },
       { key: "diet", type: "checkboxes", label: "Anything we should know?", choices: [{ value: "vegetarian", label: "Vegetarian" }, { value: "vegan", label: "Vegan" }, { value: "no-nuts", label: "No nuts" }] },
       { key: "plus_one", type: "yesno", label: "Bringing a guest?" },
-      { key: "note", type: "paragraph", label: "Anything else?", help: "Optional." },
+      { key: "note", type: "paragraph", label: "Anything else?", help: "Access needs, questions, anything." },
     ],
   },
   {

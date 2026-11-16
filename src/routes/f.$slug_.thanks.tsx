@@ -12,7 +12,7 @@ export const Route = createFileRoute("/f/$slug_/thanks")({
     return { name: form.name, thanks: form.thanks };
   },
   head: ({ loaderData }) => ({
-    meta: [{ title: `Thank you — ${loaderData?.name ?? "Form"} — The Women’s Collective` }, { name: "robots", content: "noindex" }],
+    meta: [{ title: `Thank you — ${loaderData?.name ?? "Page not found"} — The Women’s Collective` }, { name: "robots", content: "noindex" }],
   }),
   component: ThanksPage,
 });
