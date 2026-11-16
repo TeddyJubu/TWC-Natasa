@@ -89,7 +89,12 @@
   --bl-air-radius-card: 14px; /* letters, the sidebar, the top bar */
   --bl-air-radius-cell: 10px; /* customs forms, notices, the map, fields */
   --bl-air-radius-menu: 18px; /* dropdown menus */
-  --bl-air-shadow-card: inset 0 1px 0 rgb(255 255 255 / 0.9), 0 22px 34px -28px rgb(28 44 94 / 0.6), 0 1px 2px rgb(28 44 94 / 0.08);
+  /* Grounded: paper resting on the desk, a dark tight line under a faint one (not a lift). Menus and the open pass still float. */
+  --bl-air-shadow-ground: 0 1px 1px rgb(28 44 94 / 0.32), 0 2px 3px rgb(28 44 94 / 0.12);
+  --bl-air-shadow-card: inset 0 1px 0 rgb(255 255 255 / 0.9), var(--bl-air-shadow-ground);
+  /* The same shadow as a filter, for stamp-edged paper (a mask clips box-shadow); -hover rises a pixel. */
+  --bl-air-ground: drop-shadow(0 1px 0.5px rgb(28 44 94 / 0.32)) drop-shadow(0 2px 3px rgb(28 44 94 / 0.12));
+  --bl-air-ground-hover: drop-shadow(0 2px 1px rgb(28 44 94 / 0.3)) drop-shadow(0 4px 6px rgb(28 44 94 / 0.14));
   --bl-air-shadow-menu: inset 0 0 0 1px var(--bl-air-rule), 0 22px 34px -20px rgb(28 44 94 / 0.55), 0 2px 4px rgb(28 44 94 / 0.08);
   --bl-air-shadow-lift: 0 10px 18px -12px rgb(28 44 94 / 0.6); /* the current nav item, a navy pill */
 }

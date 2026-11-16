@@ -298,7 +298,7 @@ textarea.twc-input { min-height: 132px; resize: vertical; }
 .air-icon-btn:hover { background: rgb(251 250 246 / 0.7); }
 
 /* Hero: the airmail envelope holding her member pass */
-.air-env { position: relative; margin-top: 12px; padding: 8px; border-radius: 14px; background: var(--air-chev); box-shadow: 0 34px 50px -36px rgb(28 44 94 / 0.7), 0 2px 4px rgb(28 44 94 / 0.14); scroll-margin-top: 16px; }
+.air-env { position: relative; margin-top: 12px; padding: 8px; border-radius: 14px; background: var(--air-chev); box-shadow: var(--bl-air-shadow-ground); scroll-margin-top: 16px; }
 .air-env-in { position: relative; display: grid; grid-template-areas: "top" "post" "stub"; padding: 18px 18px 20px; border-radius: 6px; background: var(--air-fiber), var(--bl-air-paper); }
 .air-pass-top { grid-area: top; display: flex; justify-content: space-between; gap: 12px; font: 500 9.5px var(--font-plex); letter-spacing: 0.14em; text-transform: uppercase; }
 .air-pass-top b { font-weight: 600; color: var(--bl-air-red); }
@@ -408,7 +408,12 @@ textarea.twc-input { min-height: 132px; resize: vertical; }
 /* Tickets: headshot session and gatherings. No outline: the edge is perforated like the portrait stamp, and the
    lift is a drop-shadow on the list, because the mask would clip the ticket's own shadow. */
 .air-ticket { position: relative; display: grid; grid-template-columns: 80px 1fr; background: #fff; -webkit-mask: var(--air-perf-edge); mask: var(--air-perf-edge); -webkit-mask-composite: source-in; mask-composite: intersect; }
-.air-tickets { display: grid; gap: 14px; filter: drop-shadow(0 12px 12px rgb(28 44 94 / 0.16)) drop-shadow(0 1px 1px rgb(28 44 94 / 0.22)); }
+.air-tickets { display: grid; gap: 14px; filter: var(--bl-air-ground); }
+/* Stamp-edged cards resting on the desk (the admin overview and form cards): the grounded shadow as a filter, so it
+   follows the mask; a hover rises one pixel, none under reduced motion. */
+.air-grounded { filter: var(--bl-air-ground); transition: translate var(--duration-base) var(--ease-snap), filter var(--duration-base) var(--ease-snap); }
+.air-grounded:hover { translate: 0 -1px; filter: var(--bl-air-ground-hover); }
+@media (prefers-reduced-motion: reduce) { .air-grounded { transition: none; } .air-grounded:hover { translate: none; } }
 .air-t-date { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 16px 0; background: var(--bl-air-navy); color: #fff; border-right: 2px dashed rgb(255 255 255 / 0.7); text-transform: uppercase; }
 .air-t-date--red { background: var(--bl-air-red); }
 .air-t-date--muted { background: var(--bl-air-muted); }
@@ -612,7 +617,7 @@ textarea.twc-input { min-height: 132px; resize: vertical; }
 .air-dir-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; margin-top: 32px; font-size: 13px; font-weight: 500; color: var(--bl-air-muted); }
 .air-dir-foot .air-icon-btn:disabled { opacity: 0.35; cursor: default; }
 /* The sheet's shadow is on the sheet: a filter on a masked stamp would be masked away with it. */
-.air-sheet { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); filter: drop-shadow(0 24px 22px rgb(28 44 94 / 0.22)) drop-shadow(0 1px 1.5px rgb(28 44 94 / 0.3)); }
+.air-sheet { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); filter: var(--bl-air-ground); }
 .air-slot { position: relative; display: block; aspect-ratio: 196 / 266; text-align: left; border-radius: 4px; --tx: -10px; --rot: -6deg; }
 .air-slot:nth-child(even) { --tx: 10px; --rot: 6deg; }
 .air-slot.is-out { z-index: 2; }
@@ -734,7 +739,7 @@ a.air-entry-name:hover { text-decoration: underline; }
 .air-compose-add.is-full { opacity: 0.4; cursor: not-allowed; }
 
 /* Her pass, in the colour she picked on /account (`pass--*`); ink is fixed, as on the pass itself. */
-.air-feed-pass { position: relative; overflow: hidden; padding: 18px; border-radius: 16px; background: var(--pass); color: #1d1c1a; box-shadow: 0 18px 26px -18px rgb(28 44 94 / 0.55), 0 1px 2px rgb(28 44 94 / 0.2); }
+.air-feed-pass { position: relative; overflow: hidden; padding: 18px; border-radius: 16px; background: var(--pass); color: #1d1c1a; box-shadow: var(--bl-air-shadow-ground); }
 .air-feed-pass::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.22; mix-blend-mode: multiply; background: var(--air-fiber); }
 .air-feed-pass-top { display: flex; justify-content: space-between; gap: 8px; font: 600 10px var(--font-plex); letter-spacing: 0.16em; text-transform: uppercase; }
 .air-feed-pass-top span { opacity: 0.75; }
