@@ -39,6 +39,7 @@ export function FeedPost({ post }: { post: Post }) {
   const remove = useDeletePost(post.id);
   const [replying, setReplying] = React.useState(false);
   const replyField = React.useRef<HTMLInputElement>(null);
+  const self = React.useRef<HTMLElement>(null);
   // While a love is on its way, show it as sent; the server's answer replaces it.
   const loved = love.isPending ? love.variables ?? post.loved : post.loved;
   const loves = post.loves + (loved === post.loved ? 0 : loved ? 1 : -1);
@@ -48,11 +49,17 @@ export function FeedPost({ post }: { post: Post }) {
     requestAnimationFrame(() => replyField.current?.focus());
   }
   function deletePost() {
-    if (window.confirm("Delete this post? Its loves and replies go with it.")) remove.mutate();
+    if (!window.confirm("Delete this post? Its loves and replies go with it.")) return;
+    // The post and its focused button go away: hand focus to the next post (else the one before, else the page), not <body>.
+    const posts = [...document.querySelectorAll<HTMLElement>("article.air-entry")];
+    const i = posts.indexOf(self.current!);
+    const next = posts[i + 1] ?? posts[i - 1] ?? document.getElementById("main");
+    // mutateAsync: a per-call onSuccess never runs once this post unmounts. A failure shows on the post (remove.isError).
+    remove.mutateAsync().then(() => next?.focus(), () => {});
   }
 
   return (
-    <article className="air-entry" aria-label={`${kind.label} from ${post.author.name}`}>
+    <article ref={self} tabIndex={-1} className={cn("air-entry", ring)} aria-label={`${kind.label} from ${post.author.name}`}>
       <header className="air-entry-h">
         <MiniStamp name={post.author.name} image={post.author.image} />
         <div className="min-w-0 flex-1">
@@ -138,8 +145,10 @@ function Thread({ post, replying, field }: { post: Post; replying: boolean; fiel
     e.preventDefault();
     if (body.trim()) send.mutate(body, { onSuccess: () => setBody("") });
   }
-  function deleteReply(r: FeedReply) {
-    if (window.confirm("Delete this reply?")) remove.mutate(r.id);
+  function deleteReply(r: FeedReply, button: HTMLElement) {
+    if (!window.confirm("Delete this reply?")) return;
+    const post = button.closest("article"); // its button goes with it, so focus returns to the post
+    remove.mutateAsync(r.id).then(() => post?.focus(), () => {});
   }
 
   return (
@@ -159,7 +168,7 @@ function Thread({ post, replying, field }: { post: Post; replying: boolean; fiel
                 <p className="air-reply-b">{r.body}</p>
               </div>
               {r.canDelete && (
-                <button type="button" onClick={() => deleteReply(r)} aria-label={`Delete reply from ${r.author.name}`} className={cn("air-icon-btn air-icon-btn--sm", ring)}>
+                <button type="button" onClick={(e) => deleteReply(r, e.currentTarget)} aria-label={`Delete reply from ${r.author.name}`} className={cn("air-icon-btn air-icon-btn--sm", ring)}>
                   <Icon name="trash" className="size-3.5" />
                 </button>
               )}
