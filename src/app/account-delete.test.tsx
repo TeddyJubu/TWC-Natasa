@@ -39,11 +39,12 @@ describe("Delete my account", () => {
     expect(emitted).toEqual(["SIGNED_OUT"]);
   });
 
-  it("Cancel goes back without deleting", () => {
+  it("Cancel goes back without deleting, and focus follows the swap both ways", () => {
     renderWithQueries(<DeleteAccount />, [viewer(false)]);
     open();
+    expect(document.activeElement).toBe(screen.getByRole("heading", { name: "Delete your account?" }));
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
-    expect(screen.getByRole("button", { name: "Delete my account" })).toBeTruthy();
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Delete my account" }));
     expect(auth.deleteUser).not.toHaveBeenCalled();
   });
 

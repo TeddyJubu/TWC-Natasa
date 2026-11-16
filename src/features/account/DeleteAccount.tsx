@@ -32,6 +32,15 @@ export function DeleteAccount() {
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const headingId = React.useId();
+  const opener = React.useRef<HTMLButtonElement>(null);
+  const heading = React.useRef<HTMLHeadingElement>(null);
+  const opened = React.useRef(false);
+
+  // The button and the confirm step swap places, so keyboard focus follows: to the step's heading (its warning is
+  // read first), and back to the button on Cancel, instead of dropping to the page.
+  React.useEffect(() => {
+    if (confirming) { opened.current = true; heading.current?.focus(); } else if (opened.current) opener.current?.focus();
+  }, [confirming]);
 
   React.useEffect(() => {
     if (!confirming) return;
@@ -77,14 +86,14 @@ export function DeleteAccount() {
     return (
       <div className="air-mrow">
         <span className="air-lbl">Delete account</span>
-        <button type="button" onClick={() => setConfirming(true)} className={secondaryButton}>Delete my account</button>
+        <button ref={opener} type="button" onClick={() => setConfirming(true)} className={secondaryButton}>Delete my account</button>
       </div>
     );
   }
 
   return (
     <form onSubmit={submit} aria-labelledby={headingId} className="flex flex-col gap-3 border-t border-air-line py-4">
-      <h3 id={headingId} className="air-lbl mb-0">Delete your account?</h3>
+      <h3 ref={heading} id={headingId} tabIndex={-1} className="air-lbl mb-0 outline-none">Delete your account?</h3>
       <p className="text-[14px]/[1.5] text-ink">
         This deletes your account, your profile and card, your portrait and logo, your newsfeed posts, loves and replies,
         your membership applications and any record imported from the old site, for good. It can’t be undone.
