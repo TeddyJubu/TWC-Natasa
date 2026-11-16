@@ -11,9 +11,6 @@ export const GUIDELINES = [
   "I confirm that this application is accurate and I may represent the business listed.",
 ] as const;
 
-/** Location choices that ask the applicant to type where she is based. */
-export const TYPED_LOCATIONS = ["Another Queens neighborhood", "Other"];
-
 /** Mirrors the `applications` table checks in migration 0001; `answersBytes` keeps a margin under the 32 KB jsonb check. */
 export const LIMITS = { fullName: 120, email: 254, neighborhood: 60, text: 2000, answersBytes: 30 * 1024 } as const;
 /** The `applications.email` check in migration 0001. */
@@ -131,8 +128,7 @@ export function parseApplication(form: FormData): ApplicationInput {
   if (email.length > LIMITS.email || !EMAIL.test(email)) {
     throw new Error("Please check “Email address”: it should look like name@example.com.");
   }
-  const basedIn = r.required("neighborhood", "Where are you based?");
-  const neighborhood = TYPED_LOCATIONS.includes(basedIn) ? r.required("other-location", "Tell us where you are based") : basedIn;
+  const neighborhood = r.required("neighborhood", "Where are you based?");
   if (neighborhood.length > LIMITS.neighborhood) throw new Error(`Please keep your location under ${LIMITS.neighborhood} characters.`);
 
   const industry = r.requiredList("industry", "Industry");
@@ -192,8 +188,8 @@ export function parseApplication(form: FormData): ApplicationInput {
     preferredName: r.text("preferred-name"),
     pronouns: r.text("pronouns"),
     phone: r.required("phone", "Phone number"),
-    basedIn,
-    connection: r.requiredList("connection", "What is your connection to Western Queens?"),
+    basedIn: neighborhood,
+    connection: r.requiredList("connection", "What is your connection to North Brooklyn?"),
     business: r.text("business"),
     role: r.required("role", "Professional title or role"),
     website: r.text("website"),

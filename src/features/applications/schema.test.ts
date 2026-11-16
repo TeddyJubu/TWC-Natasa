@@ -10,7 +10,7 @@ const minimum: Entries = {
   pronouns: " ",
   email: " rosa@x.test ",
   phone: "718-555-0100",
-  neighborhood: "Astoria",
+  neighborhood: "Williamsburg",
   connection: ["I live here", "I own a business here"],
   business: "",
   role: "Baker",
@@ -46,10 +46,10 @@ describe("parseApplication", () => {
     expect(parseApplication(formData())).toEqual({
       email: "rosa@x.test",
       fullName: "Rosa Diaz",
-      neighborhood: "Astoria",
+      neighborhood: "Williamsburg",
       answers: {
         phone: "718-555-0100",
-        basedIn: "Astoria",
+        basedIn: "Williamsburg",
         connection: ["I live here", "I own a business here"],
         role: "Baker",
         story: "I bake bread for the block.",
@@ -102,18 +102,14 @@ describe("parseApplication", () => {
     expect(parseApplication(formData({ newsletter: "no" }, ["newsletter-consent"])).answers.newsletter).toEqual({ subscribe: false });
   });
 
-  it.each(["Other", "Another Queens neighborhood"])("resolves %s to the typed location", (choice) => {
-    const parsed = parseApplication(formData({ neighborhood: choice, "other-location": "  Ridgewood " }));
-    expect(parsed.neighborhood).toBe("Ridgewood");
-    expect(parsed.answers.basedIn).toBe(choice);
-  });
-
-  it("throws a readable error when the typed location is missing", () => {
-    expect(() => parseApplication(formData({ neighborhood: "Other", "other-location": " " }))).toThrow(/where you are based/i);
+  it("stores the chosen neighborhood as both the column and the answer", () => {
+    const parsed = parseApplication(formData({ neighborhood: "Greenpoint" }));
+    expect(parsed.neighborhood).toBe("Greenpoint");
+    expect(parsed.answers.basedIn).toBe("Greenpoint");
   });
 
   it.each([
-    ["connection", /connection to Western Queens/i],
+    ["connection", /connection to North Brooklyn/i],
     ["industry", /industry/i],
     ["community-goals", /hoping to find/i],
     ["member-support", /support other members/i],

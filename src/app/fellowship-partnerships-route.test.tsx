@@ -47,9 +47,17 @@ describe.each([["/fellowship", Fellowship], ["/partnerships", Partnerships]] as 
     expect(main().textContent).not.toMatch(/[[\]]/);
   });
 
-  it("is Western Queens only: no Brooklyn place names", () => {
+  // The club is North Brooklyn (2026-11-17). /partnerships is a public form page and says so; /fellowship isn't public
+  // yet and still says Western Queens until the rest of the site moves over. Either way, a page names one area.
+  it("names one area in its own words", () => {
     show(route);
-    expect(document.body.textContent).not.toMatch(/Brooklyn|Greenpoint|Williamsburg|Bushwick/i);
+    const words = main().textContent ?? "";
+    if (path === "/partnerships") {
+      expect(words).toMatch(/North Brooklyn/);
+      expect(words).not.toMatch(/Queens/);
+    } else {
+      expect(words).not.toMatch(/Brooklyn|Greenpoint|Williamsburg|Bushwick/i);
+    }
   });
 });
 

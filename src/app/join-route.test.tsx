@@ -62,7 +62,7 @@ function fillMinimum() {
   type(/^full name$/i, "Rosa Diaz");
   type(/^email address$/i, "rosa@x.test");
   type(/^phone number$/i, "718-555-0100");
-  fireEvent.change(byLabel(/where are you based/i), { target: { value: "Astoria" } });
+  fireEvent.change(byLabel(/where are you based/i), { target: { value: "Williamsburg" } });
   check("I live here");
   type(/professional title or role/i, "Baker");
   type(/tell us about yourself and your work/i, "I bake bread for the block.");
@@ -88,7 +88,7 @@ describe("/join", () => {
     fireEvent.click(submitButton());
     await settle();
 
-    expect(inserts()).toEqual([["/api/applications", expect.objectContaining({ fullName: "Rosa Diaz", email: "rosa@x.test", neighborhood: "Astoria" })]]);
+    expect(inserts()).toEqual([["/api/applications", expect.objectContaining({ fullName: "Rosa Diaz", email: "rosa@x.test", neighborhood: "Williamsburg" })]]);
     expect(thanks()).toBeNull();
     // aria-disabled, not disabled, so focus stays on the button while sending.
     expect(submitButton().getAttribute("aria-disabled")).toBe("true");
@@ -222,6 +222,16 @@ describe("/join", () => {
     expect(within(group).getByRole("alert").textContent).toMatch(/choose at least one option/i);
     expect(inserts()).toEqual([]);
     expect(fake.calls).toEqual([]);
+  });
+});
+
+describe("/join neighborhoods", () => {
+  it("offers only Greenpoint, Williamsburg and Bushwick, and asks about North Brooklyn", () => {
+    renderSignedOut();
+    const select = byLabel(/where are you based/i) as HTMLSelectElement;
+    expect([...select.options].map((o) => o.textContent)).toEqual(["Choose a neighborhood", "Greenpoint", "Williamsburg", "Bushwick"]);
+    expect(screen.getByRole("group", { name: /connection to North Brooklyn/i })).toBeTruthy();
+    expect(document.body.textContent).not.toMatch(/Queens/);
   });
 });
 

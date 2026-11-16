@@ -20,9 +20,9 @@ export const Route = createFileRoute("/join")({
   head: () => ({
     meta: [
       { title: "Join The Women’s Collective — Membership application" },
-      { name: "description", content: "Apply to The Women’s Collective, a community connecting women across Western Queens." },
+      { name: "description", content: "Apply to The Women’s Collective, a community connecting women across North Brooklyn." },
       { property: "og:title", content: "Join The Women’s Collective — Membership application" },
-      { property: "og:description", content: "Tell us about you, your work, and how you hope to take part in our Western Queens community." },
+      { property: "og:description", content: "Tell us about you, your work, and how you hope to take part in our North Brooklyn community." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

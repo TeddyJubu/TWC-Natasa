@@ -1,11 +1,12 @@
 import * as React from "react";
 import { Icon } from "@/app/layout/twc";
 import { useCopy } from "@/features/form-copy/use-copy";
-import { GUIDELINES, LIMITS, TYPED_LOCATIONS, parseApplication, type ApplicationInput } from "./schema";
+import { GUIDELINES, LIMITS, parseApplication, type ApplicationInput } from "./schema";
 import { Check, Choices, Field, Input, LongAnswer, Notice, Section, Select } from "./twc-fields";
 
 const yesNo = [{ value: "yes", label: "Yes" }, { value: "no", label: "No" }];
-const locationOptions = ["Long Island City", "Astoria", "Sunnyside", "Woodside", "Jackson Heights", "Elmhurst", "East Elmhurst", "Forest Hills", "Rego Park", "Another Queens neighborhood", "Brooklyn", "Manhattan", "Other"];
+// The club is North Brooklyn (its old address was nbwc.site): only these three, as the owner asked on 2026-11-17.
+const locationOptions = ["Greenpoint", "Williamsburg", "Bushwick"];
 const connectionOptions = ["I live here", "I work here", "I own a business here", "I have clients here", "I regularly participate in the local community", "Other"];
 const industryOptions = ["Arts and culture", "Beauty and wellness", "Coaching and consulting", "Design and interiors", "Education", "Finance and legal", "Food and hospitality", "Health and fitness", "Marketing and media", "Mental health and healing", "Nonprofit and community work", "Parenting and family services", "Real estate", "Retail and products", "Technology", "Travel", "Writing and publishing", "Other"];
 const communityOptions = ["Professional connections", "Friendship and community", "Referrals", "Collaborators", "Clients", "Mentorship", "Education", "Local events", "Speaking opportunities", "Vendor opportunities", "Community resources", "Business visibility"];
@@ -112,7 +113,6 @@ interface FieldsProps {
 
 function ApplicationFields({ initial, busy, failure, onSubmit, onEdit }: FieldsProps) {
   const t = useCopy();
-  const [location, setLocation] = React.useState("");
   const [industry, setIndustry] = React.useState<string[]>([]);
   const [whatsApp, setWhatsApp] = React.useState("no");
   const [spotlight, setSpotlight] = React.useState("no");
@@ -152,10 +152,9 @@ function ApplicationFields({ initial, busy, failure, onSubmit, onEdit }: FieldsP
             <Field id="pronouns" label="Pronouns" optional><Input name="pronouns" /></Field>
             <Field id="email" label="Email address"><Input ref={emailInput} name="email" type="email" autoComplete="email" maxLength={254} required /></Field>
             <Field id="phone" label="Phone number"><Input name="phone" type="tel" autoComplete="tel" required /></Field>
-            <Field id="neighborhood" label="Where are you based?"><Select name="neighborhood" required value={location} onChange={(event) => setLocation(event.currentTarget.value)}><option value="">Choose a neighborhood</option>{locationOptions.map((item) => <option key={item}>{item}</option>)}</Select></Field>
-            {TYPED_LOCATIONS.includes(location) && <Field id="other-location" label="Tell us where you are based"><Input name="other-location" maxLength={LIMITS.neighborhood} required /></Field>}
+            <Field id="neighborhood" label="Where are you based?"><Select name="neighborhood" required defaultValue=""><option value="">Choose a neighborhood</option>{locationOptions.map((item) => <option key={item}>{item}</option>)}</Select></Field>
           </div>
-          <Choices name="connection" legend="What is your connection to Western Queens?" hint="Select all that apply." options={connectionOptions} required />
+          <Choices name="connection" legend="What is your connection to North Brooklyn?" hint="Select all that apply." options={connectionOptions} required />
         </Section>
 
         <Section index="02 — About your work" title="Share what you do." description="Help members understand your work in your own words.">
