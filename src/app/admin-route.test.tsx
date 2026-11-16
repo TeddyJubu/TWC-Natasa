@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import * as React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { isRedirect } from "@tanstack/react-router";
@@ -9,7 +10,8 @@ vi.mock("@/features/admin/fns", async (orig) => (await import("@/test/fake-fns")
 vi.mock("@/app/api", async () => (await import("@/test/fake-fns")).fakeApi);
 const emailApproval = vi.fn(async (_id: string) => ({ sent: true }) as { sent: true } | { sent: false; reason: string });
 vi.mock("@/features/admin/approval-email", () => ({ emailApproval: (id: string) => emailApproval(id) }));
-vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs }));
+const navigate = vi.hoisted(() => vi.fn());
+vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs, useNavigate: () => navigate }));
 vi.mock("@/features/auth/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 vi.mock("@/features/member-links/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 vi.mock("@/features/forms/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
@@ -19,12 +21,38 @@ vi.mock("@/features/form-copy/fns", async (orig) => (await import("@/test/fake-f
 import { Route as GuardRoute } from "@/routes/_authenticated/_admin/route";
 import { Route } from "@/routes/_authenticated/_admin/admin";
 import { Route as FormsRoute } from "@/routes/_authenticated/_admin/admin_.forms.index";
+import { Route as SectionRoute } from "@/routes/_authenticated/_admin/admin_.$section";
+import type { AdminSection } from "@/app/layout/shell-nav";
+import {
+  ActivityPanel, AdminSearch, ApplicationsPanel, BookingsPanel, GatheringsPanel, InboxPanel, MemberReviewsPanel, MembersPanel,
+  NeighborhoodsPanel, NewsletterPanel, SpotlightPanel,
+} from "@/features/admin/panels";
 import { Route as FormRoute } from "@/routes/_authenticated/_admin/admin_.forms.$formId";
 
 const Page = Route.options.component as React.ComponentType;
+const SectionPage = SectionRoute.options.component as React.ComponentType;
+/** One section's page at /admin/<section>. */
+const sectionPage = (section: AdminSection) => {
+  vi.spyOn(SectionRoute, "useParams").mockReturnValue({ section } as never);
+  return SectionPage;
+};
+/**
+ * Every admin card in one tree, sharing one search box, so a card's own behaviour can be tested without its page frame
+ * (each card is its own page at /admin/<section>; the page tests below cover that frame).
+ */
+function AllPanels() {
+  const [query, setQuery] = React.useState("");
+  return (
+    <>
+      <AdminSearch value={query} onChange={setQuery} />
+      <InboxPanel query={query} /><ApplicationsPanel query={query} /><MembersPanel query={query} /><NewsletterPanel query={query} />
+      <ActivityPanel /><MemberReviewsPanel /><SpotlightPanel /><NeighborhoodsPanel /><BookingsPanel /><GatheringsPanel />
+    </>
+  );
+}
 const FormsPage = FormsRoute.options.component as React.ComponentType;
 const FormPage = FormRoute.options.component as React.ComponentType;
-for (const r of [Route, FormsRoute, FormRoute]) vi.spyOn(r, "useRouteContext").mockReturnValue({ user: { id: "admin1", email: "natasa@x.test", name: "Natasa Admin" } } as never);
+for (const r of [Route, FormsRoute, FormRoute, SectionRoute]) vi.spyOn(r, "useRouteContext").mockReturnValue({ user: { id: "admin1", email: "natasa@x.test", name: "Natasa Admin" } } as never);
 afterEach(() => {
   cleanup();
   fake.reset();
@@ -82,7 +110,7 @@ const formsState = [
   { kind: "review", open: true, message: "", updated_at: "2026-11-10T00:00:00Z", updated_by: null },
 ];
 /** Seeds every admin read (empty lists, plus `members`) unless overridden; FETCH leaves that read to the queued fake results. */
-function renderAdmin(over: Partial<Record<AdminKey, unknown>> = {}, extra: [unknown[], unknown][] = [], Component = Page) {
+function renderAdmin(over: Partial<Record<AdminKey, unknown>> = {}, extra: [unknown[], unknown][] = [], Component: React.ComponentType = AllPanels) {
   const data: Record<AdminKey, unknown> = { inbox: [], applications: [], members, neighborhoods: [], bookings: [], events: [], "review-links": {}, "spotlight-links": {}, reviews: [], spotlights: [], "forms-state": formsState, "form-responses": [], notes: [], actions: [], "logged-actions": [], newsletter: [], ...over };
   const seed = Object.entries(data).filter(([, v]) => v !== FETCH).map(([k, v]) => [["admin", k], v] as [unknown[], unknown]);
   return renderWithQueries(<Component />, [...seed, ...extra]);
@@ -109,7 +137,7 @@ describe("/admin", () => {
 
   describe("shell", () => {
     it("is one main landmark with the Admin h1 in the top bar, after the skip link", () => {
-      const { container } = renderAdmin();
+      const { container } = renderAdmin({}, [], Page);
       const main = screen.getByRole("main");
       expect(screen.getAllByRole("main")).toHaveLength(1);
       expect([main.id, main.tabIndex]).toEqual(["main", -1]);
@@ -119,28 +147,68 @@ describe("/admin", () => {
       expect(main.contains(h1[0])).toBe(true);
     });
 
-    it("renders all six cards as anchored regions, and the sidebar marks the top one as here", () => {
-      renderAdmin();
-      for (const [name, id] of [["Inbox", "inbox"], ["Applications", "applications"], ["All members", "members"], ["Newsletter", "newsletter"], ["Admin activity", "activity"], ["Member reviews", "reviews"], ["Spotlight answers", "spotlight"], ["Neighborhoods", "neighborhoods"], ["Headshot bookings", "bookings"], ["Gatherings", "gatherings"]]) {
-        expect(card(name).id).toBe(id);
+    it("the overview is a card per area, each opening its own page, and the sidebar marks Overview as here", () => {
+      renderAdmin({}, [], Page);
+      // No card's contents here: only the way into each one.
+      expect(screen.queryByRole("region", { name: "Applications" })).toBeNull();
+      const tile = (name: string) => within(screen.getByRole("main")).getByRole("link", { name }).closest("article")!;
+      for (const [name, href] of [["Inbox", "/admin/inbox"], ["Applications", "/admin/applications"], ["Member reviews", "/admin/reviews"], ["Headshot bookings", "/admin/bookings"],
+        ["All members", "/admin/members"], ["Newsletter", "/admin/newsletter"], ["Spotlight answers", "/admin/spotlight"], ["Gatherings", "/admin/gatherings"],
+        ["Neighborhoods", "/admin/neighborhoods"], ["Forms", "/admin/forms"]]) {
+        expect(within(tile(name)).getByRole("link", { name }).getAttribute("href")).toBe(href);
       }
+      expect(screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent)).toEqual(["Waiting on you", "The club"]);
+      // The log is a line under the cards, not a card.
+      expect(within(screen.getByRole("main")).getByRole("link", { name: "Admin activity" }).getAttribute("href")).toBe("/admin/activity");
       const nav = screen.getAllByRole("navigation", { name: "Main" })[0];
       const link = (name: string) => within(nav).getByRole("link", { name });
-      expect(link("Inbox").getAttribute("href")).toBe("#inbox");
-      expect(link("Inbox").getAttribute("aria-current")).toBe("location");
-      expect(link("Applications").getAttribute("href")).toBe("#applications");
-      expect(link("Applications").getAttribute("aria-current")).toBeNull();
-      expect(link("Headshot bookings").getAttribute("aria-current")).toBeNull();
-      // No Collective group: only this page's Gatherings card.
-      for (const name of ["Home", "Members", "Introductions"]) expect(within(nav).queryByRole("link", { name })).toBeNull();
-      expect(link("Gatherings").getAttribute("href")).toBe("#gatherings");
-      // The other internal page's cards are router links, never "here".
+      expect(link("Overview").getAttribute("aria-current")).toBe("page");
+      expect(link("Inbox").getAttribute("href")).toBe("/admin/inbox");
+      expect(link("Inbox").getAttribute("aria-current")).toBeNull();
       expect(link("Profile").getAttribute("href")).toBe("/account#profile");
-      expect(link("Profile").getAttribute("aria-current")).toBeNull();
-      expect(screen.getByRole("button", { name: /sign out/i })).toBeTruthy();
-      // Forms are their own pages: one router link, never a card here.
-      expect(screen.queryByRole("region", { name: "Forms" })).toBeNull();
       expect(link("All forms").getAttribute("href")).toBe("/admin/forms#forms");
+      expect(screen.getByRole("button", { name: /sign out/i })).toBeTruthy();
+    });
+
+    it("the overview says what waits on you, and marks those cards", () => {
+      renderAdmin({
+        inbox: [
+          { id: "m1", kind: "contact", name: "Ana", email: "ana@x.test", topic: "Press", business: null, collaboration_type: null, message: "Hi", status: "new", created_at: "2026-11-01T15:00:00Z" },
+          { id: "m2", kind: "contact", name: "Bo", email: "bo@x.test", topic: "Press", business: null, collaboration_type: null, message: "Hi", status: "archived", created_at: "2026-11-01T15:00:00Z" },
+        ],
+        applications: [application("a1", "Pia Baker"), application("a2", "Lu Smith", { status: "approved" })],
+      }, [], Page);
+      expect(screen.getByRole("status").textContent).toBe("1 message and 1 application are waiting on you.");
+      const tile = (name: string) => within(screen.getByRole("main")).getByRole("link", { name }).closest("article")!;
+      expect(within(tile("Inbox")).getByText("to answer")).toBeTruthy();
+      expect(within(tile("Applications")).getByText("2 in all")).toBeTruthy();
+      expect(within(tile("Member reviews")).queryByText("to apply")).toBeNull();
+    });
+
+    it("the overview says so when nothing is waiting", () => {
+      renderAdmin({}, [], Page);
+      expect(screen.getByRole("status").textContent).toBe("Nothing is waiting on you.");
+    });
+
+    it("a section is its own page: its name as the h1, its one card, a search box where the card filters, and its sidebar link marked", () => {
+      renderAdmin({ applications: [application("a1", "Pia Baker")] }, [], sectionPage("applications"));
+      expect(screen.getAllByRole("main")).toHaveLength(1);
+      expect(screen.getAllByRole("heading", { level: 1 }).map((h) => h.textContent)).toEqual(["Applications"]);
+      expect(card("Applications").id).toBe("applications");
+      expect(screen.queryByRole("region", { name: "All members" })).toBeNull();
+      expect(screen.getByRole("searchbox", { name: "Search applications" })).toBeTruthy();
+      const nav = screen.getAllByRole("navigation", { name: "Main" })[0];
+      expect(within(nav).getByRole("link", { name: "Applications" }).getAttribute("aria-current")).toBe("page");
+      expect(within(nav).getByRole("link", { name: "Overview" }).getAttribute("aria-current")).toBeNull();
+      cleanup();
+      renderAdmin({}, [], sectionPage("activity"));
+      expect(screen.queryByRole("searchbox")).toBeNull();
+    });
+
+    it("an unknown section is a 404", () => {
+      const beforeLoad = SectionRoute.options.beforeLoad as (ctx: { params: { section: string } }) => void;
+      expect(() => beforeLoad({ params: { section: "nope" } })).toThrow();
+      expect(() => beforeLoad({ params: { section: "inbox" } })).not.toThrow();
     });
 
     it("/admin/forms shows your own forms first, then the built-in ones, each card opening its edit page", () => {
@@ -155,7 +223,7 @@ describe("/admin", () => {
       // The newsletter has no page of its own: a note pointing at its subscribers, not a card.
       expect(builtIn.getAllByRole("article")).toHaveLength(4);
       expect(builtIn.queryByRole("article", { name: "Newsletter" })).toBeNull();
-      expect(builtIn.getByRole("link", { name: "Newsletter" }).getAttribute("href")).toBe("/admin#newsletter");
+      expect(builtIn.getByRole("link", { name: "Newsletter" }).getAttribute("href")).toBe("/admin/newsletter");
       for (const [list, name, id, chip] of [
         [builtIn, "Membership application", "application", /Open/], [builtIn, "Member review", "review", /Open/],
         [builtIn, "Contact", "contact", /Always on/], [builtIn, "Partnership", "partnership", /Always on/],
@@ -174,7 +242,7 @@ describe("/admin", () => {
       const link = (name: string) => within(nav).getByRole("link", { name });
       expect(link("All forms").getAttribute("href")).toBe("#forms");
       expect(link("All forms").getAttribute("aria-current")).toBe("location");
-      expect(link("Inbox").getAttribute("href")).toBe("/admin#inbox");
+      expect(link("Inbox").getAttribute("href")).toBe("/admin/inbox");
     });
 
     it("a form of your own has a delete button that asks first, naming its answers; built-in forms have none", async () => {
@@ -275,7 +343,7 @@ describe("/admin", () => {
   describe("search, notes and CSV (CRM-041, CRM-055, CRM-186)", () => {
     it("one search box filters applications and members by name, email or business", async () => {
       renderAdmin({ applications: [application("a1", "Pia Baker", { answers: { business: "Crumb Co" } }), application("a2", "Lu Smith")] });
-      const search = screen.getByRole("searchbox", { name: "Search messages, applications, members and newsletter" });
+      const search = screen.getByRole("searchbox", { name: "Search" });
       fireEvent.change(search, { target: { value: "crumb" } });
       expect(within(card("Applications")).getByRole("heading", { name: "Pia Baker" })).toBeTruthy();
       expect(within(card("Applications")).queryByRole("heading", { name: "Lu Smith" })).toBeNull();
@@ -429,21 +497,20 @@ describe("/admin", () => {
       expect(within(panel).getByText("new@x.test")).toBeTruthy();
       expect(within(panel).getByText(/Consented · Website/)).toBeTruthy();
       expect(within(panel).getByText(/Imported — consent unknown · Beehiiv/)).toBeTruthy();
-      fireEvent.change(screen.getByRole("searchbox", { name: "Search messages, applications, members and newsletter" }), { target: { value: "old@" } });
+      fireEvent.change(screen.getByRole("searchbox", { name: "Search" }), { target: { value: "old@" } });
       expect(within(panel).queryByText("new@x.test")).toBeNull();
       expect(within(panel).getByText("old@x.test")).toBeTruthy();
     });
   });
 
-  it("arriving at /admin#bookings marks Headshot bookings as here and focuses its heading (route focus skips hash URLs)", () => {
+  it("an old /admin#<card> link (alert emails, bookmarks) forwards to that card's page", () => {
     window.history.replaceState(null, "", "/admin#bookings");
     try {
-      renderAdmin();
-      const nav = screen.getAllByRole("navigation", { name: "Main" })[0];
-      expect(within(nav).getByRole("link", { name: "Headshot bookings" }).getAttribute("aria-current")).toBe("location");
-      expect(document.activeElement).toBe(within(card("Headshot bookings")).getByRole("heading", { level: 2 }));
+      renderAdmin({}, [], Page);
+      expect(navigate).toHaveBeenCalledWith({ to: "/admin/$section", params: { section: "bookings" }, replace: true });
     } finally {
       window.history.replaceState(null, "", "/");
+      navigate.mockReset();
     }
   });
 
@@ -664,7 +731,7 @@ describe("/admin", () => {
       const summary = within(card("Summary"));
       expect(card("Summary").textContent).toMatch(/Open.*Visitors can fill it in now\./);
       expect(summary.getByRole("link", { name: /\/join/ }).getAttribute("href")).toBe("/join");
-      expect(summary.getByRole("link", { name: "Applications" }).getAttribute("href")).toBe("/admin#applications");
+      expect(summary.getByRole("link", { name: "Applications" }).getAttribute("href")).toBe("/admin/applications");
       expect((within(card("Open or closed")).getByRole("switch", { name: /Open for answers/ }) as HTMLInputElement).checked).toBe(true);
       // The wording box starts from what the page says now: the saved text where there is one, the default elsewhere.
       const wording = within(card("Wording"));

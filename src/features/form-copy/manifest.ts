@@ -135,9 +135,9 @@ export type BuiltIn = (typeof BUILT_IN)[number];
 export const isBuiltIn = (value: unknown): value is BuiltIn => BUILT_IN.includes(value as BuiltIn);
 
 export const BUILT_IN_INFO: Record<BuiltIn, { title: string; href?: string; answers: [label: string, href: string]; note: string }> = {
-  application: { title: "Membership application", href: "/join", answers: ["Applications", "/admin#applications"], note: "The membership application. Can be closed." },
-  review: { title: "Member review", href: "/review", answers: ["Member reviews", "/admin#reviews"], note: "Personal single-use links for current members. Can be closed." },
-  contact: { title: "Contact", href: "/contact", answers: ["Inbox", "/admin#inbox"], note: "Always on." },
-  partnership: { title: "Partnership", href: "/partnerships", answers: ["Inbox", "/admin#inbox"], note: "Always on." },
-  newsletter: { title: "Newsletter", answers: ["Newsletter", "/admin#newsletter"], note: "No public signup page yet; sign-ups come from the membership application’s opt-in." },
+  application: { title: "Membership application", href: "/join", answers: ["Applications", "/admin/applications"], note: "The membership application. Can be closed." },
+  review: { title: "Member review", href: "/review", answers: ["Member reviews", "/admin/reviews"], note: "Personal single-use links for current members. Can be closed." },
+  contact: { title: "Contact", href: "/contact", answers: ["Inbox", "/admin/inbox"], note: "Always on." },
+  partnership: { title: "Partnership", href: "/partnerships", answers: ["Inbox", "/admin/inbox"], note: "Always on." },
+  newsletter: { title: "Newsletter", answers: ["Newsletter", "/admin/newsletter"], note: "No public signup page yet; sign-ups come from the membership application’s opt-in." },
 };

@@ -183,7 +183,7 @@ export async function alertReview(db: DB, reviewId: string): Promise<void> {
     if (!r) return;
     const { membership } = JSON.parse(r.answers) as { membership?: string };
     const text = [`${oneLine(r.full_name)} has sent a member review and ${STAYING[membership ?? ""] ?? "answered"}.`, "",
-      `Read it, apply what it asks and mark it handled in the Member reviews card: ${appUrl()}/admin#reviews`].join("\n");
+      `Read it, apply what it asks and mark it handled in the Member reviews card: ${appUrl()}/admin/reviews`].join("\n");
     if (!(await notifyAdmins(db, { subject: oneLine(`Member review: ${r.full_name}`), text }))) console.warn("[review] stored, but no admin email went out");
   } catch {
     console.warn("[review] stored, but the admin alert failed");

@@ -5,8 +5,9 @@ import type { IconName } from "./icons";
 
 /** The internal pages: each renders `AppShell` with its own path. */
 /** `/admin/forms/edit` stands for any one form's edit page: no sidebar card is "here" on it. */
-export type ShellPage = "/account" | "/admin" | "/admin/forms" | "/admin/forms/edit";
-export type NavItem = { label: string; icon: IconName; to: "/account" | "/admin" | "/admin/forms"; hash?: string };
+export type ShellPage = "/account" | "/admin" | "/admin/forms" | "/admin/forms/edit" | `/admin/${AdminSection}`;
+/** `section`: one of the admin's own pages, /admin/<section> (a router link, current while you're on it). */
+export type NavItem = { label: string; icon: IconName; to: "/account" | "/admin" | "/admin/forms"; hash?: string; section?: AdminSection };
 export type NavGroup = { label: string; items: NavItem[] };
 
 export const MY_ACCOUNT: NavItem[] = [
@@ -15,18 +16,28 @@ export const MY_ACCOUNT: NavItem[] = [
   { label: "Visibility", icon: "eye", to: "/account", hash: "visibility" },
   { label: "Headshot session", icon: "camera", to: "/account", hash: "headshot" },
 ];
+/**
+ * The admin's pages: /admin is the overview, and each section has its own page at /admin/<section>. Work that waits on
+ * someone comes first. A section's slug is also its card's id, so an old /admin#<slug> link (in sent emails) forwards there.
+ */
+export const ADMIN_SECTIONS = ["inbox", "applications", "reviews", "bookings", "members", "newsletter", "spotlight", "gatherings", "neighborhoods", "activity"] as const;
+export type AdminSection = (typeof ADMIN_SECTIONS)[number];
+export const isAdminSection = (s: string): s is AdminSection => (ADMIN_SECTIONS as readonly string[]).includes(s);
 export const ADMIN: NavItem[] = [
-  { label: "Inbox", icon: "mail", to: "/admin", hash: "inbox" },
-  { label: "Applications", icon: "notebook-pen", to: "/admin", hash: "applications" },
-  { label: "All members", icon: "badge-check", to: "/admin", hash: "members" },
-  { label: "Newsletter", icon: "mail", to: "/admin", hash: "newsletter" },
-  { label: "Admin activity", icon: "notebook-pen", to: "/admin", hash: "activity" },
-  { label: "Member reviews", icon: "notebook-pen", to: "/admin", hash: "reviews" },
-  { label: "Spotlight answers", icon: "notebook-pen", to: "/admin", hash: "spotlight" },
-  { label: "Neighborhoods", icon: "map-pin", to: "/admin", hash: "neighborhoods" },
-  { label: "Headshot bookings", icon: "calendar", to: "/admin", hash: "bookings" },
-  { label: "Gatherings", icon: "calendar-days", to: "/admin", hash: "gatherings" },
+  { label: "Overview", icon: "house", to: "/admin" },
+  { label: "Inbox", icon: "mail", to: "/admin", section: "inbox" },
+  { label: "Applications", icon: "notebook-pen", to: "/admin", section: "applications" },
+  { label: "Member reviews", icon: "message-circle", to: "/admin", section: "reviews" },
+  { label: "Headshot bookings", icon: "camera", to: "/admin", section: "bookings" },
+  { label: "All members", icon: "badge-check", to: "/admin", section: "members" },
+  { label: "Newsletter", icon: "newspaper", to: "/admin", section: "newsletter" },
+  { label: "Spotlight answers", icon: "megaphone", to: "/admin", section: "spotlight" },
+  { label: "Gatherings", icon: "calendar-days", to: "/admin", section: "gatherings" },
+  { label: "Neighborhoods", icon: "map-pin", to: "/admin", section: "neighborhoods" },
+  { label: "Admin activity", icon: "shield-check", to: "/admin", section: "activity" },
 ];
+/** A section's sidebar entry (its label and icon). */
+export const sectionItem = (section: AdminSection) => ADMIN.find((i) => i.section === section)!;
 export const FORMS: NavItem[] = [
   { label: "All forms", icon: "notebook-pen", to: "/admin/forms", hash: "forms" },
 ];

@@ -22,7 +22,9 @@ function Brand({ className }: { className?: string }) {
 /** A card on this page is an in-page anchor (aria-current while it's in view); anything else is a router link. */
 function NavLink({ item, page, active, onNavigate }: { item: NavItem; page: ShellPage; active: string; onNavigate?: () => void }) {
   const here = item.to === page && !!item.hash;
-  const current = here && item.hash === active;
+  // A page of its own (an admin section, or the overview) is current while you're on it.
+  const onPage = !item.hash && (item.section ? page === `/admin/${item.section}` : page === item.to);
+  const current = onPage || (here && item.hash === active);
   const cls = cn(
     "flex min-h-11 w-full items-center gap-3 rounded-xl px-3.5 text-sm/[1.3] transition-colors duration-150 motion-reduce:transition-none",
     current ? "bg-ink font-semibold text-app shadow-air-lift" : "font-medium text-app-muted hover:bg-air-tint hover:text-ink", ring,
@@ -32,7 +34,9 @@ function NavLink({ item, page, active, onNavigate }: { item: NavItem; page: Shel
     <li>
       {here
         ? <a href={`#${item.hash}`} aria-current={current ? "location" : undefined} className={cls} onClick={onNavigate}>{body}</a>
-        : <Link to={item.to} hash={item.hash} className={cls} onClick={onNavigate}>{body}</Link>}
+        : item.section
+          ? <Link to="/admin/$section" params={{ section: item.section }} aria-current={current ? "page" : undefined} className={cls} onClick={onNavigate}>{body}</Link>
+          : <Link to={item.to} hash={item.hash} aria-current={current ? "page" : undefined} className={cls} onClick={onNavigate}>{body}</Link>}
     </li>
   );
 }
@@ -43,7 +47,7 @@ function ShellNav({ page, admin, active, onSignOut, onNavigate }: {
 }) {
   const list = (items: NavItem[]) => (
     <ul className="flex flex-col gap-0.5">
-      {items.map((i) => <NavLink key={`${i.to}#${i.hash}`} item={i} page={page} active={active} onNavigate={onNavigate} />)}
+      {items.map((i) => <NavLink key={`${i.to}#${i.hash ?? i.section ?? ""}`} item={i} page={page} active={active} onNavigate={onNavigate} />)}
     </ul>
   );
   return (

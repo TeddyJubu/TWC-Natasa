@@ -52,7 +52,7 @@ describe("review-received alert", () => {
     const [mail] = sent.mails;
     expect(mail!.subject).toBe("Member review: Bea Lopez");
     expect(mail!.text).toContain("Bea Lopez has sent a member review and wants to leave");
-    expect(mail!.text).toContain("https://new.example/admin#reviews");
+    expect(mail!.text).toContain("https://new.example/admin/reviews");
     expect(mail!.text).not.toContain("private notes");
     expect(mail!.text).not.toContain("bea@x.test");
   });

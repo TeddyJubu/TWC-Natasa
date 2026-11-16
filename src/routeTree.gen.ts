@@ -52,6 +52,7 @@ import { Route as AuthenticatedAdminAdminRouteImport } from './routes/_authentic
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiFormsSlugRouteImport } from './routes/api/forms.$slug'
 import { Route as FSlugThanksRouteImport } from './routes/f.$slug_.thanks'
+import { Route as AuthenticatedAdminAdminSectionRouteImport } from './routes/_authenticated/_admin/admin_.$section'
 import { Route as AuthenticatedAdminAdminFormsIndexRouteImport } from './routes/_authenticated/_admin/admin_.forms.index'
 import { Route as AuthenticatedAdminAdminFormsFormIdRouteImport } from './routes/_authenticated/_admin/admin_.forms.$formId'
 
@@ -269,6 +270,12 @@ const FSlugThanksRoute = FSlugThanksRouteImport.update({
   path: '/f/$slug/thanks',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminAdminSectionRoute =
+  AuthenticatedAdminAdminSectionRouteImport.update({
+    id: '/admin_/$section',
+    path: '/admin/$section',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminAdminFormsIndexRoute =
   AuthenticatedAdminAdminFormsIndexRouteImport.update({
     id: '/admin_/forms/',
@@ -324,6 +331,7 @@ export interface FileRoutesByFullPath {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/forms/$slug': typeof ApiFormsSlugRoute
   '/f/$slug/thanks': typeof FSlugThanksRoute
+  '/admin/$section': typeof AuthenticatedAdminAdminSectionRoute
   '/admin/forms/$formId': typeof AuthenticatedAdminAdminFormsFormIdRoute
   '/admin/forms/': typeof AuthenticatedAdminAdminFormsIndexRoute
 }
@@ -369,6 +377,7 @@ export interface FileRoutesByTo {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/forms/$slug': typeof ApiFormsSlugRoute
   '/f/$slug/thanks': typeof FSlugThanksRoute
+  '/admin/$section': typeof AuthenticatedAdminAdminSectionRoute
   '/admin/forms/$formId': typeof AuthenticatedAdminAdminFormsFormIdRoute
   '/admin/forms': typeof AuthenticatedAdminAdminFormsIndexRoute
 }
@@ -417,6 +426,7 @@ export interface FileRoutesById {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/forms/$slug': typeof ApiFormsSlugRoute
   '/f/$slug_/thanks': typeof FSlugThanksRoute
+  '/_authenticated/_admin/admin_/$section': typeof AuthenticatedAdminAdminSectionRoute
   '/_authenticated/_admin/admin_/forms/$formId': typeof AuthenticatedAdminAdminFormsFormIdRoute
   '/_authenticated/_admin/admin_/forms/': typeof AuthenticatedAdminAdminFormsIndexRoute
 }
@@ -464,6 +474,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/forms/$slug'
     | '/f/$slug/thanks'
+    | '/admin/$section'
     | '/admin/forms/$formId'
     | '/admin/forms/'
   fileRoutesByTo: FileRoutesByTo
@@ -509,6 +520,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/forms/$slug'
     | '/f/$slug/thanks'
+    | '/admin/$section'
     | '/admin/forms/$formId'
     | '/admin/forms'
   id:
@@ -556,6 +568,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/forms/$slug'
     | '/f/$slug_/thanks'
+    | '/_authenticated/_admin/admin_/$section'
     | '/_authenticated/_admin/admin_/forms/$formId'
     | '/_authenticated/_admin/admin_/forms/'
   fileRoutesById: FileRoutesById
@@ -904,6 +917,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FSlugThanksRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/_admin/admin_/$section': {
+      id: '/_authenticated/_admin/admin_/$section'
+      path: '/admin/$section'
+      fullPath: '/admin/$section'
+      preLoaderRoute: typeof AuthenticatedAdminAdminSectionRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/_admin/admin_/forms/': {
       id: '/_authenticated/_admin/admin_/forms/'
       path: '/admin/forms'
@@ -923,6 +943,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminAdminRoute: typeof AuthenticatedAdminAdminRoute
+  AuthenticatedAdminAdminSectionRoute: typeof AuthenticatedAdminAdminSectionRoute
   AuthenticatedAdminAdminFormsFormIdRoute: typeof AuthenticatedAdminAdminFormsFormIdRoute
   AuthenticatedAdminAdminFormsIndexRoute: typeof AuthenticatedAdminAdminFormsIndexRoute
 }
@@ -930,6 +951,7 @@ interface AuthenticatedAdminRouteRouteChildren {
 const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
   {
     AuthenticatedAdminAdminRoute: AuthenticatedAdminAdminRoute,
+    AuthenticatedAdminAdminSectionRoute: AuthenticatedAdminAdminSectionRoute,
     AuthenticatedAdminAdminFormsFormIdRoute:
       AuthenticatedAdminAdminFormsFormIdRoute,
     AuthenticatedAdminAdminFormsIndexRoute:

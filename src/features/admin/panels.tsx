@@ -6,6 +6,7 @@ import { cn, constellationLogoSrcSet, initials } from "@/index";
 import { fieldClass, linkClass, primaryButton, ring, secondaryButton } from "@/app/layout/app-classes";
 import { Card, Chip, InlineError, Toggle, type ChipTone } from "@/app/layout/app-ui";
 import { Icon } from "@/app/layout/icons";
+import { sectionItem, type AdminSection } from "@/app/layout/shell-nav";
 import { toneFor } from "@/features/neighborhoods/tone";
 import { useNeighborhoods } from "@/features/neighborhoods/queries";
 import { pickerNames } from "@/features/neighborhoods/options";
@@ -182,11 +183,11 @@ function FilterSelect({ id, label, value, options, onChange }: { id: string; lab
   );
 }
 
-/** The page's search box (CRM-041): filters Inbox, Applications, Members and Newsletter as she types. */
-export function AdminSearch({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+/** A section page's search box (CRM-041): filters its card as she types. `label` names what it searches. */
+export function AdminSearch({ value, onChange, label = "Search" }: { value: string; onChange: (value: string) => void; label?: string }) {
   return (
     <div role="search" className="flex flex-col gap-1.5">
-      <label htmlFor="admin-search" className="text-sm font-medium text-ink">Search messages, applications, members and newsletter</label>
+      <label htmlFor="admin-search" className="text-sm font-medium text-ink">{label}</label>
       <input id="admin-search" type="search" value={value} onChange={(e) => onChange(e.currentTarget.value)} autoComplete="off"
         aria-describedby="admin-search-hint" className={cn(fieldClass, "max-w-120")} />
       <p id="admin-search-hint" className="twc-hint">Name, email or business</p>
@@ -1946,5 +1947,122 @@ function GuestList({ event, onClose }: { event: AdminEvent; onClose: () => void 
         </ul>
       )}
     </section>
+  );
+}
+
+// ---------- Overview (/admin) ----------
+
+type QueryState = { isError: boolean; isPending: boolean };
+/** One area on the overview: its figure, a chip when something waits on you, and a line of context. */
+type TileData = { figure: number | null; unit: string; waiting?: string | null; note?: string | null; query: QueryState };
+
+/** The whole tile is its section's link (the heading's link stretches over it), like the form cards. */
+function OverviewTile({ section, tile }: { section: AdminSection | "forms"; tile: TileData }) {
+  const item = section === "forms" ? { label: "Forms", icon: "notebook-pen" as const } : sectionItem(section);
+  const headingId = `overview-${section}`;
+  const linkCls = "outline-none after:absolute after:inset-0 after:content-['']";
+  const note = tile.query.isError ? "Couldn’t load this. Open it to try again." : tile.note;
+  return (
+    <article aria-labelledby={headingId}
+      className="group relative rounded-md transition-transform duration-150 ease-snap hover:-translate-y-0.5 has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-app-accent motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+      <Ticket stamp className="h-full"
+        stub={(
+          <div className="flex items-center justify-between gap-3 text-[13px] text-app-muted">
+            <span className="min-w-0">{note || "Open"}</span>
+            <Icon name="arrow-right" className="size-4 shrink-0 text-ink transition-transform duration-150 group-hover:translate-x-0.5 motion-reduce:transition-none" />
+          </div>
+        )}>
+        <div className="flex items-start justify-between gap-3">
+          <h3 id={headingId} className="flex min-w-0 items-center gap-2 font-gilda text-[22px]/[1.2] text-ink">
+            <Icon name={item.icon} className="size-4.5 shrink-0 text-app-muted" />
+            {section === "forms"
+              ? <Link to="/admin/forms" className={linkCls}>{item.label}</Link>
+              : <Link to="/admin/$section" params={{ section }} className={linkCls}>{item.label}</Link>}
+          </h3>
+          {tile.waiting && <Chip tone="pending">{tile.waiting}</Chip>}
+        </div>
+        <p className="flex items-baseline gap-2">
+          <span className="font-gilda text-[40px]/[1] text-ink tabular-nums">{tile.figure ?? "–"}</span>
+          <span className="twc-eyebrow">{tile.unit}</span>
+        </p>
+      </Ticket>
+    </article>
+  );
+}
+
+const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
+
+/** /admin: what waits on you first, then every other area, each a card opening its own page. */
+export function AdminOverview() {
+  const inbox = useQuery(adminInboxQuery);
+  const apps = useQuery(adminApplicationsQuery);
+  const reviews = useQuery(adminReviewsQuery);
+  const bookings = useQuery(adminBookingsQuery);
+  const members = useQuery(adminMembersQuery);
+  const newsletter = useQuery(adminNewsletterQuery);
+  const spotlights = useQuery(adminSpotlightsQuery);
+  const events = useQuery(adminEventsQuery);
+  const hoods = useQuery(adminNeighborhoodsQuery);
+  const actions = useQuery(adminActionsQuery);
+  const forms = useQuery(adminFormResponsesQuery);
+
+  const newMessages = inbox.data?.filter((m) => m.status === "new").length ?? null;
+  const pending = apps.data?.filter((a) => a.status === "pending").length ?? null;
+  const duplicates = apps.data?.filter((a) => a.duplicate).length ?? 0;
+  const waitingReviews = reviews.data?.length ?? null;
+  const requested = bookings.data?.filter((b) => b.status === "requested").length ?? null;
+  const now = new Date().toISOString();
+  const upcoming = events.data?.filter((e) => e.starts_at >= now).sort((a, b) => a.starts_at.localeCompare(b.starts_at));
+
+  const waiting: [AdminSection, TileData][] = [
+    ["inbox", { figure: newMessages, unit: "new", waiting: newMessages ? "to answer" : null, note: "Contact messages and partnership inquiries", query: inbox }],
+    ["applications", { figure: pending, unit: "pending", waiting: pending ? "to review" : null,
+      note: apps.data && `${apps.data.length} in all${duplicates ? ` · ${plural(duplicates, "possible duplicate")}` : ""}`, query: apps }],
+    ["reviews", { figure: waitingReviews, unit: "to read", waiting: waitingReviews ? "to apply" : null, note: "Members’ answers to their review links", query: reviews }],
+    ["bookings", { figure: requested, unit: "requested", waiting: requested ? "to confirm" : null,
+      note: bookings.data && `${bookings.data.filter((b) => b.status === "confirmed").length} confirmed`, query: bookings }],
+  ];
+  const club: [AdminSection, TileData][] = [
+    ["members", { figure: members.data?.filter((m) => m.status === "approved").length ?? null, unit: "approved",
+      note: members.data && `${members.data.length} profiles in all`, query: members }],
+    ["newsletter", { figure: newsletter.data?.length ?? null, unit: "subscribers", note: "Read-only list", query: newsletter }],
+    ["spotlight", { figure: spotlights.data?.length ?? null, unit: "answers",
+      note: spotlights.data?.[0] ? `Newest ${formatDate(spotlights.data[0].created_at)}` : "Invite members from All members", query: spotlights }],
+    ["gatherings", { figure: upcoming?.length ?? null, unit: "coming up",
+      note: upcoming?.[0] ? `Next: ${upcoming[0].title}, ${eventWhen(upcoming[0].starts_at)}` : "Put the next one on the calendar", query: events }],
+    ["neighborhoods", { figure: hoods.data?.filter((h) => h.active).length ?? null, unit: "active", note: hoods.data && `${hoods.data.length} in all`, query: hoods }],
+  ];
+  const openForms = forms.data?.filter((f) => f.state === "open").length ?? null;
+
+  const counts = ([[newMessages, "message"], [pending, "application"], [waitingReviews, "member review"], [requested, "headshot request"]] as const)
+    .filter(([n]) => n);
+  const loaded = [inbox, apps, reviews, bookings].every((q) => !q.isPending);
+  const phrases = counts.map(([n, what]) => plural(n!, what));
+  const list = phrases.length > 1 ? `${phrases.slice(0, -1).join(", ")} and ${phrases.at(-1)}` : phrases[0];
+  // "1 message is waiting", but "2 messages are" and "1 message and 1 application are".
+  const verb = counts.length === 1 && counts[0]![0] === 1 ? "is" : "are";
+  const summary = !loaded ? "Checking what’s waiting…" : counts.length === 0 ? "Nothing is waiting on you." : `${list} ${verb} waiting on you.`;
+
+  return (
+    <div className="flex flex-col gap-12">
+      <section aria-labelledby="overview-waiting" className="flex flex-col gap-4">
+        <SectionHead id="overview-waiting" title="Waiting on you"><span role="status">{summary}</span></SectionHead>
+        {/* Two by two, so the four never leave one card alone on a row. */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">{waiting.map(([section, tile]) => <OverviewTile key={section} section={section} tile={tile} />)}</div>
+      </section>
+      <section aria-labelledby="overview-club" className="flex flex-col gap-4">
+        <SectionHead id="overview-club" title="The club">Members, the calendar and the records. Open one to change it.</SectionHead>
+        <div className={cardGrid}>
+          {club.map(([section, tile]) => <OverviewTile key={section} section={section} tile={tile} />)}
+          <OverviewTile section="forms" tile={{ figure: openForms, unit: "open", note: "Your /f/… forms and the site’s own", query: forms }} />
+        </div>
+        {/* A record, not something to manage, so a line rather than a card. */}
+        <p className={meta}>
+          Every approve, decline, note and neighborhood change is logged in{" "}
+          <Link to="/admin/$section" params={{ section: "activity" }} className={linkClass}>Admin activity</Link>
+          {actions.data?.[0] ? ` (latest ${formatDate(actions.data[0].created_at)})` : ""}.
+        </p>
+      </section>
+    </div>
   );
 }

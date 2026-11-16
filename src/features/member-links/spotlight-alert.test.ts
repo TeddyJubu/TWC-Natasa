@@ -56,7 +56,7 @@ describe("spotlight-received alert", () => {
     const [mail] = sent.mails;
     expect(mail!.subject).toBe("Spotlight answer: Bea Lopez");
     expect(mail!.text).toContain("Bea Lopez has sent a Weekly Spotlight answer.");
-    expect(mail!.text).toContain("https://new.example/admin#spotlight");
+    expect(mail!.text).toContain("https://new.example/admin/spotlight");
     expect(mail!.text).not.toContain("private notes");
     expect(mail!.text).not.toContain("Books.");
   });

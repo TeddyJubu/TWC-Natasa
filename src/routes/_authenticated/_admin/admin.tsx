@@ -1,8 +1,9 @@
 import * as React from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AppPage } from "@/app/layout/AppLayout";
 import { AppShell, TopBar } from "@/app/layout/AppShell";
-import { ActivityPanel, AdminSearch, ApplicationsPanel, BookingsPanel, InboxPanel, GatheringsPanel, MemberReviewsPanel, MembersPanel, NeighborhoodsPanel, NewsletterPanel, SpotlightPanel } from "@/features/admin/panels";
+import { isAdminSection } from "@/app/layout/shell-nav";
+import { AdminOverview } from "@/features/admin/panels";
 
 export const Route = createFileRoute("/_authenticated/_admin/admin")({
   head: () => ({
@@ -14,28 +15,25 @@ export const Route = createFileRoute("/_authenticated/_admin/admin")({
   component: AdminPage,
 });
 
-/** The admin cards on one page; the sidebar's Admin group anchors each. The `_admin` guard only lets admins in. */
+/**
+ * The overview: what waits on you, then every other area, each opening its own page (/admin/<section>). The `_admin`
+ * guard only lets admins in. An old /admin#<card> link (alert emails, bookmarks) forwards to that card's page; the
+ * hash never reaches the server, so this happens here.
+ */
 function AdminPage() {
   const { user } = Route.useRouteContext();
-  const [query, setQuery] = React.useState("");
+  const navigate = useNavigate();
+  React.useEffect(() => {
+    const hash = window.location.hash.slice(1);
+    if (isAdminSection(hash)) void navigate({ to: "/admin/$section", params: { section: hash }, replace: true });
+  }, [navigate]);
   return (
     <AppPage trail={false}>
       <AppShell page="/admin" admin>
         <main id="main" tabIndex={-1} className="outline-none">
           <TopBar title="Admin" heading who={{ name: user.name || user.email }} />
           <div className="flex max-w-250 flex-col gap-6 px-4 pt-5 pb-14 sm:px-8 sm:pt-8">
-            <p className="text-[15px] text-app-muted">Answer messages, review applications, welcome members, read their reviews, and Spotlight answers, shape neighborhoods, confirm headshot sessions and put gatherings on the calendar.</p>
-            <AdminSearch value={query} onChange={setQuery} />
-            <InboxPanel query={query} />
-            <ApplicationsPanel query={query} />
-            <MembersPanel query={query} />
-            <NewsletterPanel query={query} />
-            <ActivityPanel />
-            <MemberReviewsPanel />
-            <SpotlightPanel />
-            <NeighborhoodsPanel />
-            <BookingsPanel />
-            <GatheringsPanel />
+            <AdminOverview />
           </div>
         </main>
       </AppShell>

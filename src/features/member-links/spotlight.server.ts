@@ -71,7 +71,7 @@ export async function alertSpotlight(db: DB, spotlightId: string): Promise<void>
     const r = db.prepare("select full_name from spotlight_answers where id = ?").get(spotlightId) as { full_name: string } | undefined;
     if (!r) return;
     const text = [`${oneLine(r.full_name)} has sent a Weekly Spotlight answer.`, "",
-      `Read it in the Spotlight answers card: ${appUrl()}/admin#spotlight`].join("\n");
+      `Read it in the Spotlight answers card: ${appUrl()}/admin/spotlight`].join("\n");
     if (!(await notifyAdmins(db, { subject: oneLine(`Spotlight answer: ${r.full_name}`), text }))) console.warn("[spotlight] stored, but no admin email went out");
   } catch {
     console.warn("[spotlight] stored, but the admin alert failed");

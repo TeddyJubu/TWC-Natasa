@@ -52,7 +52,7 @@ describe("application-received alert", () => {
     const [mail] = admins;
     expect(mail!.subject).toBe("New application: Bea Lopez");
     expect(mail!.text).toContain("Bea Lopez has sent a membership application.");
-    expect(mail!.text).toContain("https://new.example/admin#applications");
+    expect(mail!.text).toContain("https://new.example/admin/applications");
     expect(mail!.text).not.toContain("private notes");
     expect(mail!.text).not.toContain("bea@x.test");
   });

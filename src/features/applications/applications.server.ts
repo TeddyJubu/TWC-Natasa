@@ -31,7 +31,7 @@ export function submitApplication({ db, actor }: Ctx, input: unknown): Stored {
 export async function alertApplication(db: DB, { fullName }: Pick<Stored, "fullName">): Promise<void> {
   try {
     const text = [`${oneLine(fullName)} has sent a membership application.`, "",
-      `Read it in the Applications card: ${appUrl()}/admin#applications`].join("\n");
+      `Read it in the Applications card: ${appUrl()}/admin/applications`].join("\n");
     if (!(await notifyAdmins(db, { subject: oneLine(`New application: ${fullName}`), text }))) console.warn("[application] stored, but no admin email went out");
   } catch {
     console.warn("[application] stored, but the admin alert failed");
