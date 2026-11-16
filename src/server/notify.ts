@@ -22,12 +22,22 @@ export function firstName(name: string): string {
 export const confirmFooter = (form: string) =>
   `You're getting this because this address was used on our ${form}. If that wasn't you, you can ignore this email; we won't write again unless you do.\n\nThe Women's Collective\n`;
 
-const adminAddresses = (db: DB) =>
-  (db.prepare(`select distinct u.email from "user" u join user_roles r on r.user_id = u.id where r.role = 'admin'`).all() as { email: string }[]).map((a) => a.email);
+/**
+ * Who gets the alerts: the club's inbox when server env ADMIN_ALERT_TO is set (comma-separated; it lives only in the
+ * server's environment, since this repository is public), otherwise every admin account.
+ */
+export function adminAddresses(db: DB): string[] {
+  const inbox = (process.env.ADMIN_ALERT_TO ?? "").split(",").map((a) => a.trim()).filter(Boolean);
+  if (inbox.length) return inbox;
+  return (db.prepare(`select distinct u.email from "user" u join user_roles r on r.user_id = u.id where r.role = 'admin'`).all() as { email: string }[]).map((a) => a.email);
+}
 
-/** Emails every admin separately; true when at least one went out. Callers store first, so false is a warning, not an error. */
+/** Emails each recipient separately; true when at least one went out. Callers store first, so false is a warning, not an error. */
 export async function notifyAdmins(db: DB, { subject, text }: Pick<Email, "subject" | "text">): Promise<boolean> {
-  const results = await Promise.all(adminAddresses(db).map((to) => sendEmail({ to, subject, text })));
+  const to = adminAddresses(db);
+  const results = await Promise.all(to.map((address) => sendEmail({ to: address, subject, text })));
+  // The server log is the only place a lost alert shows up.
+  results.forEach((r, i) => { if (!r.sent) console.warn(`[notify] admin alert to ${to[i]} not sent (${r.reason})`); });
   return results.some((r) => r.sent);
 }
 

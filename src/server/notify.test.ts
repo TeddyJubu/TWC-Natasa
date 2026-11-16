@@ -1,6 +1,6 @@
 // firstName / confirmFooter: greeting-safe names and the fixed confirmation footer.
-import { describe, expect, it } from "vitest";
-import { confirmFooter, firstName, oneLine } from "./notify";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { adminAddresses, confirmFooter, firstName, oneLine } from "./notify";
 
 describe("firstName", () => {
   it("takes the first word of a plain name", () => {
@@ -29,5 +29,20 @@ describe("oneLine / confirmFooter", () => {
     expect(confirmFooter("contact form")).toContain("contact form");
     expect(confirmFooter("contact form")).toContain("If that wasn't you");
     expect(confirmFooter("contact form")).toContain("The Women's Collective");
+  });
+});
+
+describe("adminAddresses", () => {
+  const db = { prepare: () => ({ all: () => [{ email: "admin-a@x.test" }, { email: "admin-b@x.test" }] }) } as unknown as Parameters<typeof adminAddresses>[0];
+  afterEach(() => { vi.unstubAllEnvs(); });
+
+  it("is every admin account while ADMIN_ALERT_TO is unset", () => {
+    vi.stubEnv("ADMIN_ALERT_TO", "");
+    expect(adminAddresses(db)).toEqual(["admin-a@x.test", "admin-b@x.test"]);
+  });
+
+  it("is only the club inbox(es) in ADMIN_ALERT_TO when it is set", () => {
+    vi.stubEnv("ADMIN_ALERT_TO", " club@x.test , second@x.test ,");
+    expect(adminAddresses(db)).toEqual(["club@x.test", "second@x.test"]);
   });
 });

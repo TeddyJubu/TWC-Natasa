@@ -144,7 +144,7 @@ Layout on the VPS:
 ```
 /opt/twc-natasa                  checkout of main (the service's working directory)
 /etc/twc-natasa/app.env          server env: APP_URL, DATA_DIR, BETTER_AUTH_SECRET, CF_EMAIL_*, EMAIL_FROM, HOST,
-                                 PORT, NODE_ENV, SITE_PIN (root:www-data, 640)
+                                 PORT, NODE_ENV, SITE_PIN, ADMIN_ALERT_TO (root:www-data, 640)
 /var/lib/twc-natasa/data/twc.db  the database (+ -wal/-shm while running); uploads/ beside it
 /var/backups/twc-natasa/         pre-deploy snapshots, nightly-*.db and uploads-*.tgz (30 days)
 ```
