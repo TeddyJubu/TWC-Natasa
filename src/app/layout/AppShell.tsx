@@ -125,8 +125,9 @@ export function AppShell({ page, admin, children }: { page: ShellPage; admin: bo
   const { signOut, error } = useSignOut();
   const active = useActiveSection(page);
   useButtonSparkles();
+  // Cards land below the sticky bar when a sidebar link jumps to them: the menu bar on phones, the TopBar from lg.
   return (
-    <div className="app-ground air min-h-screen text-ink lg:flex">
+    <div className="app-ground air min-h-screen text-ink lg:flex [&_.air-card]:scroll-mt-22 lg:[&_.air-card]:scroll-mt-28">
       <MobileBar page={page} admin={admin} active={active} onSignOut={signOut} />
       <aside className="air-panel sticky top-8 my-8 ml-6 hidden h-[calc(100dvh-4rem)] w-64 shrink-0 flex-col gap-1 overflow-y-auto p-3 lg:flex">
         <Brand className="px-2 pt-1" />
@@ -144,13 +145,13 @@ export function AppShell({ page, admin, children }: { page: ShellPage; admin: bo
 export type Who = { name: string; avatar?: string };
 
 /**
- * The sticky glass bar atop the page column: the page title and who is signed in. `heading` makes the title
+ * The glass bar atop the page column (sticky from lg; on phones the menu bar is the one that sticks): the page title and who is signed in. `heading` makes the title
  * the page's h1 (pages whose body has no other h1).
  */
 export function TopBar({ title, heading, who }: { title: string; heading?: boolean; who?: Who }) {
   const Title = heading ? "h1" : "p";
   return (
-    <div className="air-panel sticky top-0 z-10 flex min-h-16 flex-wrap items-center justify-between gap-x-5 gap-y-3 rounded-none px-4 py-3.5 sm:px-8 lg:mt-8 lg:mr-8 lg:ml-8 lg:max-w-234 lg:rounded-air-card lg:py-5">
+    <div className="air-panel z-10 flex min-h-16 flex-wrap items-center justify-between gap-x-5 gap-y-3 rounded-none px-4 py-3.5 sm:px-8 lg:mt-8 lg:mr-8 lg:ml-8 lg:sticky lg:top-0 lg:max-w-234 lg:rounded-air-card lg:py-5">
       <Title className="air-title min-w-0 truncate pb-1 text-ink">{title}</Title>
       {who && (
         <div className="flex min-w-0 items-center gap-2.5 text-sm font-semibold text-ink">
