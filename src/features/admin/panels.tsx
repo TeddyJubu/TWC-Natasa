@@ -1956,6 +1956,22 @@ type QueryState = { isError: boolean; isPending: boolean };
 /** One area on the overview: its figure, a chip when something waits on you, and a line of context. */
 type TileData = { figure: number | null; unit: string; waiting?: string | null; note?: string | null; query: QueryState };
 
+/**
+ * Each overview card's paper: a member-pass colour mixed into the airmail paper, a quarter (mustard, the warmest, less, so
+ * it doesn't outshine the card that has work waiting). It re-points the card's --bl-app, which bg-app compiles to under
+ * @theme inline. Muted text stays 5.2:1 or better on every one.
+ */
+const TINT = {
+  mustard: "[--bl-app:color-mix(in_srgb,var(--color-sb-mustard)_18%,var(--color-air-paper))]",
+  rose: "[--bl-app:color-mix(in_srgb,var(--color-sb-rose)_25%,var(--color-air-paper))]",
+  lilac: "[--bl-app:color-mix(in_srgb,var(--color-sb-lilac)_25%,var(--color-air-paper))]",
+  mint: "[--bl-app:color-mix(in_srgb,var(--color-sb-mint)_25%,var(--color-air-paper))]",
+} as const;
+const TILE_TINT: Record<AdminSection | "forms", keyof typeof TINT> = {
+  inbox: "lilac", applications: "rose", reviews: "mint", bookings: "mustard",
+  members: "mint", newsletter: "lilac", spotlight: "mustard", gatherings: "rose", neighborhoods: "mint", forms: "lilac", activity: "lilac",
+};
+
 /** The whole tile is its section's link (the heading's link stretches over it), like the form cards. */
 function OverviewTile({ section, tile }: { section: AdminSection | "forms"; tile: TileData }) {
   const item = section === "forms" ? { label: "Forms", icon: "notebook-pen" as const } : sectionItem(section);
@@ -1963,9 +1979,10 @@ function OverviewTile({ section, tile }: { section: AdminSection | "forms"; tile
   const linkCls = "outline-none after:absolute after:inset-0 after:content-['']";
   const note = tile.query.isError ? "Couldn’t load this. Open it to try again." : tile.note;
   return (
+    // drop-shadow, not box-shadow: it follows the stamp edge's mask, where a box-shadow would be clipped by it.
     <article aria-labelledby={headingId}
-      className="group relative rounded-md transition-transform duration-150 ease-snap hover:-translate-y-0.5 has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-app-accent motion-reduce:transition-none motion-reduce:hover:translate-y-0">
-      <Ticket stamp className="h-full"
+      className="group relative rounded-md drop-shadow-[0_4px_8px_rgb(28_44_94/0.16)] transition-[translate,filter] duration-150 ease-snap hover:-translate-y-0.5 hover:drop-shadow-[0_8px_14px_rgb(28_44_94/0.2)] has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-app-accent motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+      <Ticket stamp className={cn("h-full", TINT[TILE_TINT[section]])}
         stub={(
           <div className="flex items-center justify-between gap-3 text-[13px] text-app-muted">
             <span className="min-w-0">{note || "Open"}</span>
