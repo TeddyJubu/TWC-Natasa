@@ -7,7 +7,8 @@ import { fake } from "@/test/fake-fns";
 
 vi.mock("@/features/applications/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 vi.mock("@/app/api", async () => (await import("@/test/fake-fns")).fakeApi);
-vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs }));
+const navigate = vi.hoisted(() => vi.fn());
+vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs, useNavigate: () => navigate }));
 
 import { Route } from "@/routes/join";
 import { GUIDELINES } from "@/features/applications/schema";
@@ -20,6 +21,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   fake.reset();
+  navigate.mockReset();
 });
 
 function deferred() {
@@ -49,7 +51,9 @@ const type = (label: RegExp, value: string) => fireEvent.change(field(label), { 
 const check = (label: string) => fireEvent.click(byLabel(label));
 const submitButton = () => screen.getByRole("button", { name: /submit application/i }) as HTMLButtonElement;
 const inserts = () => fake.calls.filter(([name]) => name === "/api/applications");
-const thanks = () => screen.queryByRole("heading", { name: /thank you for introducing yourself/i });
+/** The live /join moves on to its own thank-you page once the application is in. */
+const thanks = () => (navigate.mock.calls.length ? navigate : null);
+const sentToThanks = () => waitFor(() => expect(navigate).toHaveBeenCalledWith({ to: "/join/thanks" }));
 // Mutations call their server function asynchronously; let that settle.
 const settle = () => act(() => new Promise((r) => setTimeout(r, 20)));
 
@@ -76,7 +80,7 @@ function fillMinimum() {
 const renderSignedOut = () => renderWithQueries(<Page />, [[["applicant"], null]]);
 
 describe("/join", () => {
-  it("shows the success state only after the insert resolves, with no reset on the live route", async () => {
+  it("moves on to /join/thanks only after the insert resolves", async () => {
     const insert = deferred();
     fake.results = [insert.promise];
     renderSignedOut();
@@ -91,21 +95,18 @@ describe("/join", () => {
     expect(submitButton().disabled).toBe(false);
 
     await act(async () => insert.resolve(ok));
-    const status = await screen.findByRole("status");
-    expect(within(status).getByRole("heading", { name: /thank you for introducing yourself/i })).toBeTruthy();
-    expect(screen.queryByRole("button", { name: /review another application/i })).toBeNull();
-    // A visitor is offered the next step: create a login in sign-up mode.
-    expect(within(status).getByRole("link", { name: /create your login/i }).getAttribute("href")).toBe("/auth?mode=signup");
+    await sentToThanks();
+    // Pre-launch an applicant isn't sent on to make a login.
+    expect(screen.queryByRole("link", { name: /create your login/i })).toBeNull();
   });
 
-  it("a signed-in applicant is not offered a login they already have", async () => {
-    fake.results = [{ email: "rosa@x.test", fullName: "Rosa Diaz" }, ok];
-    renderWithQueries(<Page />);
-    await waitFor(() => expect(field(/^email address$/i).value).toBe("rosa@x.test"));
-    fillMinimum();
-    fireEvent.click(submitButton());
-    const status = await screen.findByRole("status");
-    expect(within(status).queryByRole("link", { name: /create your login/i })).toBeNull();
+  it("the thank-you page says the application is in and links nowhere", async () => {
+    const { Route: Thanks } = await import("@/routes/join_.thanks");
+    const ThanksPage = Thanks.options.component as React.ComponentType;
+    renderWithQueries(<ThanksPage />);
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Thank you for applying.");
+    expect(screen.getByText("We’ve received your application and we’ll be in touch.")).toBeTruthy();
+    expect(screen.queryAllByRole("link").map((a) => a.getAttribute("href"))).toEqual(["#main"]);
   });
 
   it("an insert error shows an alert, keeps the form and its values, and Retry resubmits", async () => {
@@ -122,7 +123,7 @@ describe("/join", () => {
     expect(submitButton().disabled).toBe(false);
 
     fireEvent.click(within(alert).getByRole("button", { name: /retry/i }));
-    expect(await screen.findByRole("heading", { name: /thank you for introducing yourself/i })).toBeTruthy();
+    await sentToThanks();
     const [first, second] = inserts();
     expect(second).toEqual(first);
   });
@@ -135,7 +136,7 @@ describe("/join", () => {
     const alert = await screen.findByRole("alert");
     type(/professional title or role/i, "Pastry chef");
     fireEvent.click(within(alert).getByRole("button", { name: /retry/i }));
-    expect(await screen.findByRole("heading", { name: /thank you for introducing yourself/i })).toBeTruthy();
+    await sentToThanks();
     const [first, second] = inserts() as [string, { answers: { role: string } }][];
     expect(first[1].answers.role).toBe("Baker");
     expect(second[1].answers.role).toBe("Pastry chef");
@@ -166,7 +167,7 @@ describe("/join", () => {
     await settle();
     expect(inserts()).toHaveLength(1);
     await act(async () => insert.resolve(ok));
-    expect(await screen.findByRole("heading", { name: /thank you for introducing yourself/i })).toBeTruthy();
+    await sentToThanks();
     expect(inserts()).toHaveLength(1);
   });
 
@@ -187,7 +188,7 @@ describe("/join", () => {
     expect(field(/^full name$/i).value).toBe("Rosie");
   });
 
-  it("a filled honeypot shows the normal success state and never inserts", async () => {
+  it("a filled honeypot gets the normal thank-you and never inserts", async () => {
     renderSignedOut();
     fillMinimum();
     const trap = document.querySelector<HTMLInputElement>('input[name="fax-number"]')!;
@@ -196,7 +197,7 @@ describe("/join", () => {
     expect(trap.closest("[aria-hidden='true']")).not.toBeNull();
     fireEvent.change(trap, { target: { value: "555-0199" } });
     fireEvent.click(submitButton());
-    expect(await screen.findByRole("heading", { name: /thank you for introducing yourself/i })).toBeTruthy();
+    await sentToThanks();
     expect(fake.calls).toEqual([]);
   });
 
@@ -205,7 +206,7 @@ describe("/join", () => {
     renderSignedOut();
     fillMinimum();
     fireEvent.click(submitButton());
-    expect(await screen.findByRole("heading", { name: /thank you for introducing yourself/i })).toBeTruthy();
+    await sentToThanks();
     expect(inserts()).toHaveLength(1);
     expect(JSON.stringify(inserts())).not.toMatch(/fax-number/);
   });

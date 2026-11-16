@@ -24,8 +24,8 @@ export interface ApplicationFormProps {
   initial?: { fullName?: string; email?: string };
   /** Offer "Review another application" after success (showcase demo only). */
   resettable?: boolean;
-  /** A suggested next step shown in the success state (e.g. a link to create a login). */
-  nextStep?: React.ReactNode;
+  /** Called instead of showing the in-place confirmation (the live /join moves on to /join/thanks). */
+  onSent?: () => void;
 }
 
 /** Name of the hidden anti-spam field; deliberately not a real application field. */
@@ -34,19 +34,20 @@ const HONEYPOT = "fax-number";
 /** `invalid`: the parser rejected the answers (clears on the next edit). `send`: the insert failed (offers Retry). */
 type Failure = { kind: "invalid" | "send"; message: string };
 
-export function ApplicationForm({ submit, initial, resettable, nextStep }: ApplicationFormProps) {
+export function ApplicationForm({ submit, initial, resettable, onSent }: ApplicationFormProps) {
   const [status, setStatus] = React.useState<"idle" | "sending" | "sent">("idle");
   const [failure, setFailure] = React.useState<Failure | null>(null);
   const [round, setRound] = React.useState(0);
   // A ref, not state: a second submit can arrive before the "sending" render lands.
   const inFlight = React.useRef(false);
+  const sent = () => (onSent ? onSent() : setStatus("sent"));
 
   // Submit and Retry both land here, so every attempt re-reads the current answers and re-runs validation.
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (inFlight.current) return;
     // Honeypot: only bots fill the hidden field. They get the normal success state and nothing is saved.
-    if (new FormData(event.currentTarget).get(HONEYPOT)) return setStatus("sent");
+    if (new FormData(event.currentTarget).get(HONEYPOT)) return sent();
     let application: ApplicationInput;
     try {
       application = parseApplication(new FormData(event.currentTarget));
@@ -60,7 +61,7 @@ export function ApplicationForm({ submit, initial, resettable, nextStep }: Appli
     setFailure((current) => (current?.kind === "send" ? current : null));
     try {
       await submit(application);
-      setStatus("sent");
+      sent();
     } catch {
       setFailure({ kind: "send", message: "We couldn’t send your application. Your answers are still here, so please try again." });
       setStatus("idle");
@@ -71,7 +72,7 @@ export function ApplicationForm({ submit, initial, resettable, nextStep }: Appli
 
   const onEdit = () => setFailure((current) => (current?.kind === "invalid" ? null : current));
 
-  if (status === "sent") return <Received nextStep={nextStep} onReset={resettable ? () => { setRound((r) => r + 1); setStatus("idle"); } : undefined} />;
+  if (status === "sent") return <Received onReset={resettable ? () => { setRound((r) => r + 1); setStatus("idle"); } : undefined} />;
 
   return (
     <ApplicationFields
@@ -85,7 +86,7 @@ export function ApplicationForm({ submit, initial, resettable, nextStep }: Appli
   );
 }
 
-function Received({ nextStep, onReset }: { nextStep?: React.ReactNode; onReset?: () => void }) {
+function Received({ onReset }: { onReset?: () => void }) {
   const t = useCopy();
   const panel = React.useRef<HTMLDivElement>(null);
   // The long form is gone, so move focus to the confirmation instead of leaving it on a removed button.
@@ -96,7 +97,6 @@ function Received({ nextStep, onReset }: { nextStep?: React.ReactNode; onReset?:
       <p aria-hidden className="inline-flex items-center gap-2 font-script text-[36px] leading-[1.1]">thank you <Icon name="sparkle" className="size-6" /></p>
       <h2 className="twc-h3">{t("Thank you for introducing yourself.")}</h2>
       <p className="max-w-[520px] text-[17px]">{t("We are excited to learn more about you and your work. Your application will be reviewed, and we will contact you if we need anything else.")}</p>
-      {nextStep}
       {onReset && <button type="button" className="twc-btn mt-2" onClick={onReset}>Review another application</button>}
     </div>
   );

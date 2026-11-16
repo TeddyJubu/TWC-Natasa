@@ -38,7 +38,7 @@ describe("pinGate", () => {
   });
 
   it("leaves the form pages, sign-in, their posts, the assets and only their server functions open", async () => {
-    for (const path of ["/join", "/join/", "/review?t=x", "/contact", "/partnerships", "/spotlight?t=x", "/f/salon", "/f/salon/thanks", "/auth?mode=signup",
+    for (const path of ["/join", "/join/", "/join/thanks", "/review?t=x", "/contact", "/partnerships", "/spotlight?t=x", "/f/salon", "/f/salon/thanks", "/auth?mode=signup",
       "/reset-password", "/verified", "/assets/app-abc.js", "/_serverFn/open-openFormFn", "/_serverFn/open-applicantFn?payload=x"]) expect(await get(path)).toBeNull();
     for (const path of ["/api/applications", "/api/contact", "/api/partnerships", "/api/review", "/api/spotlight", "/api/forms/salon", "/api/auth/sign-up/email", "/_serverFn/open-openReviewFn"]) {
       expect(await pinGate(new Request(`http://club.test${path}`, { method: "POST", body: "{}" }), PIN)).toBeNull();

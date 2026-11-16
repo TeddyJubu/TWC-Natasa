@@ -3,7 +3,7 @@
 // other page, API, upload and server function still needs the PIN. No imports: vite.config.ts reads PUBLIC_FNS too.
 
 /** Form pages and sign-in, matched exactly; `/f/<slug>` and `/f/<slug>/thanks` by prefix. */
-export const OPEN_PAGES = new Set(["/join", "/review", "/contact", "/partnerships", "/spotlight", "/auth", "/reset-password", "/verified"]);
+export const OPEN_PAGES = new Set(["/join", "/join/thanks", "/review", "/contact", "/partnerships", "/spotlight", "/auth", "/reset-password", "/verified"]);
 /** The body-taking routes those pages post to; `/api/forms/<slug>` and Better Auth's `/api/auth/*` by prefix. */
 export const OPEN_APIS = new Set(["/api/applications", "/api/contact", "/api/partnerships", "/api/review", "/api/spotlight"]);
 const OPEN_PREFIXES = ["/f/", "/api/forms/", "/api/auth/", "/assets/"];

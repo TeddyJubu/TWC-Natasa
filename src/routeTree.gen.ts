@@ -45,6 +45,7 @@ import { Route as ApiPartnershipsRouteImport } from './routes/api/partnerships'
 import { Route as ApiReviewRouteImport } from './routes/api/review'
 import { Route as ApiSpotlightRouteImport } from './routes/api/spotlight'
 import { Route as FSlugRouteImport } from './routes/f.$slug'
+import { Route as JoinThanksRouteImport } from './routes/join_.thanks'
 import { Route as MediaSplatRouteImport } from './routes/media/$'
 import { Route as MembersSlugRouteImport } from './routes/members_.$slug'
 import { Route as NeighborhoodsSlugRouteImport } from './routes/neighborhoods_.$slug'
@@ -235,6 +236,11 @@ const FSlugRoute = FSlugRouteImport.update({
   path: '/f/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const JoinThanksRoute = JoinThanksRouteImport.update({
+  id: '/join_/thanks',
+  path: '/join/thanks',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MediaSplatRoute = MediaSplatRouteImport.update({
   id: '/media/$',
   path: '/media/$',
@@ -324,6 +330,7 @@ export interface FileRoutesByFullPath {
   '/api/review': typeof ApiReviewRoute
   '/api/spotlight': typeof ApiSpotlightRoute
   '/f/$slug': typeof FSlugRoute
+  '/join/thanks': typeof JoinThanksRoute
   '/media/$': typeof MediaSplatRoute
   '/members/$slug': typeof MembersSlugRoute
   '/neighborhoods/$slug': typeof NeighborhoodsSlugRoute
@@ -370,6 +377,7 @@ export interface FileRoutesByTo {
   '/api/review': typeof ApiReviewRoute
   '/api/spotlight': typeof ApiSpotlightRoute
   '/f/$slug': typeof FSlugRoute
+  '/join/thanks': typeof JoinThanksRoute
   '/media/$': typeof MediaSplatRoute
   '/members/$slug': typeof MembersSlugRoute
   '/neighborhoods/$slug': typeof NeighborhoodsSlugRoute
@@ -419,6 +427,7 @@ export interface FileRoutesById {
   '/api/review': typeof ApiReviewRoute
   '/api/spotlight': typeof ApiSpotlightRoute
   '/f/$slug': typeof FSlugRoute
+  '/join_/thanks': typeof JoinThanksRoute
   '/media/$': typeof MediaSplatRoute
   '/members_/$slug': typeof MembersSlugRoute
   '/neighborhoods_/$slug': typeof NeighborhoodsSlugRoute
@@ -467,6 +476,7 @@ export interface FileRouteTypes {
     | '/api/review'
     | '/api/spotlight'
     | '/f/$slug'
+    | '/join/thanks'
     | '/media/$'
     | '/members/$slug'
     | '/neighborhoods/$slug'
@@ -513,6 +523,7 @@ export interface FileRouteTypes {
     | '/api/review'
     | '/api/spotlight'
     | '/f/$slug'
+    | '/join/thanks'
     | '/media/$'
     | '/members/$slug'
     | '/neighborhoods/$slug'
@@ -561,6 +572,7 @@ export interface FileRouteTypes {
     | '/api/review'
     | '/api/spotlight'
     | '/f/$slug'
+    | '/join_/thanks'
     | '/media/$'
     | '/members_/$slug'
     | '/neighborhoods_/$slug'
@@ -606,6 +618,7 @@ export interface RootRouteChildren {
   ApiReviewRoute: typeof ApiReviewRoute
   ApiSpotlightRoute: typeof ApiSpotlightRoute
   FSlugRoute: typeof FSlugRoute
+  JoinThanksRoute: typeof JoinThanksRoute
   MediaSplatRoute: typeof MediaSplatRoute
   MembersSlugRoute: typeof MembersSlugRoute
   NeighborhoodsSlugRoute: typeof NeighborhoodsSlugRoute
@@ -868,6 +881,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/join_/thanks': {
+      id: '/join_/thanks'
+      path: '/join/thanks'
+      fullPath: '/join/thanks'
+      preLoaderRoute: typeof JoinThanksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/media/$': {
       id: '/media/$'
       path: '/media/$'
@@ -1013,6 +1033,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiReviewRoute: ApiReviewRoute,
   ApiSpotlightRoute: ApiSpotlightRoute,
   FSlugRoute: FSlugRoute,
+  JoinThanksRoute: JoinThanksRoute,
   MediaSplatRoute: MediaSplatRoute,
   MembersSlugRoute: MembersSlugRoute,
   NeighborhoodsSlugRoute: NeighborhoodsSlugRoute,

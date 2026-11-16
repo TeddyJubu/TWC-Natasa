@@ -160,7 +160,7 @@ describe("bare chrome", () => {
     expect(screen.queryAllByRole("link")).toEqual([]);
     expect(screen.getAllByText("The Women’s Collective").length).toBeGreaterThan(0);
   });
-  it.each(["join", "review", "contact", "partnerships", "spotlight", "f.$slug", "f.$slug_.thanks"])("src/routes/%s.tsx uses only the bare chrome", (f) => {
+  it.each(["join", "join_.thanks", "review", "contact", "partnerships", "spotlight", "f.$slug", "f.$slug_.thanks"])("src/routes/%s.tsx uses only the bare chrome", (f) => {
     const src = readFileSync(resolve(process.cwd(), `src/routes/${f}.tsx`), "utf8");
     expect(src).not.toMatch(/<AppNav \/>|<AppFooter \/>|<StatusPage (?!bare)|<Link to="\/"/);
   });

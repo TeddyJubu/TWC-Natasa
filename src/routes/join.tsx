@@ -1,9 +1,8 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/index";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import { StatusPage } from "@/app/layout/StatusPages";
-import { Icon } from "@/app/layout/twc";
 import { ApplicationForm } from "@/features/applications/ApplicationForm";
 import { useSubmitApplication } from "@/features/applications/mutations";
 import { applicantQuery } from "@/features/applications/queries";
@@ -37,6 +36,7 @@ function JoinPage() {
   const state = Route.useLoaderData();
   const t = (text: string) => state.copy?.[text] ?? text;
   const { mutateAsync: submit } = useSubmitApplication();
+  const navigate = useNavigate();
   // Prefill is a convenience: while it loads, or if it fails, the form simply starts empty.
   const { data: applicant } = useQuery(applicantQuery);
   if (state.closed) {
@@ -75,13 +75,8 @@ function JoinPage() {
         <ApplicationForm
           submit={submit}
           initial={applicant ?? undefined}
-          // A signed-in applicant already has a login, so the next step is only for visitors.
-          nextStep={applicant ? undefined : (
-            <div className="mt-2 flex flex-col items-center gap-3">
-              <p className="max-w-[440px] text-[15px]">While you wait, create your login, so your account is ready the moment you’re approved.</p>
-              <Link to="/auth" search={{ mode: "signup" }} className="twc-btn">Create your login <Icon name="arrow" className="twc-arrow" /></Link>
-            </div>
-          )}
+          // ponytail: pre-launch an applicant only needs to apply, so no login step; the thank-you is its own page.
+          onSent={() => void navigate({ to: "/join/thanks" })}
         />
       </main>
       </FormCopyProvider>
