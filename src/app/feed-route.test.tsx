@@ -172,6 +172,9 @@ describe("/feed", () => {
     expect(fake.calls.some(([name]) => name === "deletePostFn")).toBe(false);
     fireEvent.click(del);
     await waitFor(() => expect(fake.calls).toContainEqual(["deletePostFn", { id: "p2" }]));
+    // Her button went with the post, so focus moves to a neighbouring post rather than the page.
+    await waitFor(() => expect(document.activeElement?.tagName).toBe("ARTICLE"));
+    expect(document.activeElement?.getAttribute("aria-label")).not.toMatch(/^Ask from Rosa/);
     confirm.mockRestore();
   });
 

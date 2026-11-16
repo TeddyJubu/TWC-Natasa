@@ -70,5 +70,6 @@ describe("/directory", () => {
     fireEvent.click(screen.getByRole("button", { name: "All 13" }));
     fireEvent.change(screen.getByRole("searchbox", { name: "Search members" }), { target: { value: "lucia" } });
     expect(within(sheet()).getAllByRole("button").map((b) => b.getAttribute("aria-label"))).toEqual(["Lucía Ferreira, Owner, in Woodside"]);
+    expect(screen.getByText("1 of 13 match")).toBeTruthy();
   });
 });
