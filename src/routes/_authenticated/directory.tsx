@@ -134,7 +134,11 @@ function DirectoryPage() {
                   </div>
                 )}
                 <div className="air-dir-foot">
-                  <p>Showing {sheet.length} of {shown.length} · Sheet printed {printed}</p>
+                  <p>
+                    {/* Announced, so a search or filter says what it found (the sheet itself changes silently). */}
+                    <span aria-live="polite">{shown.length < all.length ? `${shown.length} of ${all.length} match` : `Showing ${sheet.length} of ${all.length}`}</span>
+                    {" "}· Sheet printed {printed}
+                  </p>
                   <div className="flex items-center gap-3.5 font-semibold text-ink">
                     <button type="button" disabled={page === 0} onClick={() => setPage(page - 1)} aria-label="Previous sheet" className={cn("air-icon-btn", ring)}><Icon name="arrow-left" className="size-4" /></button>
                     <span aria-live="polite">Sheet {page + 1} of {pages}</span>
