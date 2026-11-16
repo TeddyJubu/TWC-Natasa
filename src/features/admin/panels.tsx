@@ -1979,9 +1979,10 @@ function OverviewTile({ section, tile }: { section: AdminSection | "forms"; tile
   const linkCls = "outline-none after:absolute after:inset-0 after:content-['']";
   const note = tile.query.isError ? "Couldn’t load this. Open it to try again." : tile.note;
   return (
-    // drop-shadow, not box-shadow: it follows the stamp edge's mask, where a box-shadow would be clipped by it.
+    // drop-shadow, not box-shadow: it follows the stamp edge's mask, where a box-shadow would be clipped by it. A dark,
+    // tight line under a faint one: the card rests on the page rather than floating above it.
     <article aria-labelledby={headingId}
-      className="group relative rounded-md drop-shadow-[0_4px_8px_rgb(28_44_94/0.16)] transition-[translate,filter] duration-150 ease-snap hover:-translate-y-0.5 hover:drop-shadow-[0_8px_14px_rgb(28_44_94/0.2)] has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-app-accent motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+      className="group relative rounded-md [filter:drop-shadow(0_1px_0.5px_rgb(28_44_94/0.32))_drop-shadow(0_2px_3px_rgb(28_44_94/0.12))] transition-[translate,filter] duration-150 ease-snap hover:-translate-y-px hover:[filter:drop-shadow(0_2px_1px_rgb(28_44_94/0.3))_drop-shadow(0_4px_6px_rgb(28_44_94/0.14))] has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-app-accent motion-reduce:transition-none motion-reduce:hover:translate-y-0">
       <Ticket stamp className={cn("h-full", TINT[TILE_TINT[section]])}
         stub={(
           <div className="flex items-center justify-between gap-3 text-[13px] text-app-muted">
