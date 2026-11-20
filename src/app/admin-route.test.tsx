@@ -983,6 +983,31 @@ describe("/admin", () => {
     await waitFor(() => expect(yours.queryByRole("form", { name: "New form" })).toBeNull());
   });
 
+  it("forms list: Duplicate copies a form's words, questions and settings, closed and unscheduled", async () => {
+    const questions = [{ key: "q1", type: "long", label: "Dietary needs", required: false }];
+    renderForms({ "form-responses": [demoForm({
+      total: 3, intro: "Join us.", thanks: "See you.", closed_message: "Full up.", one_per_email: true, confirm: true,
+      max_responses: 40, opens_at: "2026-01-01T00:00:00.000Z", closes_at: "2026-02-01T00:00:00.000Z", questions,
+    })] });
+    const yours = within(card("Your forms"));
+    fireEvent.click(yours.getByRole("button", { name: "Duplicate Salon RSVP (demo)" }));
+    const copy = yours.getByRole("form", { name: "Duplicate Salon RSVP (demo)" });
+    expect((within(copy).getByLabelText("Name") as HTMLInputElement).value).toBe("Salon RSVP (demo) (copy)");
+    expect((within(copy).getByLabelText("Web address") as HTMLInputElement).value).toBe("salon-rsvp-demo-copy");
+    fake.reset();
+    fake.results = [{ id: "abcd1234" }, []];
+    fireEvent.click(within(copy).getByRole("button", { name: "Duplicate form" }));
+    await waitFor(() => expect(fake.calls[0]?.[0]).toBe("saveAdminFormFn"));
+    const sent = fake.calls[0]?.[1] as Record<string, unknown>;
+    expect(sent).toMatchObject({
+      name: "Salon RSVP (demo) (copy)", slug: "salon-rsvp-demo-copy", open: false, intro: "Join us.", thanks: "See you.",
+      closed_message: "Full up.", one_per_email: true, confirm: true, max_responses: 40, questions,
+    });
+    expect(sent.id).toBeUndefined();
+    expect(sent.opens_at).toBeUndefined();
+    expect(sent.closes_at).toBeUndefined();
+  });
+
   it("members: approve sets the profile status directly", async () => {
     renderAdmin({ members: [member("u2", "Lena Ortiz", { status: "pending", catalogue_number: null, email: "lena@x.test" })] });
     const row = screen.getByRole("row", { name: /Lena Ortiz/ });

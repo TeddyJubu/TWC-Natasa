@@ -957,10 +957,10 @@ function Ticket({ label, row, stamp, stub, className, children }: { label?: stri
 }
 
 /**
- * One form as a ticket. The whole card opens its edit page (the heading's link stretches over it); `onDelete` adds a
- * trash button raised above that link.
+ * One form as a ticket. The whole card opens its edit page (the heading's link stretches over it); `onDuplicate` and
+ * `onDelete` add copy and trash buttons raised above that link.
  */
-function FormCard({ id, title, status, where, note, stub, onDelete, deleting }: { id: string; title: string; status: string; where?: string; note?: string; stub: React.ReactNode; onDelete?: () => void; deleting?: boolean }) {
+function FormCard({ id, title, status, where, note, stub, onDuplicate, onDelete, deleting }: { id: string; title: string; status: string; where?: string; note?: string; stub: React.ReactNode; onDuplicate?: () => void; onDelete?: () => void; deleting?: boolean }) {
   const headingId = `form-card-${id}`;
   return (
     <article aria-labelledby={headingId}
@@ -978,6 +978,12 @@ function FormCard({ id, title, status, where, note, stub, onDelete, deleting }: 
           </h3>
           <div className="flex shrink-0 items-center gap-1.5">
             <StatusChip status={status} />
+            {onDuplicate && (
+              <button type="button" aria-label={`Duplicate ${title}`} title="Duplicate" onClick={onDuplicate}
+                className={cn("relative z-10 grid size-8 place-items-center rounded-full text-app-muted transition-colors hover:bg-app-sunken hover:text-ink", ring)}>
+                <Icon name="copy" className="size-4" />
+              </button>
+            )}
             {onDelete && (
               <button type="button" aria-label={`Delete ${title}`} title="Delete" disabled={deleting} onClick={onDelete}
                 className={cn("relative z-10 grid size-8 place-items-center rounded-full text-app-muted transition-colors hover:bg-app-sunken hover:text-ink disabled:opacity-50", ring)}>
@@ -1010,7 +1016,8 @@ function SectionHead({ id, title, children }: { id: string; title: string; child
 export function FormsListPanel() {
   const states = useQuery(adminFormsStateQuery);
   const forms = useQuery(adminFormResponsesQuery);
-  const [adding, setAdding] = React.useState(false);
+  // false: folded; true: a new form; a form: a copy of it.
+  const [adding, setAdding] = React.useState<boolean | AdminForm>(false);
   const remove = useDeleteAdminForm();
   const tile = React.useRef<HTMLButtonElement>(null);
   const confirmDelete = (f: AdminForm) => {
@@ -1034,10 +1041,10 @@ export function FormsListPanel() {
           <div className={cardGrid}>
             {custom.map((f) => (
               <FormCard key={f.id} id={f.id} title={f.name} status={f.state} where={formPath(f.slug)}
-                onDelete={() => confirmDelete(f)} deleting={remove.isPending}
+                onDuplicate={() => setAdding(f)} onDelete={() => confirmDelete(f)} deleting={remove.isPending}
                 stub={<><span className="font-gilda text-lg/none text-ink tabular-nums">{f.total}</span> {f.total === 1 ? "answer" : "answers"}{f.newest_at ? ` · newest ${formatDate(f.newest_at)}` : ""}</>} />
             ))}
-            <button ref={tile} type="button" aria-expanded={adding} aria-controls="forms-new" onClick={() => (adding ? close() : setAdding(true))}
+            <button ref={tile} type="button" aria-expanded={adding === true} aria-controls="forms-new" onClick={() => (adding ? close() : setAdding(true))}
               className={cn("group flex min-h-40 text-ink", ring)}>
               {/* The postage edge sits on an inner layer: a mask on the button would clip its focus outline too. */}
               <span className="twc-stamp-edge flex flex-1 flex-col items-center justify-center gap-3 bg-app/50 p-5 transition-colors duration-150 group-hover:bg-app group-aria-expanded:bg-app">
@@ -1047,7 +1054,7 @@ export function FormsListPanel() {
             </button>
           </div>
           <MutationError mutation={remove} />
-          {adding && <NewFormPanel onClose={close} />}
+          {adding && <NewFormPanel key={adding === true ? "new" : adding.id} from={adding === true ? undefined : adding} onClose={close} />}
         </QueryGate>
       </section>
       <section aria-labelledby="forms-built-in" className="flex flex-col gap-4">
@@ -1072,26 +1079,34 @@ export function FormsListPanel() {
 const slugFrom = (name: string) =>
   name.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+/, "").slice(0, 40).replace(/-+$/, "");
 
-/** Name and web address only; the form is made closed with name + email questions, then opens on its Questions tab. */
-function NewFormPanel({ onClose }: { onClose: () => void }) {
+/**
+ * Name and web address only; the form is made closed with name + email questions, then opens on its Questions tab.
+ * With `from`, it is a copy of that form: its words, questions and settings, but closed, unscheduled and with no answers.
+ */
+function NewFormPanel({ from, onClose }: { from?: AdminForm; onClose: () => void }) {
   const save = useSaveAdminForm();
   const navigate = useNavigate();
-  const [name, setName] = React.useState("");
+  const [name, setName] = React.useState(from ? `${from.name} (copy)`.slice(0, 80) : "");
   const [slug, setSlug] = React.useState<string | null>(null);
   const address = slug ?? slugFrom(name);
   const first = React.useRef<HTMLInputElement>(null);
   React.useEffect(() => { first.current?.focus(); }, []);
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
+    // ponytail: the schedule isn't copied — an old form's dates are usually past; set new ones in Settings.
+    const body = from
+      ? { intro: from.intro, thanks: from.thanks, closed_message: from.closed_message, one_per_email: from.one_per_email,
+          max_responses: from.max_responses, confirm: from.confirm, questions: from.questions }
+      : { intro: "", thanks: "", closed_message: "", one_per_email: false, questions: starterQuestions() };
     save.mutate(
-      { name: name.trim(), slug: address, intro: "", thanks: "", closed_message: "", open: false, one_per_email: false, questions: starterQuestions() },
+      { ...body, name: name.trim(), slug: address, open: false },
       { onSuccess: ({ id }) => { onClose(); void navigate({ to: "/admin/forms/$formId", params: { formId: id }, search: { tab: "questions" } }); } },
     );
   };
   return (
-    <form id="forms-new" aria-label="New form" onSubmit={submit} onKeyDown={(e) => { if (e.key === "Escape") onClose(); }}
+    <form id="forms-new" aria-label={from ? `Duplicate ${from.name}` : "New form"} onSubmit={submit} onKeyDown={(e) => { if (e.key === "Escape") onClose(); }}
       className="flex flex-col gap-5 rounded-md bg-app p-5 shadow-[inset_0_0_0_1px_var(--color-app-line)] sm:p-7">
-      <h3 className="font-gilda text-[26px]/[1.2] text-ink">New form</h3>
+      <h3 className="font-gilda text-[26px]/[1.2] text-ink">{from ? `Duplicate “${from.name}”` : "New form"}</h3>
       <div className="grid gap-5 md:grid-cols-2">
         <Field id="form-new-name" label="Name">
           <input ref={first} id="form-new-name" required maxLength={80} value={name} disabled={save.isPending} placeholder="Supper club RSVP"
@@ -1102,10 +1117,12 @@ function NewFormPanel({ onClose }: { onClose: () => void }) {
             aria-describedby="form-new-slug-hint" onChange={(e) => setSlug(e.currentTarget.value)} className={fieldClass} />
         </Field>
       </div>
-      <p className={meta}>It starts closed with two questions, your name and email, so nobody sees it until you open it in Settings.</p>
+      <p className={meta}>{from
+        ? "It copies the words, questions and settings, not the answers or schedule, and starts closed until you open it in Settings."
+        : "It starts closed with two questions, your name and email, so nobody sees it until you open it in Settings."}</p>
       <MutationError mutation={save} />
       <div className="flex flex-wrap gap-2.5">
-        <button type="submit" className={primaryButton} disabled={save.isPending}>Create form</button>
+        <button type="submit" className={primaryButton} disabled={save.isPending}>{from ? "Duplicate form" : "Create form"}</button>
         <button type="button" className={secondaryButton} disabled={save.isPending} onClick={onClose}>Cancel</button>
       </div>
     </form>
