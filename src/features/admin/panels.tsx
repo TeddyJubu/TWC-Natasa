@@ -37,6 +37,7 @@ import { spotlightEntries } from "@/features/member-links/spotlight";
 import { QuestionsEditor } from "@/features/forms/FormEditor";
 import { draftFromQuestions, questionsFromDraft, starterQuestions } from "@/features/forms/form-draft";
 import type { SaveAdminFormInput } from "@/features/forms/fns";
+import { BUILT_IN_COPIES } from "@/features/forms/built-in-copies";
 import { adminFormResponsesQuery, useDeleteAdminForm, useDownloadFormCsv, useSaveAdminForm, useSetFormOpen, type AdminForm } from "@/features/forms/queries";
 import { BUILT_IN, BUILT_IN_INFO, COPY_FIELDS, COPY_MAX, LONG_TEXT, isCopyForm, type BuiltIn, type CopyForm } from "@/features/form-copy/manifest";
 import { adminFormCopyQuery, useSaveFormCopy } from "@/features/form-copy/queries";
@@ -1016,8 +1017,8 @@ function SectionHead({ id, title, children }: { id: string; title: string; child
 export function FormsListPanel() {
   const states = useQuery(adminFormsStateQuery);
   const forms = useQuery(adminFormResponsesQuery);
-  // false: folded; true: a new form; a form: a copy of it.
-  const [adding, setAdding] = React.useState<boolean | AdminForm>(false);
+  // false: folded; true: a new form; a source: a copy of it.
+  const [adding, setAdding] = React.useState<boolean | FormSource>(false);
   const remove = useDeleteAdminForm();
   const tile = React.useRef<HTMLButtonElement>(null);
   const confirmDelete = (f: AdminForm) => {
@@ -1054,7 +1055,7 @@ export function FormsListPanel() {
             </button>
           </div>
           <MutationError mutation={remove} />
-          {adding && <NewFormPanel key={adding === true ? "new" : adding.id} from={adding === true ? undefined : adding} onClose={close} />}
+          {adding && <NewFormPanel key={adding === true ? "new" : adding.name} from={adding === true ? undefined : adding} onClose={close} />}
         </QueryGate>
       </section>
       <section aria-labelledby="forms-built-in" className="flex flex-col gap-4">
@@ -1063,6 +1064,7 @@ export function FormsListPanel() {
           {LISTED_BUILT_IN.map((kind) => {
             const info = BUILT_IN_INFO[kind];
             return <FormCard key={kind} id={kind} title={info.title} status={status[kind]} where={info.href}
+              onDuplicate={isCopyForm(kind) ? () => setAdding({ name: info.title, ...BUILT_IN_COPIES[kind] }) : undefined}
               note={status[kind] === "always_on" ? undefined : info.note} stub={<>Answers in {info.answers[0]}</>} />;
           })}
         </div>
@@ -1079,11 +1081,14 @@ export function FormsListPanel() {
 const slugFrom = (name: string) =>
   name.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+/, "").slice(0, 40).replace(/-+$/, "");
 
+/** What a copy is made from: a custom form, or a built-in form's template (`built-in-copies.ts`). */
+type FormSource = Pick<AdminForm, "name" | "intro" | "thanks" | "questions"> & Partial<Pick<AdminForm, "closed_message" | "one_per_email" | "max_responses" | "confirm">>;
+
 /**
  * Name and web address only; the form is made closed with name + email questions, then opens on its Questions tab.
  * With `from`, it is a copy of that form: its words, questions and settings, but closed, unscheduled and with no answers.
  */
-function NewFormPanel({ from, onClose }: { from?: AdminForm; onClose: () => void }) {
+function NewFormPanel({ from, onClose }: { from?: FormSource; onClose: () => void }) {
   const save = useSaveAdminForm();
   const navigate = useNavigate();
   const [name, setName] = React.useState(from ? `${from.name} (copy)`.slice(0, 80) : "");
@@ -1095,8 +1100,8 @@ function NewFormPanel({ from, onClose }: { from?: AdminForm; onClose: () => void
     e.preventDefault();
     // ponytail: the schedule isn't copied — an old form's dates are usually past; set new ones in Settings.
     const body = from
-      ? { intro: from.intro, thanks: from.thanks, closed_message: from.closed_message, one_per_email: from.one_per_email,
-          max_responses: from.max_responses, confirm: from.confirm, questions: from.questions }
+      ? { intro: from.intro, thanks: from.thanks, closed_message: from.closed_message ?? "", one_per_email: from.one_per_email ?? false,
+          max_responses: from.max_responses ?? null, confirm: from.confirm ?? false, questions: from.questions }
       : { intro: "", thanks: "", closed_message: "", one_per_email: false, questions: starterQuestions() };
     save.mutate(
       { ...body, name: name.trim(), slug: address, open: false },
@@ -1118,7 +1123,7 @@ function NewFormPanel({ from, onClose }: { from?: AdminForm; onClose: () => void
         </Field>
       </div>
       <p className={meta}>{from
-        ? "It copies the words, questions and settings, not the answers or schedule, and starts closed until you open it in Settings."
+        ? "It copies the words, questions and settings — not the answers, schedule, consent statements or newsletter sign-up — and starts closed until you open it in Settings."
         : "It starts closed with two questions, your name and email, so nobody sees it until you open it in Settings."}</p>
       <MutationError mutation={save} />
       <div className="flex flex-wrap gap-2.5">

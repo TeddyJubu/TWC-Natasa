@@ -1008,6 +1008,23 @@ describe("/admin", () => {
     expect(sent.closes_at).toBeUndefined();
   });
 
+  it("forms list: a built-in form duplicates into a closed custom form with its questions", async () => {
+    renderForms({ "form-responses": [] });
+    const builtIn = within(card("Built-in forms"));
+    expect(builtIn.getAllByRole("button", { name: /^Duplicate/ })).toHaveLength(4);
+    fireEvent.click(builtIn.getByRole("button", { name: "Duplicate Contact" }));
+    const copy = within(card("Your forms")).getByRole("form", { name: "Duplicate Contact" });
+    expect(document.activeElement).toBe(within(copy).getByLabelText("Name"));
+    expect((within(copy).getByLabelText("Web address") as HTMLInputElement).value).toBe("contact-copy");
+    fake.reset();
+    fake.results = [{ id: "abcd1234" }, []];
+    fireEvent.click(within(copy).getByRole("button", { name: "Duplicate form" }));
+    await waitFor(() => expect(fake.calls[0]?.[0]).toBe("saveAdminFormFn"));
+    const sent = fake.calls[0]?.[1] as { open: boolean; name: string; thanks: string; questions: { key: string }[] };
+    expect(sent).toMatchObject({ name: "Contact (copy)", open: false, thanks: "Thanks for reaching out." });
+    expect(sent.questions.map((q) => q.key)).toEqual(["name", "email", "topic", "message"]);
+  });
+
   it("members: approve sets the profile status directly", async () => {
     renderAdmin({ members: [member("u2", "Lena Ortiz", { status: "pending", catalogue_number: null, email: "lena@x.test" })] });
     const row = screen.getByRole("row", { name: /Lena Ortiz/ });

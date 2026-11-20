@@ -1,19 +1,10 @@
 import * as React from "react";
 import { Icon } from "@/app/layout/twc";
 import { useCopy } from "@/features/form-copy/use-copy";
-import { GUIDELINES, LIMITS, parseApplication, type ApplicationInput } from "./schema";
+import { GUIDELINES, LIMITS, communityOptions, connectionOptions, directoryOptions, eventOptions, heardOptions, industryOptions, locationOptions, parseApplication, supportOptions, type ApplicationInput } from "./schema";
 import { Check, Choices, Field, Input, LongAnswer, Notice, Section, Select } from "./twc-fields";
 
 const yesNo = [{ value: "yes", label: "Yes" }, { value: "no", label: "No" }];
-// The club is North Brooklyn (its old address was nbwc.site): only these three, as the owner asked on 2026-11-17.
-const locationOptions = ["Greenpoint", "Williamsburg", "Bushwick"];
-const connectionOptions = ["I live here", "I work here", "I own a business here", "I have clients here", "I regularly participate in the local community", "Other"];
-const industryOptions = ["Arts and culture", "Beauty and wellness", "Coaching and consulting", "Design and interiors", "Education", "Finance and legal", "Food and hospitality", "Health and fitness", "Marketing and media", "Mental health and healing", "Nonprofit and community work", "Parenting and family services", "Real estate", "Retail and products", "Technology", "Travel", "Writing and publishing", "Other"];
-const communityOptions = ["Professional connections", "Friendship and community", "Referrals", "Collaborators", "Clients", "Mentorship", "Education", "Local events", "Speaking opportunities", "Vendor opportunities", "Community resources", "Business visibility"];
-const supportOptions = ["Give referrals", "Make introductions", "Share knowledge", "Mentor", "Collaborate", "Host an event", "Sponsor an event", "Offer a member benefit", "Volunteer", "Other"];
-const directoryOptions = ["Full name", "Professional title", "Business name", "Business description", "Neighborhood", "Website", "Instagram", "LinkedIn", "Public email", "Public business phone", "Business logo"];
-const eventOptions = ["Attend events", "Speak or teach", "Host an event", "Offer a venue", "Sponsor an event", "Provide products or services", "Volunteer"];
-const heardOptions = ["A current member", "An event", "Social media", "Newsletter", "Search", "Word of mouth", "Other"];
 
 /** Conditional follow-up questions sit in a tinted panel under the answer that opened them. */
 const followUp = "motion-panel-in flex flex-col gap-5 rounded-[6px] bg-sb-cream p-5 sm:p-6";

@@ -11,6 +11,17 @@ export const GUIDELINES = [
   "I confirm that this application is accurate and I may represent the business listed.",
 ] as const;
 
+/** The page's answer choices (shared with the admin's copy of this form, `built-in-copies.ts`). */
+// The club is North Brooklyn (its old address was nbwc.site): only these three, as the owner asked on 2026-11-17.
+export const locationOptions = ["Greenpoint", "Williamsburg", "Bushwick"];
+export const connectionOptions = ["I live here", "I work here", "I own a business here", "I have clients here", "I regularly participate in the local community", "Other"];
+export const industryOptions = ["Arts and culture", "Beauty and wellness", "Coaching and consulting", "Design and interiors", "Education", "Finance and legal", "Food and hospitality", "Health and fitness", "Marketing and media", "Mental health and healing", "Nonprofit and community work", "Parenting and family services", "Real estate", "Retail and products", "Technology", "Travel", "Writing and publishing", "Other"];
+export const communityOptions = ["Professional connections", "Friendship and community", "Referrals", "Collaborators", "Clients", "Mentorship", "Education", "Local events", "Speaking opportunities", "Vendor opportunities", "Community resources", "Business visibility"];
+export const supportOptions = ["Give referrals", "Make introductions", "Share knowledge", "Mentor", "Collaborate", "Host an event", "Sponsor an event", "Offer a member benefit", "Volunteer", "Other"];
+export const directoryOptions = ["Full name", "Professional title", "Business name", "Business description", "Neighborhood", "Website", "Instagram", "LinkedIn", "Public email", "Public business phone", "Business logo"];
+export const eventOptions = ["Attend events", "Speak or teach", "Host an event", "Offer a venue", "Sponsor an event", "Provide products or services", "Volunteer"];
+export const heardOptions = ["A current member", "An event", "Social media", "Newsletter", "Search", "Word of mouth", "Other"];
+
 /** Mirrors the `applications` table checks in migration 0001; `answersBytes` keeps a margin under the 32 KB jsonb check. */
 export const LIMITS = { fullName: 120, email: 254, neighborhood: 60, text: 2000, answersBytes: 30 * 1024 } as const;
 /** The `applications.email` check in migration 0001. */
