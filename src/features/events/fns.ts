@@ -6,31 +6,31 @@ const pass = <T,>(input: unknown) => input as T;
 export const eventsFn = createServerFn()
   .validator((input: unknown) => ({ from: typeof (input as { from?: unknown } | null)?.from === "string" ? (input as { from: string }).from : undefined }))
   .handler(async ({ data }) => {
-    const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./events.server")]);
-    return serve((c) => m.listEvents(c, data.from));
+    const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("@/features/cal/cal.server")]);
+    return serve((c) => m.memberGatherings(c, data.from));
   });
 
-/** Public: upcoming gatherings (public-safe fields only), from `from` or now. */
+/** Public: upcoming listed gatherings from Cal (public-safe fields only), from `from` or now. */
 export const publicEventsFn = createServerFn()
   .validator((input: unknown) => {
     const from = (input as { from?: unknown } | null)?.from;
     return { from: typeof from === "string" && !Number.isNaN(Date.parse(from)) ? new Date(from).toISOString() : new Date().toISOString() };
   })
   .handler(async ({ data }) => {
-    const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./events.server")]);
-    return serve((c) => m.publicEvents(c, data.from));
+    const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("@/features/cal/cal.server")]);
+    return serve(() => m.publicGatherings(data.from));
   });
 
 export const rsvpsFn = createServerFn().handler(async () => {
-  const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./events.server")]);
-  return serve(m.rsvps);
+  const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("@/features/cal/cal.server")]);
+  return serve(m.memberRsvps);
 });
 
 export const setRsvpFn = createServerFn({ method: "POST" })
   .validator(pass<{ eventId: string; going: boolean }>)
   .handler(async ({ data }) => {
-    const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./events.server")]);
-    return serve((c) => m.setRsvp(c, data));
+    const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("@/features/cal/cal.server")]);
+    return serve((c) => m.setMemberRsvp(c, data));
   });
 
 export const bookingFn = createServerFn().handler(async () => {
