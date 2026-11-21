@@ -3,7 +3,7 @@ import * as React from "react";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/index";
 import { Icon } from "@/app/layout/twc";
-import { isEnded, isFull } from "./event-state";
+import { isEnded, isFull, type GatheringsView } from "./event-state";
 import type { CalEvent } from "./types";
 import { CancelledBadge, CategoryChip, DateTimeText, EndedBadge, StatusBadge, useToast, useVisitorLocale } from "./ui";
 

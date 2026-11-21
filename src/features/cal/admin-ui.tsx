@@ -13,7 +13,7 @@ import {
 import { formatRange, isoToWall, timeZones, wallToIso } from "./time";
 import {
   checkEvent, checkEventType, checkRsvp, MAX_PLUS_ONES, RSVP_STATUSES, slugify,
-  type AdminCalEvent, type BookingStatusFilter, type EditableEventType, type EventTab, type OwnerRsvp, type RsvpStatus,
+  type AdminCalEvent, type BookingStatusFilter, type EditableEventType, type EventTab, type RsvpStatus,
 } from "./types";
 import { ConfirmDialog, FormField, useToast } from "./ui";
 
