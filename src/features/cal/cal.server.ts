@@ -579,14 +579,19 @@ export async function createBooking(input: unknown, business?: string): Promise<
   const acc = account(business);
   const type = (await rawEventTypes(acc)).find((t) => t.id === eventTypeId && t.hidden !== true);
   if (!type) throw notFound("That appointment");
+  // Only this type's own questions go through. Cal wants a real number for a number field, and no blank answers.
+  const answers: Record<string, string | string[] | boolean | number> = {};
   for (const field of fieldsOf(type)) {
     const answer = responses[field.slug];
-    if (field.required && (answer === undefined || answer === "" || answer === false || (Array.isArray(answer) && !answer.length))) {
-      throw new CalError(`Please answer “${field.label}”.`, 400, "BAD_REQUEST");
-    }
+    const blank = answer === undefined || answer === "" || (Array.isArray(answer) && !answer.length);
+    if (field.required && (blank || answer === false)) throw new CalError(`Please answer “${field.label}”.`, 400, "BAD_REQUEST");
+    if (blank) continue;
+    if (field.type === "number") {
+      const value = typeof answer === "string" ? Number(answer) : Number.NaN;
+      if (!Number.isFinite(value)) throw new CalError(`Please enter a number for “${field.label}”.`, 400, "BAD_REQUEST");
+      answers[field.slug] = value;
+    } else answers[field.slug] = answer;
   }
-  const allowed = new Set(fieldsOf(type).map((f) => f.slug));
-  const answers = Object.fromEntries(Object.entries(responses).filter(([key]) => allowed.has(key)));
   const useGuests = guests.length > 0 && toPublicEventType(type).guestsAllowed;
   const booking = await call<RawBooking>(acc, "bookings", {
     body: {

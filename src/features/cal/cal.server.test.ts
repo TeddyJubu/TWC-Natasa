@@ -193,7 +193,7 @@ describe("the seat-id rule", () => {
 });
 
 describe("slots and booking", () => {
-  const types = [
+  const types: { id: number; slug: string; title: string; lengthInMinutes: number; hidden?: boolean; bookingFields?: Record<string, unknown>[] }[] = [
     { id: 7, slug: "open", title: "Open", lengthInMinutes: 30, bookingFields: [{ slug: "topic", type: "text", label: "Topic", required: true }, { slug: "name", type: "name", isDefault: true }] },
     { id: 8, slug: "off", title: "Off", lengthInMinutes: 30, hidden: true },
   ];
@@ -220,6 +220,14 @@ describe("slots and booking", () => {
     await expect(createBooking({ ...form, responses: {} })).rejects.toMatchObject({ status: 400 });
     expect(await createBooking({ ...form, responses: { topic: "Hello", injected: "x" } })).toEqual({ uid: "b1", seatUid: "s1" });
     expect((calls.find((c) => c.method === "POST")!.body as { bookingFieldsResponses: object }).bookingFieldsResponses).toEqual({ topic: "Hello" });
+  });
+  it("sends a number field as a number, and leaves blank answers out", async () => {
+    types[0].bookingFields!.push({ slug: "count", type: "number", label: "Count", required: false }, { slug: "extra", type: "url", label: "Link", required: false });
+    answer = api;
+    await createBooking({ ...form, responses: { topic: "Hi", count: "7", extra: "" } });
+    expect((calls.find((c) => c.method === "POST")!.body as { bookingFieldsResponses: object }).bookingFieldsResponses).toEqual({ topic: "Hi", count: 7 });
+    await expect(createBooking({ ...form, responses: { topic: "Hi", count: "seven" } })).rejects.toThrow(/number for “Count”/);
+    types[0].bookingFields!.splice(2);
   });
   it("won't book a hidden type", async () => {
     answer = api;
