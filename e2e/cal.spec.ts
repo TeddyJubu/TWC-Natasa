@@ -1,10 +1,13 @@
-// View events, open one, RSVP, change the RSVP, book an appointment, against a real deployment and real Cal.
+// View events, open one, RSVP, change the RSVP, book an appointment, against a staging app and a sandbox Cal.
 // It needs a listed test event and event type (README, "Cal scheduling"), and creates an RSVP and a booking on them.
 import { expect, test } from "@playwright/test";
 
-const { E2E_BASE_URL, E2E_PIN_COOKIE, E2E_EVENT_SLUG, E2E_EVENT_TITLE, E2E_TYPE_SLUG, E2E_TYPE_TITLE } = process.env;
-const ATTENDEE = "info+caltest@thewomenscollective.club";
+const { E2E_BASE_URL, E2E_PIN_COOKIE, E2E_EVENT_SLUG, E2E_EVENT_TITLE, E2E_TYPE_SLUG, E2E_TYPE_TITLE, E2E_ATTENDEE_EMAIL, E2E_SANDBOX_CAL } = process.env;
+const ATTENDEE = E2E_ATTENDEE_EMAIL ?? "";
+const CLUB = /thewomenscollective\.club/i;
 
+// The real Cal emails the club inbox as host for every booking, whoever the attendee is, so this never runs against it.
+test.skip(E2E_SANDBOX_CAL !== "yes" || !ATTENDEE || CLUB.test(ATTENDEE) || CLUB.test(E2E_BASE_URL ?? ""), "needs a sandbox Cal; never the real one");
 test.skip(!E2E_BASE_URL || !E2E_EVENT_SLUG || !E2E_TYPE_SLUG, "needs a deployment and its test data");
 
 test("view events, RSVP, change it, book an appointment", async ({ page, context }) => {

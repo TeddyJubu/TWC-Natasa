@@ -312,9 +312,11 @@ docker exec cal-postgres pg_dump -U cal -Fc cal > /var/backups/cal-$(date +%F).d
 
 Restore into a stopped web and API: `docker exec -i cal-postgres pg_restore -U cal -d cal --clean --if-exists < <file>`.
 
-The E2E happy path runs by hand against a deployment: create a listed test event and event type, then
-`E2E_BASE_URL=… E2E_PIN_COOKIE=… E2E_EVENT_SLUG=… E2E_EVENT_TITLE=… E2E_TYPE_SLUG=… E2E_TYPE_TITLE=… bun run test:e2e`.
-Remove the test data afterward.
+The E2E happy path never runs against the real Cal, because Cal emails the club inbox as host for every booking,
+whoever the attendee is. Run it by hand on a staging app connected to a sandbox Cal whose host email isn't the club's:
+create a listed test event and event type, then
+`E2E_SANDBOX_CAL=yes E2E_ATTENDEE_EMAIL=… E2E_BASE_URL=… E2E_PIN_COOKIE=… E2E_EVENT_SLUG=… E2E_EVENT_TITLE=… E2E_TYPE_SLUG=… E2E_TYPE_TITLE=… bun run test:e2e`.
+It skips itself for any `thewomenscollective.club` site or attendee. Remove the test data afterward.
 
 ### Backup
 
