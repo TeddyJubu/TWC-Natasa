@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   CalError, clearCalCache, createBooking, filterPublic, getPublicBooking, getPublicEvent, getSlots, listPublicEvents, manageBooking,
-  sendRsvp, sitemapEvents, toCalError, toPublicEvent, type RawEvent,
+  sendRsvp, sitemapEvents, toAdminBooking, toCalError, toPublicEvent, type RawEvent,
 } from "./cal.server";
 
 const future = (days: number) => new Date(Date.now() + days * 86_400_000).toISOString();
@@ -38,6 +38,17 @@ const eventsApi = (events: RawEvent[]) => (c: Call) => {
   if (c.url.pathname.endsWith("/me")) return ok({ username: "twc", name: "TWC" });
   return ok(c.url.searchParams.get("period") === "upcoming" ? events : []);
 };
+
+describe("toAdminBooking", () => {
+  it("shows a guest once, under guests, not again as an attendee", () => {
+    const row = toAdminBooking({
+      uid: "b", start: future(1), end: future(2), status: "accepted", guests: ["Guest@Example.com"],
+      attendees: [{ name: "Ana", email: "ana@example.com" }, { name: "guest@example.com", email: "guest@example.com" }],
+    });
+    expect(row.attendees.map((a) => a.name)).toEqual(["Ana"]);
+    expect(row.guests).toEqual(["Guest@Example.com"]);
+  });
+});
 
 describe("toCalError", () => {
   it.each([

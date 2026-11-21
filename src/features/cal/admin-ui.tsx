@@ -57,7 +57,7 @@ export function AdminEventsTable({ events, caption }: { events: AdminCalEvent[];
         <caption className="sr-only">{caption}</caption>
         <thead>
           <tr className="border-b border-app-rule">
-            {["Gathering", "When", "Status", "Going", "Maybe"].map((h) => <th key={h} scope="col" className="air-lbl px-4 py-2.5">{h}</th>)}
+            {["Gathering", "When", "Status", "Going", "Maybe"].map((h) => <th key={h} scope="col" className="twc-eyebrow px-4 py-3.5 whitespace-nowrap">{h}</th>)}
             <th scope="col" className="px-4 py-2.5"><span className="sr-only">Actions</span></th>
           </tr>
         </thead>
@@ -73,7 +73,7 @@ export function AdminEventsTable({ events, caption }: { events: AdminCalEvent[];
                 </th>
                 <td className="px-4 py-3 text-sm">{formatRange(e.startTime, e.endTime, e.timeZone, "en-US")}</td>
                 <td className="px-4 py-3"><Chip tone={tone}>{label}</Chip></td>
-                <td className="px-4 py-3 font-fragment tabular-nums">{e.goingCount}{e.capacity !== null ? ` / ${e.capacity}` : ""}</td>
+                <td className="px-4 py-3 font-fragment whitespace-nowrap tabular-nums">{e.goingCount}{e.capacity !== null ? ` / ${e.capacity}` : ""}</td>
                 <td className="px-4 py-3 font-fragment tabular-nums">{e.maybeCount}</td>
                 <td className="px-4 py-3">
                   <div className="flex gap-2">
@@ -296,7 +296,7 @@ export function RsvpTable({ event, business }: { event: AdminCalEvent; business?
           <div role="region" aria-label="RSVP list" tabIndex={0} className="overflow-x-auto focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-app-accent">
             <table className="w-full min-w-[40rem] text-left text-[15px]">
               <caption className="sr-only">RSVPs for {event.title}</caption>
-              <thead><tr className="border-b border-app-rule">{["Name", "Email", "Answer", "Guests", "Note"].map((h) => <th key={h} scope="col" className="air-lbl px-4 py-2.5">{h}</th>)}</tr></thead>
+              <thead><tr className="border-b border-app-rule">{["Name", "Email", "Answer", "Guests", "Note"].map((h) => <th key={h} scope="col" className="twc-eyebrow px-4 py-3.5 whitespace-nowrap">{h}</th>)}</tr></thead>
               <tbody>
                 {shown.map((r) => (
                   <tr key={r.uid} className="border-b border-app-rule last:border-0">
@@ -335,7 +335,7 @@ export function AdminBookingsTable({ business }: { business?: string }) {
           <div role="region" aria-label="Bookings" tabIndex={0} className="overflow-x-auto focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-app-accent">
             <table className="w-full min-w-[44rem] text-left text-[15px]">
               <caption className="sr-only">Bookings</caption>
-              <thead><tr className="border-b border-app-rule">{["Appointment", "When", "Who", "Status"].map((h) => <th key={h} scope="col" className="air-lbl px-4 py-2.5">{h}</th>)}</tr></thead>
+              <thead><tr className="border-b border-app-rule">{["Appointment", "When", "Who", "Status"].map((h) => <th key={h} scope="col" className="twc-eyebrow px-4 py-3.5 whitespace-nowrap">{h}</th>)}</tr></thead>
               <tbody>
                 {bookings.data.bookings.map((b) => (
                   <tr key={b.uid} className="border-b border-app-rule align-top last:border-0">

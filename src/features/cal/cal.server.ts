@@ -376,15 +376,22 @@ export async function adminBookings({ db, actor }: Ctx, input: unknown): Promise
   const rows = (res.data ?? []) as RawBooking[];
   return {
     hasMore: res.pagination?.hasNextPage ?? rows.length === take,
-    bookings: rows.map((b) => ({
-      uid: b.uid, title: b.title ?? "Appointment", start: b.start, end: b.end, status: b.status, location: placeOf(b),
-      eventTypeSlug: b.eventType?.slug ?? null, cancellationReason: b.cancellationReason || null,
-      attendees: (b.attendees ?? []).map((a) => ({
-        name: a.name ?? "", email: a.email ?? "", timeZone: a.timeZone ?? "",
-        notes: typeof a.bookingFieldsResponses?.notes === "string" ? a.bookingFieldsResponses.notes : null,
-      })),
-      guests: b.guests ?? [],
+    bookings: rows.map(toAdminBooking),
+  };
+}
+
+/** Cal also lists each guest as an attendee; the admin table shows them once, under Guests. */
+export function toAdminBooking(b: RawBooking): AdminBooking {
+  const guests = b.guests ?? [];
+  const isGuest = new Set(guests.map((g) => g.toLowerCase()));
+  return {
+    uid: b.uid, title: b.title ?? "Appointment", start: b.start, end: b.end, status: b.status, location: placeOf(b),
+    eventTypeSlug: b.eventType?.slug ?? null, cancellationReason: b.cancellationReason || null,
+    attendees: (b.attendees ?? []).filter((a) => !isGuest.has((a.email ?? "").toLowerCase())).map((a) => ({
+      name: a.name ?? "", email: a.email ?? "", timeZone: a.timeZone ?? "",
+      notes: typeof a.bookingFieldsResponses?.notes === "string" ? a.bookingFieldsResponses.notes : null,
     })),
+    guests,
   };
 }
 
