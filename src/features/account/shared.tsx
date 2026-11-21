@@ -12,7 +12,7 @@ export function Locked({ applied }: { applied: boolean }) {
   return (
     <EmptySlot icon="shield-check">
       <p className="air-empty-title">Unlocks once you’re welcomed in</p>
-      <p>Members see gatherings, headshot booking, and personal introductions here.</p>
+      <p>Members see events, headshot booking, and personal introductions here.</p>
       {!applied && <Link to="/join" className={cn("air-link", ring)}>Haven’t applied yet? Start your application</Link>}
     </EmptySlot>
   );

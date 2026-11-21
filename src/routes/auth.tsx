@@ -22,7 +22,7 @@ export const Route = createFileRoute("/auth")({
       { title: "Member Sign In — The Women’s Collective" },
       { name: "description", content: "Sign in or create your account to manage your Women’s Collective member profile." },
       { property: "og:title", content: "Member Sign In — The Women’s Collective" },
-      { property: "og:description", content: "Your profile, gatherings, and introductions in one place." },
+      { property: "og:description", content: "Your profile, events, and introductions in one place." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -144,7 +144,7 @@ function AuthPage() {
           </figure>
           <div className="flex min-w-0 flex-col gap-2.5 self-stretch">
             <span className="twc-chip twc-chip--ring self-start">Members only</span>
-            <p className="font-display text-2xl leading-[1.2]">Your profile, your gatherings, your introductions.</p>
+            <p className="font-display text-2xl leading-[1.2]">Your profile, your events, your introductions.</p>
             <p className="text-sm leading-normal text-sb-muted">Accounts open fully once your membership application is approved.</p>
           </div>
         </div>

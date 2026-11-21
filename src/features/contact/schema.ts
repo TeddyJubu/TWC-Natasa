@@ -4,7 +4,7 @@
 
 export const TOPICS = [
   "A question about membership",
-  "Hosting or sponsoring a gathering",
+  "Hosting or sponsoring an event",
   "Partnerships",
   "Press",
   "Nominating someone for Member Monday",

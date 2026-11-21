@@ -19,7 +19,7 @@ export const Route = createFileRoute("/embed/gatherings")({
   loaderDeps: ({ search }) => search,
   loader: ({ context, deps }): Promise<EventList | undefined> =>
     context.queryClient.ensureQueryData(calEventsQuery(params(deps))).catch(() => undefined),
-  head: () => ({ meta: [{ title: "Gatherings — The Women’s Collective" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Events — The Women’s Collective" }, { name: "robots", content: "noindex" }] }),
   component: EmbedGatherings,
 });
 

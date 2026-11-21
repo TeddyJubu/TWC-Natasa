@@ -8,7 +8,7 @@ export const KINDS: Record<FeedKind, { label: string; icon: IconName }> = {
   update: { label: "Update", icon: "megaphone" },
   ask: { label: "Ask", icon: "circle-help" },
   offer: { label: "Offer", icon: "tag" },
-  gathering: { label: "Gathering", icon: "calendar" },
+  gathering: { label: "Event", icon: "calendar" },
 };
 /** "hood" is her own neighborhood, which the server reads from her profile (never passed in). */
 export const FEED_FILTERS = ["all", "hood", "asks", "gatherings"] as const;

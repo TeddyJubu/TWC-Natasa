@@ -24,7 +24,7 @@ export const Route = createFileRoute("/neighborhoods_/$slug")({
   head: ({ loaderData }) => {
     const name = loaderData?.hood.name;
     const title = `${name ?? "Neighborhood"} — The Women’s Collective`;
-    const description = `Meet the women of The Women’s Collective in ${name ?? "Queens"}, and find gatherings close to home.`;
+    const description = `Meet the women of The Women’s Collective in ${name ?? "Queens"}, and find events close to home.`;
     const raw = import.meta.env.VITE_SITE_URL as string | undefined;
     const site = parseSiteUrl(raw);
     const path = loaderData ? `/neighborhoods/${loaderData.hood.slug}` : undefined;
@@ -237,9 +237,9 @@ function Gatherings({ hood }: { hood: Neighborhood }) {
           {member && events.isSuccess
             ? <>Nothing on the {hood.name} calendar yet. {across}</>
             : member && events.isError
-              ? <>We couldn’t load gatherings right now. {across}</>
+              ? <>We couldn’t load events right now. {across}</>
               : member && events.isPending
-                ? <span role="status">Loading gatherings…</span>
+                ? <span role="status">Loading events…</span>
                 : <>Members see what’s coming up in {hood.name} here. {across}</>}
         </p>
       )}

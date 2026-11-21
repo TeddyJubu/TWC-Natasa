@@ -119,7 +119,7 @@ export function AddToCalendar({ entry, className }: { entry: Parameters<typeof b
     const url = URL.createObjectURL(new Blob([buildIcs(entry)], { type: "text/calendar;charset=utf-8" }));
     const link = document.createElement("a");
     link.href = url;
-    link.download = `${slugify(entry.title) || "gathering"}.ics`;
+    link.download = `${slugify(entry.title) || "event"}.ics`;
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   };

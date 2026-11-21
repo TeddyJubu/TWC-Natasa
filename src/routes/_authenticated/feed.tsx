@@ -21,7 +21,7 @@ export const Route = createFileRoute("/_authenticated/feed")({
   head: () => ({
     meta: [
       { title: "The feed — The Women’s Collective" },
-      { name: "description", content: "News, asks, offers and gatherings from members across Queens." },
+      { name: "description", content: "News, asks, offers and events from members across Queens." },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -47,7 +47,7 @@ function FeedPage() {
   const head = pages[0];
   const today = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", timeZone: "America/New_York" });
 
-  const filters: [FeedFilter, string][] = [["all", "All posts"], ...(hood ? [["hood", hood] as [FeedFilter, string]] : []), ["asks", "Asks & offers"], ["gatherings", "Gatherings"]];
+  const filters: [FeedFilter, string][] = [["all", "All posts"], ...(hood ? [["hood", hood] as [FeedFilter, string]] : []), ["asks", "Asks & offers"], ["gatherings", "Events"]];
 
   return (
     <AppPage trail={false}>
@@ -73,7 +73,7 @@ function FeedPage() {
               <div className="mt-8">
                 <EmptySlot icon="shield-check">
                   <p className="air-empty-title">Unlocks once you’re welcomed in</p>
-                  <p>Members share news, asks, offers and gatherings here.</p>
+                  <p>Members share news, asks, offers and events here.</p>
                   {own && !own.hasApplication && <Link to="/join" className={cn("air-link", ring)}>Haven’t applied yet? Start your application</Link>}
                 </EmptySlot>
               </div>
@@ -113,9 +113,9 @@ function FeedPage() {
             <>
               <aside aria-label="Your pass" className="air-feed-rail">
                 <FeedPass own={own} name={name} mine={head?.mine} />
-                <p className="air-dir-hint"><Icon name="shield-check" className="mt-0.5 size-4" />Keep it neighborly: wins, asks, offers and gatherings. Cold sales pitches get returned to sender.</p>
+                <p className="air-dir-hint"><Icon name="shield-check" className="mt-0.5 size-4" />Keep it neighborly: wins, asks, offers and events. Cold sales pitches get returned to sender.</p>
               </aside>
-              <aside aria-label="Neighbors and gatherings" className="air-feed-side">
+              <aside aria-label="Neighbors and events" className="air-feed-side">
                 <Neighbors userId={user.id} hood={hood} onOpen={setOpenMember} />
                 <ComingUp userId={user.id} />
               </aside>
@@ -176,7 +176,7 @@ function ComingUp({ userId }: { userId: string }) {
   if (next.length === 0) return null;
   return (
     <section aria-labelledby="coming-up-title">
-      <div className="air-feed-h"><h2 id="coming-up-title">Coming up</h2><Link to="/account" hash="gatherings" className={cn("air-link", ring)}>All gatherings</Link></div>
+      <div className="air-feed-h"><h2 id="coming-up-title">Coming up</h2><Link to="/account" hash="gatherings" className={cn("air-link", ring)}>All events</Link></div>
       <ul className="air-feed-events">
         {next.map((e) => {
           const when = eventWhen(e.starts_at);

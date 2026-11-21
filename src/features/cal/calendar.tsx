@@ -32,7 +32,7 @@ export function CalendarDayCell({ day, month, events, locale, today, active, onF
 }) {
   const outside = day.slice(0, 7) !== month;
   const label = new Intl.DateTimeFormat(locale, { timeZone: "UTC", weekday: "long", month: "long", day: "numeric" }).format(utc(day));
-  const count = events.length ? `, ${events.length} ${events.length === 1 ? "gathering" : "gatherings"}` : "";
+  const count = events.length ? `, ${events.length} ${events.length === 1 ? "event" : "events"}` : "";
   const hidden = events.length - MAX_PILLS;
   return (
     <td

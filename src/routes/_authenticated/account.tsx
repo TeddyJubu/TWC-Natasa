@@ -24,7 +24,7 @@ export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
     meta: [
       { title: "Your Member Profile — The Women’s Collective" },
-      { name: "description", content: "Manage your public card, membership, gatherings, headshot session, and introductions." },
+      { name: "description", content: "Manage your public card, membership, events, headshot session, and introductions." },
       { property: "og:title", content: "Your Member Profile — The Women’s Collective" },
       { property: "og:description", content: "Your corner of the constellation." },
       { property: "og:type", content: "website" },

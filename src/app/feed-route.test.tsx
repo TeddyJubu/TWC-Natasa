@@ -105,7 +105,7 @@ describe("/feed", () => {
     const send = screen.getByRole("button", { name: "Post" });
     expect((send as HTMLButtonElement).disabled).toBe(true);
     fireEvent.change(screen.getByRole("textbox", { name: "What’s new, Rosa?" }), { target: { value: "  Kiln night Thursday  " } });
-    fireEvent.click(screen.getByRole("radio", { name: "Gathering" }));
+    fireEvent.click(screen.getByRole("radio", { name: "Event" }));
     fake.results = [{ id: "p3" }, page]; // the post, then the feed's refetch
     fireEvent.click(send);
     await waitFor(() => expect(fake.calls.some(([path]) => path === "/api/feed")).toBe(true));
@@ -156,7 +156,7 @@ describe("/feed", () => {
   it("filters to her own neighborhood", async () => {
     renderWithQueries(<Page />, seed());
     const filters = screen.getByRole("group", { name: "Filter the feed" });
-    expect(within(filters).getAllByRole("button").map((b) => b.textContent)).toEqual(["All posts", "Astoria", "Asks & offers", "Gatherings"]);
+    expect(within(filters).getAllByRole("button").map((b) => b.textContent)).toEqual(["All posts", "Astoria", "Asks & offers", "Events"]);
     fake.results = [{ ...page, posts: [] }];
     fireEvent.click(within(filters).getByRole("button", { name: "Astoria" }));
     await waitFor(() => expect(fake.calls).toContainEqual(["feedFn", { filter: "hood", cursor: null }]));

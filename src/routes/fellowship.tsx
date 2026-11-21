@@ -7,7 +7,7 @@ import { Icon, Scallop, TwcRibbon } from "@/app/layout/twc";
 import { useNeighborhoods } from "@/features/neighborhoods/queries";
 
 const TITLE = "The Fellowship — The Women’s Collective";
-const DESCRIPTION = "Membership in The Women’s Collective: a directory of women across Western Queens, the gatherings that bring them together, and a real person who reads every application.";
+const DESCRIPTION = "Membership in The Women’s Collective: a directory of women across Western Queens, the events that bring them together, and a real person who reads every application.";
 
 export const Route = createFileRoute("/fellowship")({
   head: () => ({
@@ -27,7 +27,7 @@ export const Route = createFileRoute("/fellowship")({
 // reapplication rules have no settled wording yet, so they are not stated here (SITE-037/038/040).
 const GIVES = [
   { tone: "twc-stamp--olive", title: "Your card", text: "Show up in the member directory if you want to. You decide who sees it: other members, the public website, or no one yet." },
-  { tone: "twc-stamp--mustard", title: "Gatherings", text: "Approved members save a seat at gatherings from their account, and meet the neighbors we introduce them to." },
+  { tone: "twc-stamp--mustard", title: "Events", text: "Approved members save a seat at events from their account, and meet the neighbors we introduce them to." },
   { tone: "twc-stamp--terracotta", title: "Your number", text: "Approval brings your catalogue number: the small, permanent mark of being part of the collective." },
 ];
 
@@ -46,7 +46,7 @@ function FellowshipPage() {
             <p className="twc-chip twc-chip--ring self-start"><Icon name="pin" />Western Queens, New York</p>
           </div>
           <div className="relative min-h-[380px] min-w-0 flex-[1_1_380px]">
-            <img src={membersGathering} srcSet={membersGatheringSrcSet} sizes={membersGatheringSizes} alt="Two women in conversation at a stylish indoor gathering, holding wine glasses" width={1600} height={1069} fetchPriority="high" className="twc-photo twc-photo--arch absolute left-0 top-0 aspect-[5/6] w-[min(300px,80%)]" />
+            <img src={membersGathering} srcSet={membersGatheringSrcSet} sizes={membersGatheringSizes} alt="Two women in conversation at a stylish indoor event, holding wine glasses" width={1600} height={1069} fetchPriority="high" className="twc-photo twc-photo--arch absolute left-0 top-0 aspect-[5/6] w-[min(300px,80%)]" />
             <figure className="twc-polaroid absolute -bottom-2.5 right-0 w-[min(220px,58%)]">
               <img src={gatheringSupper} alt="A candle-lit supper with a group of women smiling and chatting" width={1600} height={1067} loading="lazy" />
               <figcaption>around the table</figcaption>
@@ -64,7 +64,7 @@ function FellowshipPage() {
             <p className="twc-eyebrow">What it is</p>
             <h2 className="twc-h3">A directory, and the people behind it.</h2>
             <p className="text-[17px] leading-[1.65] text-sb-muted">At its simplest, The Women’s Collective is a list of women across Western Queens: what they do, what they’re building, and the card they choose to share.</p>
-            <p className="text-[17px] leading-[1.65] text-sb-muted">What makes it worth joining is the part that isn’t a list: gatherings, and a group of people who answer when you write to them. The only thing membership asks of you is that you participate.</p>
+            <p className="text-[17px] leading-[1.65] text-sb-muted">What makes it worth joining is the part that isn’t a list: events, and a group of people who answer when you write to them. The only thing membership asks of you is that you participate.</p>
             <p className="text-[17px] leading-[1.65] text-sb-muted">
               Wondering whether it’s for you? <Link to="/faq" hash="membership" className="twc-inlink">Who the collective is for</Link> is on the questions page.
             </p>

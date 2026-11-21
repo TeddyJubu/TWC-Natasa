@@ -31,7 +31,7 @@ type SiteLink = { label: string; to: "/about" | "/members" | "/gatherings" | "/n
 const NAV_START: SiteLink[] = [
   { label: "About", to: "/about" },
   { label: "Members", to: "/members" },
-  { label: "Gatherings", to: "/gatherings" },
+  { label: "Events", to: "/gatherings" },
 ];
 const NAV_END: SiteLink[] = [
   { label: "Neighborhoods", to: "/neighborhoods" },
@@ -127,7 +127,7 @@ export function AppNav({ bare = false }: { bare?: boolean }) {
 const FOOTER: SiteLink[] = [
   { label: "About", to: "/about" },
   { label: "Members", to: "/members" },
-  { label: "Gatherings", to: "/gatherings" },
+  { label: "Events", to: "/gatherings" },
   { label: "Neighborhoods", to: "/neighborhoods" },
   { label: "FAQ", to: "/faq" },
   { label: "Fellowship", to: "/fellowship" },

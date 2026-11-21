@@ -17,7 +17,7 @@ export function EventStatus({ event }: { event: CalEvent }) {
 export function EventsPageHeader({ host }: { host?: string | null }) {
   return (
     <section className="twc-wrap flex flex-col gap-5 pt-18 pb-10">
-      <p className="twc-eyebrow-script">gatherings</p>
+      <p className="twc-eyebrow-script">events</p>
       <h1 className="twc-display">Show up locally.</h1>
       <p className="twc-lede max-w-160">
         Coffee introductions, supper clubs and headshot days{host ? ` with ${host}` : ""}. See what’s coming up and tell us you’re coming.
@@ -30,7 +30,7 @@ const pressable = "twc-choice aria-pressed:bg-sb-ink aria-pressed:text-sb-paper 
 
 export function EventsTabs({ tab, onChange }: { tab: "upcoming" | "past"; onChange: (tab: "upcoming" | "past") => void }) {
   return (
-    <div role="group" aria-label="Which gatherings" className="flex flex-wrap gap-2">
+    <div role="group" aria-label="Which events" className="flex flex-wrap gap-2">
       {(["upcoming", "past"] as const).map((t) => (
         <button key={t} type="button" aria-pressed={tab === t} className={pressable} onClick={() => onChange(t)}>
           {t === "upcoming" ? "Upcoming" : "Past"}
@@ -179,7 +179,7 @@ export function EmptyState({ title, children }: { title: string; children?: Reac
 
 export function EventsSkeleton() {
   return (
-    <div role="status" aria-label="Loading gatherings" className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div role="status" aria-label="Loading events" className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {[0, 1, 2].map((i) => <div key={i} className="h-72 rounded-md bg-sb-ink/8 motion-safe:animate-pulse" />)}
     </div>
   );
@@ -197,7 +197,7 @@ export function LoadMore({ onClick, busy, shown, total }: { onClick: () => void;
 
 /** The next few gatherings, for /embed/gatherings. Links open the site in a new tab, out of the frame. */
 export function EventsWidget({ events }: { events: CalEvent[] }) {
-  if (!events.length) return <p className="text-sb-muted">No gatherings on the calendar yet.</p>;
+  if (!events.length) return <p className="text-sb-muted">No events on the calendar yet.</p>;
   return (
     <ul className="flex flex-col">
       {events.map((e) => (
@@ -216,7 +216,7 @@ export function EventHero({ event }: { event: CalEvent }) {
   return (
     <header className="twc-wrap flex flex-col gap-5 pt-14 pb-8">
       <Link to="/gatherings" className="twc-link inline-flex w-fit items-center gap-1.5 text-sm">
-        <Icon name="arrowLeft" className="size-3.5" /> All gatherings
+        <Icon name="arrowLeft" className="size-3.5" /> All events
       </Link>
       <div className="flex flex-wrap items-center gap-2">
         {event.category && <CategoryChip category={event.category} />}

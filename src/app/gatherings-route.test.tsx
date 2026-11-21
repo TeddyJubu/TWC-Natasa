@@ -75,7 +75,7 @@ describe("/gatherings", () => {
   it("says when nothing is on the calendar", () => {
     loaderData = page([]);
     renderWithQueries(<Page />);
-    expect(screen.getByText("No gatherings on the calendar yet.")).toBeTruthy();
+    expect(screen.getByText("No events on the calendar yet.")).toBeTruthy();
   });
 
   it("shows an outage with a retry instead of breaking", async () => {

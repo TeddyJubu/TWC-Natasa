@@ -29,7 +29,7 @@ export const Route = createFileRoute("/gatherings_/$slug")({
     }
   },
   head: ({ loaderData: e, params }) => {
-    if (!e) return { meta: [{ title: `Gathering — ${SITE}` }, { name: "robots", content: "noindex" }] };
+    if (!e) return { meta: [{ title: `Event — ${SITE}` }, { name: "robots", content: "noindex" }] };
     const title = `${e.title} — ${SITE}`;
     const when = formatRange(e.startTime, e.endTime, e.timeZone, "en-US");
     const description = `${when}${e.location ? ` · ${e.location}` : ""}${e.description ? `. ${e.description.slice(0, 140)}` : ""}`;
@@ -64,8 +64,8 @@ function GatheringPage() {
       <main id="main" tabIndex={-1} className="outline-none">
         {!event ? (
           <div className="twc-wrap flex flex-col gap-6 py-20">
-            <h1 className="twc-h2">Gathering</h1>
-            {query.isError ? <ErrorBanner message="We couldn’t load this gathering right now." onRetry={() => void query.refetch()} /> : <EventsSkeleton />}
+            <h1 className="twc-h2">Event</h1>
+            {query.isError ? <ErrorBanner message="We couldn’t load this event right now." onRetry={() => void query.refetch()} /> : <EventsSkeleton />}
           </div>
         ) : (
           <>

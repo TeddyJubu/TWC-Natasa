@@ -28,7 +28,7 @@ const STEPS = [
   { tone: "twc-stamp--olive", title: "Introduce yourself", text: "Tell us about your work, the people you hope to meet, and how you want to contribute." },
   { tone: "twc-stamp--mustard", title: "A real person reads it", text: "Someone in Queens reads every application. We’ll be in touch by email about next steps." },
   // Board note doubted "everything unlocks at once": list only what approval itself grants, no timing.
-  { tone: "", title: "Get welcomed in", text: "Approval brings your catalogue number, the chance to save a seat at member gatherings, and the choice to show your card in the directory." },
+  { tone: "", title: "Get welcomed in", text: "Approval brings your catalogue number, the chance to save a seat at member events, and the choice to show your card in the directory." },
   { tone: "twc-stamp--terracotta", title: "Show up", text: "Save your seat, meet the neighbors we introduce you to, and help someone else shine." },
 ];
 

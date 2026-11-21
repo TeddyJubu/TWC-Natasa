@@ -217,7 +217,7 @@ export async function listPublicEvents(input: ListInput = {}): Promise<EventList
 export async function getPublicEvent(slugOrUid: string, business?: string): Promise<CalEventDetail> {
   const acc = account(business);
   const event = (await allEvents(acc)).find((e) => e.slug === slugOrUid || e.uid === slugOrUid);
-  if (!event) throw notFound("That gathering");
+  if (!event) throw notFound("That event");
   return { ...toPublicEvent(event), unlisted: event.hidden === true };
 }
 
@@ -566,7 +566,7 @@ export async function sendRsvp(uid: string, input: unknown, ip: string, business
       : new CalError("This event is full.", 409, "EVENT_FULL"));
   }
   if (response.status === 429) throw limited();
-  if (response.status === 404) throw notFound("That gathering");
+  if (response.status === 404) throw notFound("That event");
   if (response.status === 400) throw new CalError("Please check your details. This event may also have been cancelled or ended.", 400, "BAD_REQUEST");
   console.error("[cal] rsvp status:", response.status);
   throw unavailable();

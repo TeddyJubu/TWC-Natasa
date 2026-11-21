@@ -18,7 +18,7 @@ const welcomeText = (name: string, signIn: string) => `Dear ${name},
 
 Your application to The Women’s Collective has been approved. Welcome!
 
-Sign in (or create your account with this email address) to set up your member card, see upcoming gatherings and meet other members:
+Sign in (or create your account with this email address) to set up your member card, see upcoming events and meet other members:
 ${signIn}
 
 We’re so glad you’re here.

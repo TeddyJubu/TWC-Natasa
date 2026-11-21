@@ -42,7 +42,7 @@ export function AccountHeader({ userId, profile, avatar, onPreview }: {
     ...(booking && booking.status !== "declined"
       ? [{ label: booking.status === "confirmed" ? "Headshot" : "Headshot requested", value: day(dayParts(booking.preferred_date)) }]
       : []),
-    ...(next ? [{ label: "Next gathering", value: day(eventWhen(next.starts_at)) }] : []),
+    ...(next ? [{ label: "Next event", value: day(eventWhen(next.starts_at)) }] : []),
   ];
   const waiting = declined
     ? "Your card stays private and isn’t shown to anyone."

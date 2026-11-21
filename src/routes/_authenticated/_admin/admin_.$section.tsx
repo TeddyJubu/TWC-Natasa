@@ -19,7 +19,7 @@ const PAGES: Record<AdminSection, { intro: string; Panel: React.ComponentType<{ 
   members: { intro: "Every member profile: approve or decline, fix a neighborhood, send a review or Spotlight link.", Panel: MembersPanel, search: true },
   newsletter: { intro: "Who is on the newsletter list. Read-only here; Beehiiv holds the list itself.", Panel: NewsletterPanel, search: true },
   spotlight: { intro: "Answers to the weekly Spotlight, sent and imported.", Panel: SpotlightPanel },
-  gatherings: { intro: "The calendar, kept in Cal: add a gathering, change or cancel it, and see who’s coming.", Panel: GatheringsPanel },
+  gatherings: { intro: "The calendar, kept in Cal: add an event, change or cancel it, and see who’s coming.", Panel: GatheringsPanel },
   appointments: { intro: "Bookable appointments in Cal: who has booked, and the types people can book.", Panel: AppointmentsPanel },
   neighborhoods: { intro: "The neighborhoods members choose from, with their colours and logos.", Panel: NeighborhoodsPanel },
   activity: { intro: "Who approved, declined, noted or moved whom, newest first. It can’t be edited.", Panel: ActivityPanel },

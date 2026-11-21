@@ -1,5 +1,6 @@
 // Editable wording for the built-in forms (migration 0011), server side: only admins write, and only texts the pages
 // ask for. Kept out of form-copy.test.tsx because a jsdom file can't import node:sqlite on Node 22.
+import { readFileSync } from "node:fs";
 import { beforeEach, describe, expect, it } from "vitest";
 import { openDb, type DB } from "@/server/db";
 import { adminFormCopy, publicFormCopy, saveFormCopy } from "./copy.server";
@@ -24,6 +25,17 @@ beforeEach(() => {
 describe("server", () => {
   it("starts empty: every page shows its defaults", () => {
     for (const form of COPY_FORMS) expect(publicFormCopy(as(null), { form })).toEqual({});
+  });
+
+  it("0016 keeps an admin's saved wording when its default changes from gathering to event", () => {
+    const contact = "A question about membership, an idea for a gathering, a partnership you’d like to explore: send it our way. A real person in North Brooklyn reads every message.";
+    const partnership = "Every gathering happens because someone opens their doors and shares what they know. That’s a collaboration, and we treat it like one.";
+    const insert = db.prepare("insert into form_copy (form, original, value) values (?, ?, ?)");
+    insert.run("contact", contact, "Our contact words");
+    insert.run("partnership", partnership, "Our partnership words");
+    db.exec(readFileSync("db/migrations/0016_events_wording.sql", "utf8"));
+    expect(publicFormCopy(as(null), { form: "contact" })).toEqual({ [contact.replace("a gathering", "an event")]: "Our contact words" });
+    expect(publicFormCopy(as(null), { form: "partnership" })).toEqual({ [partnership.replace("Every gathering", "Every event")]: "Our partnership words" });
   });
 
   it("an admin saves wording and the public page reads it, per form", () => {

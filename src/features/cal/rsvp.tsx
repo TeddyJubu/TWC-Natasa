@@ -134,7 +134,7 @@ export function RsvpPanel({ event, business }: { event: CalEvent; business?: str
   const [editing, setEditing] = React.useState(false);
   const [announce, setAnnounce] = React.useState("");
   React.useEffect(() => setSaved(lastRsvp(event.uid)), [event.uid]);
-  const closed = event.status === "CANCELLED" ? "This gathering has been cancelled." : isEnded(event) ? "This gathering has ended." : null;
+  const closed = event.status === "CANCELLED" ? "This event has been cancelled." : isEnded(event) ? "This event has ended." : null;
   return (
     <aside aria-labelledby="rsvp-title" className="flex flex-col gap-5 rounded-md bg-sb-cream p-6">
       <h2 id="rsvp-title" className="twc-h3">Are you coming?</h2>
@@ -143,7 +143,7 @@ export function RsvpPanel({ event, business }: { event: CalEvent; business?: str
         <RsvpConfirmation event={event} rsvp={saved} onChange={() => { setEditing(true); setAnnounce(""); }} />
       ) : (
         <>
-          {isFull(event) && !saved && <p className="text-sm">This gathering is full. You can still say maybe.</p>}
+          {isFull(event) && !saved && <p className="text-sm">This event is full. You can still say maybe.</p>}
           <RsvpForm
             key={saved ? `${saved.email}-${saved.status}` : "new"} event={event} initial={saved} business={business}
             onSaved={(rsvp, message) => { setSaved(rsvp); setEditing(false); setAnnounce(message); }}

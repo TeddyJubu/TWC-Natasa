@@ -490,7 +490,7 @@ describe("/account", () => {
 
     it("shows an empty state when nothing is scheduled", () => {
       renderAccount({}, [], []);
-      expect(screen.getByText(/no gatherings on the calendar yet/i)).toBeTruthy();
+      expect(screen.getByText(/no events on the calendar yet/i)).toBeTruthy();
     });
 
     it.each([
@@ -507,7 +507,7 @@ describe("/account", () => {
       ]);
       await act(() => new Promise((r) => setTimeout(r, 20)));
       expect(fake.calls[0]).toEqual(["eventsFn", { from: expect.any(String) }]);
-      expect(screen.queryByText(/no gatherings on the calendar yet/i)).toBeNull();
+      expect(screen.queryByText(/no events on the calendar yet/i)).toBeNull();
     });
 
     it("a seat is an invitation until taken; going is a chip with a quiet way out", async () => {

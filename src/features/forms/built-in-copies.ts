@@ -87,7 +87,7 @@ export const BUILT_IN_COPIES: Record<CopyForm, FormTemplate> = {
     ],
   },
   contact: {
-    intro: "A question about membership, an idea for a gathering, a partnership you’d like to explore: send it our way. A real person in North Brooklyn reads every message.",
+    intro: "A question about membership, an idea for an event, a partnership you’d like to explore: send it our way. A real person in North Brooklyn reads every message.",
     thanks: "Thanks for reaching out.",
     questions: [
       q("name", "short", "Your name", true),
@@ -97,7 +97,7 @@ export const BUILT_IN_COPIES: Record<CopyForm, FormTemplate> = {
     ],
   },
   partnership: {
-    intro: "Every gathering happens because someone opens their doors and shares what they know. That’s a collaboration, and we treat it like one.",
+    intro: "Every event happens because someone opens their doors and shares what they know. That’s a collaboration, and we treat it like one.",
     thanks: "Thanks for writing.",
     questions: [
       q("name", "short", "Your name", true),

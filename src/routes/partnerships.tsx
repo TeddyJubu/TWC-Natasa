@@ -45,7 +45,7 @@ function PartnershipsPage() {
           <div className="flex min-w-0 flex-[1_1_520px] flex-col gap-5">
             <p className="twc-eyebrow-script">{t("for businesses")}</p>
             <h1 className="twc-display">{t("Partners, not vendors.")}</h1>
-            <p className="twc-lede max-w-[560px]">{t("Every gathering happens because someone opens their doors and shares what they know. That’s a collaboration, and we treat it like one.")}</p>
+            <p className="twc-lede max-w-[560px]">{t("Every event happens because someone opens their doors and shares what they know. That’s a collaboration, and we treat it like one.")}</p>
             <p className="twc-chip twc-chip--ring self-start"><Icon name="pin" />North Brooklyn, New York</p>
           </div>
           <div className="min-w-0 flex-[1_1_380px]">

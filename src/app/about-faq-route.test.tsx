@@ -97,7 +97,7 @@ describe("/about", () => {
 describe("/faq", () => {
   it("groups questions under topic headings that the table of contents links to", () => {
     show(Faq);
-    const topics = ["Membership", "Your profile", "Headshots", "Gatherings", "Privacy"];
+    const topics = ["Membership", "Your profile", "Headshots", "Events", "Privacy"];
     expect(screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent)).toEqual([...topics, "Still wondering?"]);
     const toc = screen.getByRole("navigation", { name: "Topics" });
     expect(within(toc).getAllByRole("link").map((a) => a.getAttribute("href"))).toEqual(["#membership", "#profile", "#headshots", "#gatherings", "#privacy"]);

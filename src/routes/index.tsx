@@ -66,7 +66,7 @@ const ROLES = [
 const BRICKS = [
   { title: "Share what you do", text: "Introduce your business, work, or project and help neighbors understand what you bring.", tone: "bg-sb-mustard text-sb-ink" },
   { title: "Find collaborators", text: "Build partnerships, exchange referrals, and discover opportunities through people nearby.", tone: "bg-sb-rose text-sb-ink" },
-  { title: "Show up locally", text: "Promote women-owned businesses and learn about gatherings, events, and meetups across Queens.", tone: "bg-sb-terracotta text-white" },
+  { title: "Show up locally", text: "Promote women-owned businesses and learn about events and meetups across Queens.", tone: "bg-sb-terracotta text-white" },
 ];
 
 // Three on the homepage; the rest live on /faq. "Which neighborhoods" is left out: the ribbon and the colour row answer it.
@@ -182,7 +182,7 @@ function Hero() {
           <Polaroid
             src={queensPolaroid}
             loading="eager"
-            alt="Women laughing together at an evening rooftop gathering"
+            alt="Women laughing together at an evening rooftop event"
             caption="our people, Queens"
             className={cn("rotate-6 gap-1.5 bg-sb-paper p-2 pb-3 lg:gap-2.5 lg:p-3 lg:pb-4", lift)}
             photoClass="aspect-square"
@@ -412,7 +412,7 @@ function Bricklayer() {
         </div>
         <Brick {...share} />
         <div className="sb-stamp group h-[230px] overflow-hidden md:h-auto">
-          <img src={gathering} srcSet={eventSrcSet} sizes={eventSizes} alt="Women talking together at a collective gathering" loading="lazy" className="size-full object-cover transition-[scale] duration-700 ease-[var(--ease-gentle)] group-hover:scale-105" />
+          <img src={gathering} srcSet={eventSrcSet} sizes={eventSizes} alt="Women talking together at a collective event" loading="lazy" className="size-full object-cover transition-[scale] duration-700 ease-[var(--ease-gentle)] group-hover:scale-105" />
         </div>
         <Brick {...collab} />
         <Brick {...show} />

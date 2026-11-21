@@ -51,7 +51,7 @@ describe("homepage images", () => {
     renderWithQueries(<Page />, [[["public-profiles"], []]]);
   };
 
-  const heroPolaroid = "Women laughing together at an evening rooftop gathering";
+  const heroPolaroid = "Women laughing together at an evening rooftop event";
 
   it("hero: high fetch priority, never lazy, with downscales up to the 1920w original", () => {
     renderHome();

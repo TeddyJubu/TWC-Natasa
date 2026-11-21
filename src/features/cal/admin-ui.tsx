@@ -40,7 +40,7 @@ export function PublicLinkCopy({ slug }: { slug: string }) {
       await navigator.clipboard.writeText(`${window.location.origin}/gatherings/${encodeURIComponent(slug)}`);
       toast("Link copied");
     } catch {
-      toast("Couldn’t copy. The link is on the gathering’s public page.");
+      toast("Couldn’t copy. The link is on the event’s public page.");
     }
   };
   return <><button type="button" className={cn(secondaryButton, "whitespace-nowrap")} onClick={() => void copy()}>Copy link</button>{toastNode}</>;
@@ -57,7 +57,7 @@ export function AdminEventsTable({ events, caption }: { events: AdminCalEvent[];
         <caption className="sr-only">{caption}</caption>
         <thead>
           <tr className="border-b border-app-rule">
-            {["Gathering", "When", "Status", "Going", "Maybe"].map((h) => <th key={h} scope="col" className="twc-eyebrow px-4 py-3.5 whitespace-nowrap">{h}</th>)}
+            {["Event", "When", "Status", "Going", "Maybe"].map((h) => <th key={h} scope="col" className="twc-eyebrow px-4 py-3.5 whitespace-nowrap">{h}</th>)}
             <th scope="col" className="px-4 py-2.5"><span className="sr-only">Actions</span></th>
           </tr>
         </thead>
@@ -100,19 +100,19 @@ export function GatheringsPanel() {
   const total = events.data?.total ?? 0;
   return (
     <Card
-      id="gatherings" title="Gatherings" subtitle="Everything on the calendar"
-      action={<Link to="/admin/gatherings/new" className={cn(primaryButton, "shrink-0")}>New gathering</Link>}
+      id="gatherings" title="Events" subtitle="Everything on the calendar"
+      action={<Link to="/admin/gatherings/new" className={cn(primaryButton, "shrink-0")}>New event</Link>}
     >
       <div className="flex flex-wrap items-end justify-between gap-4 px-4 py-3">
-        <div role="group" aria-label="Which gatherings" className="flex gap-2">
+        <div role="group" aria-label="Which events" className="flex gap-2">
           {(["upcoming", "past"] as const).map((t) => <button key={t} type="button" aria-pressed={tab === t} className="air-filter" onClick={() => pick(t)}>{t === "upcoming" ? "Upcoming" : "Past"}</button>)}
         </div>
         <BusinessSwitcher value={business} onChange={(b) => { setBusiness(b); setSkip(0); }} />
       </div>
       {events.isError ? <div className="p-4"><InlineError message={`The calendar isn’t responding. ${messageOf(events.error)}`} onRetry={() => void events.refetch()} /></div>
-        : events.isPending ? <p role="status" className="p-4 text-sm text-app-muted">Loading gatherings…</p>
-        : !events.data.events.length ? <div className="p-4"><EmptySlot icon="calendar-days">{tab === "upcoming" ? "Nothing on the calendar yet. Add the first gathering." : "No past gatherings yet."}</EmptySlot></div>
-        : <AdminEventsTable events={events.data.events} caption={tab === "upcoming" ? "Upcoming gatherings" : "Past gatherings"} />}
+        : events.isPending ? <p role="status" className="p-4 text-sm text-app-muted">Loading events…</p>
+        : !events.data.events.length ? <div className="p-4"><EmptySlot icon="calendar-days">{tab === "upcoming" ? "Nothing on the calendar yet. Add the first event." : "No past events yet."}</EmptySlot></div>
+        : <AdminEventsTable events={events.data.events} caption={tab === "upcoming" ? "Upcoming events" : "Past events"} />}
       {total > 25 && (
         <div className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
           <button type="button" className={secondaryButton} disabled={skip === 0} onClick={() => setSkip(Math.max(skip - 25, 0))}>Newer page</button>
@@ -164,7 +164,7 @@ export function EventEditorForm({ event, business }: { event?: AdminCalEvent; bu
     </FormField>
   );
   return (
-    <form noValidate aria-label={event ? `Edit ${event.title}` : "New gathering"} className="flex flex-col gap-5 p-4" onSubmit={(e) => { e.preventDefault(); submit(); }}>
+    <form noValidate aria-label={event ? `Edit ${event.title}` : "New event"} className="flex flex-col gap-5 p-4" onSubmit={(e) => { e.preventDefault(); submit(); }}>
       {text("title", "Title", undefined, true)}
       {text("slug", "Web address", d.slug ? `/gatherings/${slugify(d.slug)}` : "Made from the title when left blank.")}
       <FormField label="Description" hint="Plain text. Line breaks are kept." error={errors.description}>
@@ -192,7 +192,7 @@ export function EventEditorForm({ event, business }: { event?: AdminCalEvent; bu
       <Toggle label="Unlisted" description="Left out of lists and search; anyone with the link can still open it." checked={d.hidden} onChange={(e) => set("hidden", e.target.checked)} />
       <Toggle label="Show who’s coming" description="First names on the public page." checked={d.showAttendees} onChange={(e) => set("showAttendees", e.target.checked)} />
       {save.isError && <p role="alert" className="twc-error">{messageOf(save.error)}</p>}
-      <button type="submit" className={cn(redButton, "w-fit")} disabled={save.isPending}>{save.isPending ? "Saving…" : event ? "Save changes" : "Create gathering"}</button>
+      <button type="submit" className={cn(redButton, "w-fit")} disabled={save.isPending}>{save.isPending ? "Saving…" : event ? "Save changes" : "Create event"}</button>
       {toastNode}
     </form>
   );
@@ -208,9 +208,9 @@ export function CancelEventDialog({ event, business }: { event: AdminCalEvent; b
   if (event.status === "CANCELLED") return null;
   return (
     <>
-      <button type="button" className={secondaryButton} onClick={() => setOpen(true)}>Cancel gathering</button>
+      <button type="button" className={secondaryButton} onClick={() => setOpen(true)}>Cancel event</button>
       <ConfirmDialog
-        open={open} title={`Cancel ${event.title}?`} confirmLabel="Cancel gathering" cancelLabel="Keep it" danger busy={cancel.isPending}
+        open={open} title={`Cancel ${event.title}?`} confirmLabel="Cancel event" cancelLabel="Keep it" danger busy={cancel.isPending}
         onClose={() => setOpen(false)} onConfirm={() => cancel.mutate()}
       >
         <p>It stays on the calendar marked cancelled, and no one can RSVP. {event.goingCount} {event.goingCount === 1 ? "person is" : "people are"} going.</p>

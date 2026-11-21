@@ -58,7 +58,7 @@ export const demoMembers: MemberProfile[] = [
     business: "Field Note Flowers",
     neighborhood: "Jackson Heights",
     specialty: "Events & florals",
-    bio: "Elena creates loose, seasonal arrangements for gatherings and celebrations, sourcing from regional growers whenever possible.",
+    bio: "Elena creates loose, seasonal arrangements for events and celebrations, sourcing from regional growers whenever possible.",
     lookingFor: "Event planners, venues, and photographers",
     image: elenaImage,
     imageAlt: "Elena Cruz arranging seasonal flowers",

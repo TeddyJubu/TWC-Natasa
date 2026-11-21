@@ -34,7 +34,7 @@ export const ADMIN: NavItem[] = [
   { label: "All members", icon: "badge-check", to: "/admin", section: "members" },
   { label: "Newsletter", icon: "newspaper", to: "/admin", section: "newsletter" },
   { label: "Spotlight answers", icon: "megaphone", to: "/admin", section: "spotlight" },
-  { label: "Gatherings", icon: "calendar-days", to: "/admin", section: "gatherings" },
+  { label: "Events", icon: "calendar-days", to: "/admin", section: "gatherings" },
   { label: "Appointments", icon: "calendar", to: "/admin", section: "appointments" },
   { label: "Neighborhoods", icon: "map-pin", to: "/admin", section: "neighborhoods" },
   { label: "Admin activity", icon: "shield-check", to: "/admin", section: "activity" },

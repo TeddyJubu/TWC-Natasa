@@ -9,7 +9,7 @@ import { EventEditorForm } from "@/features/cal/admin-ui";
 
 export const Route = createFileRoute("/_authenticated/_admin/admin_/gatherings/new")({
   beforeLoad: ({ location, preload }) => ensureCoverPolicy(location.href, preload),
-  head: () => ({ meta: [{ title: "New gathering — Admin — The Women’s Collective" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "New event — Admin — The Women’s Collective" }, { name: "robots", content: "noindex" }] }),
   component: NewGathering,
 });
 
@@ -20,9 +20,9 @@ function NewGathering() {
     <AppPage trail={false}>
       <AppShell page="/admin/gatherings" admin>
         <main id="main" tabIndex={-1} className="outline-none">
-          <TopBar title="New gathering" heading who={{ name: user.name || user.email }} />
+          <TopBar title="New event" heading who={{ name: user.name || user.email }} />
           <div className="flex max-w-250 flex-col gap-6 px-4 pt-5 pb-14 sm:px-8 sm:pt-8">
-            <Link to="/admin/$section" params={{ section: "gatherings" }} className={linkClass}>Back to gatherings</Link>
+            <Link to="/admin/$section" params={{ section: "gatherings" }} className={linkClass}>Back to events</Link>
             <Card title="Details"><EventEditorForm business={business} /></Card>
           </div>
         </main>

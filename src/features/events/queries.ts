@@ -10,7 +10,7 @@ export const eventsQuery = queryOptions({
   queryFn: () => eventsFn({ data: { from: new Date().toISOString() } }),
 });
 
-/** Upcoming gatherings for everyone (no RSVPs or member data), soonest first. */
+/** Upcoming events for everyone (no RSVPs or member data), soonest first. */
 export const publicEventsQuery = queryOptions({
   queryKey: ["public-events"],
   queryFn: () => publicEventsFn({ data: { from: new Date().toISOString() } }),

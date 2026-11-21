@@ -12,10 +12,10 @@ import { errorMessage, hoodStyle } from "./helpers";
 import { EmptySlot, Letter, TicketDate } from "@/app/layout/app-ui";
 import { Locked } from "./shared";
 
-/** Upcoming gatherings with her RSVPs; applicants see what unlocks. */
+/** Upcoming events with her RSVPs; applicants see what unlocks. */
 export function GatheringsList({ userId, approved, applied, hoodList }: { userId: string; approved: boolean; applied: boolean; hoodList: Neighborhood[] }) {
   return (
-    <Letter id="gatherings" no={7} title="Gatherings" subtitle="Save your seat at what’s coming up">
+    <Letter id="gatherings" no={7} title="Events" subtitle="Save your seat at what’s coming up">
       {approved ? <Events userId={userId} hoodList={hoodList} /> : <Locked applied={applied} />}
     </Letter>
   );
@@ -32,13 +32,13 @@ function Events({ userId, hoodList }: { userId: string; hoodList: Neighborhood[]
     <>
       {(eventsState.isError || rsvpsState.isError) && (
         <InlineError
-          message="We couldn’t load upcoming gatherings."
+          message="We couldn’t load upcoming events."
           onRetry={() => { if (eventsState.isError) void eventsState.refetch(); if (rsvpsState.isError) void rsvpsState.refetch(); }}
         />
       )}
       {toggle.isError && <p role="alert" className="pb-3 text-sm text-danger">{errorMessage(toggle.error)}</p>}
       {eventsState.isSuccess && events.length === 0 && (
-        <EmptySlot icon="calendar-days"><p>No gatherings on the calendar yet. We’ll post the next one here.</p></EmptySlot>
+        <EmptySlot icon="calendar-days"><p>No events on the calendar yet. We’ll post the next one here.</p></EmptySlot>
       )}
       {events.length > 0 && (
         <ol className="air-tickets lg:grid-cols-2">

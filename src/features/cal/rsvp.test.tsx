@@ -108,10 +108,10 @@ describe("RsvpPanel", () => {
 
   it("offers no form on a cancelled or ended event", () => {
     const { unmount } = renderWithQueries(<RsvpPanel event={{ ...event, status: "CANCELLED" }} />);
-    expect(screen.getByText("This gathering has been cancelled.")).toBeTruthy();
+    expect(screen.getByText("This event has been cancelled.")).toBeTruthy();
     expect(screen.queryByRole("form")).toBeNull();
     unmount();
     renderWithQueries(<RsvpPanel event={{ ...event, startTime: future(-3), endTime: future(-2) }} />);
-    expect(screen.getByText("This gathering has ended.")).toBeTruthy();
+    expect(screen.getByText("This event has ended.")).toBeTruthy();
   });
 });

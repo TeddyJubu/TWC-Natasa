@@ -19,7 +19,7 @@ export const SPOTLIGHT_QUESTIONS: readonly Question[] = [
   { key: "Coffee With Interview Opt-In", label: "Would you like to be interviewed for our “Coffee with…” series?", section: 2, kind: "yesno" },
   { key: "NBWC Event Promo Collaboration", label: "Have an event coming up that we could help promote?", section: 2, help: "Tell us what it is, when and where." },
   { key: "Community - See More Of", label: "What would you love to see more of in the Collective?", section: 3 },
-  { key: "Community - Suggestions / Events", label: "Any ideas for events or gatherings?", section: 3 },
+  { key: "Community - Suggestions / Events", label: "Any ideas for events?", section: 3 },
   { key: "Community - Never Do", label: "Is there anything the Collective should never do?", section: 3 },
   { key: "Community - Would Feel Magical", label: "What would make being part of the Collective feel magical?", section: 3 },
   { key: "Community - North Brooklyn Means", label: "What does North Brooklyn mean to you?", section: 3 },

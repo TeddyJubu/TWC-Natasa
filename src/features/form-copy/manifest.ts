@@ -105,7 +105,7 @@ export const COPY_FIELDS: Record<CopyForm, CopyField[]> = {
     ...g("Top of the page", [
       "say hello",
       "Say hello, neighbor.",
-      "A question about membership, an idea for a gathering, a partnership you’d like to explore: send it our way. A real person in North Brooklyn reads every message.",
+      "A question about membership, an idea for an event, a partnership you’d like to explore: send it our way. A real person in North Brooklyn reads every message.",
     ]),
     ...g("The form", ["Your name", "Email", "What’s it about?", "Message", "Send message"]),
     ...g("Thank-you", ["Message received", "Thanks for reaching out."]),
@@ -114,7 +114,7 @@ export const COPY_FIELDS: Record<CopyForm, CopyField[]> = {
     ...g("Top of the page", [
       "for businesses",
       "Partners, not vendors.",
-      "Every gathering happens because someone opens their doors and shares what they know. That’s a collaboration, and we treat it like one.",
+      "Every event happens because someone opens their doors and shares what they know. That’s a collaboration, and we treat it like one.",
     ]),
     ...g("Next to the form", [
       "start the conversation",

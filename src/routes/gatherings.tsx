@@ -17,7 +17,7 @@ import type { EventList as EventPage } from "@/features/cal/types";
 import { ErrorBanner } from "@/features/cal/ui";
 import { gatheringsLd } from "@/features/events/structured-data";
 
-const TITLE = "Gatherings — The Women’s Collective";
+const TITLE = "Events — The Women’s Collective";
 const DESCRIPTION = "Coffee introductions, supper clubs and headshot days. See what’s coming up at The Women’s Collective and RSVP.";
 const PAGE_SIZE = 12;
 const MONTH_LIMIT = 100;
@@ -93,7 +93,7 @@ function GatheringsPage() {
       <AppNav />
       <main id="main" tabIndex={-1} className="outline-none">
         <EventsPageHeader host={first?.host} />
-        <section aria-label="Find a gathering" className="twc-wrap flex flex-col gap-6 pb-8">
+        <section aria-label="Find an event" className="twc-wrap flex flex-col gap-6 pb-8">
           <div className="flex flex-wrap items-end justify-between gap-4">
             {view === "calendar" ? <span /> : <EventsTabs tab={tab} onChange={(t) => update({ tab: t === "past" ? "past" : undefined })} />}
             <EventsViewToggle view={view} onChange={(v) => update({ view: v === "grid" ? undefined : v, ...(v === "calendar" ? { tab: undefined } : { month: undefined }) })} />
@@ -105,13 +105,13 @@ function GatheringsPage() {
         </section>
 
         <section aria-labelledby="gatherings-results" className="twc-wrap flex flex-col gap-6 pb-26">
-          <h2 id="gatherings-results" className="sr-only">{view === "calendar" ? "Calendar" : tab === "past" ? "Past gatherings" : "Upcoming gatherings"}</h2>
+          <h2 id="gatherings-results" className="sr-only">{view === "calendar" ? "Calendar" : tab === "past" ? "Past events" : "Upcoming events"}</h2>
           {error && !first ? <ErrorBanner message="We couldn’t load the calendar right now." onRetry={retry} />
             : pending ? <EventsSkeleton />
             : view === "calendar" ? (
               <MonthCalendar month={params.month!} events={events} business={search.business} onMonthChange={(month) => update({ month })} />
             ) : events.length === 0 ? (
-              <EmptyState title={filtered ? "Nothing matches that." : tab === "past" ? "No past gatherings yet." : "No gatherings on the calendar yet."}>
+              <EmptyState title={filtered ? "Nothing matches that." : tab === "past" ? "No past events yet." : "No events on the calendar yet."}>
                 {filtered ? "Try another search or category." : tab === "upcoming" ? "We’ll post the next one here." : null}
               </EmptyState>
             ) : (
@@ -120,7 +120,7 @@ function GatheringsPage() {
                 <LoadMore shown={events.length} total={first?.total ?? 0} busy={list.isFetchingNextPage} onClick={() => void list.fetchNextPage()} />
               </>
             )}
-          {list.isFetchNextPageError && <ErrorBanner message="We couldn’t load more gatherings." onRetry={() => void list.fetchNextPage()} />}
+          {list.isFetchNextPageError && <ErrorBanner message="We couldn’t load more events." onRetry={() => void list.fetchNextPage()} />}
         </section>
 
         <Scallop from="#fcfcfa" to="#edd22e" />
@@ -128,9 +128,9 @@ function GatheringsPage() {
           <div className="twc-wrap flex max-w-190 flex-col items-center gap-4.5 text-center">
             <h2 id="host" className="twc-h3">Want to host one?</h2>
             <p className="max-w-135 text-[17px]">
-              Members host, sponsor and collaborate on gatherings in their own neighborhoods. Tell us what you have in mind.
+              Members host, sponsor and collaborate on events in their own neighborhoods. Tell us what you have in mind.
             </p>
-            <Link to="/contact" className="twc-btn mt-2">Pitch a gathering <span className="twc-arrow" aria-hidden>→</span></Link>
+            <Link to="/contact" className="twc-btn mt-2">Pitch an event <span className="twc-arrow" aria-hidden>→</span></Link>
           </div>
         </section>
         <Scallop from="#edd22e" to="#fcfcfa" />

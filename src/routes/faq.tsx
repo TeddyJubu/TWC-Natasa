@@ -37,9 +37,9 @@ const FAQ_GROUPS: Group[] = [
   },
   {
     id: "gatherings",
-    title: "Gatherings",
+    title: "Events",
     items: [
-      { q: "Who can come to gatherings?", a: "Approved members save a seat from their account." },
+      { q: "Who can come to events?", a: "Approved members save a seat from their account." },
       { q: "Can I host or sponsor one?", a: "We’d love that. Tell us on your application, or ", link: { text: "get in touch", to: "/contact", after: "." } },
     ],
   },
@@ -65,7 +65,7 @@ const FAQ_LD = {
 };
 
 const TITLE = "Questions — The Women’s Collective";
-const DESCRIPTION = "Answers about membership, profiles, headshots, gatherings and privacy at The Women’s Collective in Western Queens.";
+const DESCRIPTION = "Answers about membership, profiles, headshots, events and privacy at The Women’s Collective in Western Queens.";
 
 export const Route = createFileRoute("/faq")({
   head: () => ({
