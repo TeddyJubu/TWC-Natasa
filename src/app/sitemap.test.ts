@@ -22,6 +22,11 @@ function seeded() {
 }
 
 describe("/sitemap.xml", () => {
+  it("adds the listed gatherings it is given, escaped", () => {
+    const xml = sitemapXml(seeded(), "https://example.com", [{ slug: "supper-club", updated: "2026-12-01T00:00:00.000Z" }]);
+    expect(xml).toContain("<loc>https://example.com/gatherings/supper-club</loc>");
+  });
+
   it("lists the fixed pages, active neighborhoods and only fully public members", () => {
     const paths = sitemapPaths(seeded());
     expect(paths.slice(0, INDEXED.size)).toEqual([...INDEXED]);

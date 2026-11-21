@@ -4,9 +4,11 @@ import { AppPage } from "@/app/layout/AppLayout";
 import { AppShell, TopBar } from "@/app/layout/AppShell";
 import { isAdminSection, sectionItem, type AdminSection } from "@/app/layout/shell-nav";
 import {
-  ActivityPanel, AdminSearch, ApplicationsPanel, BookingsPanel, GatheringsPanel, InboxPanel, MemberReviewsPanel, MembersPanel,
+  ActivityPanel, AdminSearch, ApplicationsPanel, BookingsPanel, InboxPanel, MemberReviewsPanel, MembersPanel,
   NeighborhoodsPanel, NewsletterPanel, SpotlightPanel,
 } from "@/features/admin/panels";
+import { ensureCoverPolicy } from "@/app/cover-pages";
+import { AppointmentsPanel, GatheringsPanel } from "@/features/cal/admin-ui";
 
 /** Each admin section's page: its one-line purpose, its card, and a search box for the cards that filter by one. */
 const PAGES: Record<AdminSection, { intro: string; Panel: React.ComponentType<{ query?: string }>; search?: boolean }> = {
@@ -17,15 +19,17 @@ const PAGES: Record<AdminSection, { intro: string; Panel: React.ComponentType<{ 
   members: { intro: "Every member profile: approve or decline, fix a neighborhood, send a review or Spotlight link.", Panel: MembersPanel, search: true },
   newsletter: { intro: "Who is on the newsletter list. Read-only here; Beehiiv holds the list itself.", Panel: NewsletterPanel, search: true },
   spotlight: { intro: "Answers to the weekly Spotlight, sent and imported.", Panel: SpotlightPanel },
-  gatherings: { intro: "The calendar: add a gathering, change it, and see who saved a seat.", Panel: GatheringsPanel },
+  gatherings: { intro: "The calendar, kept in Cal: add a gathering, change or cancel it, and see who’s coming.", Panel: GatheringsPanel },
+  appointments: { intro: "Bookable appointments in Cal: who has booked, and the types people can book.", Panel: AppointmentsPanel },
   neighborhoods: { intro: "The neighborhoods members choose from, with their colours and logos.", Panel: NeighborhoodsPanel },
   activity: { intro: "Who approved, declined, noted or moved whom, newest first. It can’t be edited.", Panel: ActivityPanel },
 };
 
 // `admin_` un-nests it from /admin's page while keeping the `_admin` guard; /admin/forms is a static route, so it wins.
 export const Route = createFileRoute("/_authenticated/_admin/admin_/$section")({
-  beforeLoad: ({ params }) => {
+  beforeLoad: ({ params, location, preload }) => {
     if (!isAdminSection(params.section)) throw notFound();
+    return params.section === "gatherings" ? ensureCoverPolicy(location.href, preload) : undefined;
   },
   head: ({ params }) => ({
     meta: [

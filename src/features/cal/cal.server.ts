@@ -7,7 +7,7 @@ import { checkSize, clientIp, HttpError, publicError, rateLimit } from "@/server
 import { bad, isObject, str } from "@/server/validate";
 import { monthKey } from "./time";
 import {
-  checkBooking, checkEvent, checkEventType, checkRsvp, isEmail, MAX_GUESTS, RSVP_STATUSES,
+  checkBooking, checkEvent, checkEventType, checkRsvp, isEmail, isTimeZone, MAX_GUESTS, RSVP_STATUSES,
   type AdminBooking, type AdminCalEvent, type AdminEventList, type BookingField, type BookingStatusFilter, type CalEvent,
   type CalEventDetail, type CalSlot, type CheckResult, type EditableEventType, type EventList, type EventTab, type OwnerRsvp,
   type PublicBooking, type PublicEventType, type RsvpCode, type RsvpResult, type RsvpStatus, type SlotsByDay,
@@ -41,6 +41,8 @@ export function toCalError(error: unknown): CalError {
   const status = Number(m[1]);
   const body = m[2];
   if (status === 400) {
+    if (/emails_must_be_unique/i.test(body)) return new CalError("That guest is already on this booking. An address with a +tag counts as the same person.", 400, "BAD_REQUEST");
+    if (/seatUid/i.test(body)) return notFound("That booking");
     if (/capacity/i.test(body)) return new CalError("Capacity can’t be lower than the number of people already going.", 400, "BAD_REQUEST");
     if (/slug/i.test(body)) return new CalError("Another event already uses that web address.", 400, "BAD_REQUEST");
     if (/cancelled or has ended/i.test(body)) return new CalError("This event has been cancelled or has ended.", 400, "BAD_REQUEST");
@@ -169,15 +171,19 @@ const allEvents = (acc: Account) =>
 
 export const isPast = (e: Pick<CalEvent, "endTime">, now = Date.now()) => Date.parse(e.endTime) <= now;
 
-export type EventFilter = { tab?: EventTab; category?: string; month?: string; now?: number };
+export type EventFilter = { tab?: EventTab | "all"; category?: string; month?: string; q?: string; now?: number };
+
+const fold = (value: string) => value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+const matches = (e: RawEvent, q: string) => fold([e.title, e.description, e.location, e.category].filter(Boolean).join(" ")).includes(fold(q));
 
 /** Hidden events never pass: they are reachable only by their direct link. */
-export function filterPublic(events: RawEvent[], { tab = "upcoming", category, month, now = Date.now() }: EventFilter): RawEvent[] {
+export function filterPublic(events: RawEvent[], { tab = "upcoming", category, month, q, now = Date.now() }: EventFilter): RawEvent[] {
   const direction = tab === "past" ? -1 : 1;
   return events
     .filter((e) => e.hidden !== true)
-    .filter((e) => (tab === "past") === isPast(e, now))
+    .filter((e) => tab === "all" || (tab === "past") === isPast(e, now))
     .filter((e) => !category || e.category === category)
+    .filter((e) => !q?.trim() || matches(e, q.trim()))
     .filter((e) => !month || monthKey(e.startTime, e.timeZone) === month)
     .sort((a, b) => direction * (Date.parse(a.startTime) - Date.parse(b.startTime)));
 }
@@ -195,7 +201,8 @@ export type ListInput = EventFilter & { business?: string; skip?: number; take?:
 export async function listPublicEvents(input: ListInput = {}): Promise<EventList> {
   const acc = account(input.business);
   const [events, host] = await Promise.all([allEvents(acc), me(acc).catch(() => null)]);
-  const shown = filterPublic(events, input);
+  const { now: _clock, ...filters } = input;
+  const shown = filterPublic(events, filters);
   const skip = clamp(input.skip, 0, 100_000);
   const take = clamp(input.take, 24, PAGE) || 24;
   return {
@@ -449,7 +456,13 @@ export async function getSlots(input: SlotsInput): Promise<SlotsByDay> {
   const start = Date.parse(input.start);
   const end = Date.parse(input.end);
   if (!Number.isInteger(input.eventTypeId) || Number.isNaN(start) || Number.isNaN(end) || end <= start || end - start > MAX_SLOT_RANGE) throw bad("dates");
+  if (!isTimeZone(input.timeZone)) throw bad("time zone");
   const acc = account(input.business);
+  const listed = (await rawEventTypes(acc)).some((t) => t.id === input.eventTypeId && t.hidden !== true);
+  if (!listed) {
+    const moving = input.bookingUid ? await call<RawBooking>(acc, "bookings", { path: `/${encodeURIComponent(uidOf(input.bookingUid))}` }) : null;
+    if ((moving?.eventTypeId ?? moving?.eventType?.id) !== input.eventTypeId) throw notFound("That appointment");
+  }
   const data = await call<Record<string, (CalSlot & { bookingUid?: string })[]>>(acc, "slots", {
     query: {
       eventTypeId: input.eventTypeId, start: new Date(start).toISOString(), end: new Date(end).toISOString(), timeZone: input.timeZone,
@@ -604,7 +617,7 @@ export async function manageBooking(uid: string, input: unknown, business?: stri
   const reason = typeof input.reason === "string" ? input.reason.trim().slice(0, 500) : "";
   const unchanged = { uid: booking.uid, seatUid };
   if (input.action === "cancel") {
-    await call(acc, "bookings", { path: `${path}/cancel`, body: seatUid ? { seatUid } : { cancellationReason: reason || undefined } });
+    await call(acc, "bookings", { path: `${path}/cancel`, body: { cancellationReason: reason || "Cancelled by the attendee", ...(seatUid ? { seatUid } : {}) } });
     invalidate(acc);
     return unchanged;
   }

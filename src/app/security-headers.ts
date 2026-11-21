@@ -1,4 +1,5 @@
 import { createMiddleware } from "@tanstack/react-start";
+import { showsCoverImages } from "./cover-pages";
 import { DOOP_ORIGIN, doopSyncOn } from "./doop-sync";
 
 /**
@@ -11,14 +12,15 @@ import { DOOP_ORIGIN, doopSyncOn } from "./doop-sync";
  * them. Styles stay 'unsafe-inline': components set inline `style` (e.g. `--hood`). A new external origin goes here,
  * with a test.
  */
-export function contentSecurityPolicy({ doop = doopSyncOn(), nonce, inline = false }: { doop?: boolean; nonce?: string; inline?: boolean } = {}): string {
+export function contentSecurityPolicy({ doop = doopSyncOn(), nonce, inline = false, coverImages = false }: { doop?: boolean; nonce?: string; inline?: boolean; coverImages?: boolean } = {}): string {
   const sync = doop ? ` ${DOOP_ORIGIN}` : "";
   const scripts = nonce ? ` 'nonce-${nonce}'` : inline ? " 'unsafe-inline'" : "";
   return [
     "default-src 'self'",
     `script-src 'self'${scripts}${sync}`,
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: blob:",
+    // A gathering's cover is any https image its admin linked, so only the pages that show covers allow them.
+    `img-src 'self' data: blob:${coverImages ? " https:" : ""}`,
     // OpenFreeMap: the /account neighborhood map's style, vector tiles, glyphs and sprites (NeighborhoodMap.tsx).
     `connect-src 'self'${sync} https://tiles.openfreemap.org`,
     "font-src 'self'",
@@ -67,6 +69,9 @@ export function withSecurityHeaders(response: Response): Response {
 const SIGNED_IN_PAGES = /^\/(account|directory|feed|admin)(\/|$)/i;
 export const isSignedInPage = (pathname: string) => SIGNED_IN_PAGES.test(pathname);
 
+// A manage link holds a private booking id: never indexed.
+const PRIVATE_PAGES = /^\/booking(\/|$)/i;
+
 /** A fresh base64 nonce: 128 random bits. */
 export function createNonce(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(16));
@@ -82,7 +87,7 @@ export const securityHeadersMiddleware = createMiddleware().server(async ({ path
   const nonce = handlerType === "router" && !import.meta.env.DEV ? createNonce() : undefined;
   const result = await next({ context: { nonce } });
   let response = result.response;
-  if (handlerType === "router") response = addHeaders(response, { "Content-Security-Policy": contentSecurityPolicy({ nonce, inline: import.meta.env.DEV }) });
+  if (handlerType === "router") response = addHeaders(response, { "Content-Security-Policy": contentSecurityPolicy({ nonce, inline: import.meta.env.DEV, coverImages: showsCoverImages(pathname) }) });
   response = withSecurityHeaders(response);
-  return { ...result, response: isSignedInPage(pathname) ? addHeaders(response, { "X-Robots-Tag": "noindex" }) : response };
+  return { ...result, response: isSignedInPage(pathname) || PRIVATE_PAGES.test(pathname) ? addHeaders(response, { "X-Robots-Tag": "noindex" }) : response };
 });

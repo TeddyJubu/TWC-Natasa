@@ -1,3 +1,32 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ensureCoverPolicy } from "@/app/cover-pages";
+import { AppPage } from "@/app/layout/AppLayout";
+import { AppShell, TopBar } from "@/app/layout/AppShell";
+import { linkClass } from "@/app/layout/app-classes";
+import { Card } from "@/app/layout/app-ui";
+import { useAdminBusiness } from "@/features/cal/admin-state";
+import { EventEditorForm } from "@/features/cal/admin-ui";
 
-export const Route = createFileRoute("/_authenticated/_admin/admin_/gatherings/new")({ component: () => null });
+export const Route = createFileRoute("/_authenticated/_admin/admin_/gatherings/new")({
+  beforeLoad: ({ location, preload }) => ensureCoverPolicy(location.href, preload),
+  head: () => ({ meta: [{ title: "New gathering — Admin — The Women’s Collective" }, { name: "robots", content: "noindex" }] }),
+  component: NewGathering,
+});
+
+function NewGathering() {
+  const { user } = Route.useRouteContext();
+  const [business] = useAdminBusiness();
+  return (
+    <AppPage trail={false}>
+      <AppShell page="/admin/gatherings" admin>
+        <main id="main" tabIndex={-1} className="outline-none">
+          <TopBar title="New gathering" heading who={{ name: user.name || user.email }} />
+          <div className="flex max-w-250 flex-col gap-6 px-4 pt-5 pb-14 sm:px-8 sm:pt-8">
+            <Link to="/admin/$section" params={{ section: "gatherings" }} className={linkClass}>Back to gatherings</Link>
+            <Card title="Details"><EventEditorForm business={business} /></Card>
+          </div>
+        </main>
+      </AppShell>
+    </AppPage>
+  );
+}

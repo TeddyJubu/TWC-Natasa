@@ -117,6 +117,23 @@ describe("security headers", () => {
     }
   });
 
+  it("allow https images only on the pages that show gathering covers", async () => {
+    const img = async (path: string) => responseOf(await run(securityHeadersMiddleware, new Request(`https://example.com${path}`), "router"))
+      .headers.get("Content-Security-Policy")!.split("; ").find((d) => d.startsWith("img-src"));
+    for (const path of ["/gatherings", "/gatherings/supper-club", "/embed/gatherings", "/admin/gatherings", "/admin/gatherings/new", "/admin/gatherings/abc", "/Gatherings"]) {
+      expect(await img(path), path).toBe("img-src 'self' data: blob: https:");
+    }
+    for (const path of ["/", "/members", "/account", "/admin", "/admin/appointments", "/book", "/booking/abc", "/gatherings-old"]) {
+      expect(await img(path), path).toBe("img-src 'self' data: blob:");
+    }
+    expect(SECURITY_HEADERS["Content-Security-Policy"]).not.toContain("https:;");
+  });
+
+  it("mark a private booking link noindex", async () => {
+    const res = responseOf(await run(securityHeadersMiddleware, new Request("https://example.com/booking/abc?seat=s1"), "router"));
+    expect(res.headers.get("X-Robots-Tag")).toBe("noindex");
+  });
+
   it("keep a header a route already set", () => {
     const res = withSecurityHeaders(new Response("", { headers: { "Referrer-Policy": "no-referrer" } }));
     expect(res.headers.get("Referrer-Policy")).toBe("no-referrer");
@@ -147,7 +164,7 @@ describe("start instance", () => {
     expect(responseOf(await run(csrfMiddleware, crossSite(), "router")).status).toBe(200);
   });
 
-  it.each(["/api/images", "/api/feed", "/api/neighborhood-logos", "/api/applications", "/api/contact", "/api/partnerships", "/api/review", "/api/spotlight", "/api/forms/salon-rsvp", "/api/Feed", "/API/CONTACT", "/Api/Forms/salon-rsvp/"])("CSRF middleware also guards the POST route %s", async (path) => {
+  it.each(["/api/images", "/api/feed", "/api/neighborhood-logos", "/api/applications", "/api/contact", "/api/partnerships", "/api/review", "/api/spotlight", "/api/forms/salon-rsvp", "/api/book", "/api/booking/abc123", "/api/gatherings/abc123/rsvp", "/api/Feed", "/API/CONTACT", "/Api/Forms/salon-rsvp/"])("CSRF middleware also guards the POST route %s", async (path) => {
     const crossSite = new Request(`https://example.com${path}`, {
       method: "POST", headers: { "Sec-Fetch-Site": "cross-site", Origin: "https://evil.example" },
     });

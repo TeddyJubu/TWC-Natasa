@@ -10,16 +10,17 @@ import { sectionItem, type AdminSection } from "@/app/layout/shell-nav";
 import { toneFor } from "@/features/neighborhoods/tone";
 import { useNeighborhoods } from "@/features/neighborhoods/queries";
 import { pickerNames } from "@/features/neighborhoods/options";
-import { EVENT_KINDS, eventWhen, isoToNyLocal, kindLabel, nyLocalToISO } from "@/features/events/format";
+import { adminCalEventsQuery } from "@/features/cal/queries";
+import { formatDay as formatEventDay } from "@/features/cal/time";
 import {
-  adminActionsQuery, adminApplicationsQuery, adminBookingsQuery, adminEventsQuery, adminInboxQuery, adminLoggedActionsQuery,
+  adminActionsQuery, adminApplicationsQuery, adminBookingsQuery, adminInboxQuery, adminLoggedActionsQuery,
   adminMembersQuery, adminNeighborhoodsQuery, adminNewsletterQuery, adminNotesQuery,
-  type AdminApplication, type AdminBooking, type AdminEvent, type AdminMember, type AdminNeighborhood, type AdminNote,
+  type AdminApplication, type AdminBooking, type AdminMember, type AdminNeighborhood, type AdminNote,
   type InboxMessage, type LoggedAction,
 } from "./queries";
 import {
-  LogoNotSavedError, useAddLoggedAction, useAddNote, useArchiveMessage, useCreateNeighborhood, useDeleteEvent, useDeleteNote,
-  useDownloadCsv, useEditLoggedAction, useRemoveLoggedAction, useRestoreLoggedAction, useReviewApplication, useSaveEvent,
+  LogoNotSavedError, useAddLoggedAction, useAddNote, useArchiveMessage, useCreateNeighborhood, useDeleteNote,
+  useDownloadCsv, useEditLoggedAction, useRemoveLoggedAction, useRestoreLoggedAction, useReviewApplication,
   useSetBookingStatus, useSetMemberNeighborhood, useSetMemberStatus, useUpdateNeighborhood, type LoggedActionInput, type NoteInput,
 } from "./mutations";
 import type { ApprovalNotice } from "./approval-email";
@@ -1739,239 +1740,6 @@ function BookingRow({ booking, name }: { booking: AdminBooking; name: string }) 
   );
 }
 
-// ---------- Gatherings ----------
-
-/** Upcoming gatherings in a table, past ones folded below; Add/Edit open the form and Guest list the RSVPs, in this card. */
-export function GatheringsPanel() {
-  const events = useQuery(adminEventsQuery);
-  const [editing, setEditing] = React.useState<AdminEvent | "new" | null>(null);
-  const [guestsOf, setGuestsOf] = React.useState<string | null>(null);
-  const list = events.data ?? [];
-  const now = new Date().toISOString();
-  const upcoming = list.filter((e) => e.starts_at >= now);
-  const past = list.filter((e) => e.starts_at < now).reverse();
-  const guestEvent = list.find((e) => e.id === guestsOf);
-  const actions = { onEdit: (e: AdminEvent) => setEditing(e), onGuests: (e: AdminEvent) => setGuestsOf(e.id) };
-  return (
-    <Card
-      id="gatherings" title="Gatherings" subtitle="Put the next one on the calendar"
-      action={<button type="button" className={cn(primaryButton, "shrink-0")} onClick={() => setEditing("new")}>Add a gathering</button>}
-    >
-      <QueryGate query={events} what="gatherings">
-        {upcoming.length === 0
-          ? <Empty>Nothing on the calendar yet. Add the first gathering and members will see it on their account.</Empty>
-          : <GatheringsTable rows={upcoming} caption="Upcoming gatherings" {...actions} />}
-        {past.length > 0 && (
-          <details className="group">
-            <summary className={cn(pad, "flex min-h-12 cursor-pointer list-none items-center gap-1.5 text-sm font-medium text-ink [&::-webkit-details-marker]:hidden", ring)}>
-              <Icon name="chevron-down" className="size-3.25 -rotate-90 text-app-muted transition-transform group-open:rotate-0 motion-reduce:transition-none" />
-              Past gatherings ({past.length})
-            </summary>
-            <GatheringsTable rows={past} caption="Past gatherings" {...actions} />
-          </details>
-        )}
-      </QueryGate>
-      {editing && (
-        <GatheringForm key={editing === "new" ? "new" : editing.id} event={editing === "new" ? null : editing} onDone={() => setEditing(null)} />
-      )}
-      {guestEvent && <GuestList event={guestEvent} onClose={() => setGuestsOf(null)} />}
-    </Card>
-  );
-}
-
-function GatheringsTable({ rows, caption, onEdit, onGuests }: {
-  rows: AdminEvent[]; caption: string; onEdit: (e: AdminEvent) => void; onGuests: (e: AdminEvent) => void;
-}) {
-  const { data: hoodList = [] } = useNeighborhoods();
-  return (
-    <div role="region" aria-label={caption} tabIndex={0} className="relative overflow-x-auto focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-app-accent">
-      <table className="w-full min-w-[48rem] text-left text-[15px]">
-        <caption className="sr-only">{caption}</caption>
-        <thead>
-          <tr className="border-b border-app-rule">
-            {["When", "Gathering", "Neighborhood", "Seats saved"].map((h) => <th key={h} scope="col" className={headCell}>{h}</th>)}
-            <th scope="col" className={headCell}><span className="sr-only">Actions</span></th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((e) => {
-            const when = eventWhen(e.starts_at);
-            const color = toneFor(e.neighborhood, hoodList)?.color;
-            return (
-              <tr key={e.id} className="border-b border-app-rule align-middle last:border-0">
-                <td className={cell}>
-                  <div className="flex items-center gap-3.5 whitespace-nowrap">
-                    <span className="flex w-14 shrink-0 flex-col gap-0.5 rounded-md bg-app-sunken pt-1.5 pb-2 text-center">
-                      <span className="font-fragment text-[11px]/[14px] tracking-[1px] uppercase text-app-muted">{when.month}</span>
-                      <span className="font-gilda text-[26px]/none text-ink">{when.day}</span>
-                    </span>
-                    <span>{when.weekday} · {when.time}</span>
-                  </div>
-                </td>
-                <th scope="row" className={cn(cell, "min-w-52 font-normal")}>
-                  <span className="block font-gilda text-xl/[1.3] text-ink">{e.title}</span>
-                  <span className={meta}>{kindLabel(e.kind)} · {e.location}</span>
-                </th>
-                <td className={cell}>
-                  <span className="inline-flex items-center gap-2 whitespace-nowrap">
-                    <span aria-hidden className={cn("size-2 rounded-full", color ? "bg-(--hood)" : "bg-app-line")} style={color ? hoodStyle(color) : undefined} />
-                    {e.neighborhood}
-                  </span>
-                </td>
-                <td className={cn(cell, "font-fragment tabular-nums")}>{e.guests.length}</td>
-                <td className={cell}>
-                  <div className="flex gap-2">
-                    <button type="button" className={cn(secondaryButton, "whitespace-nowrap")} aria-label={`Edit ${e.title}`} onClick={() => onEdit(e)}>Edit</button>
-                    <button type="button" className={cn(secondaryButton, "whitespace-nowrap")} aria-label={`Guest list for ${e.title}`} onClick={() => onGuests(e)}>Guest list</button>
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-/** Add or edit one gathering (today's columns only). The time is typed as New York wall-clock time. */
-function GatheringForm({ event, onDone }: { event: AdminEvent | null; onDone: () => void }) {
-  const save = useSaveEvent();
-  const remove = useDeleteEvent();
-  const { data: hoodList = [] } = useNeighborhoods();
-  const [timeError, setTimeError] = React.useState(false);
-  const titleRef = React.useRef<HTMLInputElement>(null);
-  React.useEffect(() => titleRef.current?.focus(), []);
-  const id = (field: string) => `gathering-${event?.id ?? "new"}-${field}`;
-  const busy = save.isPending || remove.isPending;
-
-  function submit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const f = new FormData(e.currentTarget);
-    const startsAt = nyLocalToISO(String(f.get("starts_at") ?? ""));
-    setTimeError(!startsAt);
-    if (!startsAt) return;
-    save.mutate(
-      {
-        id: event?.id, title: String(f.get("title") ?? "").trim(), kind: String(f.get("kind") ?? ""), starts_at: startsAt,
-        neighborhood: String(f.get("neighborhood") ?? ""), location: String(f.get("location") ?? "").trim(),
-        description: String(f.get("description") ?? "").trim(),
-      },
-      { onSuccess: onDone },
-    );
-  }
-
-  function confirmDelete() {
-    if (!event) return;
-    const n = event.guests.length;
-    if (window.confirm(`Delete ${event.title}? ${n} saved seat${n === 1 ? " goes" : "s go"} with it.`)) remove.mutate(event.id, { onSuccess: onDone });
-  }
-
-  return (
-    <form onSubmit={submit} aria-labelledby={id("heading")} className={subpanel}>
-      <div className="flex flex-col gap-0.5">
-        <h3 id={id("heading")} className="font-gilda text-xl/[1.3] text-ink">{event ? `Edit ${event.title}` : "Add a gathering"}</h3>
-        <p className={meta}>Members see it in Gatherings as soon as you save.</p>
-      </div>
-      <div className="grid gap-5 md:grid-cols-2">
-        <div className="md:col-span-2">
-          <Field id={id("title")} label="Title">
-            <input ref={titleRef} id={id("title")} name="title" required maxLength={200} defaultValue={event?.title} placeholder="Founders Supper Club" className={fieldClass} />
-          </Field>
-        </div>
-        <Field id={id("kind")} label="Kind">
-          <select id={id("kind")} name="kind" defaultValue={event?.kind ?? "gathering"} className={fieldClass}>
-            {pickerKinds(event?.kind).map((k) => <option key={k} value={k}>{kindLabel(k)}</option>)}
-          </select>
-        </Field>
-        <Field id={id("when")} label="Date and start time" hint="New York time.">
-          <input
-            id={id("when")} name="starts_at" type="datetime-local" required defaultValue={event ? isoToNyLocal(event.starts_at) : undefined}
-            aria-describedby={`${id("when")}-hint`} aria-invalid={timeError || undefined} className={fieldClass}
-          />
-        </Field>
-        <Field id={id("hood")} label="Neighborhood">
-          <select id={id("hood")} name="neighborhood" required defaultValue={event?.neighborhood ?? ""} className={fieldClass}>
-            <option value="" disabled>Choose a neighborhood</option>
-            {pickerNames(hoodList, event?.neighborhood).map((n) => <option key={n} value={n}>{n}</option>)}
-          </select>
-        </Field>
-        <Field id={id("location")} label="Location">
-          <input id={id("location")} name="location" required maxLength={200} defaultValue={event?.location} placeholder="Bistro on 37th Avenue" className={fieldClass} />
-        </Field>
-        <div className="md:col-span-2">
-          <Field id={id("description")} label="Description" hint="One or two sentences. Shown under the title.">
-            <textarea
-              id={id("description")} name="description" rows={3} maxLength={600} defaultValue={event?.description}
-              placeholder="A long-table dinner and honest conversation about growing a business." aria-describedby={`${id("description")}-hint`} className={fieldClass}
-            />
-          </Field>
-        </div>
-      </div>
-      {timeError && <p role="alert" className="text-sm text-danger">Choose a date and start time.</p>}
-      <MutationError mutation={save} />
-      <MutationError mutation={remove} />
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        {event ? <button type="button" className={secondaryButton} disabled={busy} onClick={confirmDelete}>Delete gathering</button> : <span />}
-        <div className="flex gap-2.5">
-          <button type="button" className={secondaryButton} onClick={onDone}>Cancel</button>
-          <button type="submit" className={primaryButton} disabled={busy}>Save gathering <span aria-hidden className="twc-arrow">→</span></button>
-        </div>
-      </div>
-    </form>
-  );
-}
-
-/** The kinds on offer, plus a stored one the list no longer has, so editing never silently changes it. */
-const pickerKinds = (current?: string): string[] =>
-  current && !(EVENT_KINDS as readonly string[]).includes(current) ? [...EVENT_KINDS, current] : [...EVENT_KINDS];
-
-function GuestList({ event, onClose }: { event: AdminEvent; onClose: () => void }) {
-  const [copied, setCopied] = React.useState<"yes" | "no" | null>(null);
-  const { data: hoodList = [] } = useNeighborhoods();
-  const headingId = `guests-${event.id}`;
-  const n = event.guests.length;
-  const copy = () => navigator.clipboard.writeText(event.guests.map((g) => g.email).join(", ")).then(() => setCopied("yes"), () => setCopied("no"));
-  return (
-    <section aria-labelledby={headingId} className="flex flex-col">
-      <div className={cn(pad, "flex flex-wrap items-start justify-between gap-3 border-t border-app-line py-5")}>
-        <div className="flex min-w-0 flex-col gap-0.5">
-          <h3 id={headingId} className="font-gilda text-xl/[1.3] break-words text-ink">Guest list · {event.title}</h3>
-          <p className={meta}>{n} member{n === 1 ? "" : "s"} saved a seat</p>
-        </div>
-        <div className="flex gap-2">
-          {n > 0 && <button type="button" className={secondaryButton} onClick={() => void copy()}>Copy emails</button>}
-          <button type="button" className={secondaryButton} aria-label={`Close the guest list for ${event.title}`} onClick={onClose}>Close</button>
-        </div>
-      </div>
-      {copied && <p role="status" className={cn(pad, "pb-3 text-sm text-app-muted")}>{copied === "yes" ? "Emails copied" : "Couldn’t copy. Select the emails below instead."}</p>}
-      {n === 0 ? <Empty>No seats saved yet.</Empty> : (
-        <ul className="divide-y divide-app-rule border-t border-app-rule">
-          {event.guests.map((g) => {
-            const color = toneFor(g.neighborhood, hoodList)?.color;
-            return (
-              <li key={g.user_id} className={cn(pad, "flex flex-wrap items-center justify-between gap-x-4 gap-y-1 py-4")}>
-                <span className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
-                  <span className="text-[15px] font-medium text-ink">{g.full_name || "Unnamed member"}</span>
-                  {g.catalogue_number !== null && <span className="twc-index">Nº {String(g.catalogue_number).padStart(3, "0")}</span>}
-                  {g.neighborhood && (
-                    <span className={cn(meta, "inline-flex items-center gap-1.5")}>
-                      <span aria-hidden className={cn("size-2 rounded-full", color ? "bg-(--hood)" : "bg-app-line")} style={color ? hoodStyle(color) : undefined} />
-                      {g.neighborhood}
-                    </span>
-                  )}
-                  <span className={cn(meta, "break-all")}>{g.email}</span>
-                </span>
-                <span className={meta}>Saved {formatDate(g.saved_at)}</span>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </section>
-  );
-}
-
 // ---------- Overview (/admin) ----------
 
 type QueryState = { isError: boolean; isPending: boolean };
@@ -1993,7 +1761,7 @@ const TINT = {
 } as const;
 const TILE_TINT: Record<AdminSection | "forms", keyof typeof TINT> = {
   inbox: "lilac", applications: "rose", reviews: "mint", bookings: "mustard",
-  members: "mint", newsletter: "lilac", spotlight: "mustard", gatherings: "rose", neighborhoods: "mint", forms: "lilac-bright", activity: "lilac",
+  members: "mint", newsletter: "lilac", spotlight: "mustard", gatherings: "rose", appointments: "mustard", neighborhoods: "mint", forms: "lilac-bright", activity: "lilac",
 };
 
 /** The whole tile is its section's link (the heading's link stretches over it), like the form cards. */
@@ -2042,7 +1810,8 @@ export function AdminOverview() {
   const members = useQuery(adminMembersQuery);
   const newsletter = useQuery(adminNewsletterQuery);
   const spotlights = useQuery(adminSpotlightsQuery);
-  const events = useQuery(adminEventsQuery);
+  // Cal is a separate service: if it is down only this tile says so (OverviewTile reads the query's error).
+  const events = useQuery({ ...adminCalEventsQuery({ tab: "upcoming", skip: 0, take: 100 }), retry: false });
   const hoods = useQuery(adminNeighborhoodsQuery);
   const actions = useQuery(adminActionsQuery);
   const forms = useQuery(adminFormResponsesQuery);
@@ -2052,8 +1821,7 @@ export function AdminOverview() {
   const duplicates = apps.data?.filter((a) => a.duplicate).length ?? 0;
   const waitingReviews = reviews.data?.length ?? null;
   const requested = bookings.data?.filter((b) => b.status === "requested").length ?? null;
-  const now = new Date().toISOString();
-  const upcoming = events.data?.filter((e) => e.starts_at >= now).sort((a, b) => a.starts_at.localeCompare(b.starts_at));
+  const upcoming = events.data?.events.filter((e) => e.status === "SCHEDULED");
 
   const waiting: [AdminSection, TileData][] = [
     ["inbox", { figure: newMessages, unit: "new", waiting: newMessages ? "to answer" : null, note: "Contact messages and partnership inquiries", query: inbox }],
@@ -2070,7 +1838,9 @@ export function AdminOverview() {
     ["spotlight", { figure: spotlights.data?.length ?? null, unit: "answers",
       note: spotlights.data?.[0] ? `Newest ${formatDate(spotlights.data[0].created_at)}` : "Invite members from All members", query: spotlights }],
     ["gatherings", { figure: upcoming?.length ?? null, unit: "coming up",
-      note: upcoming?.[0] ? `Next: ${upcoming[0].title}, ${eventWhen(upcoming[0].starts_at)}` : "Put the next one on the calendar", query: events }],
+      note: upcoming?.[0]
+        ? `Next: ${upcoming[0].title}, ${formatEventDay({ iso: upcoming[0].startTime, timeZone: upcoming[0].timeZone, locale: "en-US" })}`
+        : "Put the next one on the calendar", query: events }],
     ["neighborhoods", { figure: hoods.data?.filter((h) => h.active).length ?? null, unit: "active", note: hoods.data && `${hoods.data.length} in all`, query: hoods }],
   ];
   const openForms = forms.data?.filter((f) => f.state === "open").length ?? null;

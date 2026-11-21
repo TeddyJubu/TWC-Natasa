@@ -11,7 +11,8 @@ export const calEventsFn = createServerFn()
   .validator(pass<ListInput>)
   .handler(async ({ data }) => {
     const [{ serve }, m] = await load();
-    return serve(() => m.listPublicEvents(data));
+    const { tab, category, month, q, skip, take, business } = data ?? {};
+    return serve(() => m.listPublicEvents({ tab, category, month, q: typeof q === "string" ? q.slice(0, 100) : undefined, skip, take, business }));
   });
 
 export const calEventFn = createServerFn()

@@ -4,11 +4,11 @@ import {
   adminBusinessesFn, adminCalBookingsFn, adminCalEventFn, adminCalEventsFn, adminCalEventTypesFn, adminCalRsvpsFn, calBookingFn,
   calEventFn, calEventsFn, calEventTypeFn, calEventTypesFn, calSlotsFn,
 } from "./fns";
-import type { BookingStatusFilter, EventTab, RsvpInput, RsvpResult } from "./types";
+import type { BookingStatusFilter, EventTab, RsvpInput, RsvpResult, RsvpStatus } from "./types";
 
 const FRESH = 60_000;
 
-export type EventsParams = { tab?: EventTab; category?: string; month?: string; skip?: number; take?: number; business?: string };
+export type EventsParams = { tab?: EventTab | "all"; category?: string; month?: string; q?: string; skip?: number; take?: number; business?: string };
 
 export const calEventsQuery = (params: EventsParams = {}) =>
   queryOptions({ queryKey: ["cal", "events", params], queryFn: () => calEventsFn({ data: params }), staleTime: FRESH });
@@ -85,19 +85,21 @@ export function storedRsvp(eventUid: string, email: string): string | undefined 
     return undefined;
   }
 }
-export function storeRsvp(eventUid: string, email: string, rsvpUid: string) {
+export type LastRsvp = { email: string; name: string; status: RsvpStatus; plusOnes: number };
+export function storeRsvp(eventUid: string, rsvp: LastRsvp, rsvpUid: string) {
   try {
-    window.localStorage.setItem(rsvpKey(eventUid, email), rsvpUid);
-    window.localStorage.setItem(`twc-rsvp-last:${eventUid}`, JSON.stringify({ email: email.trim().toLowerCase() }));
+    window.localStorage.setItem(rsvpKey(eventUid, rsvp.email), rsvpUid);
+    window.localStorage.setItem(`twc-rsvp-last:${eventUid}`, JSON.stringify({ ...rsvp, email: rsvp.email.trim().toLowerCase() }));
   } catch {
     // Private windows can refuse; the RSVP itself is saved.
   }
 }
-/** The email last used on this device for this event, to show their RSVP again. */
-export function lastRsvpEmail(eventUid: string): string | undefined {
+/** What this device last sent for this event, to show it again. */
+export function lastRsvp(eventUid: string): LastRsvp | undefined {
   try {
     const raw = window.localStorage.getItem(`twc-rsvp-last:${eventUid}`);
-    return raw ? (JSON.parse(raw) as { email?: string }).email : undefined;
+    const value = raw ? (JSON.parse(raw) as Partial<LastRsvp>) : null;
+    return value?.email && value.status ? { email: value.email, name: value.name ?? "", status: value.status, plusOnes: value.plusOnes ?? 0 } : undefined;
   } catch {
     return undefined;
   }

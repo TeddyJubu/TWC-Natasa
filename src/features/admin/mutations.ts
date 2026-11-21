@@ -7,9 +7,9 @@ import { emailApproval, type ApprovalNotice } from "./approval-email";
 import { postApi } from "@/app/api";
 import { LOGO_RESIZE, resizeImage } from "@/app/resize-image";
 import {
-  addLoggedActionFn, addNoteFn, adminCsvFn, archiveMessageFn, createEventFn, deleteNoteFn, createNeighborhoodFn, deleteEventFn,
+  addLoggedActionFn, addNoteFn, adminCsvFn, archiveMessageFn, deleteNoteFn, createNeighborhoodFn, 
   editLoggedActionFn, removeLoggedActionFn, restoreLoggedActionFn, reviewApplicationFn, setBookingStatusFn,
-  setMemberNeighborhoodFn, setMemberStatusFn, updateEventFn, updateNeighborhoodFn,
+  setMemberNeighborhoodFn, setMemberStatusFn, updateNeighborhoodFn,
 } from "./fns";
 import type { LoggedActionKind } from "./format";
 
@@ -145,29 +145,6 @@ export const updateNeighborhoodMutation = (qc: QueryClient) => ({
   onSettled: refreshAfterLogo(qc),
 });
 
-/** Today's events columns; `starts_at` is an ISO instant (the form converts its New York wall-clock input). */
-export type GatheringInput = { title: string; description: string; location: string; neighborhood: string; starts_at: string; kind: string };
-
-/** Creates the gathering, or updates it when `id` is given. */
-export const saveEvent = async ({ id, ...input }: GatheringInput & { id?: string }): Promise<void> => {
-  if (id) await updateEventFn({ data: { id, ...input } });
-  else await createEventFn({ data: input });
-};
-
-// Admin card, members' account list and the public calendar all show gatherings.
-const EVENT_KEYS: QueryKey[] = [["admin", "events"], ["events"], ["public-events"]];
-
-export const saveEventMutation = (qc: QueryClient) => ({
-  mutationFn: saveEvent,
-  onSuccess: () => invalidate(qc, EVENT_KEYS),
-});
-
-/** Its saved seats go with it (cascade); the card confirms first. */
-export const deleteEventMutation = (qc: QueryClient) => ({
-  mutationFn: (id: string) => deleteEventFn({ data: { id } }),
-  onSuccess: () => invalidate(qc, EVENT_KEYS),
-});
-
 export const archiveMessageMutation = (qc: QueryClient) => ({
   mutationFn: (id: string) => archiveMessageFn({ data: { id } }),
   onSuccess: () => invalidate(qc, [["admin", "inbox"]]),
@@ -200,8 +177,6 @@ export const useSetMemberNeighborhood = () => useMutation(setMemberNeighborhoodM
 export const useSetBookingStatus = () => useMutation(setBookingStatusMutation(useQueryClient()));
 export const useCreateNeighborhood = () => useMutation(createNeighborhoodMutation(useQueryClient()));
 export const useUpdateNeighborhood = () => useMutation(updateNeighborhoodMutation(useQueryClient()));
-export const useSaveEvent = () => useMutation(saveEventMutation(useQueryClient()));
-export const useDeleteEvent = () => useMutation(deleteEventMutation(useQueryClient()));
 export const useArchiveMessage = () => useMutation(archiveMessageMutation(useQueryClient()));
 export const useAddNote = () => useMutation(addNoteMutation(useQueryClient()));
 export const useDeleteNote = () => useMutation(deleteNoteMutation(useQueryClient()));

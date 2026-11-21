@@ -10,15 +10,19 @@ import { openDb, type DB } from "./db";
 import type { Ctx } from "./context.server";
 import { mediaFile, serveMedia, writeMedia } from "./media";
 import { directory, intros, memberPage, ownProfile, publicProfiles, removeLogo, saveProfile, uploadImage } from "@/features/members/members.server";
-import { bookHeadshot, listEvents, publicEvents, setRsvp } from "@/features/events/events.server";
+import { bookHeadshot } from "@/features/events/events.server";
+import {
+  addAdminRsvp, adminBookings, adminBusinesses, adminEvent, adminEvents, adminEventTypes, adminRsvps, cancelAdminEvent, clearCalCache,
+  memberGatherings, memberRsvps, saveAdminEvent, saveEventType, setMemberRsvp,
+} from "@/features/cal/cal.server";
 import { submitApplication } from "@/features/applications/applications.server";
 import { listNeighborhoods } from "@/features/neighborhoods/neighborhoods.server";
 import { receiveMessage } from "@/features/contact/contact.server";
 import {
-  addLoggedAction, addNote, adminActions, adminApplications, adminCsv, adminEvents, adminInbox, adminLoggedActions, adminMembers,
-  adminNewsletterSubscribers, adminNotes, archiveMessage, deleteNote, createEvent, createNeighborhood, deleteEvent, editLoggedAction,
+  addLoggedAction, addNote, adminActions, adminApplications, adminCsv, adminInbox, adminLoggedActions, adminMembers,
+  adminNewsletterSubscribers, adminNotes, archiveMessage, deleteNote, createNeighborhood, editLoggedAction,
   removeLoggedAction, restoreLoggedAction, reviewApplication, setBookingStatus,
-  setMemberNeighborhood, setMemberStatus, updateEvent,
+  setMemberNeighborhood, setMemberStatus,
 } from "@/features/admin/admin.server";
 import { adminReviews, markReviewDone, mintReviewLink, openReview, reviewLinkStates, revokeReviewLink, submitReview } from "@/features/member-links/member-links.server";
 import { adminSpotlights, openSpotlight, submitSpotlight } from "@/features/member-links/spotlight.server";
@@ -51,6 +55,42 @@ const app = (email: string) => get<{ id: string; user_id: string | null; status:
 const apply = (who: string | null, email: string, fullName: string, extra: Record<string, unknown> = {}) =>
   submitApplication(as(who), { email, fullName, neighborhood: "", answers: {}, ...extra });
 const throwsAccess = (fn: () => unknown) => expect(fn).toThrow(/sign in|only|can’t change/i);
+// The Cal functions are async; their guards run first, so a refusal never reaches the network.
+const refusedBeforeCal = async (fn: () => unknown) => {
+  const network = vi.fn(async () => Response.json({ status: "success", data: [] }));
+  vi.stubGlobal("fetch", network);
+  const saved = { key: process.env.CAL_API_KEY, url: process.env.CAL_API_URL };
+  process.env.CAL_API_KEY = "test-key"; // not vi.stubEnv: unstubbing would also drop this suite's DATA_DIR
+  process.env.CAL_API_URL = "http://cal.invalid";
+  clearCalCache();
+  try {
+    await expect((async () => fn())()).rejects.toThrow(/sign in|only|can’t change/i);
+    expect(network).not.toHaveBeenCalled();
+  } finally {
+    vi.unstubAllGlobals();
+    if (saved.key === undefined) delete process.env.CAL_API_KEY; else process.env.CAL_API_KEY = saved.key;
+    if (saved.url === undefined) delete process.env.CAL_API_URL; else process.env.CAL_API_URL = saved.url;
+    clearCalCache();
+  }
+};
+/** The control: the guard lets this caller through, so the call reaches Cal. */
+const reachesCal = async (fn: () => unknown) => {
+  const network = vi.fn(async () => Response.json({ status: "success", data: [] }));
+  vi.stubGlobal("fetch", network);
+  const saved = { key: process.env.CAL_API_KEY, url: process.env.CAL_API_URL };
+  process.env.CAL_API_KEY = "test-key"; // not vi.stubEnv: unstubbing would also drop this suite's DATA_DIR
+  process.env.CAL_API_URL = "http://cal.invalid";
+  clearCalCache();
+  try {
+    await (async () => fn())();
+    expect(network).toHaveBeenCalled();
+  } finally {
+    vi.unstubAllGlobals();
+    if (saved.key === undefined) delete process.env.CAL_API_KEY; else process.env.CAL_API_KEY = saved.key;
+    if (saved.url === undefined) delete process.env.CAL_API_URL; else process.env.CAL_API_URL = saved.url;
+    clearCalCache();
+  }
+};
 let allFiles: string[] = [];
 
 beforeAll(() => {
@@ -87,7 +127,7 @@ describe("access rules (ported from the RLS checks)", () => {
   // ---------- Pending member ----------
   it("has_role is not callable", async () => expect(await serverFunctionNames()).not.toContain("hasRole"));
   it("pending member sees an empty directory", () => expect(directory(as(C))).toEqual([]));
-  it("pending member cannot read events", () => throwsAccess(() => listEvents(as(C))));
+  it("pending member cannot read events", () => refusedBeforeCal(() => memberGatherings(as(C))));
   it("pending member cannot self-approve", () => {
     throwsAccess(() => saveProfile(as(C), { status: "approved" }));
     expect(status(C)).toBe("pending");
@@ -99,10 +139,8 @@ describe("access rules (ported from the RLS checks)", () => {
   it("pending member sees own portrait", () => expect(sees(C, `${C}/avatar-1.png`) && sees(C, `${C}/logo-old.png`)).toBe(true));
   it("pending member cannot see member portraits", () => expect(sees(C, `${B}/avatar-1.png`)).toBe(false));
   // T3: approval gates RSVPs and bookings, not just reading events.
-  it("pending member cannot RSVP", () => {
-    const event = get<{ id: string }>("select id from events order by starts_at limit 1").id;
-    throwsAccess(() => setRsvp(as(C), { eventId: event, going: true }));
-  });
+  it("pending member cannot RSVP", () => refusedBeforeCal(() => setMemberRsvp(as(C), { eventId: "evt1", going: true })));
+  it("pending member cannot read who she is going with", () => refusedBeforeCal(() => memberRsvps(as(C))));
   it("pending member cannot book a headshot", () =>
     throwsAccess(() => bookHeadshot(as(C), { preferred_date: "2026-12-01", preferred_time: "Morning", notes: "" })));
   // T4: the old probing helper stays closed too.
@@ -128,7 +166,7 @@ describe("access rules (ported from the RLS checks)", () => {
 
   // ---------- Approved member ----------
   it("member sees the directory", () => expect(directory(as(B))).toHaveLength(1));
-  it("member reads events", () => expect(listEvents(as(B))).toHaveLength(4));
+  it("member reads events", () => reachesCal(() => memberGatherings(as(B))));
   it("member cannot self-confirm a booking", () => {
     bookHeadshot(as(B), { preferred_date: "2026-12-01", preferred_time: "Morning", notes: "", status: "confirmed" });
     expect(get<{ status: string }>("select status from headshot_bookings where user_id = ?", B).status).toBe("requested");
@@ -260,9 +298,10 @@ describe("access rules (ported from the RLS checks)", () => {
   // T6: a member changing a confirmed booking sends it back to "requested".
   it("member changing a confirmed booking resets it to requested", () => {
     expect(bookHeadshot(as(B), { preferred_date: "2026-12-01", preferred_time: "Evening", notes: "" }).status).toBe("requested");
-    // An approved member can RSVP (the control for the pending check), and the RSVP goes with her login below.
-    setRsvp(as(B), { eventId: get<{ id: string }>("select id from events order by starts_at limit 1").id, going: true });
+    // An old RSVP row, kept in the database, still goes with her login below.
+    run("insert into event_rsvps (user_id, event_id) values (?, ?)", B, get<{ id: string }>("select id from events order by starts_at limit 1").id);
   });
+  it("an approved member can RSVP (the control for the pending check)", () => reachesCal(() => setMemberRsvp(as(B), { eventId: "evt1", going: true })));
 
   // Deleting a login removes the member everywhere.
   it("deleted user leaves the directory", () => {
@@ -479,58 +518,28 @@ describe("access rules (ported from the RLS checks)", () => {
     expect(intros(as(L30), null).map((m) => m.id)).not.toContain(L30);
   });
 
-  // ---------- Gatherings: the public calendar and the admin card ----------
-  const gathering = { title: "Skyline Picnic", description: "", location: "Rainey Park", neighborhood: "Astoria", starts_at: "2026-12-05T17:00:00.000Z", kind: "gathering" };
-  let picnic = "";
-  it("fixture: an approved member saves a seat", () => {
-    picnic = createEvent(as(A), gathering);
-    setRsvp(as(F), { eventId: picnic, going: true });
-    expect(get<{ n: number }>("select count(*) as n from event_rsvps where event_id = ?", picnic).n).toBe(1);
+  // ---------- Gatherings and appointments live in Cal: every admin call is refused before it reaches the network ----------
+  const calAdminCalls: [string, (c: ReturnType<typeof as>) => unknown][] = [
+    ["list businesses", (c) => adminBusinesses(c)],
+    ["list events", (c) => adminEvents(c, {})],
+    ["read an event", (c) => adminEvent(c, { uid: "evt1" })],
+    ["save an event", (c) => saveAdminEvent(c, { event: { title: "Hijacked" } })],
+    ["cancel an event", (c) => cancelAdminEvent(c, { uid: "evt1" })],
+    ["read RSVPs", (c) => adminRsvps(c, { uid: "evt1" })],
+    ["add an RSVP", (c) => addAdminRsvp(c, { uid: "evt1", rsvp: { name: "X", email: "x@x.test", status: "GOING" } })],
+    ["list bookings", (c) => adminBookings(c, {})],
+    ["list appointment types", (c) => adminEventTypes(c, {})],
+    ["save an appointment type", (c) => saveEventType(c, { eventType: { title: "X", lengthInMinutes: 30 } })],
+  ];
+  describe.each([["anon", null], ["pending member", C], ["approved member", F]])("%s and Cal's admin functions", (_who, who) => {
+    it.each(calAdminCalls)("cannot %s", (_what, call) => refusedBeforeCal(() => call(as(who))));
   });
-  it("anon reads upcoming gatherings, public fields only, no RSVPs or member data", () => {
-    const rows = publicEvents(anon(), "2026-12-01T00:00:00.000Z");
-    expect(rows.map((r) => r.title)).toEqual(["Skyline Picnic"]);
-    expect(Object.keys(rows[0]).sort()).toEqual(["description", "id", "kind", "location", "neighborhood", "starts_at", "title"]);
-    expect(JSON.stringify(rows)).not.toContain(F);
-    expect(JSON.stringify(rows)).not.toContain("public@x.test");
+  it("anon cannot read the members' gatherings or RSVP as a member", async () => {
+    await refusedBeforeCal(() => memberGatherings(anon()));
+    await refusedBeforeCal(() => memberRsvps(anon()));
+    await refusedBeforeCal(() => setMemberRsvp(anon(), { eventId: "evt1", going: true }));
   });
-  it("public gatherings leave out past ones", () => expect(publicEvents(anon(), "2026-12-06T00:00:00.000Z")).toEqual([]));
-  it("pending member reads public gatherings, still not the members' list", () => {
-    expect(publicEvents(as(C), "2026-12-01T00:00:00.000Z")).toHaveLength(1);
-    throwsAccess(() => listEvents(as(C)));
-  });
-  it.each([["anon", null], ["pending member", C], ["approved member", F]])("%s cannot read or change gatherings as an admin", (_who, who) => {
-    throwsAccess(() => adminEvents(as(who)));
-    throwsAccess(() => createEvent(as(who), gathering));
-    throwsAccess(() => updateEvent(as(who), { ...gathering, id: picnic, title: "Hijacked" }));
-    throwsAccess(() => deleteEvent(as(who), { id: picnic }));
-    expect(get<{ title: string }>("select title from events where id = ?", picnic).title).toBe("Skyline Picnic");
-  });
-  it("admin sees each gathering's guest list", () => {
-    const row = adminEvents(as(A)).find((e) => e.id === picnic)!;
-    expect(row.guests.map((g) => [g.user_id, g.full_name, g.email])).toEqual([[F, "Pia", "public@x.test"]]);
-  });
-  it("admin edits a gathering", () => {
-    updateEvent(as(A), { ...gathering, id: picnic, title: "  Skyline Supper ", kind: "supper" });
-    expect(get<{ title: string; kind: string }>("select title, kind from events where id = ?", picnic)).toEqual({ title: "Skyline Supper", kind: "supper" });
-  });
-  it.each([
-    ["an empty title", { title: "  " }, /title/],
-    ["an empty location", { location: "" }, /location/],
-    ["an unknown neighborhood", { neighborhood: "Atlantis" }, /neighborhood/],
-    ["an unknown kind", { kind: "rave" }, /kind/],
-    ["a start that isn't a date", { starts_at: "next Saturday" }, /start time/],
-    ["an over-long description", { description: "x".repeat(601) }, /description/],
-  ])("admin cannot save a gathering with %s", (_what, over, message) => {
-    expect(() => createEvent(as(A), { ...gathering, ...over })).toThrow(message);
-    expect(() => updateEvent(as(A), { ...gathering, ...over, id: picnic })).toThrow(message);
-  });
-  it("editing a gathering that doesn't exist fails", () => expect(() => updateEvent(as(A), { ...gathering, id: "nope" })).toThrow(/gathering/));
-  it("deleting a gathering deletes its saved seats", () => {
-    deleteEvent(as(A), { id: picnic });
-    expect(get<{ n: number }>("select count(*) as n from events where id = ?", picnic).n).toBe(0);
-    expect(get<{ n: number }>("select count(*) as n from event_rsvps where event_id = ?", picnic).n).toBe(0);
-  });
+  it("admin reaches Cal (the control for the refusals above)", () => reachesCal(() => adminEvents(as(A), {})));
   // ---------- Inbox (0002): anyone writes through the two forms; only admins read or archive ----------
   const inboxed = (email: string) => get<{ status: string } | undefined>("select status from inbox_messages where email = ?", email);
   it("anon can send a contact message and a partnership inquiry", async () => {
