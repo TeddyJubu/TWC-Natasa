@@ -1,4 +1,3 @@
-import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
@@ -6,7 +5,7 @@ import { BookingConfirmation, ManageBooking } from "@/features/cal/booking-ui";
 import { calBookingQuery } from "@/features/cal/queries";
 import { ErrorBanner } from "@/features/cal/ui";
 
-type Search = { seat?: string; confirmed?: 1; business?: string };
+type Search = { seat?: string; confirmed?: 1; moved?: 1; business?: string };
 
 // A private link: rendered only in the browser, so no booking is ever in server HTML or a cache.
 export const Route = createFileRoute("/booking/$uid")({
@@ -14,6 +13,7 @@ export const Route = createFileRoute("/booking/$uid")({
   validateSearch: (raw: Record<string, unknown>): Search => ({
     ...(typeof raw.seat === "string" && /^[\w-]{1,64}$/.test(raw.seat) ? { seat: raw.seat } : {}),
     ...(raw.confirmed === 1 || raw.confirmed === "1" ? { confirmed: 1 as const } : {}),
+    ...(raw.moved === 1 || raw.moved === "1" ? { moved: 1 as const } : {}),
     ...(typeof raw.business === "string" && raw.business ? { business: raw.business.slice(0, 80) } : {}),
   }),
   head: () => ({ meta: [{ title: "Your booking — The Women’s Collective" }, { name: "robots", content: "noindex" }] }),
@@ -22,9 +22,8 @@ export const Route = createFileRoute("/booking/$uid")({
 
 function BookingPage() {
   const { uid } = Route.useParams();
-  const { seat, confirmed, business } = Route.useSearch();
+  const { seat, confirmed, moved, business } = Route.useSearch();
   const query = useQuery(calBookingQuery(uid, seat, business));
-  const [movedTo, setMovedTo] = React.useState<string | null>(null);
   const missing = query.isError && /wasn.t found/i.test(query.error.message);
   return (
     <AppPage>
@@ -42,7 +41,7 @@ function BookingPage() {
             : (
               <>
                 {confirmed && query.data.status !== "cancelled" && <BookingConfirmation booking={query.data} />}
-                <ManageBooking key={`${query.data.uid}:${query.data.seatUid ?? ""}`} booking={query.data} business={business} moved={movedTo === query.data.uid} onMoved={setMovedTo} onChanged={() => void query.refetch()} />
+                <ManageBooking key={`${query.data.uid}:${query.data.seatUid ?? ""}`} booking={query.data} business={business} moved={moved === 1} onChanged={() => void query.refetch()} />
               </>
             )}
         </div>

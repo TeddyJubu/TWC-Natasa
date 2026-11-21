@@ -353,9 +353,7 @@ export function BookingConfirmation({ booking }: { booking: PublicBooking }) {
 
 const STATUS_KIND = { accepted: "accepted", pending: "pending", cancelled: "cancelled", rejected: "rejected" } as const;
 
-export function ManageBooking({ booking, business, moved, onMoved, onChanged }: {
-  booking: PublicBooking; business?: string; moved?: boolean; onMoved?: (uid: string) => void; onChanged: () => void;
-}) {
+export function ManageBooking({ booking, business, moved, onChanged }: { booking: PublicBooking; business?: string; moved?: boolean; onChanged: () => void }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [panel, setPanel] = React.useState<"none" | "reschedule" | "guests">("none");
@@ -367,8 +365,8 @@ export function ManageBooking({ booking, business, moved, onMoved, onChanged }: 
   const [problem, setProblem] = React.useState("");
   const [done, setDone] = React.useState("");
   const [busy, setBusy] = React.useState(false);
-  // A move opens a new uid, which remounts this component: the page remembers it, and this announces it.
-  React.useEffect(() => { if (moved) setDone("Your booking has moved."); }, [moved]);
+  // A move opens a new uid, so this component starts afresh: the address carries the news, and this announces it.
+  React.useEffect(() => { if (moved && booking.status !== "cancelled") setDone("Your booking has moved."); }, [moved, booking.status]);
   const base = { ...(booking.seatUid ? { seatUid: booking.seatUid } : {}), ...(business ? { business } : {}) };
   const run = async (body: object, after: (result: { uid: string; seatUid: string | null }) => void) => {
     setBusy(true);
@@ -413,12 +411,9 @@ export function ManageBooking({ booking, business, moved, onMoved, onChanged }: 
               <SlotChooser eventTypeId={booking.eventTypeId} timeZone={timeZone} onTimeZone={setTimeZone} slot={slot} onSlot={setSlot} bookingUid={booking.uid} business={business} />
               <button
                 type="button" className="twc-btn w-fit" disabled={!slot || busy}
-                onClick={() => void run({ action: "reschedule", start: slot }, ({ uid, seatUid }) => {
-                  onMoved?.(uid);
-                  void navigate({
-                    to: "/booking/$uid", params: { uid }, search: { ...(seatUid ? { seat: seatUid } : {}), ...(business ? { business } : {}) }, replace: true,
-                  }).then(() => { setPanel("none"); setSlot(null); setDone("Your booking has moved."); });
-                })}
+                onClick={() => void run({ action: "reschedule", start: slot }, ({ uid, seatUid }) => void navigate({
+                  to: "/booking/$uid", params: { uid }, search: { ...(seatUid ? { seat: seatUid } : {}), moved: 1, ...(business ? { business } : {}) }, replace: true,
+                }).then(() => { setPanel("none"); setSlot(null); setDone("Your booking has moved."); }))}
               >{busy ? "Moving…" : "Move my booking"}</button>
             </section>
           )}
