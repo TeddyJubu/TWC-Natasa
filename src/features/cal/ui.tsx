@@ -2,7 +2,8 @@
 // component sits right on the public scrapbook pages and the internal airmail ones.
 import * as React from "react";
 import { cn } from "@/index";
-import { formatDay, formatRange, formatTime, zoneLabel } from "./time";
+import { buildIcs, formatDay, formatRange, formatTime, googleCalendarUrl, zoneLabel } from "./time";
+import { slugify } from "./types";
 
 export type StatusKind = "cancelled" | "ended" | "full" | "hidden" | "scheduled" | "accepted" | "pending" | "rejected";
 const STATUS: Record<StatusKind, { label: string; className: string }> = {
@@ -109,6 +110,26 @@ export function ConfirmDialog({ open, title, children, confirmLabel, cancelLabel
         </button>
       </div>
     </dialog>
+  );
+}
+
+/** An .ics download, built in the browser, plus a Google Calendar link. */
+export function AddToCalendar({ entry, className }: { entry: Parameters<typeof buildIcs>[0]; className?: string }) {
+  const download = () => {
+    const url = URL.createObjectURL(new Blob([buildIcs(entry)], { type: "text/calendar;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${slugify(entry.title) || "gathering"}.ics`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+  return (
+    <div className={cn("flex flex-wrap gap-2", className)}>
+      <button type="button" className="twc-btn twc-btn--outline twc-btn--sm" onClick={download}>Add to calendar (.ics)</button>
+      <a className="twc-btn twc-btn--outline twc-btn--sm" href={googleCalendarUrl(entry)} target="_blank" rel="noopener noreferrer">
+        Google Calendar<span className="sr-only"> (opens in a new tab)</span>
+      </a>
+    </div>
   );
 }
 
