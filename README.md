@@ -84,6 +84,11 @@ In a sandbox, bun may need writable temp and cache directories, e.g.
 | `BEEHIIV_API_KEY`, `BEEHIIV_PUBLICATION_ID` | For the newsletter | **Secret** (the first). Both set lets an application that ticked the newsletter and email-consent boxes subscribe the applicant. Without them nothing is sent. |
 | `EMAIL_FROM` | No | Sender address; defaults to `info@thewomenscollective.club`. |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | For Google | **Secret** (the second). Both set turns on Google sign-in. In Google Cloud, allow the redirect URI `${APP_URL}/api/auth/callback/google`. |
+| `CAL_API_KEY` | For gatherings and booking | **Secret.** The Cal owner's API key. Server-only. |
+| `CAL_API_URL` | With the key | Cal's API origin, without `/v2`. On the VPS: `http://172.18.0.1:3181`. |
+| `CAL_WEB_URL` | With the key | Cal's public origin: `https://cal.thewomenscollective.club`. |
+| `CAL_WEB_PRIVATE_URL` | On the VPS | Cal's web app on the private network, `http://172.18.0.1:3180`, so an RSVP can pass on the visitor's IP. |
+| `CAL_ACCOUNTS`, `CAL_DEFAULT_ACCOUNT` | No | **Secret** (the first). Several businesses, as JSON `{name: {apiKey, apiUrl?, webUrl?}}`. Replaces `CAL_API_KEY`; turns on the business switcher in admin. |
 
 Emails (all through `sendEmail()` in `src/server/email.ts`, Cloudflare Email Sending): the email-verification link
 on sign-up, the password-reset link, and the welcome email when an admin approves an application (or a member,
@@ -144,7 +149,7 @@ Layout on the VPS:
 ```
 /opt/twc-natasa                  checkout of main (the service's working directory)
 /etc/twc-natasa/app.env          server env: APP_URL, DATA_DIR, BETTER_AUTH_SECRET, CF_EMAIL_*, EMAIL_FROM, HOST,
-                                 PORT, NODE_ENV, SITE_PIN, ADMIN_ALERT_TO (root:www-data, 640)
+                                 PORT, NODE_ENV, SITE_PIN, ADMIN_ALERT_TO, CAL_* (root:www-data, 640)
 /var/lib/twc-natasa/data/twc.db  the database (+ -wal/-shm while running); uploads/ beside it
 /var/backups/twc-natasa/         pre-deploy snapshots, nightly-*.db and uploads-*.tgz (30 days)
 ```
@@ -272,6 +277,44 @@ In this order; each step is done (and its check passes) before the next. Steps 1
 
 Still for the owner to decide: whether apex `/` keeps the coming-soon page once `new.*` is public (if it does, its
 links should point straight at the `new.*` paths, one hop, with a link to the new site).
+
+### Cal scheduling
+
+Gatherings and appointments live in a self-hosted Cal on this VPS, at `https://cal.thewomenscollective.club` (API v2 at
+`/api/v2`). Compose project `cal` in `/opt/cal`: `cal-web`, `cal-api`, `cal-postgres`, `cal-redis`, under 3 GB in all, with
+web and API on `172.18.0.1:3180` and `:3181` only. The compose file is tracked at `deploy/cal/compose.yaml`. Secrets are in
+root-only `/opt/cal/.env`, `/opt/cal/.api-key` and `/opt/cal/.owner-login`. The owner is `twc`; public sign-up is closed.
+
+| Page | What it is |
+|---|---|
+| `/gatherings`, `/gatherings/<slug>` | Public list, month calendar, event page and RSVP. An unlisted event opens only by link, with `noindex`. |
+| `/embed/gatherings` | A bare list for framing. Same-site only until a partner origin is added to `frame-ancestors`. |
+| `/book`, `/book/<type>` | Pick a time and book. |
+| `/booking/<uid>?seat=` | The attendee's private manage link: reschedule, cancel, add guests. Never server-rendered, always `noindex`. |
+| `/admin/gatherings`, `/new`, `/<uid>` | Create, edit and cancel events; RSVPs with filter, CSV and totals. |
+| `/admin/appointments` | Cal bookings and appointment types. Headshot requests stay in `/admin/bookings`. |
+
+Posts go through `/api/gatherings/<uid>/rsvp`, `/api/book` and `/api/booking/<uid>`, each CSRF-checked and rate-limited. Cal
+has no API to delete a community event: cancel it, and remove a test one from Cal's database by its exact slug.
+
+Redeploy Cal: images are built off this VPS by the fork's `twc-vps-images.yml` workflow (branch `deploy/twc-vps`), never here,
+because the disk is small. Load the new images, set `CAL_IMAGE_TAG` in `/opt/cal/.env`, then:
+
+```sh
+cd /opt/cal && flock /run/lock/vps-heavy.lock docker compose -p cal up -d
+```
+
+Back up Cal's database (nothing does this on a timer yet):
+
+```sh
+docker exec cal-postgres pg_dump -U cal -Fc cal > /var/backups/cal-$(date +%F).dump && chmod 600 /var/backups/cal-*.dump
+```
+
+Restore into a stopped web and API: `docker exec -i cal-postgres pg_restore -U cal -d cal --clean --if-exists < <file>`.
+
+The E2E happy path runs by hand against a deployment: create a listed test event and event type, then
+`E2E_BASE_URL=… E2E_PIN_COOKIE=… E2E_EVENT_SLUG=… E2E_EVENT_TITLE=… E2E_TYPE_SLUG=… E2E_TYPE_TITLE=… bun run test:e2e`.
+Remove the test data afterward.
 
 ### Backup
 

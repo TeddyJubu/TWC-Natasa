@@ -36,3 +36,6 @@ data/
 
 # Promo films (HyperFrames projects with baked map video, licensed music and renders): local only
 promo/
+
+# Playwright (e2e/cal.spec.ts)
+test-results

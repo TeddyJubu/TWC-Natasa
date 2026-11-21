@@ -11,6 +11,13 @@ The public pages (`/`, `/about`, `/members`, `/members/:slug`, `/gatherings`, `/
 - Motion: CSS only, every looping animation has a pause control (`TwcRibbon`, the home page's pause button) and stops under reduced motion.
 - Facts: a `[BRACKETED]` placeholder on a board is an unknown fact — drop the element rather than invent one. No stand-in photos: members without a portrait get an initials mat; neighborhoods without a photo get a colour + logo tile. Stock photography lives in `src/assets/photography/site/` with `CREDITS.md`.
 
+### Gatherings and booking (public, scrapbook)
+`/gatherings`, `/gatherings/<slug>`, `/book`, `/book/<type>` and `/booking/<uid>` use the scrapbook kit; their pieces are in `src/features/cal/` (`events-ui`, `calendar`, `rsvp`, `booking-ui`, `ui`).
+- Filters are `twc-choice` pills with `aria-pressed`; the tab, view, category, month and search live in the URL.
+- A card with no https cover gets a sun date tile, never a stand-in photo. Descriptions are plain text with their line breaks.
+- The month calendar shows each event on its own local day, starts on the visitor's first weekday, and has one tab stop: arrows, Home/End and PageUp/PageDown move, Tab reaches that day's events. Phones show a count per day that opens the day's list.
+- Every RSVP and booking outcome is announced in a live region. Times always name their zone.
+
 ## Setup
 - Import `src/design-system/styles/theme.css` right after `@import "tailwindcss";`.
 - Fonts are self-hosted in `src/design-system/assets/fonts` and loaded by the canonical theme file.
@@ -46,6 +53,9 @@ Every signed-in page (`/account`, `/admin`, `/admin/forms`, and any new page beh
 - Layout: page column `max-w-250`, gutters `px-4` on phones and `sm:px-8`; letters stack with `gap-6`. Nothing scrolls sideways at 375px except a table inside its own region.
 - Motion: colour transitions, the switch knob, the button hover lift and the save bar rising into place, all off under reduced motion.
 - Forms (`/admin/forms`): a form is a ticket (`Ticket` in `panels.tsx`: paper card, dashed tear, a punched notch at each end): a card on the list with its answer count on the stub, and the summary at the top of its own page. A custom form's Questions tab is the form on a paper sheet: every word is edited in place, with no box until hover or focus, and choices are the pills visitors tap.
+
+## Gatherings and appointments admin
+`/admin/gatherings`, `/admin/gatherings/new`, `/admin/gatherings/<uid>` and `/admin/appointments` are airmail `Card`s on `AppShell`, in `src/features/cal/admin-ui.tsx`. `air-filter` pills switch tabs, status is a `Chip`, tables scroll in their own focusable region, and the page's one red button is Save. A Cal outage shows inside its card and on the Overview tile, and never breaks the rest of `/admin`.
 
 ## Member profile (`/account`)
 The member's own page on the internal design system: the envelope cover, stamps, rubber stamps and tickets. Account-only pieces live in `src/features/account/` (`AirShell`, `Locked`, the cards).
