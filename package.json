@@ -11,7 +11,7 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck": "node --max-old-space-size=1024 node_modules/typescript/bin/tsc --noEmit -p tsconfig.json",
     "check": "bun run typecheck && bun run lint && bun run test && bun run build",
     "migration:check": "bun run scripts/migration-check.ts",
     "migration:seed": "bun run scripts/seed-manifest.ts"
