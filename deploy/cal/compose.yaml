@@ -1,0 +1,84 @@
+# The self-hosted Cal stack on the VPS (/opt/cal/compose.yaml). Secrets live in /opt/cal/.env (root-only).
+# Web and API listen only on the private Docker gateway, where Caddy and the TWC app reach them.
+# Memory limits add up to about 2.9 GB, inside the 3 GB budget for Cal.
+name: cal
+
+x-app: &app
+  restart: unless-stopped
+  env_file: .env
+  logging:
+    driver: json-file
+    options: { max-size: 10m, max-file: "3" }
+  depends_on:
+    postgres: { condition: service_healthy }
+    redis: { condition: service_started }
+  networks: [internal, egress]
+
+services:
+  postgres:
+    container_name: cal-postgres
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: cal
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+      POSTGRES_DB: cal
+    command: >-
+      postgres -c shared_buffers=64MB -c effective_cache_size=192MB -c work_mem=4MB
+      -c maintenance_work_mem=32MB -c max_connections=60
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U cal -d cal]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    logging:
+      driver: json-file
+      options: { max-size: 10m, max-file: "3" }
+    mem_limit: 384m
+    memswap_limit: 384m
+    networks: [internal]
+
+  redis:
+    container_name: cal-redis
+    image: redis:7-alpine
+    restart: unless-stopped
+    # Only caches and rate-limit counters, so nothing is written to disk.
+    command: redis-server --save "" --appendonly no --maxmemory 48mb --maxmemory-policy allkeys-lru
+    logging:
+      driver: json-file
+      options: { max-size: 5m, max-file: "2" }
+    mem_limit: 64m
+    memswap_limit: 64m
+    networks: [internal]
+
+  web:
+    <<: *app
+    container_name: cal-web
+    image: cal-web:${CAL_IMAGE_TAG:?}
+    environment:
+      NODE_OPTIONS: --max-old-space-size=900
+    ports:
+      - "172.18.0.1:3180:3000"
+    mem_limit: 1280m
+    memswap_limit: 1280m
+
+  api:
+    <<: *app
+    container_name: cal-api
+    image: cal-api:${CAL_IMAGE_TAG:?}
+    environment:
+      NODE_OPTIONS: --max-old-space-size=720
+    ports:
+      - "172.18.0.1:3181:3181"
+    mem_limit: 1200m
+    memswap_limit: 1200m
+
+volumes:
+  postgres:
+
+networks:
+  internal:
+    internal: true
+  egress:
