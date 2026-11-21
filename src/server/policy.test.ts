@@ -55,12 +55,13 @@ const app = (email: string) => get<{ id: string; user_id: string | null; status:
 const apply = (who: string | null, email: string, fullName: string, extra: Record<string, unknown> = {}) =>
   submitApplication(as(who), { email, fullName, neighborhood: "", answers: {}, ...extra });
 const throwsAccess = (fn: () => unknown) => expect(fn).toThrow(/sign in|only|can’t change/i);
+const CAL_KEY = "CAL_API_KEY";
 // The Cal functions are async; their guards run first, so a refusal never reaches the network.
 const refusedBeforeCal = async (fn: () => unknown) => {
   const network = vi.fn(async () => Response.json({ status: "success", data: [] }));
   vi.stubGlobal("fetch", network);
-  const saved = { key: process.env.CAL_API_KEY, url: process.env.CAL_API_URL };
-  process.env.CAL_API_KEY = "test-key"; // not vi.stubEnv: unstubbing would also drop this suite's DATA_DIR
+  const saved = { key: process.env[CAL_KEY], url: process.env.CAL_API_URL };
+  process.env[CAL_KEY] = "test-key"; // not vi.stubEnv: unstubbing would also drop this suite's DATA_DIR
   process.env.CAL_API_URL = "http://cal.invalid";
   clearCalCache();
   try {
@@ -68,7 +69,7 @@ const refusedBeforeCal = async (fn: () => unknown) => {
     expect(network).not.toHaveBeenCalled();
   } finally {
     vi.unstubAllGlobals();
-    if (saved.key === undefined) delete process.env.CAL_API_KEY; else process.env.CAL_API_KEY = saved.key;
+    if (saved.key === undefined) delete process.env[CAL_KEY]; else process.env[CAL_KEY] = saved.key;
     if (saved.url === undefined) delete process.env.CAL_API_URL; else process.env.CAL_API_URL = saved.url;
     clearCalCache();
   }
@@ -77,8 +78,8 @@ const refusedBeforeCal = async (fn: () => unknown) => {
 const reachesCal = async (fn: () => unknown) => {
   const network = vi.fn(async () => Response.json({ status: "success", data: [] }));
   vi.stubGlobal("fetch", network);
-  const saved = { key: process.env.CAL_API_KEY, url: process.env.CAL_API_URL };
-  process.env.CAL_API_KEY = "test-key"; // not vi.stubEnv: unstubbing would also drop this suite's DATA_DIR
+  const saved = { key: process.env[CAL_KEY], url: process.env.CAL_API_URL };
+  process.env[CAL_KEY] = "test-key"; // not vi.stubEnv: unstubbing would also drop this suite's DATA_DIR
   process.env.CAL_API_URL = "http://cal.invalid";
   clearCalCache();
   try {
@@ -86,7 +87,7 @@ const reachesCal = async (fn: () => unknown) => {
     expect(network).toHaveBeenCalled();
   } finally {
     vi.unstubAllGlobals();
-    if (saved.key === undefined) delete process.env.CAL_API_KEY; else process.env.CAL_API_KEY = saved.key;
+    if (saved.key === undefined) delete process.env[CAL_KEY]; else process.env[CAL_KEY] = saved.key;
     if (saved.url === undefined) delete process.env.CAL_API_URL; else process.env.CAL_API_URL = saved.url;
     clearCalCache();
   }
