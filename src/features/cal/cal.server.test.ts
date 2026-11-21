@@ -221,11 +221,11 @@ describe("slots and booking", () => {
     expect(await createBooking({ ...form, responses: { topic: "Hello", injected: "x" } })).toEqual({ uid: "b1", seatUid: "s1" });
     expect((calls.find((c) => c.method === "POST")!.body as { bookingFieldsResponses: object }).bookingFieldsResponses).toEqual({ topic: "Hello" });
   });
-  it("sends a number field as a number, and leaves blank answers out", async () => {
+  it("carries a number answer in the notes (this Cal refuses it as a field), and leaves blank answers out", async () => {
     types[0].bookingFields!.push({ slug: "count", type: "number", label: "Count", required: false }, { slug: "extra", type: "url", label: "Link", required: false });
     answer = api;
-    await createBooking({ ...form, responses: { topic: "Hi", count: "7", extra: "" } });
-    expect((calls.find((c) => c.method === "POST")!.body as { bookingFieldsResponses: object }).bookingFieldsResponses).toEqual({ topic: "Hi", count: 7 });
+    await createBooking({ ...form, notes: "Hello", responses: { topic: "Hi", count: "7", extra: "" } });
+    expect((calls.find((c) => c.method === "POST")!.body as { bookingFieldsResponses: object }).bookingFieldsResponses).toEqual({ topic: "Hi", notes: "Hello\nCount: 7" });
     await expect(createBooking({ ...form, responses: { topic: "Hi", count: "seven" } })).rejects.toThrow(/number for “Count”/);
     types[0].bookingFields!.splice(2);
   });

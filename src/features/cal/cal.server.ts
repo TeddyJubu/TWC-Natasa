@@ -579,25 +579,28 @@ export async function createBooking(input: unknown, business?: string): Promise<
   const acc = account(business);
   const type = (await rawEventTypes(acc)).find((t) => t.id === eventTypeId && t.hidden !== true);
   if (!type) throw notFound("That appointment");
-  // Only this type's own questions go through. Cal wants a real number for a number field, and no blank answers.
-  const answers: Record<string, string | string[] | boolean | number> = {};
+  // Only this type's own questions go through, without blank answers.
+  // ponytail: this Cal's API refuses a number field both as a number and as a string, so its answer travels in the notes.
+  // Send it as a real field once the fork's bookingFieldsResponses validation is fixed.
+  const answers: Record<string, string | string[] | boolean> = {};
+  const numbers: string[] = [];
   for (const field of fieldsOf(type)) {
     const answer = responses[field.slug];
     const blank = answer === undefined || answer === "" || (Array.isArray(answer) && !answer.length);
     if (field.required && (blank || answer === false)) throw new CalError(`Please answer “${field.label}”.`, 400, "BAD_REQUEST");
     if (blank) continue;
     if (field.type === "number") {
-      const value = typeof answer === "string" ? Number(answer) : Number.NaN;
-      if (!Number.isFinite(value)) throw new CalError(`Please enter a number for “${field.label}”.`, 400, "BAD_REQUEST");
-      answers[field.slug] = value;
+      if (typeof answer !== "string" || !Number.isFinite(Number(answer))) throw new CalError(`Please enter a number for “${field.label}”.`, 400, "BAD_REQUEST");
+      numbers.push(`${field.label}: ${Number(answer)}`);
     } else answers[field.slug] = answer;
   }
+  const allNotes = [notes, ...numbers].filter(Boolean).join("\n");
   const useGuests = guests.length > 0 && toPublicEventType(type).guestsAllowed;
   const booking = await call<RawBooking>(acc, "bookings", {
     body: {
       eventTypeId, start, attendee: { name, email, timeZone },
       ...(useGuests ? { guests } : {}),
-      bookingFieldsResponses: { ...answers, ...(notes ? { notes } : {}) },
+      bookingFieldsResponses: { ...answers, ...(allNotes ? { notes: allNotes } : {}) },
     },
   });
   invalidate(acc);

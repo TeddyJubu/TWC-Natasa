@@ -411,7 +411,7 @@ function EventTypesCard({ business }: { business?: string }) {
             {types.data.map((t) => (
               <li key={t.id} className="flex flex-wrap items-center justify-between gap-3 border-b border-app-rule px-4 py-3 last:border-0">
                 <span className="min-w-0"><span className="font-gilda text-lg">{t.title}</span> <span className="text-sm text-app-muted">/book/{t.slug} · {t.lengthInMinutes} min{t.seatsPerSlot ? ` · ${t.seatsPerSlot} seats` : ""}</span></span>
-                <span className="flex items-center gap-2">{t.hidden && <Chip>Hidden</Chip>}<button type="button" className={secondaryButton} aria-label={`Edit ${t.title}`} onClick={() => setEditing(t)}>Edit</button></span>
+                <span className="flex items-center gap-2">{t.fields.some((f) => f.type === "number" && f.required) && <Chip tone="no">Required number field can’t be booked</Chip>}{t.hidden && <Chip>Hidden</Chip>}<button type="button" className={secondaryButton} aria-label={`Edit ${t.title}`} onClick={() => setEditing(t)}>Edit</button></span>
               </li>
             ))}
           </ul>
