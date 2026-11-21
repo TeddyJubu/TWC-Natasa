@@ -152,6 +152,17 @@ function SlotChooser({ eventTypeId, timeZone, onTimeZone, slot, onSlot, bookingU
 
 type Answer = string | string[] | boolean;
 
+/** Keeps the words as typed, so a comma survives until the next address; the form holds the parsed list. */
+function MultiEmailInput({ emails, onEmails, ...input }: Omit<React.ComponentProps<"input">, "value" | "onChange"> & { emails: string[]; onEmails: (emails: string[]) => void }) {
+  const [text, setText] = React.useState(emails.join(", "));
+  return (
+    <input
+      {...input} type="text" inputMode="email" className="twc-input" value={text}
+      onChange={(e) => { setText(e.target.value); onEmails(e.target.value.split(",").map((v) => v.trim()).filter(Boolean)); }}
+    />
+  );
+}
+
 /** One control per Cal field type; an unknown type falls back to a text box. */
 function CustomField({ field, value, error, onChange }: { field: BookingField; value: Answer | undefined; error?: string; onChange: (value: Answer) => void }) {
   const text = typeof value === "string" ? value : "";
@@ -198,7 +209,7 @@ function CustomField({ field, value, error, onChange }: { field: BookingField; v
           );
         }
         if (type === "multiemail") {
-          return <input {...p} {...placeholderProp} type="text" inputMode="email" className="twc-input" value={list.join(", ")} onChange={(e) => onChange(e.target.value.split(",").map((v) => v.trim()).filter(Boolean))} />;
+          return <MultiEmailInput {...p} {...placeholderProp} emails={list} onEmails={onChange} />;
         }
         const inputType = ({ email: "email", phone: "tel", url: "url", number: "number" } as Record<string, string>)[type] ?? "text";
         return <input {...p} {...placeholderProp} type={inputType} maxLength={inputType === "number" ? undefined : 2000} className="twc-input" value={text} onChange={(e) => onChange(e.target.value)} />;
@@ -342,7 +353,9 @@ export function BookingConfirmation({ booking }: { booking: PublicBooking }) {
 
 const STATUS_KIND = { accepted: "accepted", pending: "pending", cancelled: "cancelled", rejected: "rejected" } as const;
 
-export function ManageBooking({ booking, business, onChanged }: { booking: PublicBooking; business?: string; onChanged: () => void }) {
+export function ManageBooking({ booking, business, moved, onMoved, onChanged }: {
+  booking: PublicBooking; business?: string; moved?: boolean; onMoved?: (uid: string) => void; onChanged: () => void;
+}) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [panel, setPanel] = React.useState<"none" | "reschedule" | "guests">("none");
@@ -354,6 +367,8 @@ export function ManageBooking({ booking, business, onChanged }: { booking: Publi
   const [problem, setProblem] = React.useState("");
   const [done, setDone] = React.useState("");
   const [busy, setBusy] = React.useState(false);
+  // A move opens a new uid, which remounts this component: the page remembers it, and this announces it.
+  React.useEffect(() => { if (moved) setDone("Your booking has moved."); }, [moved]);
   const base = { ...(booking.seatUid ? { seatUid: booking.seatUid } : {}), ...(business ? { business } : {}) };
   const run = async (body: object, after: (result: { uid: string; seatUid: string | null }) => void) => {
     setBusy(true);
@@ -398,9 +413,12 @@ export function ManageBooking({ booking, business, onChanged }: { booking: Publi
               <SlotChooser eventTypeId={booking.eventTypeId} timeZone={timeZone} onTimeZone={setTimeZone} slot={slot} onSlot={setSlot} bookingUid={booking.uid} business={business} />
               <button
                 type="button" className="twc-btn w-fit" disabled={!slot || busy}
-                onClick={() => void run({ action: "reschedule", start: slot }, ({ uid, seatUid }) => void navigate({
-                  to: "/booking/$uid", params: { uid }, search: { ...(seatUid ? { seat: seatUid } : {}), ...(business ? { business } : {}) }, replace: true,
-                }).then(() => { setPanel("none"); setSlot(null); setDone("Your booking has moved."); }))}
+                onClick={() => void run({ action: "reschedule", start: slot }, ({ uid, seatUid }) => {
+                  onMoved?.(uid);
+                  void navigate({
+                    to: "/booking/$uid", params: { uid }, search: { ...(seatUid ? { seat: seatUid } : {}), ...(business ? { business } : {}) }, replace: true,
+                  }).then(() => { setPanel("none"); setSlot(null); setDone("Your booking has moved."); });
+                })}
               >{busy ? "Moving…" : "Move my booking"}</button>
             </section>
           )}

@@ -39,7 +39,7 @@ export function CalendarDayCell({ day, month, events, locale, today, active, onF
       role="gridcell" data-day={day} tabIndex={active ? 0 : -1} aria-label={`${label}${count}`} aria-current={today ? "date" : undefined}
       onFocus={(e) => { if (e.target === e.currentTarget) onFocusDay(day); }}
       className={cn(
-        "h-16 min-w-0 border border-sb-ink/15 p-1 align-top focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sb-blue-ink sm:h-28",
+        "relative h-16 min-w-0 border border-sb-ink/15 p-1 align-top focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sb-blue-ink sm:h-28",
         outside && "bg-sb-ink/4 text-sb-muted",
       )}
     >
@@ -49,11 +49,11 @@ export function CalendarDayCell({ day, month, events, locale, today, active, onF
       <div className="hidden flex-col gap-1 sm:flex">
         {events.slice(0, MAX_PILLS).map((e) => <CalendarEventPill key={e.uid} event={e} locale={locale} tabbable={active} business={business} />)}
       </div>
-      {/* Phones have no room for titles: any day with events opens its list. */}
+      {/* Phones have no room for titles: any day with events opens its list, and the whole cell is the tap target. */}
       {events.length > 0 && (
         <button
           type="button" tabIndex={active ? 0 : -1} onClick={() => onMore(day)}
-          className={cn("mt-0.5 rounded-sm text-xs underline focus-visible:outline-2 focus-visible:outline-sb-blue-ink", hidden <= 0 && "sm:hidden")}
+          className={cn("mt-0.5 rounded-sm text-xs underline after:absolute after:inset-0 focus-visible:outline-2 focus-visible:outline-sb-blue-ink sm:after:hidden", hidden <= 0 && "sm:hidden")}
         >
           <span className="sm:hidden">{events.length}</span>
           <span className="hidden sm:inline">+{Math.max(hidden, 0)} more</span>
@@ -81,20 +81,20 @@ export function MonthCalendar({ month, events, onMonthChange, locale: localeProp
   const [cursor, setCursor] = React.useState(`${month}-01`);
   const [openDay, setOpenDay] = React.useState<string | null>(null);
   const grid = React.useRef<HTMLTableElement>(null);
-  const moved = React.useRef(false);
+  const moved = React.useRef<string | null>(null);
   const dayPanel = React.useRef<HTMLHeadingElement>(null);
   const active = cells.includes(cursor) ? cursor : `${month}-01`;
 
-  React.useEffect(() => { if (!cursor.startsWith(month) && !cells.includes(cursor)) setCursor(`${month}-01`); }, [month, cursor, cells]);
+  // The month comes from the URL, a render after the key press, so focus waits until the target day is on screen.
   React.useEffect(() => {
-    if (!moved.current) return;
-    moved.current = false;
+    if (moved.current !== active) return;
+    moved.current = null;
     grid.current?.querySelector<HTMLElement>(`[data-day="${active}"]`)?.focus();
   }, [active]);
   React.useEffect(() => { if (openDay) dayPanel.current?.focus(); }, [openDay]);
 
   const go = (day: string) => {
-    moved.current = true;
+    moved.current = day;
     if (!day.startsWith(month)) onMonthChange(day.slice(0, 7));
     setCursor(day);
   };

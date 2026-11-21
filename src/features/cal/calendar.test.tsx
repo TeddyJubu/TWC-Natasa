@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import * as React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { renderWithQueries } from "@/test/dom";
 
 vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs }));
@@ -84,6 +84,19 @@ describe("MonthCalendar", () => {
     expect(document.activeElement).toBe(cell("2027-01-12"));
     press("PageUp");
     expect(document.activeElement).toBe(cell("2026-12-12"));
+  });
+
+  it("keeps focus on the right day when the new month arrives a render later, as it does from the URL", async () => {
+    function FromUrl() {
+      const [month, setMonth] = React.useState("2026-12");
+      return <MonthCalendar month={month} events={[]} locale="en-US" onMonthChange={(next) => void setTimeout(() => setMonth(next), 0)} />;
+    }
+    renderWithQueries(<FromUrl />);
+    act(() => cell("2026-12-12").focus());
+    fireEvent.keyDown(document.activeElement!, { key: "PageDown" });
+    await waitFor(() => expect(document.activeElement).toBe(cell("2027-01-12")));
+    fireEvent.keyDown(document.activeElement!, { key: "PageUp" });
+    await waitFor(() => expect(document.activeElement).toBe(cell("2026-12-12")));
   });
 
   it("Enter opens a day's events from the keyboard", () => {

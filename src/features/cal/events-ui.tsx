@@ -263,7 +263,7 @@ export function CapacityBar({ event }: { event: Pick<CalEvent, "capacity" | "spo
   const taken = Math.min(event.capacity - left, event.capacity);
   return (
     <div className="flex flex-col gap-1.5">
-      <progress className="h-2 w-full accent-sb-ink" max={event.capacity} value={taken} aria-label="Spots taken">{taken} of {event.capacity}</progress>
+      <progress className="h-2 w-full appearance-none overflow-hidden rounded-full bg-sb-ink/15 [&::-moz-progress-bar]:bg-sb-ink [&::-webkit-progress-bar]:bg-sb-ink/15 [&::-webkit-progress-value]:bg-sb-ink" max={event.capacity} value={taken} aria-label="Spots taken">{taken} of {event.capacity}</progress>
       <span className="text-sm">{left === 0 ? "No spots left" : `${left} of ${event.capacity} spots left`}</span>
     </div>
   );

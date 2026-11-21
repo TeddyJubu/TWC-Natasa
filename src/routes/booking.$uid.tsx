@@ -1,3 +1,4 @@
+import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
@@ -23,6 +24,7 @@ function BookingPage() {
   const { uid } = Route.useParams();
   const { seat, confirmed, business } = Route.useSearch();
   const query = useQuery(calBookingQuery(uid, seat, business));
+  const [movedTo, setMovedTo] = React.useState<string | null>(null);
   const missing = query.isError && /wasn.t found/i.test(query.error.message);
   return (
     <AppPage>
@@ -40,7 +42,7 @@ function BookingPage() {
             : (
               <>
                 {confirmed && query.data.status !== "cancelled" && <BookingConfirmation booking={query.data} />}
-                <ManageBooking key={`${query.data.uid}:${query.data.seatUid ?? ""}`} booking={query.data} business={business} onChanged={() => void query.refetch()} />
+                <ManageBooking key={`${query.data.uid}:${query.data.seatUid ?? ""}`} booking={query.data} business={business} moved={movedTo === query.data.uid} onMoved={setMovedTo} onChanged={() => void query.refetch()} />
               </>
             )}
         </div>
