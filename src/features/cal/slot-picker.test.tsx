@@ -1,11 +1,16 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { renderWithQueries } from "@/test/dom";
-import { BookingForm, ManageBooking, SlotPicker } from "./booking-ui";
+import { BookingFlow, BookingForm, ManageBooking, SlotPicker } from "./booking-ui";
 import type { CalSlot, PublicBooking, PublicEventType } from "./types";
 
 vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs }));
+const slotsFn = vi.hoisted(() => vi.fn());
+vi.mock("./queries", async (orig) => ({
+  ...(await orig<object>()),
+  calSlotsQuery: (input: object) => ({ queryKey: ["slots", input], queryFn: slotsFn }),
+}));
 afterEach(cleanup);
 
 const slot = (start: string, seatsRemaining: number | null = null): CalSlot => ({ start, seatsBooked: null, seatsRemaining, seatsTotal: null });
@@ -39,6 +44,22 @@ describe("SlotPicker", () => {
 });
 
 describe("booking forms", () => {
+  it("loads this month's times once, instead of asking again on every render", async () => {
+    const today = new Intl.DateTimeFormat("en-CA", { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }).format(new Date());
+    slotsFn.mockReset();
+    slotsFn.mockResolvedValue({ [today]: [slot(`${today}T23:00:00.000Z`)] });
+    const type: PublicEventType = {
+      id: 1, slug: "t", title: "T", description: null, lengthInMinutes: 30, price: 0, currency: "usd", seatsPerSlot: null, guestsAllowed: false, fields: [],
+    };
+    renderWithQueries(<BookingFlow type={type} />);
+    await waitFor(() => expect(document.querySelector(".grid-cols-7 button:not([disabled])")).toBeTruthy());
+    // At most twice: the first render's default zone, then the visitor's own.
+    const settled = slotsFn.mock.calls.length;
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(slotsFn.mock.calls.length).toBe(settled);
+    expect(settled).toBeLessThanOrEqual(2);
+  });
+
   it("keeps a typed comma, so a second email can follow it", () => {
     const type: PublicEventType = {
       id: 1, slug: "t", title: "T", description: null, lengthInMinutes: 30, price: 0, currency: "usd", seatsPerSlot: null, guestsAllowed: false,

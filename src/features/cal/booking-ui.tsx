@@ -114,8 +114,10 @@ export function SlotPicker({ slots, timeZone, selected, onSelect, locale: locale
 /** A month of open times in the visitor's zone, shared by first booking and rescheduling. */
 function useMonthSlots(eventTypeId: number, month: string, timeZone: string, bookingUid?: string, business?: string) {
   const [y, m] = month.split("-").map(Number);
+  // Fixed for this page: `start` is part of the query key, so a fresh Date.now() on each render would refetch forever.
+  const [now] = React.useState(() => Date.now());
   // A day either side, so a slot near midnight in a far zone still lands in this month.
-  const start = new Date(Math.max(Date.UTC(y, m - 1, 0), Date.now())).toISOString();
+  const start = new Date(Math.max(Date.UTC(y, m - 1, 0), now)).toISOString();
   const end = new Date(Date.UTC(y, m, 2)).toISOString();
   const query = useQuery(calSlotsQuery({ eventTypeId, start, end, timeZone, ...(bookingUid ? { bookingUid } : {}), ...(business ? { business } : {}) }));
   const days: SlotsByDay = React.useMemo(
