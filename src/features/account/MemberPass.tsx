@@ -17,6 +17,9 @@ const date = (iso: string, o: Intl.DateTimeFormatOptions) => new Date(iso).toLoc
 const COLOR_NAMES: Record<CardColor, string> = { mustard: "Mustard", rose: "Rose", lilac: "Lilac", mint: "Mint" };
 // Pointer tilt and foil only where there is a hovering pointer and motion is welcome.
 const TILT = "(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)";
+/** How many characters the name's size must fit across: its longest word, or more for a name long enough to run tall. */
+const nameChars = (name: string) =>
+  Math.max(...name.split(/[\s-]+/).map((word) => word.length), Math.ceil(1.3 * Math.sqrt(name.length)));
 
 /**
  * "View public card": her member pass in a native modal <dialog> — landscape on wide screens, portrait below —
@@ -69,6 +72,7 @@ function MemberPass({ facts: f, nameId }: { facts: PassFacts; nameId: string }) 
   const number = f.approved && f.catalogue_number !== null ? formatCatalogueNumber(f.catalogue_number) : null;
   const since = f.approved ? f.member_since : null;
   const hood = f.neighborhood || null;
+  const name = f.full_name || "Your name";
   const work = [f.role_title, f.business].map((s) => s.trim()).filter(Boolean).join(", ");
   const ringText = `${(f.business.trim() || f.full_name).toUpperCase()} · MEMBER POST · `;
   const fields = [
@@ -125,7 +129,7 @@ function MemberPass({ facts: f, nameId }: { facts: PassFacts; nameId: string }) 
         </div>
         <div aria-hidden className="pass-perf" />
         <div className="pass-stub">
-          <h2 id={nameId}>{f.full_name || "Your name"}</h2>
+          <h2 id={nameId} style={{ "--name-chars": nameChars(name) } as React.CSSProperties}>{name}</h2>
           {work && <p className="pass-role">{work}</p>}
           {fields.length > 0 && (
             <dl className="pass-grid">

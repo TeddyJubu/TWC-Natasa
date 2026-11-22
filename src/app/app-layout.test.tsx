@@ -138,7 +138,7 @@ describe("AppNav", () => {
   // Measured in Gilda Display at lg: links 15px + 0.3px tracking, the 18px wordmark, 20px link gaps and 16px column
   // gaps make ~845px, inside the 896px `.twc-wrap` leaves at 1024px. So the row starts at lg, Sign in included.
   it("shows the desktop row, Sign in included, from lg (tight gaps there) and the menu button below it", () => {
-    render(<AppNav />);
+    renderWithQueries(<AppNav />, [[["viewer"], { signedIn: false, member: false, admin: false }]]);
     const signIn = screen.getAllByRole("link", { name: "Sign in" });
     const nav = screen.getByRole("navigation", { name: "Main" });
     const row = nav.parentElement!;
@@ -151,6 +151,14 @@ describe("AppNav", () => {
     const bar = screen.getByRole("button", { name: "Open menu" }).closest("div.flex.min-h-16")!;
     expect(bar.className).toContain("lg:hidden");
     expect(bar.className).not.toContain("xl:hidden");
+  });
+
+  it("offers a signed-in visitor their account instead of Sign in and Join us", () => {
+    renderWithQueries(<AppNav />, [[["viewer"], { signedIn: true, member: true, admin: false }]]);
+    expect(screen.queryByRole("link", { name: "Sign in" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Join us" })).toBeNull();
+    expect(screen.queryByRole("link", { name: /Start your application/ })).toBeNull();
+    for (const link of screen.getAllByRole("link", { name: /^(Your a|A)ccount/ })) expect(link.getAttribute("href")).toBe("/account");
   });
 });
 

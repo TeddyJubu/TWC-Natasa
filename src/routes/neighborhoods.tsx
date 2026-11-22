@@ -94,7 +94,8 @@ function Tile({ hood, index }: { hood: Neighborhood; index: number }) {
       )}
     >
       <span className="flex items-start justify-between">
-        <span aria-hidden className="font-fragment text-[13px] leading-[19.5px] tracking-[1px]">{String(index).padStart(2, "0")}</span>
+        {/* A paper tag: an admin can pick any card colour, and 13px text needs 4.5:1 on all of them. */}
+        <span aria-hidden className="rounded-[3px] bg-sb-paper px-1.5 font-fragment text-[13px] leading-[19.5px] tracking-[1px] text-sb-ink">{String(index).padStart(2, "0")}</span>
         <HoodLogo hood={hood} sizes="28px" className="size-11" />
       </span>
       <span className="font-display text-[34px] leading-[1.1] tracking-[-0.3px]">{hood.name}</span>

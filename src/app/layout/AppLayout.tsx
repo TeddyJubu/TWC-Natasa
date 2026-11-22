@@ -1,8 +1,10 @@
 // The live site's page chrome (the scrapbook kit: src/app/twc.css). Showcase pages use `@/showcase/Shell`
 // instead; nothing here may import from it.
 import * as React from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { ConstellationLogo, ImageTrail, cn } from "@/index";
+import { viewerQuery } from "@/features/members/queries";
 import { Icon } from "./twc";
 
 /**
@@ -47,7 +49,6 @@ const MENU_ID = "site-menu";
  *  896px `.twc-wrap` leaves at 1024px; the right group is the wider one, so the logo sits up to ~38px left of centre
  *  until ~1100px, then centred. xl widens the gaps and the wordmark into the wrap's 1024px. */
 export function AppNav({ bare = false }: { bare?: boolean }) {
-  const menu = React.useRef<HTMLDivElement>(null);
   // ponytail: pre-launch, the form pages (and sign-in, where /join leads) show only the name, so nobody browses the
   // unpublished site from them. Drop `bare` from the form routes at launch.
   if (bare) {
@@ -60,6 +61,14 @@ export function AppNav({ bare = false }: { bare?: boolean }) {
       </header>
     );
   }
+  return <SiteNav />;
+}
+
+/** The full nav. Bare pages never mount it, so they never ask who is looking (the PIN leaves that function shut). */
+function SiteNav() {
+  const menu = React.useRef<HTMLDivElement>(null);
+  // Known only in the browser: the server's HTML and first paint are the signed-out nav, so hydration always matches.
+  const signedIn = useQuery({ ...viewerQuery, staleTime: 60_000 }).data?.signedIn === true;
   const close = () => menu.current?.hidePopover?.();
   const brand = (
     <Link to="/" activeOptions={{ exact: true }} className="group flex items-center gap-2.5 text-sb-ink outline-none focus-visible:text-sb-blue-ink" aria-label="The Women’s Collective home">
@@ -68,7 +77,7 @@ export function AppNav({ bare = false }: { bare?: boolean }) {
     </Link>
   );
   const join = (size: string) => (
-    <Link to="/join" className={cn("twc-btn twc-btn--blue twc-btn--sm", size)}>Join us</Link>
+    <Link to={signedIn ? "/account" : "/join"} className={cn("twc-btn twc-btn--blue twc-btn--sm", size)}>{signedIn ? "Account" : "Join us"}</Link>
   );
   return (
     <header className="sticky top-0 z-40 bg-sb-paper/85 backdrop-blur-md">
@@ -79,7 +88,7 @@ export function AppNav({ bare = false }: { bare?: boolean }) {
         {brand}
         <div className="flex items-center justify-end gap-5 xl:gap-9">
           {NAV_END.map((l) => <Link key={l.to} to={l.to} className={navLink}>{l.label}</Link>)}
-          <Link to="/account" className={navLink}>Sign in</Link>
+          {!signedIn && <Link to="/account" className={navLink}>Sign in</Link>}
           {join("")}
         </div>
       </div>
@@ -103,7 +112,7 @@ export function AppNav({ bare = false }: { bare?: boolean }) {
             </button>
           </div>
           <nav aria-label="Menu" className="mt-8 flex flex-col">
-            {MENU.map((l, i) => (
+            {MENU.filter((l) => !signedIn || l.to !== "/account").map((l, i) => (
               <Link
                 key={l.to}
                 to={l.to}
@@ -115,8 +124,8 @@ export function AppNav({ bare = false }: { bare?: boolean }) {
               </Link>
             ))}
           </nav>
-          <Link to="/join" onClick={close} className="twc-btn sb-menu-item mt-8 w-full" style={{ "--d": "460ms" } as React.CSSProperties}>
-            Start your application <Icon name="arrow" className="twc-arrow" />
+          <Link to={signedIn ? "/account" : "/join"} onClick={close} className="twc-btn sb-menu-item mt-8 w-full" style={{ "--d": "460ms" } as React.CSSProperties}>
+            {signedIn ? "Your account" : "Start your application"} <Icon name="arrow" className="twc-arrow" />
           </Link>
         </div>
       </div>

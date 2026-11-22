@@ -183,6 +183,7 @@ describe("public scrapbook palette (--color-sb-* in styles.css)", () => {
     ["white", "olive"], ["white", "terracotta"],
     ["ink", "mustard"], ["ink", "shell"], ["ink", "sun"], ["ink", "lilac"],
     ["muted", "paper"], ["muted", "cream"], ["blue-ink", "paper"], ["blue-ink", "cream"],
+    ["ink", "mint"], ["ink", "paper"],
   ];
   it.each(pairs)("%s on %s clears AA", (fg, bg) => {
     expect(sb[fg]).toBeDefined();
@@ -198,6 +199,26 @@ describe("public scrapbook palette (--color-sb-* in styles.css)", () => {
 
   it("links on the lilac band are ink, since blue-ink misses AA on lilac", () => {
     expect(twc).toMatch(/\.twc-band--lilac \.twc-inlink \{ color: var\(--color-sb-ink\); \}/);
+  });
+
+  it("field placeholders are the solid muted token, never a fainter blend", () => {
+    expect(twc).toMatch(/\.twc-input::placeholder \{ color: var\(--color-sb-muted\); \}/);
+  });
+
+  it("an open FAQ's number is ink, since muted misses AA on mint", () => {
+    expect(contrast(sb.muted, sb.mint)).toBeLessThan(AA);
+    expect(twc).toMatch(/\.twc-faq\[open\] \.twc-index \{ color: var\(--color-sb-ink\); \}/);
+  });
+
+  it("a neighborhood card's number sits on a paper tag, so any admin-picked colour stays readable", () => {
+    const page = readFileSync(`${process.cwd()}/src/routes/neighborhoods.tsx`, "utf8");
+    expect(page).toMatch(/<span aria-hidden className="[^"]*bg-sb-paper[^"]*text-sb-ink">\{String\(index\)/);
+  });
+
+  it("the olive brick's body copy is full white: any transparency drops it below AA", () => {
+    const home = readFileSync(`${process.cwd()}/src/routes/index.tsx`, "utf8");
+    expect(home).toMatch(/text-white">Not networking/);
+    expect(contrast(blend("#ffffff", sb.olive, 0.9), sb.olive)).toBeLessThan(AA);
   });
 
   it("the mobile menu's ordinals are decorative and their ink blend clears AA on lilac", () => {

@@ -408,7 +408,7 @@ function Bricklayer() {
       <div className="mx-auto grid max-w-[1440px] gap-2 p-2 md:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr]">
         <div className="sb-stamp sb-paper flex flex-col justify-between gap-12 bg-sb-olive px-7 pb-8 pt-9 text-white md:col-span-2 lg:col-span-1 lg:row-span-2 lg:px-10 lg:py-12">
           <h2 id="bricks-title" className="font-editorial text-[clamp(2.25rem,3.3vw,3.125rem)] leading-[1.06] tracking-[0.3px] text-balance">Connections that move work forward.</h2>
-          <p className="max-w-[34ch] font-geist text-[17px] leading-[26px] text-white/90">Not networking for networking’s sake. This is a place to build genuine relationships and support women-owned work.</p>
+          <p className="max-w-[34ch] font-geist text-[17px] leading-[26px] text-white">Not networking for networking’s sake. This is a place to build genuine relationships and support women-owned work.</p>
         </div>
         <Brick {...share} />
         <div className="sb-stamp group h-[230px] overflow-hidden md:h-auto">

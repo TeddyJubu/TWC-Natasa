@@ -179,6 +179,7 @@
 .twc-faq__q { flex: 1; font: 400 26px/32.5px var(--font-display); }
 .twc-faq__toggle { display: grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; border-radius: 9999px; background: var(--color-sb-paper); box-shadow: inset 0 0 0 1px rgb(31 31 28 / 0.25); transition: rotate var(--duration-base) var(--ease-snap), background-color var(--duration-base); }
 .twc-faq[open] .twc-faq__toggle { background: var(--color-sb-ink); color: var(--color-sb-paper); box-shadow: none; rotate: 45deg; }
+.twc-faq[open] .twc-index { color: var(--color-sb-ink); }
 .twc-faq__a { padding: 0 32px 28px 72px; max-width: 60ch; }
 .twc-faq::details-content { block-size: 0; overflow: clip; transition: block-size var(--duration-slow) var(--ease-gentle), content-visibility var(--duration-slow) allow-discrete; }
 .twc-faq[open]::details-content { block-size: auto; }
@@ -198,7 +199,7 @@
 .twc-field > label, .twc-label { font: 600 12px/16px var(--font-geist); letter-spacing: 2px; text-transform: uppercase; color: var(--color-sb-ink); }
 .twc-hint { font: 400 13px/19.5px var(--font-geist); color: var(--color-sb-muted); }
 .twc-input { box-sizing: border-box; width: 100%; min-height: 52px; padding: 14px 16px; border: 0; border-radius: 6px; background: var(--color-sb-paper); color: var(--color-sb-ink); box-shadow: inset 0 0 0 1px rgb(31 31 28 / 0.25); font: 400 16px/1.5 var(--font-geist); }
-.twc-input::placeholder { color: rgb(107 107 102 / 0.85); }
+.twc-input::placeholder { color: var(--color-sb-muted); }
 .twc-input:focus { outline: 2px solid var(--color-sb-blue-ink); outline-offset: 1px; box-shadow: inset 0 0 0 1px var(--color-sb-ink); }
 textarea.twc-input { min-height: 132px; resize: vertical; }
 .twc-input[aria-invalid="true"] { box-shadow: inset 0 0 0 1.5px var(--color-sb-danger); }
@@ -518,7 +519,8 @@ textarea.twc-input { min-height: 132px; resize: vertical; }
   .air-env { padding: 12px; border-radius: 16px; }
   .air-env-in { grid-template-columns: 400px minmax(0, 1fr); grid-template-areas: "post top" "post stub"; grid-template-rows: auto 1fr; min-height: 472px; padding: 36px 44px 34px 40px; }
   .air-pass-top { font-size: 11px; letter-spacing: 0.16em; }
-  .air-post { height: 400px; margin-top: 0; --stamp-w: 336px; --stamp-h: 400px; }
+  /* The stamp leaves the column's last 90px for the postmark's ring, so the ink never lands on the stamp's band. */
+  .air-post { height: 400px; margin-top: 0; --stamp-w: 304px; --stamp-h: 362px; }
   .air-stamp { left: 0; top: 0; }
   .air-stamp-paper { padding: 13px; }
   .air-stamp-face { outline-offset: 3px; }
@@ -527,7 +529,7 @@ textarea.twc-input { min-height: 132px; resize: vertical; }
   .air-stamp-band b { font-size: 15px; }
   .air-stamp-initials { font-size: 110px; }
   .air-photo-btn { right: 22px; top: 20px; width: 38px; height: 38px; }
-  .air-cancel { left: 40px; top: 262px; width: 330px; height: 120px; }
+  .air-cancel { left: 146px; top: 232px; width: 250px; height: 91px; }
   .air-seal { max-width: none; right: 46px; top: 92px; gap: 8px; padding: 9px 16px; rotate: 7deg; font-size: 11px; letter-spacing: 0.2em; }
   /* Her name keeps clear of the seal's corner (Gilda runs wide), wrapping beside it rather than under the ink. */
   .air-stub h1 { margin-top: 52px; padding-right: 170px; font-size: clamp(64px, 7vw, 96px); line-height: 0.88; }
@@ -816,8 +818,9 @@ a.air-entry-name:hover { text-decoration: underline; }
 .pass-stamp-name { display: -webkit-box; max-width: 100%; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 3; font-size: 9px; font-weight: 600; letter-spacing: 0.1em; line-height: 1.15; overflow-wrap: break-word; }
 .pass-stamp-foot { font-size: 5.5px; letter-spacing: 0.14em; line-height: 1; opacity: 0.8; }
 .pass-perf { position: absolute; left: 30px; right: 30px; top: 474px; border-top: 2px dashed rgb(29 28 26 / 0.45); }
-.pass-stub { position: relative; display: flex; flex-direction: column; min-height: 750px; padding: 496px 30px 30px; }
-.pass-stub h2 { font: 600 clamp(36px, 11vw, 54px)/0.92 var(--font-geist); letter-spacing: -0.02em; text-transform: uppercase; overflow-wrap: anywhere; text-wrap: balance; }
+.pass-stub { container-type: inline-size; position: relative; display: flex; flex-direction: column; min-height: 750px; padding: 496px 30px 30px; }
+/* --name-chars (MemberPass) sizes the name so its longest word fits one line of the stub. */
+.pass-stub h2 { font: 600 clamp(20px, calc(100cqi / (var(--name-chars, 1) * 0.78)), clamp(36px, 11vw, 54px))/0.92 var(--font-geist); letter-spacing: -0.02em; text-transform: uppercase; overflow-wrap: anywhere; text-wrap: balance; }
 .pass-role { margin-top: 8px; font-size: 13px; font-weight: 500; opacity: 0.8; }
 .pass-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 12px; margin-top: 18px; }
 .pass-grid dt { margin-bottom: 3px; font-size: 9.5px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.7; }
@@ -855,7 +858,7 @@ a.air-entry-name:hover { text-decoration: underline; }
   .pass-stamp { right: auto; left: 290px; top: 368px; }
   .pass-perf { left: 419px; right: auto; top: 30px; bottom: 30px; border-top: 0; border-left: 2px dashed rgb(29 28 26 / 0.45); }
   .pass-stub { position: absolute; inset: 58px 30px 30px 450px; min-height: 0; padding: 0; }
-  .pass-stub h2 { font-size: 58px; }
+  .pass-stub h2 { font-size: clamp(20px, calc(100cqi / (var(--name-chars, 1) * 0.78)), 58px); }
   .pass-grid { grid-template-columns: 1fr 1fr; gap: 16px 12px; margin-top: 22px; }
 }
 }

@@ -118,7 +118,8 @@ function Decisions<S extends string>({ current, options, subject, pending, onDec
         <button
           key={o.status}
           type="button"
-          className={i === 0 ? primaryButton : secondaryButton}
+          // Decline is never the filled button, even alone where Approve just was.
+          className={i === 0 && o.status !== "declined" ? primaryButton : secondaryButton}
           aria-label={`${o.label} ${subject}`}
           disabled={pending}
           onClick={() => { if (window.confirm(decisionConfirm(o.label, o.status, subject))) onDecide(o.status); }}

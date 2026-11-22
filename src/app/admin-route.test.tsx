@@ -571,6 +571,17 @@ describe("/admin", () => {
       expect(within(updated()).getByRole("status").textContent).toBe("Welcome email sent");
     });
 
+    it("keeps Decline the quiet button, even alone after an approval", () => {
+      renderAdmin({ applications: [application("a1", "Pia Pending"), application("a2", "Lu Smith", { status: "approved" })] });
+      const [pending, approved] = within(card("Applications")).getAllByRole("article");
+      expect(within(pending).getByRole("button", { name: /^approve/i }).className).toContain("air-btn--navy");
+      for (const row of [pending, approved]) {
+        const decline = within(row).getByRole("button", { name: /^decline/i });
+        expect(decline.className).toContain("air-btn--line");
+        expect(decline.className).not.toContain("air-btn--navy");
+      }
+    });
+
     it("says when the welcome email wasn't sent, with the reason", async () => {
       emailApproval.mockResolvedValueOnce({ sent: false, reason: "email isn’t set up" });
       fake.results = [[application("a1", "Pia Pending")]];

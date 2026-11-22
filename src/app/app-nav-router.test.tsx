@@ -2,6 +2,7 @@
 // AppNav and AppFooter under a real (memory-history) TanStack router: internal links navigate client-side.
 import { afterEach, describe, expect, it } from "vitest";
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
   RouterProvider,
@@ -50,7 +51,9 @@ async function renderApp() {
   installDomStubs();
   window.scrollTo = () => undefined; // the router restores scroll; jsdom does not implement it
   const router = makeRouter();
-  render(<RouterProvider router={router} />);
+  const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false } } });
+  queryClient.setQueryData(["viewer"], { signedIn: false, member: false, admin: false });
+  render(<QueryClientProvider client={queryClient}><RouterProvider router={router} /></QueryClientProvider>);
   await screen.findByText("Home page");
   return router;
 }
