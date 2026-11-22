@@ -96,7 +96,9 @@ export function reviewApplication({ db, actor }: Ctx, input: unknown): void {
     const before = db.prepare("select user_id from applications where id = ?").get(id) as { user_id: string | null } | undefined;
     const changed = db.prepare("update applications set status = ?, reviewed_by = ? where id = ? and status is not ?").run(status, me.id, id, status).changes > 0;
     if (changed) logAction(db, me.id, status, { application_id: id });
-    if (changed && status === "approved" && before?.user_id) prefillProfileFromApplication(db, before.user_id);
+    if (changed && status === "approved" && before?.user_id) {
+      prefillProfileFromApplication(db, before.user_id, { fromApproval: true });
+    }
   });
 }
 
@@ -118,7 +120,7 @@ export function setMemberStatus({ db, actor }: Ctx, input: unknown): string | nu
     if (changed && app) {
       db.prepare("update applications set status = ?, reviewed_by = ? where id = ? and status is not ?").run(status, me.id, app.id, status);
     }
-    if (changed && status === "approved") prefillProfileFromApplication(db, id);
+    if (changed && status === "approved") prefillProfileFromApplication(db, id, { fromApproval: true });
     return app?.id ?? null;
   });
 }
