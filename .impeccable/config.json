@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "src/app/twc.css"
+        ],
+        "createdAt": "2026-11-22T19:13:07.634Z",
+        "reason": "agent triage: the three hits are full-width top airmail chevron stripes (.air::before, .air-savebar::before, .air-map-pop::before, inset 0 0 auto), not a bar down one side; they predate this branch"
+      }
+    ]
+  }
+}
