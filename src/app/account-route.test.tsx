@@ -341,9 +341,12 @@ describe("/account", () => {
     expect(screen.queryByRole("region", { name: "You’re in" })).toBeNull();
   });
 
-  it("hides You’re in once the card is listed or public", () => {
+  it.each([
+    { directory_visible: true, public_profile: false },
+    { directory_visible: false, public_profile: true },
+  ])("hides You’re in once the card is listed or public ($directory_visible/$public_profile)", (visibility) => {
     localStorage.removeItem("twc-youre-in:v1:u1");
-    renderAccount({ directory_visible: true, public_profile: false });
+    renderAccount(visibility);
     expect(screen.queryByRole("region", { name: "You’re in" })).toBeNull();
   });
 
