@@ -1,14 +1,11 @@
-// The internal pages' navigation: which cards each page anchors, and which one is in view. Shared by AppShell's
-// sidebar (the admin pages) and /account's tabs (src/features/account/AirShell.tsx).
+// The internal pages' navigation: AppShell's sidebar and tabs (the admin pages), and which card is in view on /account
+// (src/features/account/AirShell.tsx).
 import * as React from "react";
 import type { IconName } from "./icons";
 
-/** The internal pages: each renders `AppShell` with its own path. */
-/** `/admin/forms/edit` stands for any one form's edit page: no sidebar card is "here" on it. */
+/** The internal pages. `/admin/forms/edit` stands for any one form's edit page. */
 export type ShellPage = "/account" | "/admin" | "/admin/forms" | "/admin/forms/edit" | `/admin/${AdminSection}`;
-/** `section`: one of the admin's own pages, /admin/<section> (a router link, current while you're on it). */
-export type NavItem = { label: string; icon: IconName; to: "/account" | "/admin" | "/admin/forms"; hash?: string; section?: AdminSection };
-export type NavGroup = { label: string; items: NavItem[] };
+export type NavItem = { label: string; icon: IconName; to: "/account"; hash?: string };
 
 export const MY_ACCOUNT: NavItem[] = [
   { label: "Profile", icon: "circle-user-round", to: "/account", hash: "profile" },
@@ -17,38 +14,38 @@ export const MY_ACCOUNT: NavItem[] = [
   { label: "Headshot session", icon: "camera", to: "/account", hash: "headshot" },
 ];
 /**
- * The admin's pages: /admin is the overview, and each section has its own page at /admin/<section>. Work that waits on
- * someone comes first. A section's slug is also its card's id, so an old /admin#<slug> link (in sent emails) forwards there.
+ * Each section has its own page at /admin/<section>. A section's slug is also its card's id, so an old /admin#<slug>
+ * link (in sent emails) forwards there.
  */
 export const ADMIN_SECTIONS = ["inbox", "applications", "reviews", "bookings", "members", "newsletter", "spotlight", "events", "appointments", "neighborhoods", "activity"] as const;
 export type AdminSection = (typeof ADMIN_SECTIONS)[number];
 export const isAdminSection = (s: string): s is AdminSection => (ADMIN_SECTIONS as readonly string[]).includes(s);
-export const ADMIN: NavItem[] = [
-  { label: "Overview", icon: "house", to: "/admin" },
-  // Forms are their own pages (/admin/forms), and second only to the overview.
-  { label: "Forms", icon: "pencil", to: "/admin/forms", hash: "forms" },
-  { label: "Inbox", icon: "mail", to: "/admin", section: "inbox" },
-  { label: "Applications", icon: "notebook-pen", to: "/admin", section: "applications" },
-  { label: "Member reviews", icon: "message-circle", to: "/admin", section: "reviews" },
-  { label: "Headshot bookings", icon: "camera", to: "/admin", section: "bookings" },
-  { label: "All members", icon: "badge-check", to: "/admin", section: "members" },
-  { label: "Newsletter", icon: "newspaper", to: "/admin", section: "newsletter" },
-  { label: "Spotlight answers", icon: "megaphone", to: "/admin", section: "spotlight" },
-  { label: "Events", icon: "calendar-days", to: "/admin", section: "events" },
-  { label: "Appointments", icon: "calendar", to: "/admin", section: "appointments" },
-  { label: "Neighborhoods", icon: "map-pin", to: "/admin", section: "neighborhoods" },
-  { label: "Admin activity", icon: "shield-check", to: "/admin", section: "activity" },
-];
-/** A section's sidebar entry (its label and icon). */
-export const sectionItem = (section: AdminSection) => ADMIN.find((i) => i.section === section)!;
+const SECTION_ITEMS: Record<AdminSection, { label: string; icon: IconName }> = {
+  inbox: { label: "Inbox", icon: "mail" },
+  applications: { label: "Applications", icon: "notebook-pen" },
+  reviews: { label: "Member reviews", icon: "message-circle" },
+  bookings: { label: "Headshot bookings", icon: "camera" },
+  members: { label: "All members", icon: "badge-check" },
+  newsletter: { label: "Newsletter", icon: "newspaper" },
+  spotlight: { label: "Spotlight answers", icon: "megaphone" },
+  events: { label: "Events", icon: "calendar-days" },
+  appointments: { label: "Appointments", icon: "calendar" },
+  neighborhoods: { label: "Neighborhoods", icon: "map-pin" },
+  activity: { label: "Admin activity", icon: "shield-check" },
+};
+/** A section's name and icon. */
+export const sectionItem = (section: AdminSection) => SECTION_ITEMS[section];
 
-/**
- * The Admin group only for admins; UX only, since /admin's guard and every admin server function check again.
- */
-export const groups = (admin: boolean): NavGroup[] => [
-  { label: "My account", items: MY_ACCOUNT },
-  ...(admin ? [{ label: "Admin", items: ADMIN }] : []),
+/** The sidebar after Home: each area opens on its first page, its other pages are tabs. `forms`: /admin/forms is the first tab. */
+export type AdminArea = { label: string; icon: IconName; sections: readonly AdminSection[]; forms?: boolean };
+export const ADMIN_AREAS: AdminArea[] = [
+  { label: "Inbox", icon: "mail", sections: ["inbox"] },
+  { label: "People", icon: "badge-check", sections: ["applications", "members", "newsletter", "neighborhoods"] },
+  { label: "Calendar", icon: "calendar-days", sections: ["events", "appointments", "bookings"] },
+  { label: "Forms", icon: "pencil", sections: ["reviews", "spotlight"], forms: true },
 ];
+export const areaOf = (page: ShellPage) =>
+  ADMIN_AREAS.find((a) => a.sections.some((s) => page === `/admin/${s}`) || (a.forms && page.startsWith("/admin/forms")));
 
 /**
  * This page's anchored card nearest the top of the viewport, or the one the URL hash names. One instance per page
@@ -56,7 +53,7 @@ export const groups = (admin: boolean): NavGroup[] => [
  */
 export function useActiveSection(page: ShellPage) {
   // Page groups first, so the top card (Profile, Applications) is "here" before anything scrolls.
-  const anchors = [...MY_ACCOUNT, ...ADMIN].filter((i) => i.to === page && i.hash).map((i) => i.hash!);
+  const anchors = MY_ACCOUNT.filter((i) => i.to === page && i.hash).map((i) => i.hash!);
   const key = anchors.join(" ");
   const [active, setActive] = React.useState(anchors[0]);
   React.useEffect(() => {

@@ -1,8 +1,8 @@
 import * as React from "react";
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { AppPage } from "@/app/layout/AppLayout";
-import { AppShell, TopBar } from "@/app/layout/AppShell";
-import { isAdminSection, sectionItem, type AdminSection } from "@/app/layout/shell-nav";
+import { AppShell, AreaTabs, TopBar } from "@/app/layout/AppShell";
+import { areaOf, isAdminSection, sectionItem, type AdminSection } from "@/app/layout/shell-nav";
 import {
   ActivityPanel, AdminSearch, ApplicationsPanel, BookingsPanel, InboxPanel, MemberReviewsPanel, MembersPanel,
   NeighborhoodsPanel, NewsletterPanel, SpotlightPanel,
@@ -49,10 +49,11 @@ function SectionPage() {
   React.useEffect(() => { setQuery(""); }, [section]);
   return (
     <AppPage trail={false}>
-      <AppShell page={`/admin/${section}`} admin>
+      <AppShell page={`/admin/${section}`}>
         <main id="main" tabIndex={-1} className="outline-none">
-          <TopBar title={sectionItem(section).label} heading who={{ name: user.name || user.email }} />
+          <TopBar title={areaOf(`/admin/${section}`)?.label ?? sectionItem(section).label} heading who={{ name: user.name || user.email }} />
           <div className="flex max-w-250 flex-col gap-6 px-4 pt-5 pb-14 sm:px-8 sm:pt-8">
+            <AreaTabs page={`/admin/${section}`} />
             <p className="text-[15px] text-app-muted">{intro}</p>
             {search && <AdminSearch value={query} onChange={setQuery} label={`Search ${sectionItem(section).label.toLowerCase()}`} />}
             <Panel key={section} query={query} />

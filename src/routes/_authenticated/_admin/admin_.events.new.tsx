@@ -18,7 +18,7 @@ function NewGathering() {
   const [business] = useAdminBusiness();
   return (
     <AppPage trail={false}>
-      <AppShell page="/admin/events" admin>
+      <AppShell page="/admin/events">
         <main id="main" tabIndex={-1} className="outline-none">
           <TopBar title="New event" heading who={{ name: user.name || user.email }} />
           <div className="flex max-w-250 flex-col gap-6 px-4 pt-5 pb-14 sm:px-8 sm:pt-8">

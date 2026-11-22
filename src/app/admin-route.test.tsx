@@ -136,40 +136,60 @@ describe("/admin", () => {
   afterEach(() => { confirm.mockRestore(); });
 
   describe("shell", () => {
-    it("is one main landmark with the Admin h1 in the top bar, after the skip link", () => {
+    it("is one main landmark with the Home h1 in the top bar, after the skip link", () => {
       const { container } = renderAdmin({}, [], Page);
       const main = screen.getByRole("main");
       expect(screen.getAllByRole("main")).toHaveLength(1);
       expect([main.id, main.tabIndex]).toEqual(["main", -1]);
       expect(container.querySelector("a")!.getAttribute("href")).toBe("#main");
       const h1 = screen.getAllByRole("heading", { level: 1 });
-      expect(h1.map((h) => h.textContent)).toEqual(["Admin"]);
+      expect(h1.map((h) => h.textContent)).toEqual(["Home"]);
       expect(main.contains(h1[0])).toBe(true);
     });
 
-    it("the overview is a card per area, each opening its own page, and the sidebar marks Overview as here", () => {
-      renderAdmin({}, [], Page);
-      // No card's contents here: only the way into each one.
-      expect(screen.queryByRole("region", { name: "Applications" })).toBeNull();
-      const tile = (name: string) => within(screen.getByRole("main")).getByRole("link", { name }).closest("article")!;
-      for (const [name, href] of [["Inbox", "/admin/inbox"], ["Applications", "/admin/applications"], ["Member reviews", "/admin/reviews"], ["Headshot bookings", "/admin/bookings"],
-        ["All members", "/admin/members"], ["Newsletter", "/admin/newsletter"], ["Spotlight answers", "/admin/spotlight"], ["Events", "/admin/events"],
-        ["Neighborhoods", "/admin/neighborhoods"], ["Forms", "/admin/forms"]]) {
-        expect(within(tile(name)).getByRole("link", { name }).getAttribute("href")).toBe(href);
-      }
-      expect(screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent)).toEqual(["Waiting on you", "The club"]);
-      // The log is a line under the cards, not a card.
-      expect(within(screen.getByRole("main")).getByRole("link", { name: "Admin activity" }).getAttribute("href")).toBe("/admin/activity");
+    it("the sidebar is Home, four areas and Admin activity, with what waits on you as a badge", () => {
+      renderAdmin({ applications: [application("a1", "Pia Baker"), application("a2", "Lu Smith")] }, [], Page);
       const nav = screen.getAllByRole("navigation", { name: "Main" })[0];
-      const link = (name: string) => within(nav).getByRole("link", { name });
-      expect(link("Overview").getAttribute("aria-current")).toBe("page");
-      expect(link("Inbox").getAttribute("href")).toBe("/admin/inbox");
-      expect(link("Inbox").getAttribute("aria-current")).toBeNull();
-      expect(link("Profile").getAttribute("href")).toBe("/account#profile");
-      expect(link("Forms").getAttribute("href")).toBe("/admin/forms#forms");
-      // Forms come second in the Admin list, right after the overview.
-      expect(within(nav).getAllByRole("link").map((a) => a.textContent).slice(4, 7)).toEqual(["Overview", "Forms", "Inbox"]);
+      expect(within(nav).getAllByRole("link").map((a) => [a.textContent, a.getAttribute("href")])).toEqual([
+        ["Home", "/admin"], ["Inbox", "/admin/inbox"], ["People2, 2 waiting", "/admin/applications"], ["Calendar", "/admin/events"], ["Forms", "/admin/forms"],
+      ]);
+      expect(within(nav).getByRole("link", { name: "Home" }).getAttribute("aria-current")).toBe("page");
+      expect(screen.getByRole("link", { name: "Admin activity" }).getAttribute("href")).toBe("/admin/activity");
+      expect(screen.getByRole("link", { name: /your account/ }).getAttribute("href")).toBe("/account");
       expect(screen.getByRole("button", { name: /sign out/i })).toBeTruthy();
+    });
+
+    it.each([
+      ["applications", "People", ["Applications", "All members", "Newsletter", "Neighborhoods"]],
+      ["bookings", "Calendar", ["Events", "Appointments", "Headshot bookings"]],
+      ["spotlight", "Forms", ["Forms", "Member reviews", "Spotlight answers"]],
+    ] as const)("/admin/%s sits under %s, with its area's pages as tabs", (section, area, tabs) => {
+      renderAdmin({}, [], sectionPage(section));
+      expect(screen.getAllByRole("heading", { level: 1 }).map((h) => h.textContent)).toEqual([area]);
+      const nav = screen.getByRole("navigation", { name: `${area} pages` });
+      expect(within(nav).getAllByRole("link").map((a) => a.textContent)).toEqual([...tabs]);
+      expect(within(nav).getAllByRole("link").filter((a) => a.getAttribute("aria-current") === "page")).toHaveLength(1);
+      const main = screen.getAllByRole("navigation", { name: "Main" })[0];
+      expect(within(main).getByRole("link", { name: area }).getAttribute("aria-current")).toBe("page");
+    });
+
+    it("a one-page area has no tabs, and Admin activity has none either", () => {
+      renderAdmin({}, [], sectionPage("inbox"));
+      expect(screen.queryByRole("navigation", { name: "Inbox pages" })).toBeNull();
+      cleanup();
+      renderAdmin({}, [], sectionPage("activity"));
+      expect(screen.getAllByRole("heading", { level: 1 }).map((h) => h.textContent)).toEqual(["Admin activity"]);
+    });
+
+    it("Home shows a card only for what waits, and a failed list is never read as nothing waiting", async () => {
+      fake.results = [new Error("offline")];
+      renderAdmin({ inbox: FETCH }, [], Page);
+      await waitFor(() => expect(screen.getByRole("status").textContent).toBe("Some of this couldn’t load, so there may be more waiting."));
+      const main = within(screen.getByRole("main"));
+      expect(screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent)).toEqual(["Waiting on you"]);
+      expect(main.getByRole("link", { name: "Inbox" }).closest("article")!.textContent).toMatch(/Couldn’t load/);
+      expect(main.queryByRole("link", { name: "Applications" })).toBeNull();
+      expect(main.queryByRole("link", { name: "All members" })).toBeNull();
     });
 
     it("the overview says what waits on you, and marks those cards", () => {
@@ -184,7 +204,8 @@ describe("/admin", () => {
       const tile = (name: string) => within(screen.getByRole("main")).getByRole("link", { name }).closest("article")!;
       expect(within(tile("Inbox")).getByText("to answer")).toBeTruthy();
       expect(within(tile("Applications")).getByText("2 in all")).toBeTruthy();
-      expect(within(tile("Member reviews")).queryByText("to apply")).toBeNull();
+      expect(within(screen.getByRole("main")).queryByRole("link", { name: "Member reviews" })).toBeNull();
+      expect(screen.getByText("Nothing new in Member reviews or Headshot bookings.")).toBeTruthy();
     });
 
     it("the overview says so when nothing is waiting", () => {
@@ -195,13 +216,13 @@ describe("/admin", () => {
     it("a section is its own page: its name as the h1, its one card, a search box where the card filters, and its sidebar link marked", () => {
       renderAdmin({ applications: [application("a1", "Pia Baker")] }, [], sectionPage("applications"));
       expect(screen.getAllByRole("main")).toHaveLength(1);
-      expect(screen.getAllByRole("heading", { level: 1 }).map((h) => h.textContent)).toEqual(["Applications"]);
+      expect(screen.getAllByRole("heading", { level: 1 }).map((h) => h.textContent)).toEqual(["People"]);
       expect(card("Applications").id).toBe("applications");
       expect(screen.queryByRole("region", { name: "All members" })).toBeNull();
       expect(screen.getByRole("searchbox", { name: "Search applications" })).toBeTruthy();
       const nav = screen.getAllByRole("navigation", { name: "Main" })[0];
-      expect(within(nav).getByRole("link", { name: "Applications" }).getAttribute("aria-current")).toBe("page");
-      expect(within(nav).getByRole("link", { name: "Overview" }).getAttribute("aria-current")).toBeNull();
+      expect(within(nav).getByRole("link", { name: /^People/ }).getAttribute("aria-current")).toBe("page");
+      expect(within(nav).getByRole("link", { name: "Home" }).getAttribute("aria-current")).toBeNull();
       cleanup();
       renderAdmin({}, [], sectionPage("activity"));
       expect(screen.queryByRole("searchbox")).toBeNull();
@@ -242,8 +263,8 @@ describe("/admin", () => {
       expect(card("Your forms").textContent).toMatch(/1 form at \/f\/…, 2 answers in all/);
       const nav = screen.getAllByRole("navigation", { name: "Main" })[0];
       const link = (name: string) => within(nav).getByRole("link", { name });
-      expect(link("Forms").getAttribute("href")).toBe("#forms");
-      expect(link("Forms").getAttribute("aria-current")).toBe("location");
+      expect(link("Forms").getAttribute("href")).toBe("/admin/forms");
+      expect(link("Forms").getAttribute("aria-current")).toBe("page");
       expect(link("Inbox").getAttribute("href")).toBe("/admin/inbox");
     });
 

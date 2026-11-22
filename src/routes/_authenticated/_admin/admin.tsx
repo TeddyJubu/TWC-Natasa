@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_authenticated/_admin/admin")({
 });
 
 /**
- * The overview: what waits on you, then every other area, each opening its own page (/admin/<section>). The `_admin`
+ * Home: only what waits on a decision. The `_admin`
  * guard only lets admins in. An old /admin#<card> link (alert emails, bookmarks) forwards to that card's page; the
  * hash never reaches the server, so this happens here.
  */
@@ -30,9 +30,9 @@ function AdminPage() {
   }, [navigate]);
   return (
     <AppPage trail={false}>
-      <AppShell page="/admin" admin>
+      <AppShell page="/admin">
         <main id="main" tabIndex={-1} className="outline-none">
-          <TopBar title="Admin" heading who={{ name: user.name || user.email }} />
+          <TopBar title="Home" heading who={{ name: user.name || user.email }} />
           <div className="flex max-w-250 flex-col gap-6 px-4 pt-5 pb-14 sm:px-8 sm:pt-8">
             <AdminOverview />
           </div>

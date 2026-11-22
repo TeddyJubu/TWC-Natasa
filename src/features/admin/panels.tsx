@@ -10,8 +10,6 @@ import { sectionItem, type AdminSection } from "@/app/layout/shell-nav";
 import { toneFor } from "@/features/neighborhoods/tone";
 import { useNeighborhoods } from "@/features/neighborhoods/queries";
 import { pickerNames } from "@/features/neighborhoods/options";
-import { adminCalEventsQuery } from "@/features/cal/queries";
-import { formatDay as formatEventDay } from "@/features/cal/time";
 import {
   adminActionsQuery, adminApplicationsQuery, adminBookingsQuery, adminInboxQuery, adminLoggedActionsQuery,
   adminMembersQuery, adminNeighborhoodsQuery, adminNewsletterQuery, adminNotesQuery,
@@ -23,6 +21,7 @@ import {
   useDownloadCsv, useEditLoggedAction, useRemoveLoggedAction, useRestoreLoggedAction, useReviewApplication,
   useSetBookingStatus, useSetMemberNeighborhood, useSetMemberStatus, useUpdateNeighborhood, type LoggedActionInput, type NoteInput,
 } from "./mutations";
+import { useWaiting } from "./waiting";
 import type { ApprovalNotice } from "./approval-email";
 import {
   applicationOrigin, checkLogo, describeAction, DUPLICATE_TEXT, formatAnswers, formatDate, formatDay, humanizeKey,
@@ -1740,14 +1739,14 @@ function BookingRow({ booking, name }: { booking: AdminBooking; name: string }) 
   );
 }
 
-// ---------- Overview (/admin) ----------
+// ---------- Home (/admin) ----------
 
 type QueryState = { isError: boolean; isPending: boolean };
-/** One area on the overview: its figure, a chip when something waits on you, and a line of context. */
+/** One thing on Home: its figure, a chip when something waits on you, and a line of context. */
 type TileData = { figure: number | null; unit: string; waiting?: string | null; note?: string | null; query: QueryState };
 
 /**
- * Each overview card's paper: a member-pass colour mixed into the airmail paper, a quarter (mustard, the warmest, less, so
+ * Each Home card's paper: a member-pass colour mixed into the airmail paper, a quarter (mustard, the warmest, less, so
  * it doesn't outshine the card that has work waiting). It re-points the card's --bl-app, which bg-app compiles to under
  * @theme inline. Muted text stays 5.2:1 or better on every one.
  */
@@ -1756,17 +1755,12 @@ const TINT = {
   rose: "[--bl-app:color-mix(in_srgb,var(--color-sb-rose)_25%,var(--color-air-paper))]",
   lilac: "[--bl-app:color-mix(in_srgb,var(--color-sb-lilac)_25%,var(--color-air-paper))]",
   mint: "[--bl-app:color-mix(in_srgb,var(--color-sb-mint)_25%,var(--color-air-paper))]",
-  // Forms stand out: lilac at 70% (muted text 4.8:1; full lilac would drop it under AA's 4.5).
-  "lilac-bright": "[--bl-app:color-mix(in_srgb,var(--color-sb-lilac)_70%,var(--color-air-paper))]",
 } as const;
-const TILE_TINT: Record<AdminSection | "forms", keyof typeof TINT> = {
-  inbox: "lilac", applications: "rose", reviews: "mint", bookings: "mustard",
-  members: "mint", newsletter: "lilac", spotlight: "mustard", events: "rose", appointments: "mustard", neighborhoods: "mint", forms: "lilac-bright", activity: "lilac",
-};
+const TILE_TINT: Partial<Record<AdminSection, keyof typeof TINT>> = { inbox: "lilac", applications: "rose", reviews: "mint", bookings: "mustard" };
 
 /** The whole tile is its section's link (the heading's link stretches over it), like the form cards. */
-function OverviewTile({ section, tile }: { section: AdminSection | "forms"; tile: TileData }) {
-  const item = section === "forms" ? { label: "Forms", icon: "pencil" as const } : sectionItem(section);
+function OverviewTile({ section, tile }: { section: AdminSection; tile: TileData }) {
+  const item = sectionItem(section);
   const headingId = `overview-${section}`;
   const linkCls = "outline-none after:absolute after:inset-0 after:content-['']";
   const note = tile.query.isError ? "Couldn’t load this. Open it to try again." : tile.note;
@@ -1774,7 +1768,7 @@ function OverviewTile({ section, tile }: { section: AdminSection | "forms"; tile
     // air-grounded: the desk's resting shadow as a filter, which follows the stamp edge's mask (a box-shadow is clipped).
     <article aria-labelledby={headingId}
       className="group relative rounded-md air-grounded has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-app-accent motion-reduce:transition-none motion-reduce:hover:translate-y-0">
-      <Ticket stamp className={cn("h-full", TINT[TILE_TINT[section]])}
+      <Ticket stamp className={cn("h-full", TINT[TILE_TINT[section] ?? "lilac"])}
         stub={(
           <div className="flex items-center justify-between gap-3 text-[13px] text-app-muted">
             <span className="min-w-0">{note || "Open"}</span>
@@ -1784,9 +1778,7 @@ function OverviewTile({ section, tile }: { section: AdminSection | "forms"; tile
         <div className="flex items-start justify-between gap-3">
           <h3 id={headingId} className="flex min-w-0 items-center gap-2 font-gilda text-[22px]/[1.2] text-ink">
             <Icon name={item.icon} className="size-4.5 shrink-0 text-app-muted" />
-            {section === "forms"
-              ? <Link to="/admin/forms" className={linkCls}>{item.label}</Link>
-              : <Link to="/admin/$section" params={{ section }} className={linkCls}>{item.label}</Link>}
+            <Link to="/admin/$section" params={{ section }} className={linkCls}>{item.label}</Link>
           </h3>
           {tile.waiting && <Chip tone="pending">{tile.waiting}</Chip>}
         </div>
@@ -1801,80 +1793,43 @@ function OverviewTile({ section, tile }: { section: AdminSection | "forms"; tile
 
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
-/** /admin: what waits on you first, then every other area, each a card opening its own page. */
+const listOf = (items: string[], word: string) => (items.length > 1 ? `${items.slice(0, -1).join(", ")} ${word} ${items.at(-1)}` : items[0] ?? "");
+
+/** /admin: only what needs a decision, a card each; the rest is one line. A list that failed to load gets a card too. */
 export function AdminOverview() {
-  const inbox = useQuery(adminInboxQuery);
-  const apps = useQuery(adminApplicationsQuery);
-  const reviews = useQuery(adminReviewsQuery);
-  const bookings = useQuery(adminBookingsQuery);
-  const members = useQuery(adminMembersQuery);
-  const newsletter = useQuery(adminNewsletterQuery);
-  const spotlights = useQuery(adminSpotlightsQuery);
-  // Cal is a separate service: if it is down only this tile says so (OverviewTile reads the query's error).
-  const events = useQuery({ ...adminCalEventsQuery({ tab: "upcoming", skip: 0, take: 100 }), retry: false });
-  const hoods = useQuery(adminNeighborhoodsQuery);
-  const actions = useQuery(adminActionsQuery);
-  const forms = useQuery(adminFormResponsesQuery);
-
-  const newMessages = inbox.data?.filter((m) => m.status === "new").length ?? null;
-  const pending = apps.data?.filter((a) => a.status === "pending").length ?? null;
+  const { inbox, applications: apps, reviews, bookings, counts: n } = useWaiting();
   const duplicates = apps.data?.filter((a) => a.duplicate).length ?? 0;
-  const waitingReviews = reviews.data?.length ?? null;
-  const requested = bookings.data?.filter((b) => b.status === "requested").length ?? null;
-  const upcoming = events.data?.events.filter((e) => e.status === "SCHEDULED");
-
   const waiting: [AdminSection, TileData][] = [
-    ["inbox", { figure: newMessages, unit: "new", waiting: newMessages ? "to answer" : null, note: "Contact messages and partnership inquiries", query: inbox }],
-    ["applications", { figure: pending, unit: "pending", waiting: pending ? "to review" : null,
+    ["inbox", { figure: n.inbox ?? null, unit: "new", waiting: "to answer", note: "Contact messages and partnership inquiries", query: inbox }],
+    ["applications", { figure: n.applications ?? null, unit: "pending", waiting: "to review",
       note: apps.data && `${apps.data.length} in all${duplicates ? ` · ${plural(duplicates, "possible duplicate")}` : ""}`, query: apps }],
-    ["reviews", { figure: waitingReviews, unit: "to read", waiting: waitingReviews ? "to apply" : null, note: "Members’ answers to their review links", query: reviews }],
-    ["bookings", { figure: requested, unit: "requested", waiting: requested ? "to confirm" : null,
+    ["reviews", { figure: n.reviews ?? null, unit: "to read", waiting: "to apply", note: "Members’ answers to their review links", query: reviews }],
+    ["bookings", { figure: n.bookings ?? null, unit: "requested", waiting: "to confirm",
       note: bookings.data && `${bookings.data.filter((b) => b.status === "confirmed").length} confirmed`, query: bookings }],
   ];
-  const club: [AdminSection, TileData][] = [
-    ["members", { figure: members.data?.filter((m) => m.status === "approved").length ?? null, unit: "approved",
-      note: members.data && `${members.data.length} profiles in all`, query: members }],
-    ["newsletter", { figure: newsletter.data?.length ?? null, unit: "subscribers", note: "Read-only list", query: newsletter }],
-    ["spotlight", { figure: spotlights.data?.length ?? null, unit: "answers",
-      note: spotlights.data?.[0] ? `Newest ${formatDate(spotlights.data[0].created_at)}` : "Invite members from All members", query: spotlights }],
-    ["events", { figure: upcoming?.length ?? null, unit: "coming up",
-      note: upcoming?.[0]
-        ? `Next: ${upcoming[0].title}, ${formatEventDay({ iso: upcoming[0].startTime, timeZone: upcoming[0].timeZone, locale: "en-US" })}`
-        : "Put the next one on the calendar", query: events }],
-    ["neighborhoods", { figure: hoods.data?.filter((h) => h.active).length ?? null, unit: "active", note: hoods.data && `${hoods.data.length} in all`, query: hoods }],
-  ];
-  const openForms = forms.data?.filter((f) => f.state === "open").length ?? null;
+  const shown = waiting.filter(([, t]) => t.figure || t.query.isError);
+  const clear = waiting.filter(([, t]) => t.figure === 0).map(([s]) => sectionItem(s).label);
 
-  const counts = ([[newMessages, "message"], [pending, "application"], [waitingReviews, "member review"], [requested, "headshot request"]] as const)
-    .filter(([n]) => n);
-  const loaded = [inbox, apps, reviews, bookings].every((q) => !q.isPending);
-  const phrases = counts.map(([n, what]) => plural(n!, what));
-  const list = phrases.length > 1 ? `${phrases.slice(0, -1).join(", ")} and ${phrases.at(-1)}` : phrases[0];
+  const counts = ([[n.inbox, "message"], [n.applications, "application"], [n.reviews, "member review"], [n.bookings, "headshot request"]] as const)
+    .filter(([c]) => c);
+  const loaded = waiting.every(([, t]) => !t.query.isPending);
+  const failed = waiting.some(([, t]) => t.query.isError);
+  const list = listOf(counts.map(([c, what]) => plural(c!, what)), "and");
   // "1 message is waiting", but "2 messages are" and "1 message and 1 application are".
   const verb = counts.length === 1 && counts[0]![0] === 1 ? "is" : "are";
-  const summary = !loaded ? "Checking what’s waiting…" : counts.length === 0 ? "Nothing is waiting on you." : `${list} ${verb} waiting on you.`;
+  const summary = !loaded ? "Checking what’s waiting…"
+    : counts.length ? `${list} ${verb} waiting on you.`
+    : failed ? "Some of this couldn’t load, so there may be more waiting."
+    : "Nothing is waiting on you.";
 
   return (
-    <div className="flex flex-col gap-12">
-      <section aria-labelledby="overview-waiting" className="flex flex-col gap-4">
-        <SectionHead id="overview-waiting" title="Waiting on you"><span role="status">{summary}</span></SectionHead>
-        {/* Two by two, so the four never leave one card alone on a row. */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">{waiting.map(([section, tile]) => <OverviewTile key={section} section={section} tile={tile} />)}</div>
-      </section>
-      <section aria-labelledby="overview-club" className="flex flex-col gap-4">
-        <SectionHead id="overview-club" title="The club">Forms, members, the calendar and the records. Open one to change it.</SectionHead>
-        <div className={cardGrid}>
-          {/* Forms first: the other half of the system, after the people. */}
-          <OverviewTile section="forms" tile={{ figure: openForms, unit: "open", note: "Your /f/… forms and the site’s own", query: forms }} />
-          {club.map(([section, tile]) => <OverviewTile key={section} section={section} tile={tile} />)}
-        </div>
-        {/* A record, not something to manage, so a line rather than a card. */}
-        <p className={meta}>
-          Every approve, decline, note and neighborhood change is logged in{" "}
-          <Link to="/admin/$section" params={{ section: "activity" }} className={linkClass}>Admin activity</Link>
-          {actions.data?.[0] ? ` (latest ${formatDate(actions.data[0].created_at)})` : ""}.
-        </p>
-      </section>
-    </div>
+    <section aria-labelledby="overview-waiting" className="flex flex-col gap-4">
+      <SectionHead id="overview-waiting" title="Waiting on you"><span role="status">{summary}</span></SectionHead>
+      {/* Two by two when they pair up, so one card is never left alone on a row. */}
+      <div className={cn("grid grid-cols-1 gap-4", shown.length % 2 === 0 && "sm:grid-cols-2")}>
+        {shown.map(([section, tile]) => <OverviewTile key={section} section={section} tile={tile} />)}
+      </div>
+      {shown.length > 0 && clear.length > 0 && <p className={meta}>Nothing new in {listOf(clear, "or")}.</p>}
+    </section>
   );
 }
