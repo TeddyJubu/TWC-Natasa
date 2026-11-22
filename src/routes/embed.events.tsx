@@ -10,7 +10,7 @@ type Search = { category?: string; business?: string };
 const params = (s: Search) => ({ tab: "upcoming" as const, take: 5, ...s });
 
 // A bare list for framing. The CSP's frame-ancestors stays 'self' until a partner site is named.
-export const Route = createFileRoute("/embed/gatherings")({
+export const Route = createFileRoute("/embed/events")({
   validateSearch: (raw: Record<string, unknown>): Search => ({
     ...(typeof raw.category === "string" && raw.category ? { category: raw.category.slice(0, 80) } : {}),
     ...(typeof raw.business === "string" && raw.business ? { business: raw.business.slice(0, 80) } : {}),

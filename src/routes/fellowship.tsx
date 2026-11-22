@@ -127,7 +127,7 @@ function FellowshipPage() {
               <p className="text-base leading-[1.6] text-sb-paper/85">Tell us about your work and who you hope to meet. Prefer to see us first? Come to something.</p>
               <div className="flex flex-col gap-3">
                 <Link to="/join" className="twc-btn twc-btn--paper">Start your application <Icon name="arrow" className="twc-arrow" /></Link>
-                <Link to="/gatherings" className="twc-btn twc-btn--outline !text-sb-paper">Come to something first <Icon name="arrow" className="twc-arrow" /></Link>
+                <Link to="/events" className="twc-btn twc-btn--outline !text-sb-paper">Come to something first <Icon name="arrow" className="twc-arrow" /></Link>
               </div>
             </div>
           </div>

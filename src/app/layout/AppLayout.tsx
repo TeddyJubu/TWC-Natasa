@@ -26,12 +26,12 @@ export function AppPage({ children, className, trail = true }: { children: React
   );
 }
 
-type SiteLink = { label: string; to: "/about" | "/members" | "/gatherings" | "/neighborhoods" | "/faq" | "/fellowship" | "/partnerships" | "/contact" | "/join" | "/account" };
+type SiteLink = { label: string; to: "/about" | "/members" | "/events" | "/neighborhoods" | "/faq" | "/fellowship" | "/partnerships" | "/contact" | "/join" | "/account" };
 
 const NAV_START: SiteLink[] = [
   { label: "About", to: "/about" },
   { label: "Members", to: "/members" },
-  { label: "Events", to: "/gatherings" },
+  { label: "Events", to: "/events" },
 ];
 const NAV_END: SiteLink[] = [
   { label: "Neighborhoods", to: "/neighborhoods" },
@@ -127,7 +127,7 @@ export function AppNav({ bare = false }: { bare?: boolean }) {
 const FOOTER: SiteLink[] = [
   { label: "About", to: "/about" },
   { label: "Members", to: "/members" },
-  { label: "Events", to: "/gatherings" },
+  { label: "Events", to: "/events" },
   { label: "Neighborhoods", to: "/neighborhoods" },
   { label: "FAQ", to: "/faq" },
   { label: "Fellowship", to: "/fellowship" },

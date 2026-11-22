@@ -18,7 +18,7 @@ export const publicEventsQuery = queryOptions({
   staleTime: 60_000,
 });
 
-/** For the /gatherings loader, so the server renders the calendar: undefined when that fails (the client then loads it). */
+/** For the /events loader, so the server renders the calendar: undefined when that fails (the client then loads it). */
 export const loadPublicEvents = (queryClient: QueryClient): Promise<PublicEvent[] | undefined> =>
   queryClient.ensureQueryData(publicEventsQuery).catch(() => undefined);
 

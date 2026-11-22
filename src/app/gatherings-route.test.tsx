@@ -9,7 +9,7 @@ vi.mock("@/features/auth/fns", async (orig) => (await import("@/test/fake-fns"))
 vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs }));
 
 import { fake } from "@/test/fake-fns";
-import { Route } from "@/routes/gatherings";
+import { Route } from "@/routes/events";
 import { parseGatheringsSearch, type GatheringsSearch } from "@/features/cal/event-state";
 import type { CalEvent, EventList } from "@/features/cal/types";
 
@@ -37,7 +37,7 @@ const Page = Route.options.component as React.ComponentType;
 const settle = () => act(() => new Promise((r) => setTimeout(r, 20)));
 const lastSearch = () => (navigate.mock.lastCall![0] as { search: (p: GatheringsSearch) => GatheringsSearch }).search(search);
 
-describe("/gatherings", () => {
+describe("/events", () => {
   it("is indexable, and marks up listed gatherings as Events, escaped", () => {
     vi.stubEnv("VITE_SITE_URL", "https://example.com");
     const head = (Route.options.head as (c: unknown) => { meta: Record<string, string>[]; scripts: { children: string }[] })({
@@ -47,13 +47,13 @@ describe("/gatherings", () => {
     expect(head.meta).not.toContainEqual({ name: "robots", content: "noindex" });
     expect(head.scripts[0].children).not.toContain("<");
     const graph = JSON.parse(head.scripts[0].children)["@graph"];
-    expect(graph[1]).toMatchObject({ "@type": "Event", name: "Book club </script>", url: "https://example.com/gatherings/e1" });
+    expect(graph[1]).toMatchObject({ "@type": "Event", name: "Book club </script>", url: "https://example.com/events/e1" });
   });
 
   it("renders the loader's gatherings with no client fetch", () => {
     loaderData = page([event("e1", "Supper club")]);
     renderWithQueries(<Page />);
-    expect(screen.getByRole("link", { name: "Supper club" }).getAttribute("href")).toBe("/gatherings/e1");
+    expect(screen.getByRole("link", { name: "Supper club" }).getAttribute("href")).toBe("/events/e1");
     expect(fake.calls).toEqual([]);
     expectNoSkippedHeadings();
   });

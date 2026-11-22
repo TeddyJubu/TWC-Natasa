@@ -100,8 +100,8 @@ describe("/faq", () => {
     const topics = ["Membership", "Your profile", "Headshots", "Events", "Privacy"];
     expect(screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent)).toEqual([...topics, "Still wondering?"]);
     const toc = screen.getByRole("navigation", { name: "Topics" });
-    expect(within(toc).getAllByRole("link").map((a) => a.getAttribute("href"))).toEqual(["#membership", "#profile", "#headshots", "#gatherings", "#privacy"]);
-    for (const id of ["membership", "profile", "headshots", "gatherings", "privacy"]) expect(document.getElementById(id)).toBeTruthy();
+    expect(within(toc).getAllByRole("link").map((a) => a.getAttribute("href"))).toEqual(["#membership", "#profile", "#headshots", "#events", "#privacy"]);
+    for (const id of ["membership", "profile", "headshots", "events", "privacy"]) expect(document.getElementById(id)).toBeTruthy();
   });
 
   it("is one native accordion with the first question open, numbered across the page", () => {

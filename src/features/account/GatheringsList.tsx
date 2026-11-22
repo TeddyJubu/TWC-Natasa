@@ -15,7 +15,7 @@ import { Locked } from "./shared";
 /** Upcoming events with her RSVPs; applicants see what unlocks. */
 export function GatheringsList({ userId, approved, applied, hoodList }: { userId: string; approved: boolean; applied: boolean; hoodList: Neighborhood[] }) {
   return (
-    <Letter id="gatherings" no={7} title="Events" subtitle="Save your seat at what’s coming up">
+    <Letter id="events" no={7} title="Events" subtitle="Save your seat at what’s coming up">
       {approved ? <Events userId={userId} hoodList={hoodList} /> : <Locked applied={applied} />}
     </Letter>
   );

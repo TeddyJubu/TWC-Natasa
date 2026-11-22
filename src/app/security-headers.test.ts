@@ -120,10 +120,10 @@ describe("security headers", () => {
   it("allow https images only on the pages that show gathering covers", async () => {
     const img = async (path: string) => responseOf(await run(securityHeadersMiddleware, new Request(`https://example.com${path}`), "router"))
       .headers.get("Content-Security-Policy")!.split("; ").find((d) => d.startsWith("img-src"));
-    for (const path of ["/gatherings", "/gatherings/supper-club", "/embed/gatherings", "/admin/gatherings", "/admin/gatherings/new", "/admin/gatherings/abc", "/Gatherings"]) {
+    for (const path of ["/events", "/events/supper-club", "/embed/events", "/admin/events", "/admin/events/new", "/admin/events/abc", "/Events"]) {
       expect(await img(path), path).toBe("img-src 'self' data: blob: https:");
     }
-    for (const path of ["/", "/members", "/account", "/admin", "/admin/appointments", "/book", "/booking/abc", "/gatherings-old"]) {
+    for (const path of ["/", "/members", "/account", "/admin", "/admin/appointments", "/book", "/booking/abc", "/events-old"]) {
       expect(await img(path), path).toBe("img-src 'self' data: blob:");
     }
     expect(SECURITY_HEADERS["Content-Security-Policy"]).not.toContain("https:;");

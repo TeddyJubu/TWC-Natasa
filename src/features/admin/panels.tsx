@@ -1761,7 +1761,7 @@ const TINT = {
 } as const;
 const TILE_TINT: Record<AdminSection | "forms", keyof typeof TINT> = {
   inbox: "lilac", applications: "rose", reviews: "mint", bookings: "mustard",
-  members: "mint", newsletter: "lilac", spotlight: "mustard", gatherings: "rose", appointments: "mustard", neighborhoods: "mint", forms: "lilac-bright", activity: "lilac",
+  members: "mint", newsletter: "lilac", spotlight: "mustard", events: "rose", appointments: "mustard", neighborhoods: "mint", forms: "lilac-bright", activity: "lilac",
 };
 
 /** The whole tile is its section's link (the heading's link stretches over it), like the form cards. */
@@ -1837,7 +1837,7 @@ export function AdminOverview() {
     ["newsletter", { figure: newsletter.data?.length ?? null, unit: "subscribers", note: "Read-only list", query: newsletter }],
     ["spotlight", { figure: spotlights.data?.length ?? null, unit: "answers",
       note: spotlights.data?.[0] ? `Newest ${formatDate(spotlights.data[0].created_at)}` : "Invite members from All members", query: spotlights }],
-    ["gatherings", { figure: upcoming?.length ?? null, unit: "coming up",
+    ["events", { figure: upcoming?.length ?? null, unit: "coming up",
       note: upcoming?.[0]
         ? `Next: ${upcoming[0].title}, ${formatEventDay({ iso: upcoming[0].startTime, timeZone: upcoming[0].timeZone, locale: "en-US" })}`
         : "Put the next one on the calendar", query: events }],

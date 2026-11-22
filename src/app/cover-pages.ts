@@ -1,5 +1,5 @@
 // The pages whose CSP allows a gathering's https cover image. Case-insensitive like the router.
-const COVER_IMAGE_PAGES = /^\/(gatherings|embed\/gatherings|admin\/gatherings)(\/|$)/i;
+const COVER_IMAGE_PAGES = /^\/(events|embed\/events|admin\/events)(\/|$)/i;
 export const showsCoverImages = (pathname: string) => COVER_IMAGE_PAGES.test(pathname);
 
 /**

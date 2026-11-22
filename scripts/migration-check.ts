@@ -36,7 +36,7 @@ export const OLD_TO_NEW: Record<string, string> = {
   "about.html": "/about",
   "contact.html": "/contact",
   "directory.html": "/members",
-  "events.html": "/gatherings",
+  "events.html": "/events",
   "fellowship.html": "/fellowship",
   "partnerships.html": "/partnerships",
   "editing.html": "/account",

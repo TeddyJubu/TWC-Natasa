@@ -15,11 +15,11 @@ test("view events, RSVP, change it, book an appointment", async ({ page, context
   const problems: string[] = [];
   page.on("console", (m) => { if (m.type() === "error" && /Content Security Policy/i.test(m.text())) problems.push(m.text()); });
 
-  await page.goto("/gatherings");
+  await page.goto("/events");
   const link = page.getByRole("link", { name: E2E_EVENT_TITLE! });
   await expect(link).toBeVisible();
   await link.click();
-  await expect(page).toHaveURL(new RegExp(`/gatherings/${E2E_EVENT_SLUG}`));
+  await expect(page).toHaveURL(new RegExp(`/events/${E2E_EVENT_SLUG}`));
   await expect(page.getByRole("heading", { level: 1, name: E2E_EVENT_TITLE! })).toBeVisible();
 
   const rsvp = page.getByRole("form", { name: /RSVP to/ });

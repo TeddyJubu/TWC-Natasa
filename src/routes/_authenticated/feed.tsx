@@ -176,7 +176,7 @@ function ComingUp({ userId }: { userId: string }) {
   if (next.length === 0) return null;
   return (
     <section aria-labelledby="coming-up-title">
-      <div className="air-feed-h"><h2 id="coming-up-title">Coming up</h2><Link to="/account" hash="gatherings" className={cn("air-link", ring)}>All events</Link></div>
+      <div className="air-feed-h"><h2 id="coming-up-title">Coming up</h2><Link to="/account" hash="events" className={cn("air-link", ring)}>All events</Link></div>
       <ul className="air-feed-events">
         {next.map((e) => {
           const when = eventWhen(e.starts_at);

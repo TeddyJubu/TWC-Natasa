@@ -7042,7 +7042,7 @@
       "acceptance": "events.html \u2192 `/gatherings`: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "public-pages",
       "status": "verified",
-      "target": "/gatherings",
+      "target": "/events",
       "evidence": "src/app/gatherings-route.test.tsx + src/routes/gatherings.tsx; redirects.md events(.html) \u2192 /gatherings"
     },
     {
@@ -8343,7 +8343,7 @@
       "acceptance": "Events and partners data now live in SQLite: behaviour from site.md is present on the new app (or deliberately retired), checkable without inventing facts.",
       "owner": "vps-cutover",
       "status": "verified",
-      "target": "/gatherings",
+      "target": "/events",
       "evidence": "Gatherings/partners data in SQLite; /events \u2192 /gatherings redirect live. | vps-cutover remainders 2026-11-09: already live \u2014 AUDIT apex/members/nbwc (ts 20261109-151319) + admin/crm (Caddyfile.before-admin-crm-cutover-20261109-172218); directory img 404; smoke-cutover ok; migration/caddy-twc-redirects.caddy."
     },
     {

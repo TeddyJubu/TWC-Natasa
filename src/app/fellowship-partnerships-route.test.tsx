@@ -79,7 +79,7 @@ describe("/fellowship", () => {
   it("links to the application, the questions, and the contact page", () => {
     show(Fellowship);
     expect(href("Start your application")).toBe("/join");
-    expect(href("Come to something first")).toBe("/gatherings");
+    expect(href("Come to something first")).toBe("/events");
     expect(href("Read the questions")).toBe("/faq");
     expect(href("Write to us")).toBe("/contact");
     expect(href("See how it works")).toBe("/about");

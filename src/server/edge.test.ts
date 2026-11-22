@@ -2,9 +2,24 @@
 // and gzip for the app's own HTML/JSON/XML when the client takes it.
 import { gunzipSync } from "node:zlib";
 import { describe, expect, it } from "vitest";
-import { IMMUTABLE, acceptsGzip, compressResponse, trailingSlashRedirect, withAssetCaching, withTextCharset } from "./edge";
+import { IMMUTABLE, acceptsGzip, compressResponse, renamedPageRedirect, trailingSlashRedirect, withAssetCaching, withTextCharset } from "./edge";
 
 const req = (path: string, init: RequestInit = {}) => new Request(`http://club.test${path}`, init);
+
+describe("renamedPageRedirect", () => {
+  it("sends every old gatherings page to its events address with a 301, query kept", () => {
+    for (const [from, to] of [["/gatherings?tab=past", "/events?tab=past"], ["/gatherings/supper-club?business=x", "/events/supper-club?business=x"], ["/embed/gatherings?category=a", "/embed/events?category=a"], ["/admin/gatherings", "/admin/events"], ["/admin/gatherings/new", "/admin/events/new"], ["/Gatherings", "/events"]]) {
+      const res = renamedPageRedirect(req(from));
+      expect(res?.status).toBe(301);
+      expect(res?.headers.get("Location")).toBe(to);
+    }
+  });
+
+  it("leaves the RSVP API, other pages and other methods alone", () => {
+    for (const path of ["/api/gatherings/abc/rsvp", "/events", "/gatherings-old", "//gatherings"]) expect(renamedPageRedirect(req(path))).toBeNull();
+    expect(renamedPageRedirect(req("/gatherings", { method: "POST" }))).toBeNull();
+  });
+});
 
 describe("trailingSlashRedirect", () => {
   it("answers a page path with a trailing slash with a 308 to the path without it, query kept", () => {

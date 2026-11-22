@@ -36,7 +36,7 @@ const FAQ_GROUPS: Group[] = [
     ],
   },
   {
-    id: "gatherings",
+    id: "events",
     title: "Events",
     items: [
       { q: "Who can come to events?", a: "Approved members save a seat from their account." },

@@ -7,7 +7,7 @@ import { checkDemoBeforeLaunch } from "@/server/demo-seed";
 
 export { withSecurityHeaders } from "@/app/security-headers";
 export { pinGate } from "@/server/site-pin";
-export { compressResponse, trailingSlashRedirect, withAssetCaching, withTextCharset } from "@/server/edge";
+export { compressResponse, renamedPageRedirect, trailingSlashRedirect, withAssetCaching, withTextCharset } from "@/server/edge";
 
 // Fail at startup, not on the first sign-in.
 authSecret();

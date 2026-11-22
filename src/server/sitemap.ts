@@ -25,7 +25,7 @@ export function sitemapEntries(db: DB, events: { slug: string; updated: string }
       // W3C datetime to the second ("2026-11-11T16:00:00Z").
       lastmod: m.updated_at.replace(/\.\d+Z$/, "Z"),
     })),
-    ...events.map((e) => ({ path: `/gatherings/${encodeURIComponent(e.slug)}` })),
+    ...events.map((e) => ({ path: `/events/${encodeURIComponent(e.slug)}` })),
   ];
 }
 

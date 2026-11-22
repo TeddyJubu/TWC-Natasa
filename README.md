@@ -287,11 +287,11 @@ root-only `/opt/cal/.env`, `/opt/cal/.api-key` and `/opt/cal/.owner-login`. The 
 
 | Page | What it is |
 |---|---|
-| `/gatherings`, `/gatherings/<slug>` | Public list, month calendar, event page and RSVP. An unlisted event opens only by link, with `noindex`. |
-| `/embed/gatherings` | A bare list for framing. Same-site only until a partner origin is added to `frame-ancestors`. |
+| `/events`, `/events/<slug>` | Public list, month calendar, event page and RSVP. An unlisted event opens only by link, with `noindex`. |
+| `/embed/events` | A bare list for framing. Same-site only until a partner origin is added to `frame-ancestors`. |
 | `/book`, `/book/<type>` | Pick a time and book. |
 | `/booking/<uid>?seat=` | The attendee's private manage link: reschedule, cancel, add guests. Never server-rendered, always `noindex`. |
-| `/admin/gatherings`, `/new`, `/<uid>` | Create, edit and cancel events; RSVPs with filter, CSV and totals. |
+| `/admin/events`, `/new`, `/<uid>` | Create, edit and cancel events; RSVPs with filter, CSV and totals. |
 | `/admin/appointments` | Cal bookings and appointment types. Headshot requests stay in `/admin/bookings`. |
 
 Posts go through `/api/gatherings/<uid>/rsvp`, `/api/book` and `/api/booking/<uid>`, each CSRF-checked and rate-limited. Cal

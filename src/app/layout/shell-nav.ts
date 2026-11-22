@@ -20,7 +20,7 @@ export const MY_ACCOUNT: NavItem[] = [
  * The admin's pages: /admin is the overview, and each section has its own page at /admin/<section>. Work that waits on
  * someone comes first. A section's slug is also its card's id, so an old /admin#<slug> link (in sent emails) forwards there.
  */
-export const ADMIN_SECTIONS = ["inbox", "applications", "reviews", "bookings", "members", "newsletter", "spotlight", "gatherings", "appointments", "neighborhoods", "activity"] as const;
+export const ADMIN_SECTIONS = ["inbox", "applications", "reviews", "bookings", "members", "newsletter", "spotlight", "events", "appointments", "neighborhoods", "activity"] as const;
 export type AdminSection = (typeof ADMIN_SECTIONS)[number];
 export const isAdminSection = (s: string): s is AdminSection => (ADMIN_SECTIONS as readonly string[]).includes(s);
 export const ADMIN: NavItem[] = [
@@ -34,7 +34,7 @@ export const ADMIN: NavItem[] = [
   { label: "All members", icon: "badge-check", to: "/admin", section: "members" },
   { label: "Newsletter", icon: "newspaper", to: "/admin", section: "newsletter" },
   { label: "Spotlight answers", icon: "megaphone", to: "/admin", section: "spotlight" },
-  { label: "Events", icon: "calendar-days", to: "/admin", section: "gatherings" },
+  { label: "Events", icon: "calendar-days", to: "/admin", section: "events" },
   { label: "Appointments", icon: "calendar", to: "/admin", section: "appointments" },
   { label: "Neighborhoods", icon: "map-pin", to: "/admin", section: "neighborhoods" },
   { label: "Admin activity", icon: "shield-check", to: "/admin", section: "activity" },

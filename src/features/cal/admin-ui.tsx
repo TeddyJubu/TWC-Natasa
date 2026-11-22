@@ -37,7 +37,7 @@ export function PublicLinkCopy({ slug }: { slug: string }) {
   const { toast, toastNode } = useToast();
   const copy = async () => {
     try {
-      await navigator.clipboard.writeText(`${window.location.origin}/gatherings/${encodeURIComponent(slug)}`);
+      await navigator.clipboard.writeText(`${window.location.origin}/events/${encodeURIComponent(slug)}`);
       toast("Link copied");
     } catch {
       toast("Couldn’t copy. The link is on the event’s public page.");
@@ -67,7 +67,7 @@ export function AdminEventsTable({ events, caption }: { events: AdminCalEvent[];
             return (
               <tr key={e.uid} className="border-b border-app-rule align-middle last:border-0">
                 <th scope="row" className="min-w-52 px-4 py-3 font-normal">
-                  <Link to="/admin/gatherings/$uid" params={{ uid: e.uid }} className="font-gilda text-lg text-ink underline-offset-2 hover:underline">{e.title}</Link>
+                  <Link to="/admin/events/$uid" params={{ uid: e.uid }} className="font-gilda text-lg text-ink underline-offset-2 hover:underline">{e.title}</Link>
                   {e.hidden && <span className="ml-2 align-middle"><Chip>Unlisted</Chip></span>}
                   {e.category && <span className="block text-sm text-app-muted">{e.category}</span>}
                 </th>
@@ -77,7 +77,7 @@ export function AdminEventsTable({ events, caption }: { events: AdminCalEvent[];
                 <td className="px-4 py-3 font-fragment tabular-nums">{e.maybeCount}</td>
                 <td className="px-4 py-3">
                   <div className="flex gap-2">
-                    <Link to="/admin/gatherings/$uid" params={{ uid: e.uid }} className={cn(secondaryButton, "whitespace-nowrap")} aria-label={`Open ${e.title}`}>Open</Link>
+                    <Link to="/admin/events/$uid" params={{ uid: e.uid }} className={cn(secondaryButton, "whitespace-nowrap")} aria-label={`Open ${e.title}`}>Open</Link>
                     <PublicLinkCopy slug={e.slug} />
                   </div>
                 </td>
@@ -90,7 +90,7 @@ export function AdminEventsTable({ events, caption }: { events: AdminCalEvent[];
   );
 }
 
-/** /admin/gatherings. Cal being down shows here and nowhere else. */
+/** /admin/events. Cal being down shows here and nowhere else. */
 export function GatheringsPanel() {
   const [business, setBusiness] = useAdminBusiness();
   const [tab, setTab] = React.useState<EventTab>("upcoming");
@@ -100,8 +100,8 @@ export function GatheringsPanel() {
   const total = events.data?.total ?? 0;
   return (
     <Card
-      id="gatherings" title="Events" subtitle="Everything on the calendar"
-      action={<Link to="/admin/gatherings/new" className={cn(primaryButton, "shrink-0")}>New event</Link>}
+      id="events" title="Events" subtitle="Everything on the calendar"
+      action={<Link to="/admin/events/new" className={cn(primaryButton, "shrink-0")}>New event</Link>}
     >
       <div className="flex flex-wrap items-end justify-between gap-4 px-4 py-3">
         <div role="group" aria-label="Which events" className="flex gap-2">
@@ -144,7 +144,7 @@ export function EventEditorForm({ event, business }: { event?: AdminCalEvent; bu
     onSuccess: async (saved) => {
       await invalidateCal(queryClient);
       toast("Saved");
-      if (!event) void navigate({ to: "/admin/gatherings/$uid", params: { uid: saved.uid } });
+      if (!event) void navigate({ to: "/admin/events/$uid", params: { uid: saved.uid } });
     },
   });
   const submit = () => {
@@ -166,7 +166,7 @@ export function EventEditorForm({ event, business }: { event?: AdminCalEvent; bu
   return (
     <form noValidate aria-label={event ? `Edit ${event.title}` : "New event"} className="flex flex-col gap-5 p-4" onSubmit={(e) => { e.preventDefault(); submit(); }}>
       {text("title", "Title", undefined, true)}
-      {text("slug", "Web address", d.slug ? `/gatherings/${slugify(d.slug)}` : "Made from the title when left blank.")}
+      {text("slug", "Web address", d.slug ? `/events/${slugify(d.slug)}` : "Made from the title when left blank.")}
       <FormField label="Description" hint="Plain text. Line breaks are kept." error={errors.description}>
         {(p) => <textarea {...p} className={fieldClass} maxLength={10_000} value={d.description} onChange={(e) => set("description", e.target.value)} />}
       </FormField>

@@ -1,4 +1,4 @@
-// Event JSON-LD for /gatherings. Pure: only the gathering's own stored facts, never a guessed one.
+// Event JSON-LD for /events. Pure: only the gathering's own stored facts, never a guessed one.
 import { organizationLd } from "@/app/seo";
 import type { CalEvent } from "@/features/cal/types";
 
@@ -20,7 +20,7 @@ export function gatheringsLd(site: string, events: readonly CalEvent[]) {
         endDate: e.endTime,
         eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
         eventStatus: STATUS[e.status],
-        url: `${site}/gatherings/${encodeURIComponent(e.slug)}`,
+        url: `${site}/events/${encodeURIComponent(e.slug)}`,
         ...(e.coverImageUrl?.startsWith("https://") ? { image: e.coverImageUrl } : {}),
         ...(e.location ? { location: { "@type": "Place", name: e.location, address: e.location } } : {}),
         organizer: { "@id": org["@id"] },

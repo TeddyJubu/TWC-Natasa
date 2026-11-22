@@ -206,7 +206,7 @@ function Gatherings({ hood }: { hood: Neighborhood }) {
   const member = viewer.data?.member === true || viewer.data?.admin === true;
   const events = useQuery({ ...eventsQuery, enabled: member });
   const here = (events.data ?? []).filter((e) => e.neighborhood === hood.name).slice(0, MAX_EVENTS);
-  const across = <Link to="/gatherings" className="twc-inlink">See what’s happening across Queens <span aria-hidden>→</span></Link>;
+  const across = <Link to="/events" className="twc-inlink">See what’s happening across Queens <span aria-hidden>→</span></Link>;
   return (
     <section aria-labelledby="hood-gatherings" className="flex flex-col gap-5">
       <h2 id="hood-gatherings" className="twc-h3 text-[clamp(2rem,5vw,2.5rem)]">Coming up in {hood.name}</h2>
@@ -216,7 +216,7 @@ function Gatherings({ hood }: { hood: Neighborhood }) {
             const when = eventWhen(e.starts_at);
             return (
               <li key={e.id}>
-                <Link to="/gatherings" className="flex flex-wrap items-center gap-x-7 gap-y-5 border-y border-sb-ink/15 py-6 text-sb-ink hover:text-sb-ink focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-sb-blue-ink">
+                <Link to="/events" className="flex flex-wrap items-center gap-x-7 gap-y-5 border-y border-sb-ink/15 py-6 text-sb-ink hover:text-sb-ink focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-sb-blue-ink">
                   <span className="flex h-[104px] w-24 shrink-0 flex-col items-center justify-center gap-1.5 rounded-[6px] bg-sb-sun">
                     <span className="font-fragment text-xs uppercase leading-4 tracking-[2px]">{when.month}</span>
                     <span className="font-display text-[40px] leading-none">{when.day}</span>

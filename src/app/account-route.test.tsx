@@ -182,7 +182,7 @@ describe("/account", () => {
     it("gatherings, headshot and introductions show the locked panel, pointing at /join when she hasn't applied", () => {
       renderAccount({ status: "pending", catalogue_number: null });
       expect(locked()).toHaveLength(3);
-      for (const id of ["gatherings", "headshot", "introductions"]) {
+      for (const id of ["events", "headshot", "introductions"]) {
         expect(within(document.getElementById(id)!).getByText("Unlocks once you’re welcomed in")).toBeTruthy();
       }
       expect(joinLinks().map((a) => a.getAttribute("href"))).toEqual(["/join", "/join", "/join"]);
@@ -477,7 +477,7 @@ describe("/account", () => {
       expect(within(nav).getByRole("link", { name: "Profile" }).getAttribute("aria-current")).toBe("location");
       expect(screen.getByRole("button", { name: "Sign out" })).toBeTruthy();
       expect(screen.queryByRole("button", { name: "Open menu" })).toBeNull();
-      expect(document.getElementById("gatherings")).toBeTruthy();
+      expect(document.getElementById("events")).toBeTruthy();
       expect(document.getElementById("introductions")).toBeTruthy();
     });
   });

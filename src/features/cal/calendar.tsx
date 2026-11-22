@@ -15,7 +15,7 @@ export function CalendarEventPill({ event, locale, tabbable, business }: { event
   const time = formatTime({ iso: event.startTime, timeZone: event.timeZone, locale });
   return (
     <Link
-      to="/gatherings/$slug" params={{ slug: event.slug }} {...(business ? { search: { business } } : {})} tabIndex={tabbable ? 0 : -1}
+      to="/events/$slug" params={{ slug: event.slug }} {...(business ? { search: { business } } : {})} tabIndex={tabbable ? 0 : -1}
       className={cn(
         "block truncate rounded-sm bg-sb-mint px-1.5 py-0.5 text-xs text-sb-ink focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-sb-blue-ink",
         event.status === "CANCELLED" && "line-through opacity-70",
@@ -176,7 +176,7 @@ export function MonthCalendar({ month, events, onMonthChange, locale: localeProp
           <ul className="flex flex-col gap-1">
             {openEvents.map((e) => (
               <li key={e.uid}>
-                <Link to="/gatherings/$slug" params={{ slug: e.slug }} {...(business ? { search: { business } } : {})} className="twc-link">
+                <Link to="/events/$slug" params={{ slug: e.slug }} {...(business ? { search: { business } } : {})} className="twc-link">
                   {formatTime({ iso: e.startTime, timeZone: e.timeZone, locale })} · {e.title}{e.status === "CANCELLED" ? " (cancelled)" : ""}
                 </Link>
               </li>

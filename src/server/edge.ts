@@ -14,6 +14,16 @@ export function trailingSlashRedirect(request: Request): Response | null {
   return new Response(null, { status: 308, headers: { Location: pathname.replace(/\/+$/, "") + url.search, "Cache-Control": "public, max-age=3600" } });
 }
 
+/** A 301 from the old /gatherings, /embed/gatherings and /admin/gatherings addresses to /events, path and query kept.
+ * Never the RSVP API, which keeps its address so a page already open can still post. */
+export function renamedPageRedirect(request: Request): Response | null {
+  if (request.method !== "GET" && request.method !== "HEAD") return null;
+  const url = new URL(request.url);
+  const moved = url.pathname.replace(/^\/((?:embed\/|admin\/)?)gatherings(?=\/|$)/i, "/$1events");
+  if (moved === url.pathname) return null;
+  return new Response(null, { status: 301, headers: { Location: moved + url.search, "Cache-Control": "public, max-age=3600" } });
+}
+
 export const IMMUTABLE = "public, max-age=31536000, immutable";
 
 /** Every file Vite writes under /assets/ has its content hash in its name, so a found one may be cached for a year. */

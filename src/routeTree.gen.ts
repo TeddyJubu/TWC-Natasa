@@ -20,7 +20,6 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as FellowshipRouteImport } from './routes/fellowship'
-import { Route as GatheringsRouteImport } from './routes/gatherings'
 import { Route as HealthzRouteImport } from './routes/healthz'
 import { Route as JoinRouteImport } from './routes/join'
 import { Route as MembersRouteImport } from './routes/members'
@@ -49,10 +48,9 @@ import { Route as ApiReviewRouteImport } from './routes/api/review'
 import { Route as ApiSpotlightRouteImport } from './routes/api/spotlight'
 import { Route as BookEventTypeRouteImport } from './routes/book_.$eventType'
 import { Route as BookingUidRouteImport } from './routes/booking.$uid'
-import { Route as EmbedGatheringsRouteImport } from './routes/embed.gatherings'
+import { Route as EmbedEventsRouteImport } from './routes/embed.events'
 import { Route as EventsSlugRouteImport } from './routes/events_.$slug'
 import { Route as FSlugRouteImport } from './routes/f.$slug'
-import { Route as GatheringsSlugRouteImport } from './routes/gatherings_.$slug'
 import { Route as JoinThanksRouteImport } from './routes/join_.thanks'
 import { Route as MediaSplatRouteImport } from './routes/media/$'
 import { Route as MembersSlugRouteImport } from './routes/members_.$slug'
@@ -64,10 +62,10 @@ import { Route as ApiFormsSlugRouteImport } from './routes/api/forms.$slug'
 import { Route as FSlugThanksRouteImport } from './routes/f.$slug_.thanks'
 import { Route as AuthenticatedAdminAdminSectionRouteImport } from './routes/_authenticated/_admin/admin_.$section'
 import { Route as ApiGatheringsUidRsvpRouteImport } from './routes/api/gatherings.$uid.rsvp'
+import { Route as AuthenticatedAdminAdminEventsUidRouteImport } from './routes/_authenticated/_admin/admin_.events.$uid'
+import { Route as AuthenticatedAdminAdminEventsNewRouteImport } from './routes/_authenticated/_admin/admin_.events.new'
 import { Route as AuthenticatedAdminAdminFormsIndexRouteImport } from './routes/_authenticated/_admin/admin_.forms.index'
 import { Route as AuthenticatedAdminAdminFormsFormIdRouteImport } from './routes/_authenticated/_admin/admin_.forms.$formId'
-import { Route as AuthenticatedAdminAdminGatheringsUidRouteImport } from './routes/_authenticated/_admin/admin_.gatherings.$uid'
-import { Route as AuthenticatedAdminAdminGatheringsNewRouteImport } from './routes/_authenticated/_admin/admin_.gatherings.new'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -121,11 +119,6 @@ const FaqRoute = FaqRouteImport.update({
 const FellowshipRoute = FellowshipRouteImport.update({
   id: '/fellowship',
   path: '/fellowship',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GatheringsRoute = GatheringsRouteImport.update({
-  id: '/gatherings',
-  path: '/gatherings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HealthzRoute = HealthzRouteImport.update({
@@ -268,9 +261,9 @@ const BookingUidRoute = BookingUidRouteImport.update({
   path: '/booking/$uid',
   getParentRoute: () => rootRouteImport,
 } as any)
-const EmbedGatheringsRoute = EmbedGatheringsRouteImport.update({
-  id: '/embed/gatherings',
-  path: '/embed/gatherings',
+const EmbedEventsRoute = EmbedEventsRouteImport.update({
+  id: '/embed/events',
+  path: '/embed/events',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EventsSlugRoute = EventsSlugRouteImport.update({
@@ -281,11 +274,6 @@ const EventsSlugRoute = EventsSlugRouteImport.update({
 const FSlugRoute = FSlugRouteImport.update({
   id: '/f/$slug',
   path: '/f/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GatheringsSlugRoute = GatheringsSlugRouteImport.update({
-  id: '/gatherings_/$slug',
-  path: '/gatherings/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const JoinThanksRoute = JoinThanksRouteImport.update({
@@ -344,6 +332,18 @@ const ApiGatheringsUidRsvpRoute = ApiGatheringsUidRsvpRouteImport.update({
   path: '/api/gatherings/$uid/rsvp',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminAdminEventsUidRoute =
+  AuthenticatedAdminAdminEventsUidRouteImport.update({
+    id: '/admin_/events/$uid',
+    path: '/admin/events/$uid',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminAdminEventsNewRoute =
+  AuthenticatedAdminAdminEventsNewRouteImport.update({
+    id: '/admin_/events/new',
+    path: '/admin/events/new',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminAdminFormsIndexRoute =
   AuthenticatedAdminAdminFormsIndexRouteImport.update({
     id: '/admin_/forms/',
@@ -354,18 +354,6 @@ const AuthenticatedAdminAdminFormsFormIdRoute =
   AuthenticatedAdminAdminFormsFormIdRouteImport.update({
     id: '/admin_/forms/$formId',
     path: '/admin/forms/$formId',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminAdminGatheringsUidRoute =
-  AuthenticatedAdminAdminGatheringsUidRouteImport.update({
-    id: '/admin_/gatherings/$uid',
-    path: '/admin/gatherings/$uid',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminAdminGatheringsNewRoute =
-  AuthenticatedAdminAdminGatheringsNewRouteImport.update({
-    id: '/admin_/gatherings/new',
-    path: '/admin/gatherings/new',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
 
@@ -380,7 +368,6 @@ export interface FileRoutesByFullPath {
   '/events': typeof EventsRoute
   '/faq': typeof FaqRoute
   '/fellowship': typeof FellowshipRoute
-  '/gatherings': typeof GatheringsRoute
   '/healthz': typeof HealthzRoute
   '/join': typeof JoinRoute
   '/members': typeof MembersRoute
@@ -408,10 +395,9 @@ export interface FileRoutesByFullPath {
   '/api/spotlight': typeof ApiSpotlightRoute
   '/book/$eventType': typeof BookEventTypeRoute
   '/booking/$uid': typeof BookingUidRoute
-  '/embed/gatherings': typeof EmbedGatheringsRoute
+  '/embed/events': typeof EmbedEventsRoute
   '/events/$slug': typeof EventsSlugRoute
   '/f/$slug': typeof FSlugRoute
-  '/gatherings/$slug': typeof GatheringsSlugRoute
   '/join/thanks': typeof JoinThanksRoute
   '/media/$': typeof MediaSplatRoute
   '/members/$slug': typeof MembersSlugRoute
@@ -423,9 +409,9 @@ export interface FileRoutesByFullPath {
   '/f/$slug/thanks': typeof FSlugThanksRoute
   '/admin/$section': typeof AuthenticatedAdminAdminSectionRoute
   '/api/gatherings/$uid/rsvp': typeof ApiGatheringsUidRsvpRoute
+  '/admin/events/$uid': typeof AuthenticatedAdminAdminEventsUidRoute
+  '/admin/events/new': typeof AuthenticatedAdminAdminEventsNewRoute
   '/admin/forms/$formId': typeof AuthenticatedAdminAdminFormsFormIdRoute
-  '/admin/gatherings/$uid': typeof AuthenticatedAdminAdminGatheringsUidRoute
-  '/admin/gatherings/new': typeof AuthenticatedAdminAdminGatheringsNewRoute
   '/admin/forms/': typeof AuthenticatedAdminAdminFormsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -439,7 +425,6 @@ export interface FileRoutesByTo {
   '/events': typeof EventsRoute
   '/faq': typeof FaqRoute
   '/fellowship': typeof FellowshipRoute
-  '/gatherings': typeof GatheringsRoute
   '/healthz': typeof HealthzRoute
   '/join': typeof JoinRoute
   '/members': typeof MembersRoute
@@ -467,10 +452,9 @@ export interface FileRoutesByTo {
   '/api/spotlight': typeof ApiSpotlightRoute
   '/book/$eventType': typeof BookEventTypeRoute
   '/booking/$uid': typeof BookingUidRoute
-  '/embed/gatherings': typeof EmbedGatheringsRoute
+  '/embed/events': typeof EmbedEventsRoute
   '/events/$slug': typeof EventsSlugRoute
   '/f/$slug': typeof FSlugRoute
-  '/gatherings/$slug': typeof GatheringsSlugRoute
   '/join/thanks': typeof JoinThanksRoute
   '/media/$': typeof MediaSplatRoute
   '/members/$slug': typeof MembersSlugRoute
@@ -482,9 +466,9 @@ export interface FileRoutesByTo {
   '/f/$slug/thanks': typeof FSlugThanksRoute
   '/admin/$section': typeof AuthenticatedAdminAdminSectionRoute
   '/api/gatherings/$uid/rsvp': typeof ApiGatheringsUidRsvpRoute
+  '/admin/events/$uid': typeof AuthenticatedAdminAdminEventsUidRoute
+  '/admin/events/new': typeof AuthenticatedAdminAdminEventsNewRoute
   '/admin/forms/$formId': typeof AuthenticatedAdminAdminFormsFormIdRoute
-  '/admin/gatherings/$uid': typeof AuthenticatedAdminAdminGatheringsUidRoute
-  '/admin/gatherings/new': typeof AuthenticatedAdminAdminGatheringsNewRoute
   '/admin/forms': typeof AuthenticatedAdminAdminFormsIndexRoute
 }
 export interface FileRoutesById {
@@ -500,7 +484,6 @@ export interface FileRoutesById {
   '/events': typeof EventsRoute
   '/faq': typeof FaqRoute
   '/fellowship': typeof FellowshipRoute
-  '/gatherings': typeof GatheringsRoute
   '/healthz': typeof HealthzRoute
   '/join': typeof JoinRoute
   '/members': typeof MembersRoute
@@ -529,10 +512,9 @@ export interface FileRoutesById {
   '/api/spotlight': typeof ApiSpotlightRoute
   '/book_/$eventType': typeof BookEventTypeRoute
   '/booking/$uid': typeof BookingUidRoute
-  '/embed/gatherings': typeof EmbedGatheringsRoute
+  '/embed/events': typeof EmbedEventsRoute
   '/events_/$slug': typeof EventsSlugRoute
   '/f/$slug': typeof FSlugRoute
-  '/gatherings_/$slug': typeof GatheringsSlugRoute
   '/join_/thanks': typeof JoinThanksRoute
   '/media/$': typeof MediaSplatRoute
   '/members_/$slug': typeof MembersSlugRoute
@@ -544,9 +526,9 @@ export interface FileRoutesById {
   '/f/$slug_/thanks': typeof FSlugThanksRoute
   '/_authenticated/_admin/admin_/$section': typeof AuthenticatedAdminAdminSectionRoute
   '/api/gatherings/$uid/rsvp': typeof ApiGatheringsUidRsvpRoute
+  '/_authenticated/_admin/admin_/events/$uid': typeof AuthenticatedAdminAdminEventsUidRoute
+  '/_authenticated/_admin/admin_/events/new': typeof AuthenticatedAdminAdminEventsNewRoute
   '/_authenticated/_admin/admin_/forms/$formId': typeof AuthenticatedAdminAdminFormsFormIdRoute
-  '/_authenticated/_admin/admin_/gatherings/$uid': typeof AuthenticatedAdminAdminGatheringsUidRoute
-  '/_authenticated/_admin/admin_/gatherings/new': typeof AuthenticatedAdminAdminGatheringsNewRoute
   '/_authenticated/_admin/admin_/forms/': typeof AuthenticatedAdminAdminFormsIndexRoute
 }
 export interface FileRouteTypes {
@@ -562,7 +544,6 @@ export interface FileRouteTypes {
     | '/events'
     | '/faq'
     | '/fellowship'
-    | '/gatherings'
     | '/healthz'
     | '/join'
     | '/members'
@@ -590,10 +571,9 @@ export interface FileRouteTypes {
     | '/api/spotlight'
     | '/book/$eventType'
     | '/booking/$uid'
-    | '/embed/gatherings'
+    | '/embed/events'
     | '/events/$slug'
     | '/f/$slug'
-    | '/gatherings/$slug'
     | '/join/thanks'
     | '/media/$'
     | '/members/$slug'
@@ -605,9 +585,9 @@ export interface FileRouteTypes {
     | '/f/$slug/thanks'
     | '/admin/$section'
     | '/api/gatherings/$uid/rsvp'
+    | '/admin/events/$uid'
+    | '/admin/events/new'
     | '/admin/forms/$formId'
-    | '/admin/gatherings/$uid'
-    | '/admin/gatherings/new'
     | '/admin/forms/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -621,7 +601,6 @@ export interface FileRouteTypes {
     | '/events'
     | '/faq'
     | '/fellowship'
-    | '/gatherings'
     | '/healthz'
     | '/join'
     | '/members'
@@ -649,10 +628,9 @@ export interface FileRouteTypes {
     | '/api/spotlight'
     | '/book/$eventType'
     | '/booking/$uid'
-    | '/embed/gatherings'
+    | '/embed/events'
     | '/events/$slug'
     | '/f/$slug'
-    | '/gatherings/$slug'
     | '/join/thanks'
     | '/media/$'
     | '/members/$slug'
@@ -664,9 +642,9 @@ export interface FileRouteTypes {
     | '/f/$slug/thanks'
     | '/admin/$section'
     | '/api/gatherings/$uid/rsvp'
+    | '/admin/events/$uid'
+    | '/admin/events/new'
     | '/admin/forms/$formId'
-    | '/admin/gatherings/$uid'
-    | '/admin/gatherings/new'
     | '/admin/forms'
   id:
     | '__root__'
@@ -681,7 +659,6 @@ export interface FileRouteTypes {
     | '/events'
     | '/faq'
     | '/fellowship'
-    | '/gatherings'
     | '/healthz'
     | '/join'
     | '/members'
@@ -710,10 +687,9 @@ export interface FileRouteTypes {
     | '/api/spotlight'
     | '/book_/$eventType'
     | '/booking/$uid'
-    | '/embed/gatherings'
+    | '/embed/events'
     | '/events_/$slug'
     | '/f/$slug'
-    | '/gatherings_/$slug'
     | '/join_/thanks'
     | '/media/$'
     | '/members_/$slug'
@@ -725,9 +701,9 @@ export interface FileRouteTypes {
     | '/f/$slug_/thanks'
     | '/_authenticated/_admin/admin_/$section'
     | '/api/gatherings/$uid/rsvp'
+    | '/_authenticated/_admin/admin_/events/$uid'
+    | '/_authenticated/_admin/admin_/events/new'
     | '/_authenticated/_admin/admin_/forms/$formId'
-    | '/_authenticated/_admin/admin_/gatherings/$uid'
-    | '/_authenticated/_admin/admin_/gatherings/new'
     | '/_authenticated/_admin/admin_/forms/'
   fileRoutesById: FileRoutesById
 }
@@ -743,7 +719,6 @@ export interface RootRouteChildren {
   EventsRoute: typeof EventsRoute
   FaqRoute: typeof FaqRoute
   FellowshipRoute: typeof FellowshipRoute
-  GatheringsRoute: typeof GatheringsRoute
   HealthzRoute: typeof HealthzRoute
   JoinRoute: typeof JoinRoute
   MembersRoute: typeof MembersRoute
@@ -768,10 +743,9 @@ export interface RootRouteChildren {
   ApiSpotlightRoute: typeof ApiSpotlightRoute
   BookEventTypeRoute: typeof BookEventTypeRoute
   BookingUidRoute: typeof BookingUidRoute
-  EmbedGatheringsRoute: typeof EmbedGatheringsRoute
+  EmbedEventsRoute: typeof EmbedEventsRoute
   EventsSlugRoute: typeof EventsSlugRoute
   FSlugRoute: typeof FSlugRoute
-  GatheringsSlugRoute: typeof GatheringsSlugRoute
   JoinThanksRoute: typeof JoinThanksRoute
   MediaSplatRoute: typeof MediaSplatRoute
   MembersSlugRoute: typeof MembersSlugRoute
@@ -860,13 +834,6 @@ declare module '@tanstack/react-router' {
       path: '/fellowship'
       fullPath: '/fellowship'
       preLoaderRoute: typeof FellowshipRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/gatherings': {
-      id: '/gatherings'
-      path: '/gatherings'
-      fullPath: '/gatherings'
-      preLoaderRoute: typeof GatheringsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/healthz': {
@@ -1065,11 +1032,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BookingUidRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/embed/gatherings': {
-      id: '/embed/gatherings'
-      path: '/embed/gatherings'
-      fullPath: '/embed/gatherings'
-      preLoaderRoute: typeof EmbedGatheringsRouteImport
+    '/embed/events': {
+      id: '/embed/events'
+      path: '/embed/events'
+      fullPath: '/embed/events'
+      preLoaderRoute: typeof EmbedEventsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/events_/$slug': {
@@ -1084,13 +1051,6 @@ declare module '@tanstack/react-router' {
       path: '/f/$slug'
       fullPath: '/f/$slug'
       preLoaderRoute: typeof FSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/gatherings_/$slug': {
-      id: '/gatherings_/$slug'
-      path: '/gatherings/$slug'
-      fullPath: '/gatherings/$slug'
-      preLoaderRoute: typeof GatheringsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/join_/thanks': {
@@ -1170,6 +1130,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiGatheringsUidRsvpRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/_admin/admin_/events/$uid': {
+      id: '/_authenticated/_admin/admin_/events/$uid'
+      path: '/admin/events/$uid'
+      fullPath: '/admin/events/$uid'
+      preLoaderRoute: typeof AuthenticatedAdminAdminEventsUidRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/_admin/admin_/events/new': {
+      id: '/_authenticated/_admin/admin_/events/new'
+      path: '/admin/events/new'
+      fullPath: '/admin/events/new'
+      preLoaderRoute: typeof AuthenticatedAdminAdminEventsNewRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/_admin/admin_/forms/': {
       id: '/_authenticated/_admin/admin_/forms/'
       path: '/admin/forms'
@@ -1184,29 +1158,15 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAdminFormsFormIdRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
-    '/_authenticated/_admin/admin_/gatherings/$uid': {
-      id: '/_authenticated/_admin/admin_/gatherings/$uid'
-      path: '/admin/gatherings/$uid'
-      fullPath: '/admin/gatherings/$uid'
-      preLoaderRoute: typeof AuthenticatedAdminAdminGatheringsUidRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/_admin/admin_/gatherings/new': {
-      id: '/_authenticated/_admin/admin_/gatherings/new'
-      path: '/admin/gatherings/new'
-      fullPath: '/admin/gatherings/new'
-      preLoaderRoute: typeof AuthenticatedAdminAdminGatheringsNewRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
   }
 }
 
 interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminAdminRoute: typeof AuthenticatedAdminAdminRoute
   AuthenticatedAdminAdminSectionRoute: typeof AuthenticatedAdminAdminSectionRoute
+  AuthenticatedAdminAdminEventsUidRoute: typeof AuthenticatedAdminAdminEventsUidRoute
+  AuthenticatedAdminAdminEventsNewRoute: typeof AuthenticatedAdminAdminEventsNewRoute
   AuthenticatedAdminAdminFormsFormIdRoute: typeof AuthenticatedAdminAdminFormsFormIdRoute
-  AuthenticatedAdminAdminGatheringsUidRoute: typeof AuthenticatedAdminAdminGatheringsUidRoute
-  AuthenticatedAdminAdminGatheringsNewRoute: typeof AuthenticatedAdminAdminGatheringsNewRoute
   AuthenticatedAdminAdminFormsIndexRoute: typeof AuthenticatedAdminAdminFormsIndexRoute
 }
 
@@ -1214,12 +1174,12 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
   {
     AuthenticatedAdminAdminRoute: AuthenticatedAdminAdminRoute,
     AuthenticatedAdminAdminSectionRoute: AuthenticatedAdminAdminSectionRoute,
+    AuthenticatedAdminAdminEventsUidRoute:
+      AuthenticatedAdminAdminEventsUidRoute,
+    AuthenticatedAdminAdminEventsNewRoute:
+      AuthenticatedAdminAdminEventsNewRoute,
     AuthenticatedAdminAdminFormsFormIdRoute:
       AuthenticatedAdminAdminFormsFormIdRoute,
-    AuthenticatedAdminAdminGatheringsUidRoute:
-      AuthenticatedAdminAdminGatheringsUidRoute,
-    AuthenticatedAdminAdminGatheringsNewRoute:
-      AuthenticatedAdminAdminGatheringsNewRoute,
     AuthenticatedAdminAdminFormsIndexRoute:
       AuthenticatedAdminAdminFormsIndexRoute,
   }
@@ -1258,7 +1218,6 @@ const rootRouteChildren: RootRouteChildren = {
   EventsRoute: EventsRoute,
   FaqRoute: FaqRoute,
   FellowshipRoute: FellowshipRoute,
-  GatheringsRoute: GatheringsRoute,
   HealthzRoute: HealthzRoute,
   JoinRoute: JoinRoute,
   MembersRoute: MembersRoute,
@@ -1283,10 +1242,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiSpotlightRoute: ApiSpotlightRoute,
   BookEventTypeRoute: BookEventTypeRoute,
   BookingUidRoute: BookingUidRoute,
-  EmbedGatheringsRoute: EmbedGatheringsRoute,
+  EmbedEventsRoute: EmbedEventsRoute,
   EventsSlugRoute: EventsSlugRoute,
   FSlugRoute: FSlugRoute,
-  GatheringsSlugRoute: GatheringsSlugRoute,
   JoinThanksRoute: JoinThanksRoute,
   MediaSplatRoute: MediaSplatRoute,
   MembersSlugRoute: MembersSlugRoute,

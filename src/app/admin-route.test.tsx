@@ -153,7 +153,7 @@ describe("/admin", () => {
       expect(screen.queryByRole("region", { name: "Applications" })).toBeNull();
       const tile = (name: string) => within(screen.getByRole("main")).getByRole("link", { name }).closest("article")!;
       for (const [name, href] of [["Inbox", "/admin/inbox"], ["Applications", "/admin/applications"], ["Member reviews", "/admin/reviews"], ["Headshot bookings", "/admin/bookings"],
-        ["All members", "/admin/members"], ["Newsletter", "/admin/newsletter"], ["Spotlight answers", "/admin/spotlight"], ["Events", "/admin/gatherings"],
+        ["All members", "/admin/members"], ["Newsletter", "/admin/newsletter"], ["Spotlight answers", "/admin/spotlight"], ["Events", "/admin/events"],
         ["Neighborhoods", "/admin/neighborhoods"], ["Forms", "/admin/forms"]]) {
         expect(within(tile(name)).getByRole("link", { name }).getAttribute("href")).toBe(href);
       }

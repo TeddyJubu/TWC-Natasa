@@ -43,7 +43,7 @@ export function RsvpConfirmation({ event, rsvp, onChange }: { event: CalEvent; r
         <AddToCalendar entry={{
           uid: event.uid, title: event.title, description: event.description, location: event.location,
           startTime: event.startTime, endTime: event.endTime,
-          url: typeof window === "undefined" ? undefined : `${window.location.origin}/gatherings/${encodeURIComponent(event.slug)}`,
+          url: typeof window === "undefined" ? undefined : `${window.location.origin}/events/${encodeURIComponent(event.slug)}`,
         }} />
       )}
       <button type="button" className="twc-btn twc-btn--outline twc-btn--sm w-fit" onClick={onChange}>Change my RSVP</button>

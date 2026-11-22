@@ -110,7 +110,7 @@ function DateTile({ event, className }: { event: CalEvent; className?: string })
 }
 
 const eventLink = (event: CalEvent, business?: string) => ({
-  to: "/gatherings/$slug" as const, params: { slug: event.slug }, ...(business ? { search: { business } } : {}),
+  to: "/events/$slug" as const, params: { slug: event.slug }, ...(business ? { search: { business } } : {}),
 });
 
 export function EventCard({ event, business }: { event: CalEvent; business?: string }) {
@@ -195,14 +195,14 @@ export function LoadMore({ onClick, busy, shown, total }: { onClick: () => void;
   );
 }
 
-/** The next few gatherings, for /embed/gatherings. Links open the site in a new tab, out of the frame. */
+/** The next few gatherings, for /embed/events. Links open the site in a new tab, out of the frame. */
 export function EventsWidget({ events }: { events: CalEvent[] }) {
   if (!events.length) return <p className="text-sb-muted">No events on the calendar yet.</p>;
   return (
     <ul className="flex flex-col">
       {events.map((e) => (
         <li key={e.uid} className="flex flex-col gap-1 border-b border-sb-ink/15 py-3 last:border-0">
-          <a href={`/gatherings/${encodeURIComponent(e.slug)}`} target="_blank" rel="noopener" className="twc-link font-display text-xl">
+          <a href={`/events/${encodeURIComponent(e.slug)}`} target="_blank" rel="noopener" className="twc-link font-display text-xl">
             {e.title}<span className="sr-only"> (opens in a new tab)</span>
           </a>
           <EventDateTime event={e} />
@@ -215,7 +215,7 @@ export function EventsWidget({ events }: { events: CalEvent[] }) {
 export function EventHero({ event }: { event: CalEvent }) {
   return (
     <header className="twc-wrap flex flex-col gap-5 pt-14 pb-8">
-      <Link to="/gatherings" className="twc-link inline-flex w-fit items-center gap-1.5 text-sm">
+      <Link to="/events" className="twc-link inline-flex w-fit items-center gap-1.5 text-sm">
         <Icon name="arrowLeft" className="size-3.5" /> All events
       </Link>
       <div className="flex flex-wrap items-center gap-2">

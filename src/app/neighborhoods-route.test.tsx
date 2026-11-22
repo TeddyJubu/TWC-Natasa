@@ -175,7 +175,7 @@ describe("/neighborhoods/:slug", () => {
     // Never the members-only directory, and no gatherings call for a visitor.
     expect(fake.calls).not.toContainEqual(["directoryFn"]);
     expect(fake.calls.some(([name]) => name === "eventsFn")).toBe(false);
-    expect(screen.getByRole("link", { name: /across Queens/ }).getAttribute("href")).toBe("/gatherings");
+    expect(screen.getByRole("link", { name: /across Queens/ }).getAttribute("href")).toBe("/events");
   });
 
   it("renders the loader's public cards without a client fetch (server-rendered)", async () => {

@@ -24,7 +24,8 @@ function AdminPage() {
   const { user } = Route.useRouteContext();
   const navigate = useNavigate();
   React.useEffect(() => {
-    const hash = window.location.hash.slice(1);
+    const raw = window.location.hash.slice(1);
+    const hash = raw === "gatherings" ? "events" : raw; // the section's old name, in sent emails
     if (isAdminSection(hash)) void navigate({ to: "/admin/$section", params: { section: hash }, replace: true });
   }, [navigate]);
   return (
