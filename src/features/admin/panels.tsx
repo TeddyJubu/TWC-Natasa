@@ -19,8 +19,9 @@ import {
 import {
   LogoNotSavedError, useAddLoggedAction, useAddNote, useArchiveMessage, useCreateNeighborhood, useDeleteNote,
   useDownloadCsv, useEditLoggedAction, useRemoveLoggedAction, useRestoreLoggedAction, useReviewApplication,
-  useSetBookingStatus, useSetMemberNeighborhood, useSetMemberStatus, useUpdateNeighborhood, type LoggedActionInput, type NoteInput,
+  useSetBookingStatus, useSetMemberNeighborhood, useSetMemberStatus, useUpdateNeighborhood, type DeclineNotice, type LoggedActionInput, type NoteInput,
 } from "./mutations";
+import { DeclineDialog } from "./DeclineDialog";
 import { useWaiting } from "./waiting";
 import { AREAS } from "@/features/applications/schema";
 import type { ApprovalNotice } from "./approval-email";
@@ -82,9 +83,12 @@ function MutationError({ mutation }: { mutation: { isError: boolean; error: unkn
   return mutation.isError ? <p role="alert" className="text-sm text-danger">{errorMessage(mutation.error)}</p> : null;
 }
 
-/** After an approval: whether the welcome email went out. */
-function EmailNotice({ notice }: { notice: ApprovalNotice | null | undefined }) {
+/** After an approval: whether the welcome email went out. After a decline with the email: the same, as an alert if it failed. */
+function EmailNotice({ notice }: { notice: ApprovalNotice | DeclineNotice | null | undefined }) {
   if (!notice) return null;
+  if ("decline" in notice) {
+    return <p role={notice.ok ? "status" : "alert"} className={cn("text-sm", notice.ok ? "text-app-muted" : "text-danger")}>{notice.message}</p>;
+  }
   return (
     <p role="status" className="text-sm text-app-muted">
       {notice.sent ? "Welcome email sent" : `Approved — email not sent (${notice.reason})`}
@@ -108,10 +112,15 @@ function decisionConfirm(label: string, status: string, subject: string): string
   return `${label} ${subject}?`;
 }
 
-/** Buttons for every outcome except the current one; confirm first (CRM-071); disabled while a change is in flight. */
-function Decisions<S extends string>({ current, options, subject, pending, onDecide }: {
-  current: string; options: { status: S; label: string }[]; subject: string; pending: boolean; onDecide: (status: S) => void;
+/**
+ * Buttons for every outcome except the current one; confirm first (CRM-071); disabled while a change is in flight.
+ * With `declineTo` (a person, not a booking), Decline opens the dialog that shows the email and makes sending it a choice.
+ */
+function Decisions<S extends string>({ current, options, subject, pending, onDecide, declineTo }: {
+  current: string; options: { status: S; label: string }[]; subject: string; pending: boolean;
+  onDecide: (status: S, sendDeclineEmail?: boolean) => void; declineTo?: { name: string; email: string | null };
 }) {
+  const [declining, setDeclining] = React.useState<S | null>(null);
   return (
     <div className="flex flex-wrap gap-2.5">
       {options.filter((o) => o.status !== current).map((o, i) => (
@@ -122,11 +131,20 @@ function Decisions<S extends string>({ current, options, subject, pending, onDec
           className={i === 0 && o.status !== "declined" ? primaryButton : secondaryButton}
           aria-label={`${o.label} ${subject}`}
           disabled={pending}
-          onClick={() => { if (window.confirm(decisionConfirm(o.label, o.status, subject))) onDecide(o.status); }}
+          onClick={() => {
+            if (declineTo && o.status === "declined") setDeclining(o.status);
+            else if (window.confirm(decisionConfirm(o.label, o.status, subject))) onDecide(o.status);
+          }}
         >
           {o.label}
         </button>
       ))}
+      {declining && declineTo && (
+        <DeclineDialog
+          subject={subject} name={declineTo.name} email={declineTo.email} onClose={() => setDeclining(null)}
+          onDecline={(sendEmail) => { setDeclining(null); onDecide(declining, sendEmail); }}
+        />
+      )}
     </div>
   );
 }
@@ -520,7 +538,8 @@ function ApplicationRow({ app, members, notes, actions }: {
         options={reviewOptions(app.status)}
         subject={app.full_name}
         pending={review.isPending}
-        onDecide={(status) => review.mutate({ id: app.id, status })}
+        declineTo={{ name: app.full_name, email: app.email }}
+        onDecide={(status, sendDeclineEmail) => review.mutate({ id: app.id, status, sendDeclineEmail })}
       />
     </Item>
   );
@@ -625,7 +644,8 @@ function MemberRow({ member, link, spotlight, notes, actions, app }: {
             options={reviewOptions(member.status)}
             subject={name}
             pending={setStatus.isPending}
-            onDecide={(status) => setStatus.mutate({ id: member.id, status })}
+            declineTo={{ name: app?.full_name ?? member.full_name, email: app?.email ?? member.email ?? null }}
+            onDecide={(status, sendDeclineEmail) => setStatus.mutate({ id: member.id, status, sendDeclineEmail })}
           />
           <MutationError mutation={setStatus} />
           <EmailNotice notice={setStatus.data} />

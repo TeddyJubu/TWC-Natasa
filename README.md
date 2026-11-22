@@ -92,8 +92,10 @@ In a sandbox, bun may need writable temp and cache directories, e.g.
 
 Emails (all through `sendEmail()` in `src/server/email.ts`, Cloudflare Email Sending): the email-verification link
 on sign-up, the password-reset link, and the welcome email when an admin approves an application (or a member,
-via her newest application). Declines never send. Without the two `CF_EMAIL_*` values nothing is sent and `/admin`
-says "Approved — email not sent (email isn’t set up)". Every admin also gets an email when a contact message, a
+via her newest application). A decline sends a kind email only when the admin picks **Decline and send email** in
+the decline dialog, which shows the exact message; **Decline without email** and undo-decline send nothing, and a
+failed send keeps the decline and tells the admin the person hasn’t been told. Without the two `CF_EMAIL_*` values
+nothing is sent and `/admin` says so ("Approved — email not sent (email isn’t set up)"). Every admin also gets an email when a contact message, a
 partnership inquiry or a member review arrives (the review alert names the member and their choice, never the answers).
 
 Newsletter: `subscribeIfConsented()` (`src/server/beehiiv.ts`) is the only way to Beehiiv. It needs an explicit `true`,

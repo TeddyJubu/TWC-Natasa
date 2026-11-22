@@ -7,23 +7,42 @@ import { emailApproval, type ApprovalNotice } from "./approval-email";
 import { postApi } from "@/app/api";
 import { LOGO_RESIZE, resizeImage } from "@/app/resize-image";
 import {
-  addLoggedActionFn, addNoteFn, adminCsvFn, archiveMessageFn, deleteNoteFn, createNeighborhoodFn, 
+  addLoggedActionFn, addNoteFn, adminCsvFn, archiveMessageFn, declineAndEmailFn, deleteNoteFn, createNeighborhoodFn,
   editLoggedActionFn, removeLoggedActionFn, restoreLoggedActionFn, reviewApplicationFn, setBookingStatusFn,
   setMemberNeighborhoodFn, setMemberStatusFn, updateNeighborhoodFn,
 } from "./fns";
 import type { LoggedActionKind } from "./format";
 
-export type Review = { id: string; status: MembershipStatus };
+/** `sendDeclineEmail` is the admin's explicit choice in the decline dialog; nothing else sends it. */
+export type Review = { id: string; status: MembershipStatus; sendDeclineEmail?: boolean };
 export type BookingReview = { id: string; status: "confirmed" | "declined" };
+/** What /admin shows after a decline with the email; `ok` is false when the person still hasn't been told. */
+export type DeclineNotice = { decline: true; ok: boolean; message: string };
+
+const DECLINE_MESSAGES: Record<"sent" | "already-declined" | "no-address" | "not-configured" | "send-failed", string> = {
+  sent: "Declined. The email was sent.",
+  "already-declined": "Already declined, so no email was sent.",
+  "no-address": "Declined, but there’s no email address on file, so this person hasn’t been told.",
+  "not-configured": "Declined, but email isn’t set up, so this person hasn’t been told.",
+  "send-failed": "Declined, but the email failed to send, so this person hasn’t been told.",
+};
+
+async function declineWithEmail(kind: "application" | "member", id: string): Promise<DeclineNotice> {
+  const result = await declineAndEmailFn({ data: { kind, id } });
+  const key = result.sent ? "sent" : result.reason;
+  return { decline: true, ok: key === "sent" || key === "already-declined", message: DECLINE_MESSAGES[key] };
+}
 
 const invalidate = (qc: QueryClient, keys: QueryKey[]) =>
   Promise.all(keys.map((queryKey) => qc.invalidateQueries({ queryKey })));
 
 /**
  * The server syncs the linked profile and records reviewed_at / reviewed_by.
- * An approval then sends the welcome email; decline and undo-decline (back to pending) send nothing.
+ * An approval then sends the welcome email. A decline sends only on the admin's explicit choice; undo-decline
+ * (back to pending) sends nothing.
  */
-export async function reviewApplication({ id, status }: Review): Promise<ApprovalNotice | null> {
+export async function reviewApplication({ id, status, sendDeclineEmail }: Review): Promise<ApprovalNotice | DeclineNotice | null> {
+  if (status === "declined" && sendDeclineEmail) return declineWithEmail("application", id);
   await reviewApplicationFn({ data: { id, status } });
   return status === "approved" ? emailApproval(id) : null;
 }
@@ -32,7 +51,8 @@ export async function reviewApplication({ id, status }: Review): Promise<Approva
  * Admins set the profile status directly; the server gives the newest application the same decision
  * (approve / decline / undo-decline → pending) and returns its id, so an approval can email that applicant.
  */
-export async function setMemberStatus({ id, status }: Review): Promise<ApprovalNotice | null> {
+export async function setMemberStatus({ id, status, sendDeclineEmail }: Review): Promise<ApprovalNotice | DeclineNotice | null> {
+  if (status === "declined" && sendDeclineEmail) return declineWithEmail("member", id);
   const newest = await setMemberStatusFn({ data: { id, status } });
   if (status !== "approved") return null;
   return newest ? emailApproval(newest) : { sent: false, reason: "no application on file" };

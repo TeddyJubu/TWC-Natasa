@@ -38,6 +38,14 @@ export const setMemberStatusFn = createServerFn({ method: "POST" })
     return serve((c) => m.setMemberStatus(c, data));
   });
 
+/** Declines and sends the kind email, only when the admin chose to send it. */
+export const declineAndEmailFn = createServerFn({ method: "POST" })
+  .validator(pass<{ kind: "application" | "member"; id: string }>)
+  .handler(async ({ data }) => {
+    const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./decline-email.server")]);
+    return serve((c) => m.declineAndEmail(c, data));
+  });
+
 export const setMemberNeighborhoodFn = createServerFn({ method: "POST" })
   .validator(pass<{ id: string; neighborhood: string | null }>)
   .handler(async ({ data }) => {

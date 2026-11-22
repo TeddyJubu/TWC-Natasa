@@ -70,6 +70,22 @@ describe("admin mutations", () => {
     expect(emailApproval).not.toHaveBeenCalled();
   });
 
+  it.each([
+    ["application", reviewApplicationMutation],
+    ["member", setMemberStatusMutation],
+  ] as const)("%s: only the admin's explicit choice takes the sending path", async (kind, mutation) => {
+    const { qc, spy } = setup();
+    fake.results = [{ sent: false, reason: "send-failed" }];
+    expect(await new MutationObserver(qc, mutation(qc)).mutate({ id: "x1", status: "declined", sendDeclineEmail: true }))
+      .toEqual({ decline: true, ok: false, message: "Declined, but the email failed to send, so this person hasn’t been told." });
+    expect(fake.calls).toEqual([["declineAndEmailFn", { kind, id: "x1" }]]);
+    expect(keys(spy)).toContainEqual(["admin", "applications"]);
+    fake.reset();
+    fake.results = [null];
+    await new MutationObserver(qc, mutation(qc)).mutate({ id: "x1", status: "pending", sendDeclineEmail: true });
+    expect(fake.calls.map(([name]) => name)).not.toContain("declineAndEmailFn");
+  });
+
   it("undo-decline (back to pending) sends no email", async () => {
     const { qc } = setup();
     fake.results = [null];

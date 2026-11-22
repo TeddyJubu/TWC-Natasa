@@ -3,7 +3,7 @@ import * as React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { isRedirect } from "@tanstack/react-router";
-import { renderWithQueries } from "@/test/dom";
+import { renderWithQueries, stubDialog } from "@/test/dom";
 import { fake } from "@/test/fake-fns";
 
 vi.mock("@/features/admin/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
@@ -591,15 +591,90 @@ describe("/admin", () => {
       expect((await within(row).findByRole("status")).textContent).toBe("Approved — email not sent (email isn’t set up)");
     });
 
-    it("never emails on a decline", async () => {
-      fake.results = [[application("a1", "Pia Pending")]];
-      renderAdmin({ applications: FETCH });
-      const row = await within(card("Applications")).findByRole("article");
-      fireEvent.click(within(row).getByRole("button", { name: /decline/i }));
-      await waitFor(() => expect(fake.calls).toContainEqual(["reviewApplicationFn", { id: "a1", status: "declined" }]));
-      await settle();
-      expect(emailApproval).not.toHaveBeenCalled();
-      expect(within(row).queryByRole("status")).toBeNull();
+    describe("declining", () => {
+      let restore: () => void;
+      beforeEach(() => { restore = stubDialog(); });
+      afterEach(() => restore());
+      const openDecline = async () => {
+        fake.results = [[application("a1", "Pia Pending", { email: "pia@x.test" })]];
+        renderAdmin({ applications: FETCH });
+        const row = await within(card("Applications")).findByRole("article");
+        fireEvent.click(within(row).getByRole("button", { name: "Decline Pia Pending" }));
+        return { row, dialog: within(row).getByRole("dialog", { name: "Decline Pia Pending?" }) };
+      };
+      const sent = () => fake.calls.filter((c) => c[0] === "declineAndEmailFn");
+
+      it("shows the exact email and who it goes to, before anything changes", async () => {
+        const { dialog } = await openDecline();
+        expect(within(dialog).getByText("pia@x.test")).toBeTruthy();
+        expect(within(dialog).getByText("About your application to The Women’s Collective")).toBeTruthy();
+        expect(dialog.textContent).toMatch(/Dear Pia Pending,/);
+        expect(dialog.textContent).toMatch(/aren’t able to offer you a membership/);
+        expect(confirm).not.toHaveBeenCalled();
+        expect(fake.calls.some((c) => c[0] === "reviewApplicationFn")).toBe(false);
+        expect(sent()).toEqual([]);
+      });
+
+      it("Keep as is changes nothing and sends nothing", async () => {
+        const { row, dialog } = await openDecline();
+        fireEvent.click(within(dialog).getByRole("button", { name: "Keep as is" }));
+        expect(within(row).queryByRole("dialog")).toBeNull();
+        await settle();
+        expect(fake.calls.some((c) => c[0] === "reviewApplicationFn")).toBe(false);
+        expect(sent()).toEqual([]);
+      });
+
+      it("Decline without email declines and sends nothing", async () => {
+        const { row, dialog } = await openDecline();
+        fireEvent.click(within(dialog).getByRole("button", { name: "Decline without email" }));
+        await waitFor(() => expect(fake.calls).toContainEqual(["reviewApplicationFn", { id: "a1", status: "declined" }]));
+        await settle();
+        expect(sent()).toEqual([]);
+        expect(emailApproval).not.toHaveBeenCalled();
+        expect(within(row).queryByRole("status")).toBeNull();
+      });
+
+      it("Decline and send email goes through the sending path and says it was sent", async () => {
+        const { row, dialog } = await openDecline();
+        fake.results = [{ sent: true }];
+        fireEvent.click(within(dialog).getByRole("button", { name: "Decline and send email" }));
+        expect((await within(row).findByRole("status")).textContent).toBe("Declined. The email was sent.");
+        expect(sent()).toEqual([["declineAndEmailFn", { kind: "application", id: "a1" }]]);
+        expect(fake.calls.some((c) => c[0] === "reviewApplicationFn")).toBe(false);
+      });
+
+      it("a failed send is an alert that says the person hasn't been told", async () => {
+        const { row, dialog } = await openDecline();
+        fake.results = [{ sent: false, reason: "send-failed" }];
+        fireEvent.click(within(dialog).getByRole("button", { name: "Decline and send email" }));
+        expect((await within(row).findByRole("alert")).textContent).toBe("Declined, but the email failed to send, so this person hasn’t been told.");
+      });
+
+      it("members: the same choice, to her newest application's address", async () => {
+        renderAdmin({
+          members: [member("u2", "Lena Ortiz", { status: "pending", catalogue_number: null, email: "lena@x.test" })],
+          applications: [application("a2", "Lena O.", { email: "applied@x.test", user_id: "u2" })],
+        });
+        const row = screen.getByRole("row", { name: /Lena Ortiz/ });
+        fireEvent.click(within(row).getByRole("button", { name: "Decline Lena Ortiz" }));
+        const dialog = within(row).getByRole("dialog", { name: "Decline Lena Ortiz?" });
+        expect(within(dialog).getByText("applied@x.test")).toBeTruthy();
+        expect(dialog.textContent).toMatch(/Dear Lena O\.,/);
+        fake.results = [{ sent: true }];
+        fireEvent.click(within(dialog).getByRole("button", { name: "Decline and send email" }));
+        await waitFor(() => expect(sent()).toEqual([["declineAndEmailFn", { kind: "member", id: "u2" }]]));
+        expect(fake.calls.some((c) => c[0] === "setMemberStatusFn")).toBe(false);
+      });
+
+      it("members: with no address on file, sending is off but declining still works", () => {
+        renderAdmin({ members: [member("u3", "Noor Haddad", { status: "pending", catalogue_number: null, email: null })] });
+        const row = screen.getByRole("row", { name: /Noor Haddad/ });
+        fireEvent.click(within(row).getByRole("button", { name: "Decline Noor Haddad" }));
+        const dialog = within(row).getByRole("dialog");
+        expect(within(dialog).getByText("No email address on file")).toBeTruthy();
+        expect((within(dialog).getByRole("button", { name: "Decline and send email" }) as HTMLButtonElement).disabled).toBe(true);
+        expect((within(dialog).getByRole("button", { name: "Decline without email" }) as HTMLButtonElement).disabled).toBe(false);
+      });
     });
 
     it("asks before approving, and offers Undo decline on a declined application", async () => {
