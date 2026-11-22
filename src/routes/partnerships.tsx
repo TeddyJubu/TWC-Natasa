@@ -8,7 +8,7 @@ import { FormCopyProvider } from "@/features/form-copy/FormCopy";
 import { loadFormCopy } from "@/features/form-copy/queries";
 
 const TITLE = "Partnerships — The Women’s Collective";
-const DESCRIPTION = "Host, teach, supply or support: partner with The Women’s Collective in North Brooklyn. Neither of us is buying anything.";
+const DESCRIPTION = "Host, teach, supply or support: partner with The Women’s Collective in North Brooklyn and Queens. Neither of us is buying anything.";
 
 export const Route = createFileRoute("/partnerships")({
   head: () => ({
@@ -46,7 +46,7 @@ function PartnershipsPage() {
             <p className="twc-eyebrow-script">{t("for businesses")}</p>
             <h1 className="twc-display">{t("Partners, not vendors.")}</h1>
             <p className="twc-lede max-w-[560px]">{t("Every event happens because someone opens their doors and shares what they know. That’s a collaboration, and we treat it like one.")}</p>
-            <p className="twc-chip twc-chip--ring self-start"><Icon name="pin" />North Brooklyn, New York</p>
+            <p className="twc-chip twc-chip--ring self-start"><Icon name="pin" />North Brooklyn and Queens, New York</p>
           </div>
           <div className="min-w-0 flex-[1_1_380px]">
             <img src={gatheringCeramics} srcSet={gatheringCeramicsSrcSet} sizes={gatheringCeramicsSizes} alt="Two women painting ceramics together at a creative workshop" width={1600} height={1067} fetchPriority="high" className="twc-photo twc-photo--arch aspect-[5/6] w-[min(340px,100%)] object-[30%_center]" />
@@ -93,7 +93,7 @@ function PartnershipsPage() {
               <div className="mt-2 flex flex-col gap-2 rounded-md bg-sb-paper px-6 py-[22px]">
                 <h3 className="font-display text-[22px] leading-[1.3]">Before you write</h3>
                 <p className="text-[15px] text-sb-muted">
-                  If you’re a woman running a business in North Brooklyn, you may want membership rather than a partnership, or both. They’re separate things and one doesn’t require the other.{" "}
+                  If you’re a woman running a business in North Brooklyn or Queens, you may want membership rather than a partnership, or both. They’re separate things and one doesn’t require the other.{" "}
                   <Link to="/join" className="twc-inlink">Apply to join</Link>.
                 </p>
               </div>

@@ -73,7 +73,7 @@ const BRICKS = [
 const FAQ = [
   { q: "Who is the collective for?", a: "Women in Queens who are building something — a business, a career, a creative practice — and want real relationships close to home. Founders, freelancers, makers, and the newly curious are all welcome. No follower count or pitch deck required." },
   { q: "Is the community inclusive?", a: "Yes. We welcome women from all backgrounds, including moms, married and single women, LGBTQ+ members, non-binary people who feel aligned with the community, immigrants, international members, and people from diverse cultures." },
-  { q: "What happens after I apply?", a: "A real person in Queens reads every application. We’ll be in touch by email about next steps." },
+  { q: "What happens after I apply?", a: "A real person reads every application. We’ll be in touch by email about next steps." },
 ];
 
 // The hero's entrance: when each piece starts, in ms after first paint.
@@ -569,7 +569,7 @@ function Faq() {
         <span className={cn(script, "text-sb-blue")}>come as you are</span>
         <h2 id="faq-title" className="font-display text-[42px] leading-[1.03] tracking-[-1px] lg:text-[64px]">Questions, answered.</h2>
         <div className="flex flex-col gap-[18px] pt-3.5">
-          <p className="font-geist text-[17px] leading-[1.6] text-sb-muted">Still wondering about something? Send us a note — a real person in Queens reads every one.</p>
+          <p className="font-geist text-[17px] leading-[1.6] text-sb-muted">Still wondering about something? Send us a note — a real person reads every one.</p>
           <Link to="/contact" className={moreLink}>
             <span className="sb-link">Ask us anything</span> <Icon name="arrow" className="size-4 transition-[translate] duration-300 group-hover:translate-x-[3px]" />
           </Link>

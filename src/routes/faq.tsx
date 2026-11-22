@@ -15,7 +15,7 @@ const FAQ_GROUPS: Group[] = [
       { q: "Who is the collective for?", a: "Women in Queens who are building something — a business, a career, a creative practice — and want real relationships close to home. Founders, freelancers, makers, and the newly curious are all welcome. No follower count or pitch deck required." },
       { q: "Which neighborhoods are included?", a: "Long Island City, Astoria, Sunnyside, Woodside, Jackson Heights, Elmhurst, East Elmhurst, Forest Hills, Rego Park, and surrounding Queens neighborhoods." },
       { q: "Is the community inclusive?", a: "Yes. We welcome women from all backgrounds, including moms, married and single women, LGBTQ+ members, non-binary people who feel aligned with the community, immigrants, international members, and people from diverse cultures." },
-      { q: "What happens after I apply?", a: "A real person in Queens reads every application. We’ll be in touch by email about next steps." },
+      { q: "What happens after I apply?", a: "A real person reads every application. We’ll be in touch by email about next steps." },
       { q: "Can I create an account before I’m approved?", a: "Yes. Create your login now; your profile unlocks once the collective approves your application." },
     ],
   },
@@ -141,7 +141,7 @@ function FaqPage() {
             </div>
             <div className="twc-ticket__stub">
               <div className="twc-ticket__meta"><span>Admit one</span><span>Nº 0001 — Queens</span></div>
-              <p className="text-base leading-[1.6] text-sb-paper/85">A real person in Queens reads every note.</p>
+              <p className="text-base leading-[1.6] text-sb-paper/85">A real person reads every note.</p>
               <div className="flex flex-wrap gap-2.5">
                 <Link to="/contact" className="twc-btn twc-btn--sun">Contact us <Icon name="arrow" className="twc-arrow" /></Link>
                 <Link to="/join" className="twc-btn twc-btn--paper">Start your application <Icon name="arrow" className="twc-arrow" /></Link>

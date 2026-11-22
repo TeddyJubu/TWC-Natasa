@@ -47,14 +47,13 @@ describe.each([["/fellowship", Fellowship], ["/partnerships", Partnerships]] as 
     expect(main().textContent).not.toMatch(/[[\]]/);
   });
 
-  // The club is North Brooklyn (2026-11-17). /partnerships is a public form page and says so; /fellowship isn't public
-  // yet and still says Western Queens until the rest of the site moves over. Either way, a page names one area.
-  it("names one area in its own words", () => {
+  // /partnerships is a public form page and names both areas (2026-11-22); /fellowship isn't public yet and still says
+  // Western Queens until the rest of the site moves over.
+  it("names its area or areas in its own words", () => {
     show(route);
     const words = main().textContent ?? "";
     if (path === "/partnerships") {
-      expect(words).toMatch(/North Brooklyn/);
-      expect(words).not.toMatch(/Queens/);
+      expect(words).toMatch(/North Brooklyn and Queens/);
     } else {
       expect(words).not.toMatch(/Brooklyn|Greenpoint|Williamsburg|Bushwick/i);
     }
