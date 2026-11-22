@@ -237,13 +237,20 @@ describe("prefill on approval", () => {
     db.prepare("delete from applications where id in (?, ?)").run(pending, approved);
   });
 
-  it("does not prefill when the card is already listed or public", () => {
+  it("still prefills when she saved directory/public switches while pending", () => {
     clearDraft();
-    db.prepare("update profiles set full_name = 'Bea', role_title = '', business = '', neighborhood = null, specialty = '', bio = '', looking_for = '', website = '', directory_visible = 1, public_profile = 1, status = 'approved' where id = ?").run(MEMBER);
+    // Pending choice already on: must not skip the draft on approve / claim.
+    db.prepare("update profiles set full_name = 'Bea', role_title = '', business = '', neighborhood = null, specialty = '', bio = '', looking_for = '', website = '', directory_visible = 1, public_profile = 1, status = 'pending' where id = ?").run(MEMBER);
     const id = insertApp();
-    db.prepare("update applications set status = 'approved' where id = ?").run(id);
-    prefillProfileFromApplication(db, MEMBER);
-    expect(profile()).toMatchObject({ role_title: "", business: "", neighborhood: null });
+    reviewApplication(admin(), { id, status: "approved" });
+    expect(profile()).toMatchObject({
+      role_title: "Founder",
+      business: "Little Loaf",
+      neighborhood: "Astoria",
+      directory_visible: 1,
+      public_profile: 1,
+    });
+    expect(profile().application_draft_at).toBeTruthy();
     db.prepare("delete from applications where id = ?").run(id);
   });
 

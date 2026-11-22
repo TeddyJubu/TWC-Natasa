@@ -91,7 +91,7 @@ export function memberPage({ db, actor }: Ctx, catalogueNumber: number): MemberP
 /**
  * Her own profile with image URLs, or null. When she is already approved (including the claim path where an
  * application was approved before the account existed), blank fields are filled from her newest approved
- * application — same private-draft rules as admin approve; skipped once the card is listed or public.
+ * application — same one-shot draft rules as admin approve (`application_draft_at`); visibility flags do not skip it.
  */
 export function ownProfile({ db, actor }: Ctx): ProfileData | null {
   const me = requireSession(actor);
