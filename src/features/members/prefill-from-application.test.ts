@@ -93,6 +93,40 @@ describe("draftFromApplication", () => {
       listed,
     ).website).toBe("");
   });
+
+  it("leaves website blank when the full URL does not fit the profile column (never truncates)", () => {
+    const long = `https://example.com/${"a".repeat(200)}`;
+    expect(long.length).toBeGreaterThan(200);
+    expect(draftFromApplication(
+      { full_name: "Bea", neighborhood: "Astoria", answers: { ...answers, website: long } },
+      listed,
+    ).website).toBe("");
+  });
+
+  it("maps legacy import work keys when the new form keys are absent", () => {
+    expect(draftFromApplication(
+      {
+        full_name: "Ada Fixture",
+        neighborhood: "Greenpoint",
+        answers: {
+          profession_role: "Founder",
+          business_practice: "Fixture Ceramics",
+          website_social: "https://example.org",
+          industry_labels: "Wellness",
+          directory: "no",
+          phone_number: "555-0100",
+        },
+      },
+      new Set(["Greenpoint"]),
+    )).toMatchObject({
+      role_title: "Founder",
+      business: "Fixture Ceramics",
+      website: "https://example.org",
+      specialty: "Wellness",
+      bio: "",
+      neighborhood: "Greenpoint",
+    });
+  });
 });
 
 describe("prefill on approval", () => {
@@ -169,9 +203,14 @@ describe("prefill on approval", () => {
     db.prepare("delete from applications where id = ?").run(id);
   });
 
-  it("claim path: ownProfile prefills after an approved application is linked", () => {
+  it("claim path: ownProfile prefills from an approved application only", () => {
     db.prepare("update profiles set full_name = 'Bea', role_title = '', business = '', neighborhood = null, specialty = '', bio = '', looking_for = '', website = '', directory_visible = 0, public_profile = 0, status = 'approved' where id = ?").run(MEMBER);
-    const id = insertApp({ directory: { choice: "no" } });
+    const pending = insertApp({ role: "Intruder", business: "Not Me", directory: { choice: "no" } });
+    // Pending must not win; only the approved row is trusted.
+    const approved = (db.prepare(
+      `insert into applications (user_id, email, full_name, neighborhood, answers, status, created_at)
+       values (?, 'bea@x.test', 'Beatrice Lopez', 'Astoria', ?, 'approved', '2020-01-01T00:00:00Z') returning id`,
+    ).get(MEMBER, JSON.stringify({ ...answers, directory: { choice: "no" } })) as { id: string }).id;
     const data = ownProfile(asMember());
     expect(data?.profile).toMatchObject({
       role_title: "Founder",
@@ -186,6 +225,23 @@ describe("prefill on approval", () => {
     db.prepare("update profiles set role_title = 'Head baker' where id = ?").run(MEMBER);
     prefillProfileFromApplication(db, MEMBER);
     expect(profile().role_title).toBe("Head baker");
+    db.prepare("delete from applications where id in (?, ?)").run(pending, approved);
+  });
+
+  it("does not prefill when the card is already listed or public", () => {
+    db.prepare("update profiles set full_name = 'Bea', role_title = '', business = '', neighborhood = null, specialty = '', bio = '', looking_for = '', website = '', directory_visible = 1, public_profile = 1, status = 'approved' where id = ?").run(MEMBER);
+    const id = insertApp();
+    db.prepare("update applications set status = 'approved' where id = ?").run(id);
+    prefillProfileFromApplication(db, MEMBER);
+    expect(profile()).toMatchObject({ role_title: "", business: "", neighborhood: null });
+    db.prepare("delete from applications where id = ?").run(id);
+  });
+
+  it("ignores a pending application even when it is the newest linked row", () => {
+    db.prepare("update profiles set full_name = 'Bea', role_title = '', business = '', neighborhood = null, specialty = '', bio = '', looking_for = '', website = '', directory_visible = 0, public_profile = 0, status = 'approved' where id = ?").run(MEMBER);
+    const id = insertApp({ role: "Pending only" });
+    prefillProfileFromApplication(db, MEMBER);
+    expect(profile().role_title).toBe("");
     db.prepare("delete from applications where id = ?").run(id);
   });
 });

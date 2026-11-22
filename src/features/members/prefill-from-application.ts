@@ -1,7 +1,8 @@
 /**
- * On approval, copy a private draft of the member profile from her newest application.
+ * On approval, copy a private draft of the member profile from her newest approved application.
  * Only blank profile fields; never directory_visible / public_profile; never phone or consents.
- * Safe to call more than once (blank-only).
+ * Safe to call more than once (blank-only). Skips when the card is already listed or public, so a
+ * later load cannot push private answers onto a live public page.
  */
 import type { DB } from "@/server/db";
 
@@ -19,6 +20,11 @@ type Answers = {
   industry?: unknown;
   otherIndustry?: unknown;
   directory?: unknown;
+  // Legacy import keys (scripts/fixtures/legacy-applications.json / legacy-import.ts).
+  profession_role?: unknown;
+  business_practice?: unknown;
+  website_social?: unknown;
+  industry_labels?: unknown;
 };
 
 const TEXT = {
@@ -37,9 +43,23 @@ function clip(value: unknown, max: number): string {
   return trimmed.length > max ? trimmed.slice(0, max).trimEnd() : trimmed;
 }
 
+/** First non-empty string among the candidates, clipped to max. */
+function first(max: number, ...candidates: unknown[]): string {
+  for (const value of candidates) {
+    const text = clip(value, max);
+    if (text) return text;
+  }
+  return "";
+}
+
+/**
+ * Keep the URL only when the whole string fits the profile column. Truncating would save a
+ * different link than the applicant sent.
+ */
 function website(value: unknown): string {
-  const raw = clip(value, TEXT.website);
-  if (!raw) return "";
+  if (typeof value !== "string") return "";
+  const raw = value.trim();
+  if (!raw || raw.length > TEXT.website) return "";
   const lower = raw.toLowerCase();
   if (lower.startsWith("http://") || lower.startsWith("https://")) return raw;
   return "";
@@ -58,11 +78,12 @@ function directoryDraft(answers: Answers): { bio: string; specialty: string } {
 
 function specialtyFallback(answers: Answers): string {
   const industry = answers.industry;
-  if (!Array.isArray(industry)) return "";
-  const first = industry.find((x): x is string => typeof x === "string" && x.trim() !== "");
-  if (!first) return "";
-  if (first === "Other") return clip(answers.otherIndustry, TEXT.specialty);
-  return clip(first, TEXT.specialty);
+  if (Array.isArray(industry)) {
+    const firstLabel = industry.find((x): x is string => typeof x === "string" && x.trim() !== "");
+    if (firstLabel === "Other") return clip(answers.otherIndustry, TEXT.specialty);
+    if (firstLabel) return clip(firstLabel, TEXT.specialty);
+  }
+  return clip(answers.industry_labels, TEXT.specialty);
 }
 
 /** Maps application answers → profile patch for blank fields only. Exported for unit tests. */
@@ -78,9 +99,9 @@ export function draftFromApplication(
   const hood = app.neighborhood.trim();
   return {
     full_name: clip(app.full_name, TEXT.full_name),
-    role_title: clip(answers.role, TEXT.role_title),
-    business: clip(answers.business, TEXT.business),
-    website: website(answers.website),
+    role_title: first(TEXT.role_title, answers.role, answers.profession_role),
+    business: first(TEXT.business, answers.business, answers.business_practice),
+    website: website(answers.website) || website(answers.website_social),
     looking_for: clip(answers.idealReferral, TEXT.looking_for),
     bio: dir.bio,
     specialty,
@@ -89,8 +110,9 @@ export function draftFromApplication(
 }
 
 /**
- * Fills blank profile fields from the member's newest application. No-op when she has none.
- * Never flips visibility. Call inside the same transaction as an approval when one exists.
+ * Fills blank profile fields from the member's newest approved application. No-op when she has
+ * none, or when her card is already directory-visible or public (so a read never publishes private
+ * answers). Never flips visibility. Call inside the same transaction as an approval when one exists.
  */
 export function prefillProfileFromApplication(db: DB, profileId: string): void {
   const profile = db.prepare(
@@ -102,10 +124,12 @@ export function prefillProfileFromApplication(db: DB, profileId: string): void {
     directory_visible: number; public_profile: number;
   } | undefined;
   if (!profile) return;
+  // Already on a live card: do not backfill from the application on a later account load.
+  if (profile.directory_visible === 1 || profile.public_profile === 1) return;
 
   const app = db.prepare(
     `select full_name, neighborhood, answers from applications
-     where user_id = ? order by created_at desc, id desc limit 1`,
+     where user_id = ? and status = 'approved' order by created_at desc, id desc limit 1`,
   ).get(profileId) as AppRow | undefined;
   if (!app) return;
 
