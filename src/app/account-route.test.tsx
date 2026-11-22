@@ -287,7 +287,7 @@ describe("/account", () => {
       cleanup();
       renderAccount({ status: "pending", catalogue_number: null, member_since: null });
       expect(within(visibility()).getByText(/stays private until you’re welcomed in/)).toBeTruthy();
-      expect(within(visibility()).getByText(/only appears when you turn these on/i)).toBeTruthy();
+      expect(within(visibility()).getByText(/choices you make now are saved/i)).toBeTruthy();
     });
 
     it("is disabled until the directory switch is on", () => {
@@ -321,23 +321,29 @@ describe("/account", () => {
       );
     });
 
-    it("tells pending members visibility is after approval and only when they turn it on", () => {
+    it("tells pending members a saved choice takes effect after approval", () => {
       renderAccount({ status: "pending", directory_visible: true });
-      expect(publicSwitch().closest("label")?.textContent).toMatch(/after approval/i);
-      expect(publicSwitch().closest("label")?.textContent).toMatch(/turn it on/i);
+      expect(publicSwitch().closest("label")?.textContent).toMatch(/takes effect after approval/i);
+      expect(directorySwitch().closest("label")?.textContent).toMatch(/if this is on then/i);
     });
   });
 
-  it("shows a one-time You’re in panel for a newly approved member", () => {
+  it("shows a one-time You’re in panel for a newly approved member with a private card", () => {
     localStorage.removeItem("twc-youre-in:v1:u1");
-    renderAccount();
+    renderAccount({ directory_visible: false, public_profile: false });
     const panel = screen.getByRole("region", { name: "You’re in" });
     expect(within(panel).getByText(/private draft until you choose to show it/i)).toBeTruthy();
     expect(within(panel).getByRole("link", { name: /open visibility/i })).toBeTruthy();
     fireEvent.click(within(panel).getByRole("button", { name: "Got it" }));
     expect(screen.queryByRole("region", { name: "You’re in" })).toBeNull();
     cleanup();
-    renderAccount();
+    renderAccount({ directory_visible: false, public_profile: false });
+    expect(screen.queryByRole("region", { name: "You’re in" })).toBeNull();
+  });
+
+  it("hides You’re in once the card is listed or public", () => {
+    localStorage.removeItem("twc-youre-in:v1:u1");
+    renderAccount({ directory_visible: true, public_profile: false });
     expect(screen.queryByRole("region", { name: "You’re in" })).toBeNull();
   });
 

@@ -117,13 +117,15 @@ export function draftFromApplication(
 export function prefillProfileFromApplication(db: DB, profileId: string): void {
   const profile = db.prepare(
     `select full_name, role_title, business, neighborhood, specialty, bio, looking_for, website,
-            directory_visible, public_profile from profiles where id = ?`,
+            directory_visible, public_profile, application_draft_at from profiles where id = ?`,
   ).get(profileId) as {
     full_name: string; role_title: string; business: string; neighborhood: string | null;
     specialty: string; bio: string; looking_for: string; website: string;
-    directory_visible: number; public_profile: number;
+    directory_visible: number; public_profile: number; application_draft_at: string | null;
   } | undefined;
   if (!profile) return;
+  // Already applied once: never restore a field she cleared and saved.
+  if (profile.application_draft_at) return;
   // Already on a live card: do not backfill from the application on a later account load.
   if (profile.directory_visible === 1 || profile.public_profile === 1) return;
 
@@ -168,7 +170,9 @@ export function prefillProfileFromApplication(db: DB, profileId: string): void {
     values.push(draft.neighborhood);
   }
 
-  // Visibility is never copied from the application (private draft only).
-  if (!sets.length) return;
+  // Stamp even when every field was already filled, so we never re-run on the next read.
+  const now = new Date().toISOString();
+  sets.push("application_draft_at = ?");
+  values.push(now);
   db.prepare(`update profiles set ${sets.join(", ")} where id = ?`).run(...values, profileId);
 }

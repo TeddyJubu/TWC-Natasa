@@ -21,10 +21,14 @@ export type Profile = {
 
 /** `hasApplication`: she has applied (any status), so /account needn't point her at /join. */
 export type ProfileData = { profile: Profile; avatarUrl: string | undefined; logoUrl?: string; hasApplication: boolean };
-type ProfileRow = Omit<Profile, "directory_visible" | "public_profile"> & { directory_visible: number; public_profile: number };
+type ProfileRow = Omit<Profile, "directory_visible" | "public_profile"> & {
+  directory_visible: number; public_profile: number; application_draft_at?: string | null;
+};
 
-export const toProfile = (row: ProfileRow): Profile =>
-  ({ ...row, directory_visible: row.directory_visible === 1, public_profile: row.public_profile === 1 });
+export const toProfile = (row: ProfileRow): Profile => {
+  const { application_draft_at: _draft, directory_visible, public_profile, ...rest } = row;
+  return { ...rest, directory_visible: directory_visible === 1, public_profile: public_profile === 1 };
+};
 
 const avatar = (path: string | null) => mediaUrl("avatars", path);
 const card = (row: ProfileRow, withLogo = false): MemberProfile =>
