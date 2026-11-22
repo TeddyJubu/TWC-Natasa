@@ -32,7 +32,7 @@ describe("/verified", () => {
   });
 
   it("a link that worked: confirmed, one h1, on to /account (or the application), in the site chrome", () => {
-    const { container } = renderWithQueries(<Page />);
+    const { container } = renderWithQueries(<Page />, [[["viewer"], { signedIn: true, member: false, admin: false, declined: false }]]);
     expect(screen.getByRole("heading", { level: 1, name: "You’re confirmed, neighbor." })).toBeTruthy();
     expect(container.querySelectorAll("h1")).toHaveLength(1);
     expect(screen.getByRole("link", { name: /open my account/i }).getAttribute("href")).toBe("/account");
