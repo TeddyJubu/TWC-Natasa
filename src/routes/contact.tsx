@@ -8,9 +8,9 @@ export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
       { title: "Contact — The Women’s Collective" },
-      { name: "description", content: "Questions about membership, ideas for an event, partnerships or press: write to The Women’s Collective in North Brooklyn." },
+      { name: "description", content: "Questions about membership, ideas for an event, partnerships or press: write to The Women’s Collective in North Brooklyn and Queens." },
       { property: "og:title", content: "Say hello — The Women’s Collective" },
-      { property: "og:description", content: "A real person in North Brooklyn reads every message." },
+      { property: "og:description", content: "A real person reads every message." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -31,7 +31,7 @@ function ContactPage() {
           <p className="twc-eyebrow-script">{t("say hello")}</p>
           <h1 className="twc-h2">{t("Say hello, neighbor.")}</h1>
           <p className="max-w-[480px] text-[17px] leading-[1.65] text-sb-muted">
-            {t("A question about membership, an idea for an event, a partnership you’d like to explore: send it our way. A real person in North Brooklyn reads every message.")}
+            {t("A question about membership, an idea for an event, a partnership you’d like to explore: send it our way. A real person reads every message.")}
           </p>
           <div className="mt-2 flex flex-col gap-2 rounded-md bg-sb-cream px-6 py-[22px]">
             <h2 className="font-display text-[22px] leading-[1.3]">Something happened that shouldn’t have?</h2>

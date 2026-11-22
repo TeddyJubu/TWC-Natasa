@@ -87,7 +87,7 @@ export const BUILT_IN_COPIES: Record<CopyForm, FormTemplate> = {
     ],
   },
   contact: {
-    intro: "A question about membership, an idea for an event, a partnership you’d like to explore: send it our way. A real person in North Brooklyn reads every message.",
+    intro: "A question about membership, an idea for an event, a partnership you’d like to explore: send it our way. A real person reads every message.",
     thanks: "Thanks for reaching out.",
     questions: [
       q("name", "short", "Your name", true),

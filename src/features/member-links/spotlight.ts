@@ -1,4 +1,6 @@
-// The Weekly Spotlight form (/spotlight?t=…, inventory backoffice.md §2b, OPS-029): verbatim labels, the old Google
+import { AREAS } from "@/features/applications/schema";
+
+// The Weekly Spotlight form (/spotlight?t=…, inventory backoffice.md §2b, OPS-029): the question labels, the old Google
 // Form column names as stored answer keys, and the one check both the form and POST /api/spotlight run. Answers are
 // stored as-is in spotlight_answers (migration 0008); nothing here ever writes to the member's profile.
 
@@ -8,6 +10,9 @@ export const INVALID_SPOTLIGHT = "This personal Spotlight link is invalid, expir
 export const SPOTLIGHT_LIMITS = { identity: 300, answer: 2000 } as const;
 
 type Question = { key: string; label: string; section: 2 | 3; required?: true; kind?: "yesno" | "url"; help?: string };
+
+/** Its stored key stays as imported; the member sees her own area through `spotlightLabel`. */
+const AREA_QUESTION = "Community - North Brooklyn Means";
 
 /** `key` is the stored answer key (an old Google Form column, kept verbatim so imported and new answers line up). */
 export const SPOTLIGHT_QUESTIONS: readonly Question[] = [
@@ -22,10 +27,17 @@ export const SPOTLIGHT_QUESTIONS: readonly Question[] = [
   { key: "Community - Suggestions / Events", label: "Any ideas for events?", section: 3 },
   { key: "Community - Never Do", label: "Is there anything the Collective should never do?", section: 3 },
   { key: "Community - Would Feel Magical", label: "What would make being part of the Collective feel magical?", section: 3 },
-  { key: "Community - North Brooklyn Means", label: "What does North Brooklyn mean to you?", section: 3 },
+  { key: AREA_QUESTION, label: "What does your neighborhood mean to you?", section: 3 },
   { key: "Community - Remember You", label: "What would you like other members to remember about you?", section: 3 },
   { key: "Reel Upload", label: "Have a short video or reel? Share the link.", section: 3, kind: "url", help: "Optional — a link from Instagram, Google Drive or similar." },
 ];
+
+/** A question's words for this member: the area question names her area, or stays general if her neighborhood isn't on a list. */
+export function spotlightLabel(q: Pick<Question, "key" | "label">, neighborhood: string): string {
+  const place = neighborhood.trim().toLowerCase();
+  const area = AREAS.find((a) => a.neighborhoods.some((n) => n.toLowerCase() === place));
+  return q.key === AREA_QUESTION && area ? `What does ${area.name} mean to you?` : q.label;
+}
 
 /** The old form's POST name: `q_` + the key lower-cased, non-alphanumeric runs as `_` (MF:1100-1101). */
 export const fieldName = (key: string) => `q_${key.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "")}`;

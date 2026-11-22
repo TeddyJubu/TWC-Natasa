@@ -34,8 +34,15 @@ describe("server", () => {
     insert.run("contact", contact, "Our contact words");
     insert.run("partnership", partnership, "Our partnership words");
     db.exec(readFileSync("db/migrations/0016_events_wording.sql", "utf8"));
-    expect(publicFormCopy(as(null), { form: "contact" })).toEqual({ [contact.replace("a gathering", "an event")]: "Our contact words" });
+    expect(db.prepare("select original from form_copy where value = 'Our contact words'").get()).toEqual({ original: contact.replace("a gathering", "an event") });
     expect(publicFormCopy(as(null), { form: "partnership" })).toEqual({ [partnership.replace("Every gathering", "Every event")]: "Our partnership words" });
+  });
+
+  it("0017 keeps an admin's saved contact wording when its default stops naming North Brooklyn", () => {
+    const before = "A question about membership, an idea for an event, a partnership you’d like to explore: send it our way. A real person in North Brooklyn reads every message.";
+    db.prepare("insert into form_copy (form, original, value) values ('contact', ?, 'Our contact words')").run(before);
+    db.exec(readFileSync("db/migrations/0017_contact_wording.sql", "utf8"));
+    expect(publicFormCopy(as(null), { form: "contact" })).toEqual({ [before.replace("A real person in North Brooklyn", "A real person")]: "Our contact words" });
   });
 
   it("an admin saves wording and the public page reads it, per form", () => {

@@ -4,7 +4,7 @@ import * as React from "react";
 import { Icon } from "@/app/layout/twc";
 import { Choices, Field, Input, Notice, Section } from "@/features/applications/twc-fields";
 import { sendSpotlight, type SpotlightPrefill, type SpotlightSubmission } from "./queries";
-import { IDENTITY, SPOTLIGHT_LIMITS, SPOTLIGHT_QUESTIONS, checkSpotlight, fieldName } from "./spotlight";
+import { IDENTITY, SPOTLIGHT_LIMITS, SPOTLIGHT_QUESTIONS, checkSpotlight, fieldName, spotlightLabel } from "./spotlight";
 
 const SECTIONS = [
   { section: 2, index: "02 — Your story", title: "Your story", description: "In your own words. The first four are required." },
@@ -17,6 +17,8 @@ export function SpotlightForm({ token, prefill, send = sendSpotlight }: {
   const [failure, setFailure] = React.useState<string | null>(null);
   const [busy, setBusy] = React.useState(false);
   const [done, setDone] = React.useState(false);
+  // Correcting her neighborhood above keeps the area question below right.
+  const [neighborhood, setNeighborhood] = React.useState(prefill.values.neighborhood);
   const alert = React.useRef<HTMLElement>(null);
   const thanks = React.useRef<HTMLDivElement>(null);
 
@@ -71,7 +73,7 @@ export function SpotlightForm({ token, prefill, send = sendSpotlight }: {
             {IDENTITY.map(({ name, label }, i) => (
               <Field key={name} id={`s-${name}`} label={label} optional={i > 0}>
                 <Input name={name} required={i === 0} defaultValue={prefill.values[name]} autoComplete={name === "full_name" ? "name" : undefined}
-                  maxLength={SPOTLIGHT_LIMITS.identity} />
+                  maxLength={SPOTLIGHT_LIMITS.identity} onChange={name === "neighborhood" ? (e) => setNeighborhood(e.currentTarget.value) : undefined} />
               </Field>
             ))}
           </div>
@@ -82,7 +84,7 @@ export function SpotlightForm({ token, prefill, send = sendSpotlight }: {
               const name = fieldName(q.key);
               if (q.kind === "yesno") return <Choices key={name} type="radio" name={name} legend={q.label} options={["Yes", "No"]} optional />;
               return (
-                <Field key={name} id={`s-${name}`} label={q.label} optional={!q.required} hint={q.help}>
+                <Field key={name} id={`s-${name}`} label={spotlightLabel(q, neighborhood)} optional={!q.required} hint={q.help}>
                   {q.kind === "url"
                     ? <Input name={name} type="url" placeholder="https://" maxLength={SPOTLIGHT_LIMITS.answer} />
                     : <textarea name={name} className="twc-input" rows={4} required={q.required} maxLength={SPOTLIGHT_LIMITS.answer} />}

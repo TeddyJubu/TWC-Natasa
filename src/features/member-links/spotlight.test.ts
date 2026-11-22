@@ -7,7 +7,7 @@ import { openDb, type DB } from "@/server/db";
 import type { Ctx } from "@/server/context.server";
 import { mintReviewLink, openReview, reviewLinkStates, revokeReviewLink } from "./member-links.server";
 import { adminSpotlights, openSpotlight, spotlightRequest, submitSpotlight } from "./spotlight.server";
-import { INVALID_SPOTLIGHT, SPOTLIGHT_QUESTIONS, checkSpotlight, fieldName, spotlightEntries } from "./spotlight";
+import { INVALID_SPOTLIGHT, SPOTLIGHT_QUESTIONS, checkSpotlight, fieldName, spotlightEntries, spotlightLabel } from "./spotlight";
 
 const id = (n: string) => `00000000-0000-4000-8000-${n.padStart(12, "0")}`;
 const [ADMIN, BEA] = [id("a"), id("b")];
@@ -137,6 +137,14 @@ describe("checkSpotlight", () => {
     expect(checkSpotlight(story({ q_reel_upload: "https://instagram.com/reel/1" }))).toHaveProperty("value.answers.Reel Upload");
     expect(checkSpotlight(story({ q_community_never_do: "x".repeat(2001) }))).toHaveProperty("errors.q_community_never_do");
     expect(checkSpotlight(story({ business: "x".repeat(301) }))).toHaveProperty("errors.business");
+  });
+
+  it("the area question names the member's area, and stays general when her neighborhood isn't on a list", () => {
+    const q = SPOTLIGHT_QUESTIONS.find((x) => x.key === "Community - North Brooklyn Means")!;
+    expect(spotlightLabel(q, "Greenpoint")).toBe("What does North Brooklyn mean to you?");
+    expect(spotlightLabel(q, " astoria ")).toBe("What does Queens mean to you?");
+    expect(spotlightLabel(q, "Somewhere else")).toBe("What does your neighborhood mean to you?");
+    expect(spotlightLabel(SPOTLIGHT_QUESTIONS[0]!, "Astoria")).toBe(SPOTLIGHT_QUESTIONS[0]!.label);
   });
 
   it("spotlightEntries labels known keys and keeps an old sheet's extra columns", () => {

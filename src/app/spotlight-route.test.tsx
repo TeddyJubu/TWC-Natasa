@@ -35,6 +35,13 @@ describe("/spotlight", () => {
     expect(meta).toContainEqual({ name: "referrer", content: "no-referrer" });
   });
 
+  it("asks about the member's area, and follows a corrected neighborhood", () => {
+    show();
+    expect(screen.getByLabelText(/What does Queens mean to you/)).toBeTruthy();
+    fireEvent.change(screen.getByLabelText(/^Neighborhood/), { target: { value: "Greenpoint" } });
+    expect(screen.getByLabelText(/What does North Brooklyn mean to you/)).toBeTruthy();
+  });
+
   it("is a 404 without a token, or when the server says the token doesn't open the form", async () => {
     expect(isNotFound(await load().catch((e: unknown) => e))).toBe(true);
     expect(fake.calls).toEqual([]);
