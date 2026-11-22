@@ -161,6 +161,11 @@ function MemberPage() {
               <Link to="/contact" className="twc-btn">Ask for an introduction <span className="twc-arrow" aria-hidden>→</span></Link>
             ) : audience === "pending" ? (
               <p className="max-w-[320px] text-[17px]">Introductions open once you’re welcomed in.</p>
+            ) : audience === "declined" ? (
+              <div className="flex max-w-[320px] flex-col items-start gap-3 text-[17px]">
+                <p>Introductions are for members, and your application wasn’t approved.</p>
+                <Link to="/contact" className="twc-btn">Contact us <span className="twc-arrow" aria-hidden>→</span></Link>
+              </div>
             ) : (
               <Link to="/auth" className="twc-btn">Sign in to ask for an intro <span className="twc-arrow" aria-hidden>→</span></Link>
             )}

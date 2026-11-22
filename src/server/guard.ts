@@ -23,6 +23,9 @@ export const isAdmin = (db: DB, id: string | undefined) =>
   !!id && !!db.prepare("select 1 from user_roles where user_id = ? and role = 'admin'").get(id);
 export const isMember = (db: DB, id: string | undefined) =>
   !!id && !!db.prepare("select 1 from profiles where id = ? and status = 'approved'").get(id);
+/** Only picks the words a declined account reads; it grants and refuses nothing. */
+export const isDeclined = (db: DB, id: string | undefined) =>
+  !!id && !!db.prepare("select 1 from profiles where id = ? and status = 'declined'").get(id);
 
 export function requireSession(actor: Actor): SignedIn {
   if (!actor) throw new AccessError("Please sign in.", 401);

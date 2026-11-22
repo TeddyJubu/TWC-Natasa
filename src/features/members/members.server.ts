@@ -3,7 +3,7 @@
 import type { MemberProfile } from "@/index";
 import type { Ctx } from "@/server/context.server";
 import { tx } from "@/server/db";
-import { AccessError, isAdmin, isMember, requireSession } from "@/server/guard";
+import { AccessError, isAdmin, isDeclined, isMember, requireSession } from "@/server/guard";
 import { checkImage, mediaUrl, removeMedia, writeMedia } from "@/server/media";
 import { bad, isObject, str } from "@/server/validate";
 import { checkSize, fileBytes, readForm, respond } from "@/server/request";
@@ -55,7 +55,7 @@ const publicCard = (row: ProfileRow): MemberProfile => ({
 });
 
 /** Who is reading a member page: decides the call to action, never what the server returns beyond `scope`. */
-export type Audience = "visitor" | "pending" | "member";
+export type Audience = "visitor" | "pending" | "declined" | "member";
 export type MemberPage = { member: MemberProfile; neighbors: MemberProfile[]; isPublic: boolean; audience: Audience };
 const NEIGHBORS = 4;
 
@@ -79,7 +79,7 @@ export function memberPage({ db, actor }: Ctx, catalogueNumber: number): MemberP
     member: show(row),
     neighbors: neighbors.map(show),
     isPublic: row.public_profile === 1,
-    audience: insider ? "member" : actor ? "pending" : "visitor",
+    audience: insider ? "member" : !actor ? "visitor" : isDeclined(db, actor.id) ? "declined" : "pending",
   };
 }
 

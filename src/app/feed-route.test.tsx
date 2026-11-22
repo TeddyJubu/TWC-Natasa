@@ -185,4 +185,12 @@ describe("/feed", () => {
     expect(screen.queryByRole("article")).toBeNull();
     expect(fake.calls.some(([name]) => name === "feedFn")).toBe(false);
   });
+
+  it("tells a declined account the truth and where to ask, with no promise of entry", () => {
+    renderWithQueries(<Page />, seed({ signedIn: true, member: false, admin: false, declined: true } as never));
+    expect(screen.getByText("This part is for members")).toBeTruthy();
+    expect(screen.queryByText(/welcomed in/i)).toBeNull();
+    expect(screen.getByRole("link", { name: /contact us/i }).getAttribute("href")).toBe("/contact");
+    expect(screen.queryByRole("button", { name: "Post" })).toBeNull();
+  });
 });

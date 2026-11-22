@@ -41,7 +41,7 @@ function MembersPage() {
   // A member sees the loading state until her directory arrives, never public cards swapped (and recounted) under her.
   const list = member ? directory : publicCards;
   const all = list.data ?? [];
-  const audience = member ? "member" : viewer.data?.signedIn ? "pending" : "visitor";
+  const audience = member ? "member" : viewer.data?.declined ? "declined" : viewer.data?.signedIn ? "pending" : "visitor";
   // A filter chosen in one audience can match nothing in the other.
   React.useEffect(() => setActiveNeighborhood("All"), [audience]);
   // Active neighborhoods in DB order, plus any a listed member still uses (e.g. one an admin deactivated).
@@ -70,11 +70,18 @@ function MembersPage() {
                 <span className="text-sm">
                   {audience === "visitor"
                     ? "Showing members who share their profile publicly."
-                    : "Showing members who share their profile publicly. Your directory unlocks once you’re welcomed in."}
+                    : audience === "declined"
+                      ? "Showing members who share their profile publicly. The full directory is for members, and your application wasn’t approved."
+                      : "Showing members who share their profile publicly. Your directory unlocks once you’re welcomed in."}
                 </span>
                 {audience === "visitor" && (
                   <Link to="/auth" className="twc-link font-display text-[13px] uppercase leading-5 tracking-[1.6px] text-sb-blue-ink">
                     Sign in to see the full directory <span aria-hidden>→</span>
+                  </Link>
+                )}
+                {audience === "declined" && (
+                  <Link to="/contact" className="twc-link font-display text-[13px] uppercase leading-5 tracking-[1.6px] text-sb-blue-ink">
+                    Have a question? Contact us <span aria-hidden>→</span>
                   </Link>
                 )}
               </div>

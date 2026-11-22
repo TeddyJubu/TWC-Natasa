@@ -130,10 +130,23 @@ describe("/account", () => {
     expect(screen.queryByText(/in review/i)).toBeNull();
     expect(screen.queryByText(/application pending/i)).toBeNull();
     expect(screen.queryByText(/being reviewed/i)).toBeNull();
-    expect(screen.getByText(/wasn’t approved this time/i)).toBeTruthy();
+    expect(within(screen.getByRole("region", { name: "Membership" })).getByText("Your application wasn’t approved")).toBeTruthy();
     expect(screen.getByText("Application not approved")).toBeTruthy();
-    // On the cover and as the Visibility card's one-line answer.
-    expect(screen.getAllByText("Your card stays private and isn’t shown to anyone.")).toHaveLength(2);
+    expect(screen.getByText(/weren’t able to offer you a membership/i)).toBeTruthy();
+    expect(screen.getByText("Only you and the collective’s admins can see your card.")).toBeTruthy();
+  });
+
+  it("promises a declined account nothing, on any card, and points her to /contact", () => {
+    renderAccount({ status: "declined", catalogue_number: null });
+    const main = screen.getByRole("main");
+    expect(main.textContent).not.toMatch(/welcomed in|once you’re approved|once your membership|this time|you’ll meet|save your seat|how neighbors see you/i);
+    for (const id of ["events", "headshot", "introductions"]) {
+      expect(within(document.getElementById(id)!).getByText("This part is for members")).toBeTruthy();
+    }
+    const contact = screen.getAllByRole("link", { name: /contact us/i });
+    expect(contact).toHaveLength(4); // the cover and the three locked cards
+    for (const link of contact) expect(link.getAttribute("href")).toBe("/contact");
+    expect(screen.queryByRole("link", { name: /start your application/i })).toBeNull();
   });
 
   it("still shows a pending application as in review", () => {
@@ -189,8 +202,8 @@ describe("/account", () => {
       expect(screen.queryByRole("button", { name: /request my session/i })).toBeNull();
     });
 
-    it.each(["pending", "declined"] as const)("a %s applicant (application on file) gets no /join link", async (status) => {
-      const { queryClient } = renderAccount({ status, catalogue_number: null });
+    it("a pending applicant (application on file) gets no /join link", async () => {
+      const { queryClient } = renderAccount({ status: "pending", catalogue_number: null });
       act(() => queryClient.setQueryData(["profile", "u1"], (d: object) => ({ ...d, hasApplication: true })));
       await waitFor(() => expect(joinLinks()).toHaveLength(0));
       expect(locked()).toHaveLength(3);

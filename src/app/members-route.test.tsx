@@ -87,6 +87,18 @@ describe("/members", () => {
     await neverFetched(queryClient, "directory", "directoryFn");
   });
 
+  it("declined accounts see public profiles, an honest note and /contact, never a promise of entry", async () => {
+    const { queryClient } = renderWithQueries(<Page />, [
+      [["viewer"], { signedIn: true, member: false, admin: false, declined: true }],
+      [["public-profiles"], [card("Pia Lund", 21, "public-21")]],
+    ]);
+    expect(screen.getByText("Pia Lund")).toBeTruthy();
+    expect(screen.getByText(/your application wasn’t approved/i)).toBeTruthy();
+    expect(screen.queryByText(/welcomed in/i)).toBeNull();
+    expect(screen.getByRole("link", { name: /contact us/i }).getAttribute("href")).toBe("/contact");
+    await neverFetched(queryClient, "directory", "directoryFn");
+  });
+
   it("loads only the public cards in the loader, and undefined when that fails", async () => {
     const run = () => (Route.options.loader as (c: unknown) => Promise<unknown>)({ context: { queryClient: new QueryClient() } });
     fake.results = [[card("Pia Lund", 21, "public-21")]];

@@ -158,9 +158,9 @@ function ProfileEditorPage({ userId, profile, avatar, logoUrl, hoodList, applied
         <WordsCard editor={editor} catalogueNumber={approved ? profile.catalogue_number : null} />
         <MembershipCard profile={profile}><DeleteAccount /></MembershipCard>
         <VisibilityCard editor={editor} profile={profile} />
-        <HeadshotBooking userId={userId} approved={approved} applied={applied} />
-        <GatheringsList userId={userId} approved={approved} applied={applied} hoodList={hoodList} />
-        <IntroductionsSection userId={userId} approved={approved} applied={applied} neighborhood={profile.neighborhood || null} onOpen={setOpenMember} />
+        <HeadshotBooking userId={userId} approved={approved} applied={applied} declined={profile.status === "declined"} />
+        <GatheringsList userId={userId} approved={approved} applied={applied} declined={profile.status === "declined"} hoodList={hoodList} />
+        <IntroductionsSection userId={userId} approved={approved} applied={applied} declined={profile.status === "declined"} neighborhood={profile.neighborhood || null} onOpen={setOpenMember} />
         <SaveActions
           formId={PROFILE_FORM} dirty={dirty} pending={save.isPending} saved={saved} error={save.isError ? errorMessage(save.error) : null}
           onSubmit={submit} onPreview={preview}

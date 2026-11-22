@@ -10,6 +10,7 @@ import { openDb, type DB } from "./db";
 import type { Ctx } from "./context.server";
 import { mediaFile, serveMedia, writeMedia } from "./media";
 import { directory, intros, memberPage, ownProfile, publicProfiles, removeLogo, saveProfile, uploadImage } from "@/features/members/members.server";
+import { viewer } from "@/features/auth/viewer.server";
 import { bookHeadshot } from "@/features/events/events.server";
 import {
   addAdminRsvp, adminBookings, adminBusinesses, adminEvent, adminEvents, adminEventTypes, adminRsvps, cancelAdminEvent, clearCalCache,
@@ -234,6 +235,19 @@ describe("access rules (ported from the RLS checks)", () => {
   it("anon and pending members get no page for a listed, non-public member", () => {
     expect(memberPage(anon(), cat(B))).toBeNull();
     expect(memberPage(as(G), cat(B))).toBeNull();
+  });
+  it("a declined account is told so, and gains nothing: public pages only", () => {
+    const before = get<{ status: string }>("select status from profiles where id = ?", G).status;
+    db.prepare("update profiles set status = 'declined' where id = ?").run(G);
+    try {
+      expect(viewer(as(G))).toEqual({ signedIn: true, member: false, admin: false, declined: true });
+      expect(memberPage(as(G), cat(F))?.audience).toBe("declined");
+      expect(memberPage(as(G), cat(B))).toBeNull();
+    } finally {
+      db.prepare("update profiles set status = ? where id = ?").run(before, G);
+    }
+    expect(viewer(as(G)).declined).toBe(false);
+    expect(viewer(anon()).declined).toBe(false);
   });
   it("members and admins read a listed, non-public member's page", () => {
     expect(memberPage(as(F), cat(B))).toMatchObject({ member: { name: "Bea" }, isPublic: false, audience: "member" });

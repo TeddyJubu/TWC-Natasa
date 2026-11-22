@@ -43,6 +43,15 @@ describe("/verified", () => {
     expect(screen.getByRole("contentinfo")).toBeTruthy();
   });
 
+  it("a declined account is not told to get ready for the day she's welcomed in", () => {
+    renderWithQueries(<Page />, [[["viewer"], { signedIn: true, member: false, admin: false, declined: true }]]);
+    expect(screen.getByText(/shows where your application stands/i)).toBeTruthy();
+    expect(screen.queryByText(/welcomed in/i)).toBeNull();
+    expect(screen.getByRole("link", { name: /go to my account/i }).getAttribute("href")).toBe("/account");
+    expect(screen.queryByRole("link", { name: /haven’t applied yet/i })).toBeNull();
+    expect(screen.getByRole("link", { name: /contact us/i }).getAttribute("href")).toBe("/contact");
+  });
+
   it.each(["TOKEN_EXPIRED", "INVALID_TOKEN", "USER_NOT_FOUND"])("a failed link (%s) offers a fresh one, not the confirmation", (error) => {
     search.mockReturnValue({ error });
     renderWithQueries(<Page />);

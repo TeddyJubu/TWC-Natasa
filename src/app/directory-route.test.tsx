@@ -82,4 +82,15 @@ describe("/directory", () => {
     expect((screen.getByRole("searchbox", { name: "Search members" }) as HTMLInputElement).value).toBe("");
     expect(screen.getByRole("button", { name: "All 13" }).getAttribute("aria-pressed")).toBe("true");
   });
+
+  it("tells a declined account the truth and where to ask, with no promise of entry", () => {
+    renderWithQueries(<Page />, [
+      [["viewer"], { signedIn: true, member: false, admin: false, declined: true }],
+      [["profile", "u1"], { profile: { full_name: "Rosa", status: "declined", catalogue_number: null }, avatarUrl: undefined }],
+      [["public-profiles"], MEMBERS.slice(0, 1)],
+    ]);
+    expect(screen.getByText(/your application wasn’t approved/i)).toBeTruthy();
+    expect(screen.queryByText(/welcomed in/i)).toBeNull();
+    expect(screen.getByRole("link", { name: /contact us/i }).getAttribute("href")).toBe("/contact");
+  });
 });

@@ -38,7 +38,7 @@ export function WhereCard({ editor, userId, hood, approved, avatar, hoodList }: 
       <Letter id="where" no={1} title="Where you belong" subtitle="Your pin on the collective’s map of neighbors" action={edit}>
         <EmptySlot icon="map-pin">
           <p className="air-empty-title">No neighborhood yet</p>
-          <p>Choose yours and your pin goes on the map, next to the neighbors you’ll meet first.</p>
+          <p>{card.status === "declined" ? "Choose yours and your pin goes on the map." : "Choose yours and your pin goes on the map, next to the neighbors you’ll meet first."}</p>
           <button type="button" onClick={() => editor.add("public", "neighborhood")} className={cn("air-link", ring)}>Choose your neighborhood</button>
         </EmptySlot>
       </Letter>

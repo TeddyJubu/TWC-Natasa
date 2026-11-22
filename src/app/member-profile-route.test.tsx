@@ -123,6 +123,14 @@ describe("/members/:slug page", () => {
     expect(screen.queryByRole("link", { name: /intro/i })).toBeNull();
   });
 
+  it("tells a declined account introductions are for members, with /contact and no promise", () => {
+    show(page({ audience: "declined" }));
+    expect(screen.getByText(/your application wasn’t approved/i)).toBeTruthy();
+    expect(screen.queryByText(/welcomed in/i)).toBeNull();
+    expect(screen.getByRole("link", { name: /contact us/i }).getAttribute("href")).toBe("/contact");
+    expect(screen.queryByRole("link", { name: /ask for an introduction/i })).toBeNull();
+  });
+
   it("shows initials, never a stand-in photo, without a portrait", () => {
     show(page({ member: card("Rosa Diaz", 12, { image: undefined, imageAlt: undefined }) }));
     expect(screen.getByRole("main").querySelector("img")).toBeNull();

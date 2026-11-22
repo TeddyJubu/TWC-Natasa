@@ -1,11 +1,12 @@
+import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { formatCatalogueNumber, initials } from "@/index";
+import { cn, formatCatalogueNumber, initials } from "@/index";
 import type { Profile } from "@/features/members/queries";
 import { useUploadAvatar } from "@/features/members/mutations";
 import { areaOfPlace } from "@/features/applications/schema";
 import { bookingQuery, eventsQuery, rsvpsQuery } from "@/features/events/queries";
 import { eventWhen } from "@/features/events/format";
-import { redButton } from "@/app/layout/app-classes";
+import { redButton, ring } from "@/app/layout/app-classes";
 import { Icon } from "@/app/layout/icons";
 import { dayParts, errorMessage } from "./helpers";
 
@@ -46,7 +47,7 @@ export function AccountHeader({ userId, profile, avatar, onPreview }: {
     ...(next ? [{ label: "Next event", value: day(eventWhen(next.starts_at)) }] : []),
   ];
   const waiting = declined
-    ? "Your card stays private and isn’t shown to anyone."
+    ? "We weren’t able to offer you a membership, so your card stays private."
     : "Polish your card now — it goes live the day you’re welcomed in.";
   const postmark = approved && profile.member_since ? new Date(profile.member_since) : null;
   const band = profile.business.trim() || profile.role_title.trim();
@@ -101,7 +102,11 @@ export function AccountHeader({ userId, profile, avatar, onPreview }: {
               ))}
             </dl>
           )}
-          {!approved && <p className="air-waiting">{waiting}</p>}
+          {!approved && (
+            <p className="air-waiting">
+              {waiting}{declined && <> <Link to="/contact" className={cn("air-link", ring)}>Have a question? Contact us</Link></>}
+            </p>
+          )}
           <div className="air-code">
             {number ? (
               <div aria-hidden>

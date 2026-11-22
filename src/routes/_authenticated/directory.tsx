@@ -92,7 +92,14 @@ function DirectoryPage() {
           </section>
 
           {viewer.isSuccess && !member && (
-            <p className="twc-notice mt-8 text-sm">Showing members who share their profile publicly. Your directory unlocks once you’re welcomed in.</p>
+            viewer.data.declined ? (
+              <div className="twc-notice mt-8 text-sm">
+                <p>Showing members who share their profile publicly. The full directory is for members, and your application wasn’t approved.</p>
+                <Link to="/contact" className={cn("air-link self-start", ring)}>Have a question? Contact us</Link>
+              </div>
+            ) : (
+              <p className="twc-notice mt-8 text-sm">Showing members who share their profile publicly. Your directory unlocks once you’re welcomed in.</p>
+            )
           )}
 
           <div className="air-dir-bar">

@@ -6,12 +6,13 @@ import { Locked } from "./shared";
 
 /** Introductions to other members as a strip of stamps (the directory's); each opens the page's MemberDialog. */
 export function IntroductionsSection({
-  userId, approved, applied, neighborhood: n, onOpen,
+  userId, approved, applied, declined, neighborhood: n, onOpen,
 }: {
   userId: string;
   approved: boolean;
   /** She has an application on file, so the locked panel needn't offer /join. */
   applied: boolean;
+  declined: boolean;
   /** Her neighborhood, or null when she hasn't chosen one. */
   neighborhood: string | null;
   onOpen: (member: MemberProfile) => void;
@@ -21,7 +22,7 @@ export function IntroductionsSection({
 
   return (
     <Letter id="introductions" no={8} title="Introductions" subtitle={n ? `Neighbors from ${n} first, then across the constellation.` : "Neighbors from across the constellation."}>
-      {!approved ? <Locked applied={applied} /> : (
+      {!approved ? <Locked applied={applied} declined={declined} /> : (
         <>
           {introsState.isError && <InlineError message="We couldn’t load your introductions." onRetry={() => void introsState.refetch()} />}
           {introsState.isSuccess && intros.length === 0 ? (

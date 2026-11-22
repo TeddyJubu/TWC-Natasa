@@ -9,6 +9,7 @@ import { Chip, EmptySlot, InlineError, Stamp } from "@/app/layout/app-ui";
 import { ring, secondaryButton } from "@/app/layout/app-classes";
 import { Icon } from "@/app/layout/icons";
 import { AirShell } from "@/features/account/AirShell";
+import { DeclinedSlot } from "@/features/account/shared";
 import { eventsQuery, rsvpsQuery } from "@/features/events/queries";
 import { eventWhen } from "@/features/events/format";
 import { introsQuery, profileQuery, viewerQuery, type ProfileData } from "@/features/members/queries";
@@ -73,11 +74,13 @@ function FeedPage() {
               <p role="status" className="air-feed-status">Loading the feed…</p>
             ) : !member ? (
               <div className="mt-8">
-                <EmptySlot icon="shield-check">
-                  <p className="air-empty-title">Unlocks once you’re welcomed in</p>
-                  <p>Members share news, asks, offers and events here.</p>
-                  {own && !own.hasApplication && <Link to="/join" className={cn("air-link", ring)}>Haven’t applied yet? Start your application</Link>}
-                </EmptySlot>
+                {viewer.data.declined ? <DeclinedSlot /> : (
+                  <EmptySlot icon="shield-check">
+                    <p className="air-empty-title">Unlocks once you’re welcomed in</p>
+                    <p>Members share news, asks, offers and events here.</p>
+                    {own && !own.hasApplication && <Link to="/join" className={cn("air-link", ring)}>Haven’t applied yet? Start your application</Link>}
+                  </EmptySlot>
+                )}
               </div>
             ) : (
               <>

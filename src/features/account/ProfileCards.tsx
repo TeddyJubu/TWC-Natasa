@@ -56,7 +56,7 @@ export function PublicCard({ editor, userId, logoPath, logoUrl, hoodList }: {
   const options = pickerNames(hoodList, hood ?? []);
 
   return (
-    <Letter id="public-card" no={2} title="Public card" subtitle="How neighbors see you in the member directory" action={<EditButton card="public card" editing={editing} onClick={() => editor.toggle("public")} />}>
+    <Letter id="public-card" no={2} title="Public card" subtitle={card.status === "declined" ? "Your details, kept private" : "How neighbors see you in the member directory"} action={<EditButton card="public card" editing={editing} onClick={() => editor.toggle("public")} />}>
       <dl className="air-form">
       {PUBLIC_ROWS.map(text)}
       <Field
@@ -190,7 +190,7 @@ export function MembershipCard({ profile, children }: { profile: Profile; childr
           <dd>
             {approved
               ? <>Approved <span className="air-chip">Verified</span></>
-              : declined ? "Your application wasn’t approved this time" : "Your application is being reviewed"}
+              : declined ? "Your application wasn’t approved" : "Your application is being reviewed"}
           </dd>
         </div>
         <div className="air-mrow">
@@ -211,8 +211,9 @@ export function VisibilityCard({ editor, profile }: { editor: ProfileEditor; pro
   const { card, set } = editor;
   const listed = card.directory_visible;
   const approved = profile.status === "approved";
-  const audience = profile.status === "declined"
-    ? "Your card stays private and isn’t shown to anyone."
+  const declined = profile.status === "declined";
+  const audience = declined
+    ? "Only you and the collective’s admins can see your card."
     : !approved
       ? "Your card stays private until you’re welcomed in. These choices take effect that day."
       : listed && card.public_profile
@@ -228,14 +229,18 @@ export function VisibilityCard({ editor, profile }: { editor: ProfileEditor; pro
       <div className="air-opts air-rule">
       <Toggle
         label="Show me in the member directory"
-        description={approved ? "Signed-in members can find you and your card." : "Signed-in members can find you and your card, once your membership is approved."}
+        description={declined
+          ? "The directory is for members, so your card isn’t listed."
+          : approved ? "Signed-in members can find you and your card." : "Signed-in members can find you and your card, once your membership is approved."}
         checked={listed}
         // Switching the directory off also switches the public card off, so re-listing never republishes silently.
         onChange={(e) => set(e.currentTarget.checked ? { directory_visible: true } : { directory_visible: false, public_profile: false })}
       />
       <Toggle
         label="Show my profile on the public website"
-        description={`Anyone on the internet can see your name, portrait, work, neighborhood, bio and links, on our homepage and your public page.${listed ? "" : " Turn on the member directory first."}${approved ? "" : " Goes live only once you’re approved."}`}
+        description={declined
+          ? "The public website shows members only, so your card isn’t published."
+          : `Anyone on the internet can see your name, portrait, work, neighborhood, bio and links, on our homepage and your public page.${listed ? "" : " Turn on the member directory first."}${approved ? "" : " Goes live only once you’re approved."}`}
         checked={listed && card.public_profile} disabled={!listed}
         onChange={(e) => set({ public_profile: e.currentTarget.checked })}
       />

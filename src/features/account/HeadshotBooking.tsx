@@ -24,10 +24,10 @@ const DATE_ID = "headshot-date";
 const NOTES_ID = "headshot-notes";
 
 /** Her headshot session: the current request's status, or the request rows (values until an Add opens them). */
-export function HeadshotBooking({ userId, approved, applied }: { userId: string; approved: boolean; applied: boolean }) {
+export function HeadshotBooking({ userId, approved, applied, declined }: { userId: string; approved: boolean; applied: boolean; declined: boolean }) {
   return (
     <Letter id="headshot" span={5} no={6} title="Headshot session" subtitle="Included with your membership — your portrait, professionally done">
-      {approved ? <Booking userId={userId} /> : <Locked applied={applied} />}
+      {approved ? <Booking userId={userId} /> : <Locked applied={applied} declined={declined} />}
     </Letter>
   );
 }

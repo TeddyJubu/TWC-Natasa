@@ -13,10 +13,10 @@ import { EmptySlot, Letter, TicketDate } from "@/app/layout/app-ui";
 import { Locked } from "./shared";
 
 /** Upcoming events with her RSVPs; applicants see what unlocks. */
-export function GatheringsList({ userId, approved, applied, hoodList }: { userId: string; approved: boolean; applied: boolean; hoodList: Neighborhood[] }) {
+export function GatheringsList({ userId, approved, applied, declined, hoodList }: { userId: string; approved: boolean; applied: boolean; declined: boolean; hoodList: Neighborhood[] }) {
   return (
-    <Letter id="events" no={7} title="Events" subtitle="Save your seat at what’s coming up">
-      {approved ? <Events userId={userId} hoodList={hoodList} /> : <Locked applied={applied} />}
+    <Letter id="events" no={7} title="Events" subtitle={declined ? "For members of the collective" : "Save your seat at what’s coming up"}>
+      {approved ? <Events userId={userId} hoodList={hoodList} /> : <Locked applied={applied} declined={declined} />}
     </Letter>
   );
 }

@@ -1,9 +1,11 @@
 import * as React from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { ConstellationLogo, cn } from "@/index";
 import { getAuthClient } from "@/app/auth-client";
 import { AuthFrame, authAlert, authCard, authH, authScript, slink } from "@/app/auth-ui";
 import { Icon } from "@/app/layout/twc";
+import { viewerQuery } from "@/features/members/queries";
 
 // Where every email-confirmation link lands (auth.server.ts sets the link's callbackURL). Better Auth verifies the
 // token, signs her in and redirects here; a bad link comes back with ?error=TOKEN_EXPIRED|INVALID_TOKEN|….
@@ -41,6 +43,9 @@ function Verified() {
 
 function Confirmed() {
   // Better Auth signed her in on the way here; /account sends anyone without a session to sign in.
+  // Verifying can link an application that was already declined (user_verified, 0001), so don't promise entry.
+  const viewer = useQuery(viewerQuery);
+  const declined = viewer.data?.declined === true;
   return (
     <div className={cn(authCard, "items-center text-center")}>
       <span aria-hidden className="grid size-20 place-items-center rounded-full bg-sb-sun">
@@ -50,9 +55,15 @@ function Confirmed() {
         <p className={cn(authScript, "inline-flex items-center gap-2")}>email verified <Icon name="sparkle" className="size-6" /></p>
         <h1 className={authH}>You’re confirmed, neighbor.</h1>
       </div>
-      <p className="text-sb-muted">Your email is verified. Finish your profile now so it’s ready the day you’re welcomed in.</p>
-      <Link to="/account" className="twc-btn mt-1 w-full">Finish my profile <Icon name="arrow" className="twc-arrow" /></Link>
-      <Link to="/join" className={slink}>Haven’t applied yet? Start your application</Link>
+      <p className="text-sb-muted">
+        {declined
+          ? "Your email is verified. Your account shows where your application stands."
+          : viewer.isSuccess ? "Your email is verified. Finish your profile now so it’s ready the day you’re welcomed in." : "Your email is verified."}
+      </p>
+      <Link to="/account" className="twc-btn mt-1 w-full">{declined ? "Go to my account" : "Finish my profile"} <Icon name="arrow" className="twc-arrow" /></Link>
+      {declined
+        ? <Link to="/contact" className={slink}>Have a question? Contact us</Link>
+        : <Link to="/join" className={slink}>Haven’t applied yet? Start your application</Link>}
     </div>
   );
 }
