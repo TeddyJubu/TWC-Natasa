@@ -2,7 +2,7 @@
 // Editable wording for the built-in forms (migration 0011): the manifest matches the pages and the pages show the
 // replacements. Server rules are in copy.server.test.ts (no node:sqlite in a jsdom file).
 import { readFileSync } from "node:fs";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ApplicationForm } from "@/features/applications/ApplicationForm";
 import { ContactForm } from "@/features/contact/ContactForm";
@@ -35,6 +35,15 @@ describe("manifest", () => {
 afterEach(cleanup);
 
 describe("on the pages", () => {
+  it("states no headshot cost, on the application's headshot section or the account card", () => {
+    const { container } = render(<FormCopyProvider copy={{}}><ApplicationForm area={AREAS[0]!} submit={async () => undefined} /></FormCopyProvider>);
+    fireEvent.click(container.querySelector('input[name="directory"][value="yes"]')!);
+    expect(screen.getByLabelText(/I authorize photography/)).toBeTruthy();
+    const cost = /\bpaid\b|\bpayment\b|\bfees?\b|\bprices?\b|included with/i;
+    expect(container.textContent).not.toMatch(cost);
+    expect(readFileSync("src/features/account/HeadshotBooking.tsx", "utf8")).not.toMatch(cost);
+  });
+
   it("the application shows replaced section and field wording, and the defaults elsewhere", () => {
     render(
       <FormCopyProvider copy={{ "Start with you.": "Begin here.", "Full name": "Your full name", "Submit application": "Send it in" }}>

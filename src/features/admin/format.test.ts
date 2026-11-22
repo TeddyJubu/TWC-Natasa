@@ -91,6 +91,13 @@ describe("formatAnswers", () => {
     ]);
   });
 
+  it("still shows the headshot agreements stored on older applications", () => {
+    expect(formatAnswers({ directory: { headshot: { paidSession: true, extraFees: true } } }).map((a) => [a.label, a.value])).toEqual([
+      ["Directory · Headshot · Paid session", "Yes"],
+      ["Directory · Headshot · Extra fees", "Yes"],
+    ]);
+  });
+
   it("returns nothing for a non-object", () => {
     expect(formatAnswers(null)).toEqual([]);
     expect(formatAnswers("text")).toEqual([]);

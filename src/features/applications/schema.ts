@@ -82,11 +82,12 @@ export interface ApplicationAnswers {
         publicationConsent: true;
         headshot: {
           contact?: string;
-          paidSession: true;
           officialOnly: true;
           photoConsent: true;
-          extraFees: true;
           placementNotGuaranteed: true;
+          /** Only on applications sent before 2026-11-23: no longer asked, kept as stored. */
+          paidSession?: true;
+          extraFees?: true;
         };
       };
   events?: string[];
@@ -194,11 +195,9 @@ export function parseApplication(form: FormData): ApplicationInput {
         publicationConsent: r.consent("directory-consent", "I authorize publication of the selected information."),
         headshot: compact({
           contact: r.text("headshot-contact"),
-          paidSession: r.consent("headshot-paid-session", "I understand a paid session with the official photographer is mandatory."),
           officialOnly: r.consent("headshot-official-only", "I understand I cannot provide my own headshot."),
           photoConsent: r.consent("headshot-photo-consent", "I authorize photography and publication of the selected image."),
-          extraFees: r.consent("headshot-extra-fees", "I understand additional deliverables may require an additional fee."),
-          placementNotGuaranteed: r.consent("headshot-placement", "I understand payment does not guarantee permanent directory placement."),
+          placementNotGuaranteed: r.consent("headshot-placement", "I understand completing a session does not guarantee permanent directory placement."),
         }),
       })
     : { choice: directoryChoice === "info" ? "info" : "no" };

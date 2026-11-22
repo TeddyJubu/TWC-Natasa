@@ -218,17 +218,15 @@ function ApplicationFields({ area, initial, busy, failure, onSubmit, onEdit }: F
 
         {directory === "yes" && (
           <Section index="07 — Official headshot" title="A consistent collective portrait." description="Required only for approved public directory members.">
-            <Notice tone="mint" eyebrow="Good to know" title="A paid official session is required">
-              <p>Approved directory applicants attend a professional headshot session with the collective’s official photographer. Personal or previously taken headshots cannot be used. Price, dates, location, payment instructions, and booking details are shared before scheduling.</p>
-              <p>A profile is not published until the application is approved and the session is booked, paid for, and completed.</p>
+            <Notice tone="mint" eyebrow="Good to know" title="An official session is required">
+              <p>Approved directory applicants attend a professional headshot session with the collective’s official photographer. Personal or previously taken headshots cannot be used. Dates, location, and booking details are shared before scheduling.</p>
+              <p>A profile is not published until the application is approved and the session is booked and completed.</p>
             </Notice>
             <Choices type="radio" name="headshot-contact" legend="How should we contact you to schedule your headshot?" optional options={["Email", "Phone", "Text", "WhatsApp"]} />
             <div className="flex flex-col gap-4">
-              <Check name="headshot-paid-session" label="I understand that a paid session with the official photographer is mandatory for the public directory." required />
-              <Check name="headshot-official-only" label="I understand I cannot provide my own headshot and my profile will wait until the official session is paid for and completed." required />
+              <Check name="headshot-official-only" label="I understand I cannot provide my own headshot and my profile will wait until the session with the official photographer is completed." required />
               <Check name="headshot-photo-consent" label="I authorize photography and the cropping, resizing, light retouching, and publication of the selected image across collective channels." required />
-              <Check name="headshot-extra-fees" label="I understand additional photographs, advanced retouching, prints, or other deliverables may require an additional fee." required />
-              <Check name="headshot-placement" label="I understand payment does not guarantee permanent directory placement, which remains subject to approval and community guidelines." required />
+              <Check name="headshot-placement" label="I understand completing a session does not guarantee permanent directory placement, which remains subject to approval and community guidelines." required />
             </div>
           </Section>
         )}

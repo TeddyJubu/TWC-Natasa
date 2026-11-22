@@ -105,17 +105,25 @@ describe("parseApplication", () => {
       spotlight: "yes", "spotlight-focus": "My sourdough", "spotlight-consent": "on",
       directory: "yes", "public-fields": ["Full name", "Website"], "directory-bio": "Rosa bakes.", services: "Bread",
       "directory-consent": "on", "headshot-contact": "Email",
-      "headshot-paid-session": "on", "headshot-official-only": "on", "headshot-photo-consent": "on",
-      "headshot-extra-fees": "on", "headshot-placement": "on",
+      "headshot-official-only": "on", "headshot-photo-consent": "on", "headshot-placement": "on",
     }));
     expect(answers.whatsapp).toEqual({ join: true, number: "718-555-0101", numberVisible: true, keepRespectful: true });
     expect(answers.spotlight).toEqual({ choice: "yes", focus: "My sourdough", publicationConsent: true });
     expect(answers.directory).toEqual({
       choice: "yes", publicFields: ["Full name", "Website"], bio: "Rosa bakes.", services: "Bread", publicationConsent: true,
-      headshot: { contact: "Email", paidSession: true, officialOnly: true, photoConsent: true, extraFees: true, placementNotGuaranteed: true },
+      headshot: { contact: "Email", officialOnly: true, photoConsent: true, placementNotGuaranteed: true },
     });
     expect(answers.newsletter).toEqual({ subscribe: true, emailConsent: true });
     expect(parseApplication(formData({ newsletter: "no" }, ["newsletter-consent"])).answers.newsletter).toEqual({ subscribe: false });
+  });
+
+  it("requires photo permission for the directory, but no payment agreement", () => {
+    const directory = {
+      directory: "yes", "directory-bio": "Rosa bakes.", services: "Bread", "directory-consent": "on",
+      "headshot-official-only": "on", "headshot-photo-consent": "on", "headshot-placement": "on",
+    };
+    expect(() => parseApplication(formData(directory))).not.toThrow();
+    expect(() => parseApplication(formData(directory, ["headshot-photo-consent"]))).toThrow(/authorize photography/);
   });
 
   it("stores the chosen neighborhood as both the column and the answer", () => {

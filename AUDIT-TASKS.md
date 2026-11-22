@@ -115,7 +115,7 @@ Left for the owner because they change the deployment, the live database or the 
 
 10. ~~**Backend**~~ **Resolved (Phase 9, 2026-11-08):** Supabase is removed entirely. The app runs on the VPS as one Node server with its data in SQLite on that server (Progress → Phase 9). This supersedes the Supabase parts of 1, 3 and 8: there is no Worker, no Supabase project and no migration to apply by hand, and static files get the security headers from `server.mjs`.
 
-11. **Headshot cost (open, 2026-11-09):** `/join` says a paid headshot session is required; `/account` says it is "Included with your membership". Pick one; the FAQ omits the question until then.
+11. **Headshot cost (open, 2026-11-09):** the club has not decided whether sessions are paid. Since 2026-11-23 no page states it and `/join` asks for no payment agreement (AGENTS.md). Once it decides, say so in one sentence on `/join`, `/account` and the FAQ.
 12. **Membership price and guests at gatherings (open):** stated nowhere, so the FAQ leaves both out.
 13. **Contact details (open):** the Contact board's `[CONTACT EMAIL]`, `[@HANDLE]` and `[RESPONSE TIME]` rows are left out until they're known. The form itself works once `CF_EMAIL_*` is set and an admin exists; until then visitors see "couldn't send".
 14. **Woodside (open):** no neighborhood colour or photo yet, and the `neighborhoods.color` CHECK requires a colour, so the canvas's "colour to choose" (cream, dashed ring) state can't be saved. Relaxing it is migration 0006 plus an admin form change.
