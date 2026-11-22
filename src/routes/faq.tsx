@@ -23,7 +23,7 @@ const FAQ_GROUPS: Group[] = [
     id: "profile",
     title: "Your profile",
     items: [
-      { q: "Who can see my profile?", a: "You decide. Turn on “Show me in the member directory” and other members can see your card. Turn on “Show my profile on the public website” as well and anyone can see it on our homepage and member page. Neither goes live until you’re approved." },
+      { q: "Who can see my profile?", a: "You decide. After you’re approved, turn on “Show me in the member directory” and other members can see your card. Turn on “Show my profile on the public website” as well and anyone can see it on our homepage and member page. Until you turn those on, only you and the admins can see your card." },
       { q: "When do I get my catalogue number?", a: "It’s assigned once you’re approved." },
       { q: "Can I change my card later?", a: "Any time, from your account page. Short and warm beats long and formal." },
     ],

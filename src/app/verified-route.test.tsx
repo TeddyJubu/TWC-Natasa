@@ -35,7 +35,8 @@ describe("/verified", () => {
     const { container } = renderWithQueries(<Page />);
     expect(screen.getByRole("heading", { level: 1, name: "You’re confirmed, neighbor." })).toBeTruthy();
     expect(container.querySelectorAll("h1")).toHaveLength(1);
-    expect(screen.getByRole("link", { name: /finish my profile/i }).getAttribute("href")).toBe("/account");
+    expect(screen.getByRole("link", { name: /open my account/i }).getAttribute("href")).toBe("/account");
+    expect(screen.getByText(/stays private until you choose to show it/i)).toBeTruthy();
     expect(screen.getByRole("link", { name: /haven’t applied yet/i }).getAttribute("href")).toBe("/join");
     expect(screen.queryByLabelText(/email/i)).toBeNull();
     expect(screen.getAllByRole("main").map((m) => m.id)).toEqual(["main"]);
@@ -56,7 +57,7 @@ describe("/verified", () => {
     search.mockReturnValue({ error });
     renderWithQueries(<Page />);
     expect(screen.getByRole("heading", { level: 1, name: "This link has run its course." })).toBeTruthy();
-    expect(screen.queryByRole("link", { name: /finish my profile/i })).toBeNull();
+    expect(screen.queryByRole("link", { name: /open my account/i })).toBeNull();
     expect(screen.getByRole("link", { name: /already confirmed\? sign in/i }).getAttribute("href")).toBe("/auth");
   });
 

@@ -7,6 +7,7 @@ import { AccessError, isAdmin, isDeclined, isMember, requireSession } from "@/se
 import { checkImage, mediaUrl, removeMedia, writeMedia } from "@/server/media";
 import { bad, isObject, str } from "@/server/validate";
 import { checkSize, fileBytes, readForm, respond } from "@/server/request";
+import { prefillProfileFromApplication } from "./prefill-from-application";
 import { toMemberProfile } from "./map";
 import { CARD_COLORS, type CardColor } from "./card-colors";
 
@@ -83,11 +84,19 @@ export function memberPage({ db, actor }: Ctx, catalogueNumber: number): MemberP
   };
 }
 
-/** Her own profile with image URLs, or null. */
+/**
+ * Her own profile with image URLs, or null. When she is already approved (including the claim path where an
+ * application was approved before the account existed), blank fields are filled once from her newest application
+ * — same private-draft rules as admin approve; visibility stays off.
+ */
 export function ownProfile({ db, actor }: Ctx): ProfileData | null {
   const me = requireSession(actor);
-  const row = db.prepare("select * from profiles where id = ?").get(me.id) as ProfileRow | undefined;
+  let row = db.prepare("select * from profiles where id = ?").get(me.id) as ProfileRow | undefined;
   if (!row) return null;
+  if (row.status === "approved") {
+    prefillProfileFromApplication(db, me.id);
+    row = db.prepare("select * from profiles where id = ?").get(me.id) as ProfileRow;
+  }
   const hasApplication = !!db.prepare("select 1 from applications where user_id = ? limit 1").get(me.id);
   return { profile: toProfile(row), avatarUrl: avatar(row.avatar_path), logoUrl: avatar(row.business_logo_url), hasApplication };
 }
