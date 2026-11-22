@@ -1,6 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { cn } from "@/index";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import { StatusPage } from "@/app/layout/StatusPages";
 import { ApplicationForm } from "@/features/applications/ApplicationForm";
@@ -37,8 +36,6 @@ export const Route = createFileRoute("/join")({
   component: JoinPage,
 });
 
-const sections = ["About", "Work", "Community", "WhatsApp", "Spotlight", "Directory", "Headshot", "Events", "Contact", "Guidelines", "Finish"];
-
 function JoinPage() {
   const state = Route.useLoaderData();
   const t = (text: string) => state.copy?.[text] ?? text;
@@ -69,14 +66,6 @@ function JoinPage() {
           </div>
           <div className="twc-ticket__stub grow basis-[280px]">
             <div className="twc-ticket__meta"><span>Admit one</span><span>New member</span></div>
-            <div className="flex flex-col gap-2.5">
-              <span className="twc-ticket__meta">Step 01 of 11</span>
-              <ol aria-label="Application sections" className="grid grid-cols-11 gap-1">
-                {sections.map((name, i) => (
-                  <li key={name} className={cn("h-1.5 rounded-[3px]", i === 0 ? "bg-sb-sun" : "bg-sb-paper/25")}><span className="sr-only">{i + 1}. {name}</span></li>
-                ))}
-              </ol>
-            </div>
             <span aria-hidden className="font-script text-[28px] leading-[1.3] text-sb-sun">← that’s you</span>
           </div>
         </div>

@@ -86,6 +86,22 @@ describe("an application's area", () => {
   });
 });
 
+describe("an application's signing date", () => {
+  const apply = (date: unknown) => submitApplication(as(null), {
+    email: "rosa@x.test", fullName: "Rosa", neighborhood: "", answers: { date },
+  });
+
+  it.each(["61123-11-08", "2026-02-30", "11/08/2026", "1999-01-01", 20261108])("refuses %s and stores nothing", (date) => {
+    expect(() => apply(date)).toThrow(/Invalid date/);
+    expect(db.prepare("select count(*) as n from applications").get()).toEqual({ n: 0 });
+  });
+
+  it("takes today", () => {
+    apply(new Date().toISOString().slice(0, 10));
+    expect(db.prepare("select count(*) as n from applications").get()).toEqual({ n: 1 });
+  });
+});
+
 describe("closed POSTs store nothing", () => {
   it("refuses a closed application", () => {
     setMembershipFormOpen(as(ADMIN), { kind: "application", open: false, message: "Not taking applications." });

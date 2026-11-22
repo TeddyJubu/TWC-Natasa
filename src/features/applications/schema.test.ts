@@ -1,5 +1,9 @@
-import { describe, expect, it } from "vitest";
-import { GUIDELINES, areaOfPlace, parseApplication } from "./schema";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { GUIDELINES, areaOfPlace, isSigningDate, parseApplication } from "./schema";
+
+// The fixture's signing date must stay inside the one-year window whenever this runs.
+beforeAll(() => { vi.useFakeTimers({ toFake: ["Date"], now: new Date("2026-11-23T12:00:00Z") }); });
+afterAll(() => { vi.useRealTimers(); });
 
 type Entries = Record<string, string | string[]>;
 
@@ -163,5 +167,31 @@ describe("parseApplication", () => {
   it("requires the consents a chosen section asks for", () => {
     expect(() => parseApplication(formData({ newsletter: "yes" }, ["newsletter-consent"]))).toThrow(/unsubscribe/i);
     expect(() => parseApplication(formData({}, ["final-confirmation"]))).toThrow(/confirm/i);
+  });
+
+  it("an unanswered newsletter question is no subscription, and needs no consent", () => {
+    expect(parseApplication(formData({}, ["newsletter", "newsletter-consent"])).answers.newsletter).toEqual({ subscribe: false });
+  });
+
+  it.each(["61123-11-08", "2026-02-30", "2026-13-01", "11/08/2026", "2020-01-01", "2026-11-26"])("rejects the impossible date %s", (date) => {
+    expect(() => parseApplication(formData({ date }))).toThrow(/today’s date/);
+  });
+});
+
+describe("isSigningDate", () => {
+  const now = Date.parse("2026-11-23T12:00:00Z");
+
+  it.each(["2026-11-23", "2026-11-24", "2025-11-23"])("accepts %s", (date) => {
+    expect(isSigningDate(date, now)).toBe(true);
+  });
+
+  it("accepts a leap day only in a leap year", () => {
+    const leapYear = Date.parse("2028-03-01T12:00:00Z");
+    expect(isSigningDate("2028-02-29", leapYear)).toBe(true);
+    expect(isSigningDate("2027-02-29", leapYear)).toBe(false);
+  });
+
+  it.each([undefined, null, 20261123, "", "2026-11-25", "2025-11-21", "+02026-11-23"])("rejects %s", (date) => {
+    expect(isSigningDate(date, now)).toBe(false);
   });
 });

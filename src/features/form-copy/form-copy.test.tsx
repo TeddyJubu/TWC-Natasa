@@ -32,7 +32,10 @@ describe("manifest", () => {
   }
 });
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  localStorage.clear(); // The application saves a draft, which would reopen sections in the next test.
+});
 
 describe("on the pages", () => {
   it("states no headshot cost, on the application's headshot section or the account card", () => {

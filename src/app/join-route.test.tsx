@@ -16,6 +16,7 @@ import { GUIDELINES } from "@/features/applications/schema";
 const Page = Route.options.component as React.ComponentType;
 const openState = { kind: "application" as const, open: true, closed: null as string | null };
 beforeEach(() => {
+  localStorage.clear();
   vi.spyOn(Route, "useLoaderData").mockReturnValue(openState as never);
   vi.spyOn(Route, "useSearch").mockReturnValue({ area: "north-brooklyn" } as never);
 });
@@ -58,7 +59,7 @@ const sentToThanks = () => waitFor(() => expect(navigate).toHaveBeenCalledWith({
 // Mutations call their server function asynchronously; let that settle.
 const settle = () => act(() => new Promise((r) => setTimeout(r, 20)));
 
-/** Fills only the fields the form requires (the default radio answers need nothing else but the newsletter consent). */
+/** Fills only the fields the form requires (the date starts on today, and the newsletter starts unanswered). */
 function fillMinimum() {
   type(/^full name$/i, "Rosa Diaz");
   type(/^email address$/i, "rosa@x.test");
@@ -71,10 +72,8 @@ function fillMinimum() {
   check("Referrals");
   type(/your ideal referral or connection/i, "Cafés that need a wholesale baker.");
   check("Give referrals");
-  check("I consent to receive collective email and understand I can unsubscribe at any time.");
   GUIDELINES.forEach(check);
   type(/electronic signature/i, "Rosa Diaz");
-  type(/^date$/i, "2026-11-08");
   fireEvent.click(byLabel(/by submitting, i confirm/i));
 }
 
@@ -220,9 +219,128 @@ describe("/join", () => {
     await settle();
 
     const group = screen.getByRole("group", { name: /how would you like to support other members/i });
-    expect(within(group).getByRole("alert").textContent).toMatch(/choose at least one option/i);
+    expect(within(group).getByText(/choose at least one option/i)).toBeTruthy();
+    expect(screen.getByRole("alert").textContent).toMatch(/how would you like to support other members/i);
     expect(inserts()).toEqual([]);
     expect(fake.calls).toEqual([]);
+  });
+
+  it("shows every error at once in a focused summary whose links reach each field", async () => {
+    renderSignedOut();
+    fireEvent.click(submitButton());
+    const summary = await screen.findByRole("alert");
+    expect(document.activeElement).toBe(summary);
+    expect(summary.textContent).toMatch(/Please fix \d+ answers/);
+    for (const question of [/^Full name/, /^Email address/, /^Industry/, /^Electronic signature/, /^I will treat members/, /^By submitting/]) {
+      expect(within(summary).getByRole("link", { name: question })).toBeTruthy();
+    }
+    const name = field(/^full name$/i);
+    expect(name.getAttribute("aria-invalid")).toBe("true");
+    expect(document.getElementById(name.getAttribute("aria-describedby")!)?.textContent).toMatch(/answer this question/i);
+    fireEvent.click(within(summary).getByRole("link", { name: /^Electronic signature/ }));
+    expect(document.activeElement).toBe(field(/electronic signature/i));
+
+    type(/^full name$/i, "Rosa Diaz");
+    expect(field(/^full name$/i).getAttribute("aria-invalid")).toBeNull();
+    expect(within(screen.getByRole("alert")).queryByRole("link", { name: /^Full name/ })).toBeNull();
+    expect(inserts()).toEqual([]);
+  });
+
+  it("starts the date on today and refuses an impossible one", async () => {
+    renderSignedOut();
+    const date = field(/^date$/i);
+    const now = new Date();
+    expect(date.value).toBe(new Date(now.getTime() - now.getTimezoneOffset() * 60_000).toISOString().slice(0, 10));
+    expect(date.max).toBe(date.value);
+    fillMinimum();
+    fireEvent.change(date, { target: { value: "2020-01-01" } });
+    fireEvent.click(submitButton());
+    expect((await screen.findByRole("alert")).textContent).toMatch(/today’s date/);
+    expect(inserts()).toEqual([]);
+  });
+
+  it("leaves the newsletter unanswered, and a sent application doesn't subscribe", async () => {
+    fake.results = [ok];
+    renderSignedOut();
+    const group = screen.getByRole("group", { name: /receive news/i });
+    expect(within(group).getAllByRole("radio").some((radio) => (radio as HTMLInputElement).checked)).toBe(false);
+    expect(screen.queryByLabelText(/I consent to receive collective email/)).toBeNull();
+    fillMinimum();
+    fireEvent.click(submitButton());
+    await sentToThanks();
+    const [[, sent]] = inserts() as [string, { answers: { newsletter: unknown } }][];
+    expect(sent.answers.newsletter).toEqual({ subscribe: false });
+  });
+});
+
+describe("/join draft", () => {
+  const saved = () => JSON.parse(localStorage.getItem("twc-join-draft") ?? "null") as { values: Record<string, string[]> } | null;
+
+  it("survives a reload, follow-ups included, but never the signature, date, newsletter or a consent", async () => {
+    renderSignedOut();
+    fillMinimum();
+    fireEvent.click(byLabel("Yes — apply"));
+    type(/directory biography/i, "Rosa bakes.");
+    check("I authorize publication of the selected information on The Women’s Collective website.");
+    fireEvent.click(within(screen.getByRole("group", { name: /receive news/i })).getByRole("radio", { name: "Yes" }));
+    expect(Object.keys(saved()!.values)).not.toEqual(expect.arrayContaining(["signature"]));
+    for (const name of ["signature", "date", "newsletter", "newsletter-consent", "guidelines", "final-confirmation", "directory-consent", "fax-number", "area"]) {
+      expect(saved()!.values[name]).toBeUndefined();
+    }
+    cleanup();
+
+    renderSignedOut();
+    // By name: the restored directory section has its own "Full name" choice.
+    await waitFor(() => expect(document.querySelector<HTMLInputElement>('input[name="full-name"]')!.value).toBe("Rosa Diaz"));
+    expect(field(/directory biography/i).value).toBe("Rosa bakes.");
+    expect((byLabel("Food and hospitality") as HTMLInputElement).checked).toBe(true);
+    expect(field(/electronic signature/i).value).toBe("");
+    expect((byLabel(/by submitting, i confirm/i) as HTMLInputElement).checked).toBe(false);
+    expect((byLabel("I authorize publication of the selected information on The Women’s Collective website.") as HTMLInputElement).checked).toBe(false);
+    expect(screen.queryByLabelText(/I consent to receive collective email/)).toBeNull();
+    expect(screen.getByText(/Your saved answers are back/)).toBeTruthy();
+  }, 20_000); // Fills and re-renders the whole form twice.
+
+  it("comes back under the other area, so switching area and reloading loses nothing", async () => {
+    renderSignedOut();
+    type(/^full name$/i, "Rosa Diaz");
+    cleanup();
+    vi.spyOn(Route, "useSearch").mockReturnValue({ area: "queens" } as never);
+    renderSignedOut();
+    await waitFor(() => expect(field(/^full name$/i).value).toBe("Rosa Diaz"));
+    expect((document.querySelector("input[name=area]") as HTMLInputElement).value).toBe("queens");
+  });
+
+  it("clears on a second press, from the device and the form", async () => {
+    renderSignedOut();
+    type(/^full name$/i, "Rosa Diaz");
+    fireEvent.click(screen.getByRole("button", { name: "Clear saved answers" }));
+    expect(saved()).not.toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: /press again/i }));
+    await waitFor(() => expect(field(/^full name$/i).value).toBe(""));
+    expect(saved()).toBeNull();
+    expect(document.activeElement).toBe(field(/^full name$/i));
+  });
+
+  it("is removed once the application is sent", async () => {
+    fake.results = [ok];
+    renderSignedOut();
+    fillMinimum();
+    expect(saved()).not.toBeNull();
+    fireEvent.click(submitButton());
+    await sentToThanks();
+    expect(saved()).toBeNull();
+  });
+
+  it("keeps working when storage is unavailable, and says so", async () => {
+    const blocked = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => { throw new DOMException("denied", "SecurityError"); });
+    fake.results = [ok];
+    renderSignedOut();
+    expect(await screen.findByText(/can’t save a draft/)).toBeTruthy();
+    fillMinimum();
+    fireEvent.click(submitButton());
+    await sentToThanks();
+    blocked.mockRestore();
   });
 });
 

@@ -41,7 +41,16 @@ export const heardOptions = ["A current member", "An event", "Social media", "Ne
 /** Mirrors the `applications` table checks in migration 0001; `answersBytes` keeps a margin under the 32 KB jsonb check. */
 export const LIMITS = { fullName: 120, email: 254, neighborhood: 60, text: 2000, answersBytes: 30 * 1024 } as const;
 /** The `applications.email` check in migration 0001. */
-const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+export const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+export const DATE_ERROR = "Please enter today’s date.";
+/** The signing date: a real calendar day, at most a year old, and no later than tomorrow in UTC (time zones run ahead). */
+export function isSigningDate(value: unknown, now = Date.now()): boolean {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const time = Date.parse(`${value}T00:00:00Z`);
+  return !Number.isNaN(time) && new Date(time).toISOString().slice(0, 10) === value && time <= now + DAY_MS && time >= now - 366 * DAY_MS;
+}
 
 export interface ApplicationAnswers {
   preferredName?: string;
@@ -214,6 +223,9 @@ export function parseApplication(form: FormData): ApplicationInput {
   const accepted = form.getAll("guidelines");
   if (!GUIDELINES.every((g) => accepted.includes(g))) throw new Error("Please confirm each community guideline.");
 
+  const date = r.required("date", "Date");
+  if (!isSigningDate(date)) throw new Error(DATE_ERROR);
+
   const answers: ApplicationAnswers = compact({
     preferredName: r.text("preferred-name"),
     pronouns: r.text("pronouns"),
@@ -248,7 +260,7 @@ export function parseApplication(form: FormData): ApplicationInput {
     heardAbout: r.text("heard"),
     referrer: r.text("referrer"),
     signature: r.required("signature", "Electronic signature"),
-    date: r.required("date", "Date"),
+    date,
     finalConfirmation: r.consent("final-confirmation", "I have read and agreed to the permissions, statements, and community guidelines in this application."),
   });
 

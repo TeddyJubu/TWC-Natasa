@@ -7,7 +7,7 @@ import type { DB } from "@/server/db";
 import { appUrl } from "@/server/email";
 import { confirmFooter, confirmSubmitter, firstName, notifyAdmins, oneLine } from "@/server/notify";
 import { bad, isObject, str } from "@/server/validate";
-import { AREAS } from "./schema";
+import { AREAS, isSigningDate } from "./schema";
 import { checkSize, clientIp, HttpError, rateLimit, respond } from "@/server/request";
 
 export type Applicant = { email: string; fullName: string };
@@ -23,6 +23,7 @@ export function submitApplication({ db, actor }: Ctx, input: unknown): Stored {
   // A page opened before areas existed sends none; any other value must be a real area.
   const { area } = stored.answers;
   if (area !== undefined && !AREAS.some((a) => a.name === area)) throw bad("area");
+  if (stored.answers.date !== undefined && !isSigningDate(stored.answers.date)) throw bad("date");
   db.prepare("insert into applications (email, full_name, neighborhood, answers, user_id) values (?, ?, ?, ?, ?)").run(
     stored.email, stored.fullName, neighborhood, JSON.stringify(stored.answers), actor?.id ?? null,
   );

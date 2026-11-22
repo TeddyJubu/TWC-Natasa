@@ -2,6 +2,7 @@
 import * as React from "react";
 import { cn } from "@/index";
 import { useCopy } from "@/features/form-copy/use-copy";
+import { FieldErrors, checkErrorKey } from "./form-state";
 import { LIMITS } from "./schema";
 
 // The space keeps a screen reader's name "Anything else? Optional", not "Anything else?Optional".
@@ -12,23 +13,38 @@ export const Select = (props: React.ComponentProps<"select">) => <select classNa
 /** Long answers stay well inside the 32 KB `answers` column. */
 export const LongAnswer = (props: React.ComponentProps<"textarea">) => <textarea className="twc-input" maxLength={LIMITS.text} {...props} />;
 
-type ControlProps = { id?: string; "aria-describedby"?: string };
+type ControlProps = { id?: string; name?: string; "aria-describedby"?: string; "aria-invalid"?: boolean };
 
-/** Labels its single child control: gives it `id` and points `aria-describedby` at the hint. */
+/** Labels its single child control: gives it `id` and points `aria-describedby` at the hint and any error. */
 export function Field({ id, label, optional, hint, className, children }: { id: string; label: string; optional?: boolean; hint?: string; className?: string; children: React.ReactElement<ControlProps> }) {
   const t = useCopy();
+  const error = React.useContext(FieldErrors).get(children.props.name ?? id);
   const hintId = hint ? `${id}-hint` : undefined;
+  const errorId = error ? `${id}-error` : undefined;
   return (
-    <div className={cn("twc-field", className)}>
+    <div className={cn("twc-field", className)} data-question={t(label)}>
       <label htmlFor={id}>{t(label)}{optional && <Optional />}</label>
-      {React.cloneElement(children, { id, "aria-describedby": hintId })}
+      {React.cloneElement(children, { id, "aria-describedby": [hintId, errorId].filter(Boolean).join(" ") || undefined, "aria-invalid": error ? true : undefined })}
       {hint && <span id={hintId} className="twc-hint">{t(hint)}</span>}
+      {error && <p id={errorId} className="twc-error">{error}</p>}
     </div>
   );
 }
 
-export function Check({ label, className, ...props }: Omit<React.ComponentProps<"input">, "type"> & { label: React.ReactNode }) {
-  return <label className={cn("twc-check", className)}><input type="checkbox" {...props} /><span>{label}</span></label>;
+export function Check({ label, className, id, ...props }: Omit<React.ComponentProps<"input">, "type"> & { label: React.ReactNode }) {
+  const autoId = React.useId();
+  const inputId = id ?? autoId;
+  const error = React.useContext(FieldErrors).get(checkErrorKey(props.name, props.value));
+  const errorId = `${inputId}-error`;
+  return (
+    <div className="min-w-0">
+      <label className={cn("twc-check", className)}>
+        <input type="checkbox" id={inputId} aria-invalid={error ? true : undefined} aria-describedby={error ? errorId : undefined} {...props} />
+        <span className="max-w-[56ch]">{label}</span>
+      </label>
+      {error && <p id={errorId} className="twc-error mt-1.5 pl-8">{error}</p>}
+    </div>
+  );
 }
 
 export type Option = string | { value: string; label: string };
@@ -70,9 +86,11 @@ export function Choices({ name, legend, options, type = "checkbox", hint, option
     if (checked.length) setInvalid(false);
     onValueChange?.(checked);
   };
-  const showError = invalid && !!required;
+  const firstId = React.useId();
+  const formError = React.useContext(FieldErrors).get(name);
+  const message = formError ?? (invalid && required ? emptyMessage(type) : undefined);
   return (
-    <fieldset ref={group} aria-describedby={showError ? errorId : undefined} className={cn("min-w-0", className)}>
+    <fieldset ref={group} data-question={t(legend)} aria-describedby={message ? errorId : undefined} className={cn("min-w-0", className)}>
       <legend className="twc-label mb-2.5">
         {t(legend)}{optional && <Optional />}
         {hint && <span className="ml-2 text-[13px] font-normal normal-case tracking-normal text-sb-muted">{t(hint)}</span>}
@@ -83,11 +101,13 @@ export function Choices({ name, legend, options, type = "checkbox", hint, option
           return (
             <label key={value} className="twc-choice">
               <input
+                id={i === 0 ? firstId : undefined}
                 type={type}
                 name={name}
                 value={value}
                 defaultChecked={defaultValue === value}
-                aria-describedby={i === 0 && showError ? errorId : undefined}
+                aria-invalid={formError && type === "checkbox" ? true : undefined}
+                aria-describedby={message && (i === 0 || formError) ? errorId : undefined}
                 onInvalid={i === 0 && required ? () => setInvalid(true) : undefined}
                 onChange={onChange}
               />
@@ -96,7 +116,8 @@ export function Choices({ name, legend, options, type = "checkbox", hint, option
           );
         })}
       </div>
-      {showError && <p id={errorId} role="alert" className="twc-error mt-2.5">{emptyMessage(type)}</p>}
+      {/* A form with an error summary announces there; an inline alert too would read every error twice. */}
+      {message && <p id={errorId} role={formError ? undefined : "alert"} className="twc-error mt-2.5">{message}</p>}
     </fieldset>
   );
 }
@@ -106,10 +127,10 @@ export function Section({ index, title, description, children }: { index: string
   const t = useCopy();
   const headingId = React.useId();
   return (
-    <fieldset aria-labelledby={headingId} className="flex min-w-0 flex-col gap-[22px] border-t border-sb-ink/15 pt-12 first:border-t-0 first:pt-0">
+    <fieldset aria-labelledby={headingId} data-step={index} className="flex min-w-0 flex-col gap-[22px] border-t border-sb-ink/15 pt-12 first:border-t-0 first:pt-0">
       <span className="twc-index">{index}</span>
       <h2 id={headingId} className="font-display text-[32px] leading-[1.09] tracking-[-0.5px] sm:text-[40px]">{t(title)}</h2>
-      <p className="text-sb-muted">{t(description)}</p>
+      <p className="max-w-[56ch] text-sb-muted">{t(description)}</p>
       {children}
     </fieldset>
   );
@@ -120,7 +141,7 @@ export function Notice({ title, eyebrow, tone, className, children, ...props }: 
     <aside className={cn("twc-notice", tone && `twc-notice--${tone}`, className)} {...props}>
       {eyebrow && <span className="twc-eyebrow text-sb-ink">{eyebrow}</span>}
       <h3 className="twc-notice__title">{title}</h3>
-      <div className="flex flex-col gap-3 text-[15px]">{children}</div>
+      <div className="flex max-w-[56ch] flex-col gap-3 text-[15px]">{children}</div>
     </aside>
   );
 }
