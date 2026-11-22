@@ -58,9 +58,9 @@ function Confirmed() {
       <p className="text-sb-muted">
         {declined
           ? "Your email is verified. Your account shows where your application stands."
-          : viewer.isSuccess ? "Your email is verified. Finish your profile now so it’s ready the day you’re welcomed in." : "Your email is verified."}
+          : viewer.isSuccess ? "Your email is verified. Open your account to finish your profile — it stays private until you choose to show it." : "Your email is verified."}
       </p>
-      <Link to="/account" className="twc-btn mt-1 w-full">{declined ? "Go to my account" : "Finish my profile"} <Icon name="arrow" className="twc-arrow" /></Link>
+      <Link to="/account" className="twc-btn mt-1 w-full">{declined ? "Go to my account" : "Open my account"} <Icon name="arrow" className="twc-arrow" /></Link>
       {declined
         ? <Link to="/contact" className={slink}>Have a question? Contact us</Link>
         : <Link to="/join" className={slink}>Haven’t applied yet? Start your application</Link>}

@@ -18,6 +18,7 @@ import { WhereCard } from "@/features/account/WhereCard";
 import { DeleteAccount } from "@/features/account/DeleteAccount";
 import { SaveActions } from "@/features/account/SaveActions";
 import { PassDialog } from "@/features/account/MemberPass";
+import { YoureIn } from "@/features/account/YoureIn";
 import { PROFILE_FORM, changedFields, errorMessage, fieldId, type CardKey, type ProfileEditor } from "@/features/account/helpers";
 
 export const Route = createFileRoute("/_authenticated/account")({
@@ -152,6 +153,7 @@ function ProfileEditorPage({ userId, profile, avatar, logoUrl, hoodList, applied
     <main id="main" tabIndex={-1} className="outline-none">
       {children}
       <AccountHeader userId={userId} profile={profile} avatar={avatar} onPreview={preview} />
+      {approved && <YoureIn userId={userId} />}
       <div className="air-grid">
         <WhereCard editor={editor} userId={userId} hood={profile.neighborhood || null} approved={approved} avatar={avatar} hoodList={hoodList} />
         <PublicCard editor={editor} userId={userId} logoPath={profile.business_logo_url} logoUrl={logoUrl} hoodList={hoodList} />

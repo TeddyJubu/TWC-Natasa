@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import type { MemberProfile } from "@/index";
 import { demoMembers } from "@/showcase/demo-members";
@@ -20,6 +20,10 @@ import { Route } from "@/routes/_authenticated/account";
 vi.spyOn(Route, "useRouteContext").mockReturnValue({ user: { id: "u1" } } as never);
 const Page = Route.options.component as React.ComponentType;
 let restoreDialog: (() => void) | undefined;
+beforeEach(() => {
+  // Hide the one-time “You’re in” panel unless a test clears storage on purpose.
+  localStorage.setItem("twc-youre-in:v1:u1", "1");
+});
 afterEach(() => {
   cleanup();
   fake.reset();
@@ -283,6 +287,7 @@ describe("/account", () => {
       cleanup();
       renderAccount({ status: "pending", catalogue_number: null, member_since: null });
       expect(within(visibility()).getByText(/stays private until you’re welcomed in/)).toBeTruthy();
+      expect(within(visibility()).getByText(/only appears when you turn these on/i)).toBeTruthy();
     });
 
     it("is disabled until the directory switch is on", () => {
@@ -316,10 +321,30 @@ describe("/account", () => {
       );
     });
 
-    it("tells members it only goes live once approved", () => {
+    it("tells pending members visibility is after approval and only when they turn it on", () => {
       renderAccount({ status: "pending", directory_visible: true });
-      expect(publicSwitch().closest("label")?.textContent).toMatch(/once you’re approved/i);
+      expect(publicSwitch().closest("label")?.textContent).toMatch(/after approval/i);
+      expect(publicSwitch().closest("label")?.textContent).toMatch(/turn it on/i);
     });
+  });
+
+  it("shows a one-time You’re in panel for a newly approved member", () => {
+    localStorage.removeItem("twc-youre-in:v1:u1");
+    renderAccount();
+    const panel = screen.getByRole("region", { name: "You’re in" });
+    expect(within(panel).getByText(/private draft until you choose to show it/i)).toBeTruthy();
+    expect(within(panel).getByRole("link", { name: /open visibility/i })).toBeTruthy();
+    fireEvent.click(within(panel).getByRole("button", { name: "Got it" }));
+    expect(screen.queryByRole("region", { name: "You’re in" })).toBeNull();
+    cleanup();
+    renderAccount();
+    expect(screen.queryByRole("region", { name: "You’re in" })).toBeNull();
+  });
+
+  it("pending members do not see You’re in", () => {
+    localStorage.removeItem("twc-youre-in:v1:u1");
+    renderAccount({ status: "pending", catalogue_number: null });
+    expect(screen.queryByRole("region", { name: "You’re in" })).toBeNull();
   });
 
   describe("introductions", () => {

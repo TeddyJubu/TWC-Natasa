@@ -14,6 +14,7 @@ import {
   type ActionKind, type Duplicate, type LoggedActionKind,
 } from "./format";
 import { sendApprovalEmail, type ApprovalEmailResult } from "./approval-email.server";
+import { prefillProfileFromApplication } from "@/features/members/prefill-from-application";
 
 
 export type AdminApplication = {
@@ -83,7 +84,8 @@ function logAction(db: Ctx["db"], actorId: string, action: ActionKind, subject: 
 
 /**
  * Reviews an application. The applications_review trigger timestamps it and gives a linked profile the same status;
- * reviewed_by records this admin, and only a real status change writes it.
+ * reviewed_by records this admin, and only a real status change writes it. Approving also prefills blank profile
+ * fields from that application (private draft; visibility stays off). Undo-decline (back to pending) does not.
  */
 export function reviewApplication({ db, actor }: Ctx, input: unknown): void {
   const me = requireAdmin(db, actor);
@@ -91,14 +93,17 @@ export function reviewApplication({ db, actor }: Ctx, input: unknown): void {
   const id = str(input.id, "application", 64);
   const status = oneOf(input.status, STATUSES, "status");
   tx(db, () => {
+    const before = db.prepare("select user_id from applications where id = ?").get(id) as { user_id: string | null } | undefined;
     const changed = db.prepare("update applications set status = ?, reviewed_by = ? where id = ? and status is not ?").run(status, me.id, id, status).changes > 0;
     if (changed) logAction(db, me.id, status, { application_id: id });
+    if (changed && status === "approved" && before?.user_id) prefillProfileFromApplication(db, before.user_id);
   });
 }
 
 /**
  * Sets a profile's status directly. Approve, decline and undo-decline (back to pending) also give her newest
- * application the same decision (0004 / CRM-069), recorded as this admin.
+ * application the same decision (0004 / CRM-069), recorded as this admin. Approving prefills blank profile fields
+ * from that application (private draft; visibility stays off). Undo-decline does not prefill.
  * Returns that newest application's id (null when she has none), for the welcome email.
  */
 export function setMemberStatus({ db, actor }: Ctx, input: unknown): string | null {
@@ -113,6 +118,7 @@ export function setMemberStatus({ db, actor }: Ctx, input: unknown): string | nu
     if (changed && app) {
       db.prepare("update applications set status = ?, reviewed_by = ? where id = ? and status is not ?").run(status, me.id, app.id, status);
     }
+    if (changed && status === "approved") prefillProfileFromApplication(db, id);
     return app?.id ?? null;
   });
 }

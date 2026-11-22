@@ -215,7 +215,7 @@ export function VisibilityCard({ editor, profile }: { editor: ProfileEditor; pro
   const audience = declined
     ? "Only you and the collective’s admins can see your card."
     : !approved
-      ? "Your card stays private until you’re welcomed in. These choices take effect that day."
+      ? "Your card stays private until you’re welcomed in. After that, it only appears when you turn these on."
       : listed && card.public_profile
         ? "Anyone can see your card: members, and visitors to the public website."
         : listed
@@ -231,7 +231,7 @@ export function VisibilityCard({ editor, profile }: { editor: ProfileEditor; pro
         label="Show me in the member directory"
         description={declined
           ? "The directory is for members, so your card isn’t listed."
-          : approved ? "Signed-in members can find you and your card." : "Signed-in members can find you and your card, once your membership is approved."}
+          : approved ? "Signed-in members can find you and your card." : "After approval, signed-in members can find you once you turn this on."}
         checked={listed}
         // Switching the directory off also switches the public card off, so re-listing never republishes silently.
         onChange={(e) => set(e.currentTarget.checked ? { directory_visible: true } : { directory_visible: false, public_profile: false })}
@@ -240,7 +240,7 @@ export function VisibilityCard({ editor, profile }: { editor: ProfileEditor; pro
         label="Show my profile on the public website"
         description={declined
           ? "The public website shows members only, so your card isn’t published."
-          : `Anyone on the internet can see your name, portrait, work, neighborhood, bio and links, on our homepage and your public page.${listed ? "" : " Turn on the member directory first."}${approved ? "" : " Goes live only once you’re approved."}`}
+          : `Anyone on the internet can see your name, portrait, work, neighborhood, bio and links, on our homepage and your public page.${listed ? "" : " Turn on the member directory first."}${approved ? "" : " Available after approval, and only once you turn it on."}`}
         checked={listed && card.public_profile} disabled={!listed}
         onChange={(e) => set({ public_profile: e.currentTarget.checked })}
       />

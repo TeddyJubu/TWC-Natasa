@@ -48,7 +48,7 @@ export function AccountHeader({ userId, profile, avatar, onPreview }: {
   ];
   const waiting = declined
     ? "We weren’t able to offer you a membership, so your card stays private."
-    : "Polish your card now — it goes live the day you’re welcomed in.";
+    : "Polish your card while you wait — it stays private until you’re welcomed in, and only appears when you turn on Visibility.";
   const postmark = approved && profile.member_since ? new Date(profile.member_since) : null;
   const band = profile.business.trim() || profile.role_title.trim();
 
