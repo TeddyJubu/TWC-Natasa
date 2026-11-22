@@ -42,6 +42,12 @@ function formData(over: Entries = {}, omit: string[] = []) {
 }
 
 describe("parseApplication", () => {
+  it("records the area of the link, and names that area when its question is left empty", () => {
+    expect(parseApplication(formData({ area: "queens", neighborhood: "Astoria" })).answers.area).toBe("Queens");
+    expect(parseApplication(formData({ area: "nope" })).answers.area).toBe("North Brooklyn");
+    expect(() => parseApplication(formData({ area: "queens", neighborhood: "Astoria" }, ["connection"]))).toThrow(/connection to Queens/);
+  });
+
   it("parses a filled form into the typed shape, trimming strings and omitting empty optionals", () => {
     expect(parseApplication(formData())).toEqual({
       email: "rosa@x.test",
@@ -50,6 +56,7 @@ describe("parseApplication", () => {
       answers: {
         phone: "718-555-0100",
         basedIn: "Williamsburg",
+        area: "North Brooklyn",
         connection: ["I live here", "I own a business here"],
         role: "Baker",
         story: "I bake bread for the block.",

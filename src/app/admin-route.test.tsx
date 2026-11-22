@@ -768,6 +768,18 @@ describe("/admin", () => {
       expect(card("Wording").textContent).toMatch(/1 changed/);
     });
 
+    it("built-in: the join form's Areas card shows each area's link and neighborhoods, All by default", () => {
+      renderFormPage("application", {}, ["application", { "What is your connection to Queens?": "Why Queens?" }]);
+      const areas = within(card("Areas"));
+      expect(areas.getByRole("button", { name: "All" }).getAttribute("aria-pressed")).toBe("true");
+      expect(areas.getByRole("link", { name: /\/join\?area=queens/ }).getAttribute("href")).toBe("/join?area=queens");
+      expect(areas.getByRole("list", { name: "North Brooklyn neighborhoods" }).textContent).toMatch(/Greenpoint/);
+      expect(areas.getByText("Why Queens?")).toBeTruthy();
+      fireEvent.click(areas.getByRole("button", { name: "Queens" }));
+      expect(areas.queryByRole("list", { name: "North Brooklyn neighborhoods" })).toBeNull();
+      expect(areas.getByRole("list", { name: "Queens neighborhoods" }).textContent).toMatch(/Astoria/);
+    });
+
     it("built-in: Save wording sends every text and is off until something changes", async () => {
       renderFormPage("contact", {}, ["contact", {}]);
       expect(screen.queryByRole("region", { name: "Open or closed" })).toBeNull();

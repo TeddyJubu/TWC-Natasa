@@ -5,6 +5,7 @@ import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import { StatusPage } from "@/app/layout/StatusPages";
 import { ApplicationForm } from "@/features/applications/ApplicationForm";
 import { useSubmitApplication } from "@/features/applications/mutations";
+import { AREAS, areaById } from "@/features/applications/schema";
 import { applicantQuery } from "@/features/applications/queries";
 import { CLOSED_TITLE } from "@/features/forms-state/constants";
 import { publicFormStateFn } from "@/features/forms-state/fns";
@@ -13,16 +14,20 @@ import { loadFormCopy } from "@/features/form-copy/queries";
 import { paragraphs } from "@/features/forms/schema";
 
 export const Route = createFileRoute("/join")({
-  loader: async () => {
+  // ?area= picks the area's link; an unknown one is dropped, and no area is the form's original, North Brooklyn.
+  validateSearch: (raw: Record<string, unknown>): { area?: string } =>
+    (AREAS.some((a) => a.id === raw.area) ? { area: raw.area as string } : {}),
+  loaderDeps: ({ search }) => ({ area: search.area }),
+  loader: async ({ deps }) => {
     const [state, copy] = await Promise.all([publicFormStateFn({ data: { kind: "application" } }), loadFormCopy("application")]);
-    return { ...state, copy };
+    return { ...state, copy, areaId: deps.area };
   },
-  head: () => ({
+  head: ({ loaderData }) => ({
     meta: [
       { title: "Join The Women’s Collective — Membership application" },
-      { name: "description", content: "Apply to The Women’s Collective, a community connecting women across North Brooklyn." },
+      { name: "description", content: `Apply to The Women’s Collective, a community connecting women across ${areaById(loaderData?.areaId).name}.` },
       { property: "og:title", content: "Join The Women’s Collective — Membership application" },
-      { property: "og:description", content: "Tell us about you, your work, and how you hope to take part in our North Brooklyn community." },
+      { property: "og:description", content: `Tell us about you, your work, and how you hope to take part in our ${areaById(loaderData?.areaId).name} community.` },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -35,6 +40,7 @@ const sections = ["About", "Work", "Community", "WhatsApp", "Spotlight", "Direct
 function JoinPage() {
   const state = Route.useLoaderData();
   const t = (text: string) => state.copy?.[text] ?? text;
+  const area = areaById(state.areaId);
   const { mutateAsync: submit } = useSubmitApplication();
   const navigate = useNavigate();
   // Prefill is a convenience: while it loads, or if it fails, the form simply starts empty.
@@ -73,6 +79,8 @@ function JoinPage() {
           </div>
         </div>
         <ApplicationForm
+          key={area.id}
+          area={area}
           submit={submit}
           initial={applicant ?? undefined}
           // ponytail: pre-launch an applicant only needs to apply, so no login step; the thank-you is its own page.

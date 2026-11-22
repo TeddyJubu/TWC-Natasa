@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Icon } from "@/app/layout/twc";
 import { useCopy } from "@/features/form-copy/use-copy";
-import { GUIDELINES, LIMITS, communityOptions, connectionOptions, directoryOptions, eventOptions, heardOptions, industryOptions, locationOptions, parseApplication, supportOptions, type ApplicationInput } from "./schema";
+import { AREAS, GUIDELINES, LIMITS, communityOptions, connectionOptions, directoryOptions, eventOptions, heardOptions, industryOptions, parseApplication, supportOptions, type ApplicationInput, type Area } from "./schema";
 import { Check, Choices, Field, Input, LongAnswer, Notice, Section, Select } from "./twc-fields";
 
 const yesNo = [{ value: "yes", label: "Yes" }, { value: "no", label: "No" }];
@@ -18,6 +18,8 @@ export interface ApplicationFormProps {
   resettable?: boolean;
   /** Called instead of showing the in-place confirmation (the live /join moves on to /join/thanks). */
   onSent?: () => void;
+  /** Which area's link this is: its neighborhoods and its question. North Brooklyn unless told otherwise. */
+  area?: Area;
 }
 
 /** Name of the hidden anti-spam field; deliberately not a real application field. */
@@ -26,7 +28,7 @@ const HONEYPOT = "fax-number";
 /** `invalid`: the parser rejected the answers (clears on the next edit). `send`: the insert failed (offers Retry). */
 type Failure = { kind: "invalid" | "send"; message: string };
 
-export function ApplicationForm({ submit, initial, resettable, onSent }: ApplicationFormProps) {
+export function ApplicationForm({ submit, initial, resettable, onSent, area = AREAS[0]! }: ApplicationFormProps) {
   const [status, setStatus] = React.useState<"idle" | "sending" | "sent">("idle");
   const [failure, setFailure] = React.useState<Failure | null>(null);
   const [round, setRound] = React.useState(0);
@@ -68,6 +70,7 @@ export function ApplicationForm({ submit, initial, resettable, onSent }: Applica
 
   return (
     <ApplicationFields
+      area={area}
       key={round}
       initial={initial}
       busy={status === "sending"}
@@ -95,6 +98,7 @@ function Received({ onReset }: { onReset?: () => void }) {
 }
 
 interface FieldsProps {
+  area: Area;
   initial?: ApplicationFormProps["initial"];
   busy: boolean;
   failure: Failure | null;
@@ -102,7 +106,7 @@ interface FieldsProps {
   onEdit: () => void;
 }
 
-function ApplicationFields({ initial, busy, failure, onSubmit, onEdit }: FieldsProps) {
+function ApplicationFields({ area, initial, busy, failure, onSubmit, onEdit }: FieldsProps) {
   const t = useCopy();
   const [industry, setIndustry] = React.useState<string[]>([]);
   const [whatsApp, setWhatsApp] = React.useState("no");
@@ -136,6 +140,7 @@ function ApplicationFields({ initial, busy, failure, onSubmit, onEdit }: FieldsP
         <label>Leave this field empty<input name={HONEYPOT} type="text" tabIndex={-1} autoComplete="off" /></label>
       </div>
       <div className="flex flex-col gap-12">
+        <input type="hidden" name="area" value={area.id} />
         <Section index="01 — Personal information" title="Start with you." description="Private details stay private unless you explicitly authorize publication.">
           <div className="grid gap-[22px] sm:grid-cols-2">
             <Field id="full-name" label="Full name"><Input ref={nameInput} name="full-name" autoComplete="name" maxLength={LIMITS.fullName} required /></Field>
@@ -143,9 +148,9 @@ function ApplicationFields({ initial, busy, failure, onSubmit, onEdit }: FieldsP
             <Field id="pronouns" label="Pronouns" optional><Input name="pronouns" /></Field>
             <Field id="email" label="Email address"><Input ref={emailInput} name="email" type="email" autoComplete="email" maxLength={254} required /></Field>
             <Field id="phone" label="Phone number"><Input name="phone" type="tel" autoComplete="tel" required /></Field>
-            <Field id="neighborhood" label="Where are you based?"><Select name="neighborhood" required defaultValue=""><option value="">Choose a neighborhood</option>{locationOptions.map((item) => <option key={item}>{item}</option>)}</Select></Field>
+            <Field id="neighborhood" label="Where are you based?"><Select name="neighborhood" required defaultValue=""><option value="">Choose a neighborhood</option>{area.neighborhoods.map((item) => <option key={item}>{item}</option>)}</Select></Field>
           </div>
-          <Choices name="connection" legend="What is your connection to North Brooklyn?" hint="Select all that apply." options={connectionOptions} required />
+          <Choices name="connection" legend={area.connection} hint="Select all that apply." options={connectionOptions} required />
         </Section>
 
         <Section index="02 — About your work" title="Share what you do." description="Help members understand your work in your own words.">

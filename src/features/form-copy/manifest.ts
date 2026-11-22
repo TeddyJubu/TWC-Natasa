@@ -25,7 +25,7 @@ export const COPY_FIELDS: Record<CopyForm, CopyField[]> = {
     ...g("01 — Personal information", [
       "Start with you.", "Private details stay private unless you explicitly authorize publication.",
       "Full name", "Preferred name", "Pronouns", "Email address", "Phone number", "Where are you based?",
-      "What is your connection to North Brooklyn?", "Select all that apply.",
+      "What is your connection to North Brooklyn?", "What is your connection to Queens?", "Select all that apply.",
     ]),
     ...g("02 — About your work", [
       "Share what you do.", "Help members understand your work in your own words.",

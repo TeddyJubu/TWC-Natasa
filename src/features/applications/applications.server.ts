@@ -7,6 +7,7 @@ import type { DB } from "@/server/db";
 import { appUrl } from "@/server/email";
 import { confirmFooter, confirmSubmitter, firstName, notifyAdmins, oneLine } from "@/server/notify";
 import { bad, isObject, str } from "@/server/validate";
+import { AREAS } from "./schema";
 import { checkSize, clientIp, HttpError, rateLimit, respond } from "@/server/request";
 
 export type Applicant = { email: string; fullName: string };
@@ -18,8 +19,12 @@ export function submitApplication({ db, actor }: Ctx, input: unknown): Stored {
   assertFormOpen(db, "application");
   if (!isObject(input) || !isObject(input.answers)) throw bad("application");
   const stored = { email: str(input.email, "email", 254), fullName: str(input.fullName, "name", 120), answers: input.answers };
+  const neighborhood = str(input.neighborhood ?? "", "neighborhood", 60);
+  // A page opened before areas existed sends none; one that names an area must pick from that area's neighborhoods.
+  const { area } = stored.answers;
+  if (area !== undefined && !AREAS.find((a) => a.name === area)?.neighborhoods.includes(neighborhood)) throw bad("neighborhood");
   db.prepare("insert into applications (email, full_name, neighborhood, answers, user_id) values (?, ?, ?, ?, ?)").run(
-    stored.email, stored.fullName, str(input.neighborhood ?? "", "neighborhood", 60), JSON.stringify(stored.answers), actor?.id ?? null,
+    stored.email, stored.fullName, neighborhood, JSON.stringify(stored.answers), actor?.id ?? null,
   );
   return stored;
 }

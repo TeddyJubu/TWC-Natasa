@@ -12,8 +12,16 @@ export const GUIDELINES = [
 ] as const;
 
 /** The page's answer choices (shared with the admin's copy of this form, `built-in-copies.ts`). */
-// The club is North Brooklyn (its old address was nbwc.site): only these three, as the owner asked on 2026-11-17.
 export const locationOptions = ["Greenpoint", "Williamsburg", "Bushwick"];
+export const queensOptions = ["Long Island City", "Astoria", "Sunnyside", "Jackson Heights", "Elmhurst", "Forest Hills", "Rego Park"];
+/** One shared form with a link per area (user decision, 2026-11-22): each link has its own neighborhoods and question. */
+export type Area = { id: string; name: string; href: string; neighborhoods: readonly string[]; connection: string };
+export const AREAS: readonly Area[] = [
+  { id: "north-brooklyn", name: "North Brooklyn", href: "/join", neighborhoods: locationOptions, connection: "What is your connection to North Brooklyn?" },
+  { id: "queens", name: "Queens", href: "/join?area=queens", neighborhoods: queensOptions, connection: "What is your connection to Queens?" },
+];
+/** The area a link names; anything else is the form's original area, so an old or mistyped link still works. */
+export const areaById = (id: unknown): Area => AREAS.find((a) => a.id === id) ?? AREAS[0]!;
 export const connectionOptions = ["I live here", "I work here", "I own a business here", "I have clients here", "I regularly participate in the local community", "Other"];
 export const industryOptions = ["Arts and culture", "Beauty and wellness", "Coaching and consulting", "Design and interiors", "Education", "Finance and legal", "Food and hospitality", "Health and fitness", "Marketing and media", "Mental health and healing", "Nonprofit and community work", "Parenting and family services", "Real estate", "Retail and products", "Technology", "Travel", "Writing and publishing", "Other"];
 export const communityOptions = ["Professional connections", "Friendship and community", "Referrals", "Collaborators", "Clients", "Mentorship", "Education", "Local events", "Speaking opportunities", "Vendor opportunities", "Community resources", "Business visibility"];
@@ -33,6 +41,8 @@ export interface ApplicationAnswers {
   phone: string;
   /** The option chosen under "Where are you based?"; the typed place (if any) is the application's `neighborhood`. */
   basedIn: string;
+  /** Which area's link she applied through. Absent on applications from before areas. */
+  area?: string;
   connection: string[];
   business?: string;
   role: string;
@@ -139,6 +149,7 @@ export function parseApplication(form: FormData): ApplicationInput {
   if (email.length > LIMITS.email || !EMAIL.test(email)) {
     throw new Error("Please check “Email address”: it should look like name@example.com.");
   }
+  const area = areaById(r.text("area"));
   const neighborhood = r.required("neighborhood", "Where are you based?");
   if (neighborhood.length > LIMITS.neighborhood) throw new Error(`Please keep your location under ${LIMITS.neighborhood} characters.`);
 
@@ -200,7 +211,8 @@ export function parseApplication(form: FormData): ApplicationInput {
     pronouns: r.text("pronouns"),
     phone: r.required("phone", "Phone number"),
     basedIn: neighborhood,
-    connection: r.requiredList("connection", "What is your connection to North Brooklyn?"),
+    area: area.name,
+    connection: r.requiredList("connection", area.connection),
     business: r.text("business"),
     role: r.required("role", "Professional title or role"),
     website: r.text("website"),

@@ -13,7 +13,7 @@ vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), 
 
 /** Where each form's wording lives in code. A manifest text must appear in one of these, exactly. */
 const SOURCES: Record<CopyForm, string[]> = {
-  application: ["src/features/applications/ApplicationForm.tsx", "src/routes/join.tsx"],
+  application: ["src/features/applications/ApplicationForm.tsx", "src/features/applications/schema.ts", "src/routes/join.tsx"],
   review: ["src/features/member-links/ReviewForm.tsx", "src/features/member-links/schema.ts", "src/routes/review.tsx"],
   contact: ["src/features/contact/ContactForm.tsx", "src/routes/contact.tsx"],
   partnership: ["src/features/contact/PartnershipForm.tsx", "src/routes/partnerships.tsx"],

@@ -68,6 +68,25 @@ describe("setMembershipFormOpen", () => {
   });
 });
 
+describe("an application's area", () => {
+  const apply = (neighborhood: string, area?: string) => submitApplication(as(null), {
+    email: "rosa@x.test", fullName: "Rosa", neighborhood, answers: area ? { area } : {},
+  });
+
+  it("takes a neighborhood from its own area, and refuses one from another or an unknown area", () => {
+    apply("Astoria", "Queens");
+    apply("Greenpoint", "North Brooklyn");
+    expect(() => apply("Greenpoint", "Queens")).toThrow();
+    expect(() => apply("Astoria", "Mars")).toThrow();
+    expect(db.prepare("select count(*) as n from applications").get()).toEqual({ n: 2 });
+  });
+
+  it("still takes an application from a page opened before areas existed", () => {
+    apply("Greenpoint");
+    expect(db.prepare("select count(*) as n from applications").get()).toEqual({ n: 1 });
+  });
+});
+
 describe("closed POSTs store nothing", () => {
   it("refuses a closed application", () => {
     setMembershipFormOpen(as(ADMIN), { kind: "application", open: false, message: "Not taking applications." });

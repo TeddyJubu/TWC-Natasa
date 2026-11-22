@@ -235,6 +235,23 @@ describe("/join neighborhoods", () => {
   });
 });
 
+describe("/join?area=queens", () => {
+  it("offers the Queens neighborhoods, asks about Queens and sends its area", () => {
+    vi.spyOn(Route, "useLoaderData").mockReturnValue({ ...openState, areaId: "queens" } as never);
+    renderSignedOut();
+    const select = byLabel(/where are you based/i) as HTMLSelectElement;
+    expect([...select.options].map((o) => o.textContent).slice(1)).toEqual(["Long Island City", "Astoria", "Sunnyside", "Jackson Heights", "Elmhurst", "Forest Hills", "Rego Park"]);
+    expect(screen.getByRole("group", { name: /connection to Queens/i })).toBeTruthy();
+    expect((document.querySelector("input[name=area]") as HTMLInputElement).value).toBe("queens");
+  });
+
+  it("drops an unknown area from the address", () => {
+    const validate = Route.options.validateSearch as (raw: Record<string, unknown>) => unknown;
+    expect(validate({ area: "queens" })).toEqual({ area: "queens" });
+    expect(validate({ area: "mars" })).toEqual({});
+  });
+});
+
 describe("/join structure", () => {
   it("never skips a heading level: h1, then h2 sections", () => {
     renderSignedOut();
