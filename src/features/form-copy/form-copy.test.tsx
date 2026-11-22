@@ -6,6 +6,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ApplicationForm } from "@/features/applications/ApplicationForm";
 import { ContactForm } from "@/features/contact/ContactForm";
+import { AREAS } from "@/features/applications/schema";
 import { FormCopyProvider } from "./FormCopy";
 import { COPY_FIELDS, COPY_FORMS, type CopyForm } from "./manifest";
 
@@ -37,7 +38,7 @@ describe("on the pages", () => {
   it("the application shows replaced section and field wording, and the defaults elsewhere", () => {
     render(
       <FormCopyProvider copy={{ "Start with you.": "Begin here.", "Full name": "Your full name", "Submit application": "Send it in" }}>
-        <ApplicationForm submit={async () => undefined} />
+        <ApplicationForm area={AREAS[0]!} submit={async () => undefined} />
       </FormCopyProvider>,
     );
     expect(screen.getByRole("heading", { name: "Begin here." })).toBeTruthy();
@@ -50,7 +51,7 @@ describe("on the pages", () => {
   });
 
   it("without a provider (or any override) the page reads exactly as written in code", () => {
-    render(<ApplicationForm submit={async () => undefined} />);
+    render(<ApplicationForm area={AREAS[0]!} submit={async () => undefined} />);
     expect(screen.getByRole("heading", { name: "Start with you." })).toBeTruthy();
     expect(screen.getByLabelText("Full name")).toBeTruthy();
   });

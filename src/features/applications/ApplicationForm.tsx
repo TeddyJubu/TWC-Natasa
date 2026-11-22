@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Icon } from "@/app/layout/twc";
 import { useCopy } from "@/features/form-copy/use-copy";
-import { AREAS, GUIDELINES, LIMITS, communityOptions, connectionOptions, directoryOptions, eventOptions, heardOptions, industryOptions, parseApplication, supportOptions, type ApplicationInput, type Area } from "./schema";
+import { GUIDELINES, LIMITS, communityOptions, connectionOptions, directoryOptions, eventOptions, heardOptions, industryOptions, parseApplication, supportOptions, type ApplicationInput, type Area } from "./schema";
 import { Check, Choices, Field, Input, LongAnswer, Notice, Section, Select } from "./twc-fields";
 
 const yesNo = [{ value: "yes", label: "Yes" }, { value: "no", label: "No" }];
@@ -18,8 +18,8 @@ export interface ApplicationFormProps {
   resettable?: boolean;
   /** Called instead of showing the in-place confirmation (the live /join moves on to /join/thanks). */
   onSent?: () => void;
-  /** Which area's link this is: its neighborhoods and its question. North Brooklyn unless told otherwise. */
-  area?: Area;
+  /** The area she chose: its neighborhoods and its question. */
+  area: Area;
 }
 
 /** Name of the hidden anti-spam field; deliberately not a real application field. */
@@ -28,7 +28,7 @@ const HONEYPOT = "fax-number";
 /** `invalid`: the parser rejected the answers (clears on the next edit). `send`: the insert failed (offers Retry). */
 type Failure = { kind: "invalid" | "send"; message: string };
 
-export function ApplicationForm({ submit, initial, resettable, onSent, area = AREAS[0]! }: ApplicationFormProps) {
+export function ApplicationForm({ submit, initial, resettable, onSent, area }: ApplicationFormProps) {
   const [status, setStatus] = React.useState<"idle" | "sending" | "sent">("idle");
   const [failure, setFailure] = React.useState<Failure | null>(null);
   const [round, setRound] = React.useState(0);

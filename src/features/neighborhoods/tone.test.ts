@@ -35,8 +35,8 @@ describe("toneFor", () => {
 });
 
 describe("textOn", () => {
-  it("reaches AA (4.5:1) for small text on every seed color but Sunnyside, whose small text goes on paper", () => {
-    expect(NEIGHBORHOOD_SEED.filter((n) => textOn(n.color).ratio < 4.5).map((n) => n.name)).toEqual(["Sunnyside"]);
+  it("reaches AA (4.5:1) for small text on every seed color but these, whose small text goes on paper", () => {
+    expect(NEIGHBORHOOD_SEED.filter((n) => textOn(n.color).ratio < 4.5).map((n) => n.name)).toEqual(["Sunnyside", "Greenpoint", "Bushwick"]);
   });
 
   it("reaches 3:1 (large text) on any color, choosing paper on dark ones", () => {

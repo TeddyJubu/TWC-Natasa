@@ -9,6 +9,7 @@ import { Icon } from "@/app/layout/icons";
 import { errorMessage } from "@/features/account/helpers";
 import { KINDS, MAX_REPLY } from "./kinds";
 import { lovedLine, postedAgo, postedAt } from "./format";
+import { areaOfPlace } from "@/features/applications/schema";
 import { useDeletePost, useDeleteReply, useLove, useReply } from "./mutations";
 import type { FeedAuthor, FeedPost as Post, FeedReply } from "./queries";
 
@@ -121,7 +122,7 @@ function Postmark({ where, iso }: { where: string; iso: string }) {
       <defs><path id={id} d="M16 56a40 40 0 1 1 80 0a40 40 0 1 1-80 0" /></defs>
       <circle cx="56" cy="56" r="52" strokeWidth="2" /><circle cx="56" cy="56" r="30" strokeWidth="1.5" />
       <text fontSize="10" fontWeight="600" letterSpacing="2.2" fill="currentColor" stroke="none">
-        <textPath href={`#${id}`}>{`${(where || "Queens").toUpperCase()} · QUEENS · TWC ·`}</textPath>
+        <textPath href={`#${id}`}>{`${[where || "New York", areaOfPlace(where)?.borough, "TWC"].filter(Boolean).join(" · ").toUpperCase()} ·`}</textPath>
       </text>
       <text x="56" y="57" textAnchor="middle" fontSize="14" fontWeight="700" fill="currentColor" stroke="none">{date}</text>
       <text x="56" y="70" textAnchor="middle" fontSize="9.5" fontWeight="600" letterSpacing="1.5" fill="currentColor" stroke="none">

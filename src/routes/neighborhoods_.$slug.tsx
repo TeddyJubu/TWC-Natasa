@@ -11,6 +11,7 @@ import { fetchNeighborhoods, type Neighborhood } from "@/features/neighborhoods/
 import { hasColor, textOn, toneFor } from "@/features/neighborhoods/tone";
 import { neighborhoodPhoto } from "@/features/neighborhoods/photos";
 import { HoodLogo } from "@/features/neighborhoods/HoodLogo";
+import { areaOfPlace } from "@/features/applications/schema";
 import { breadcrumbLd, canonicalTags, jsonLdScript, parseSiteUrl } from "@/app/seo";
 
 export const Route = createFileRoute("/neighborhoods_/$slug")({
@@ -24,7 +25,7 @@ export const Route = createFileRoute("/neighborhoods_/$slug")({
   head: ({ loaderData }) => {
     const name = loaderData?.hood.name;
     const title = `${name ?? "Neighborhood"} — The Women’s Collective`;
-    const description = `Meet the women of The Women’s Collective in ${name ?? "Queens"}, and find events close to home.`;
+    const description = `Meet the women of The Women’s Collective in ${name ?? "your neighborhood"}, and find events close to home.`;
     const raw = import.meta.env.VITE_SITE_URL as string | undefined;
     const site = parseSiteUrl(raw);
     const path = loaderData ? `/neighborhoods/${loaderData.hood.slug}` : undefined;
@@ -56,6 +57,7 @@ function NeighborhoodPage() {
   const openSlug = open ? memberSlug(open) : undefined;
   const colored = hasColor(hood.color);
   const style = colored ? ({ "--hood": hood.color } as React.CSSProperties) : undefined;
+  const area = areaOfPlace(hood.name);
   return (
     <AppPage>
       <AppNav />
@@ -72,7 +74,7 @@ function NeighborhoodPage() {
               <h2 className="font-display text-[clamp(1.75rem,4vw,2.25rem)] leading-[1.15]">Live or work in {hood.name}?</h2>
               <p className="text-[17px] text-sb-muted">There is room in this constellation. Introduce yourself and meet the neighbors already here.</p>
             </div>
-            <Link to="/join" className="twc-btn">Start your application <span className="twc-arrow" aria-hidden>→</span></Link>
+            <Link to="/join" search={area ? { area: area.id } : {}} className="twc-btn">Start your application <span className="twc-arrow" aria-hidden>→</span></Link>
           </div>
         </div>
         {/* Public cards carry only what the member chose to publish. */}
@@ -94,6 +96,7 @@ function Hero({ hood }: { hood: Neighborhood }) {
   const photo = neighborhoodPhoto(hood.slug);
   const colored = hasColor(hood.color);
   const tone = colored ? textOn(hood.color) : undefined;
+  const area = areaOfPlace(hood.name);
   // The card's body copy is small text: it stays on the color only where that reaches 4.5:1, else on paper.
   const cardOnColor = tone !== undefined && tone.ratio >= 4.5;
   return (
@@ -109,7 +112,7 @@ function Hero({ hood }: { hood: Neighborhood }) {
           src={photo.src}
           srcSet={photo.srcSet}
           sizes="(min-width: 72rem) 64rem, 100vw"
-          alt={`${hood.name}, Queens`}
+          alt={area ? `${hood.name}, ${area.borough}` : hood.name}
           width={816}
           height={816}
           fetchPriority="high"
@@ -128,7 +131,7 @@ function Hero({ hood }: { hood: Neighborhood }) {
       >
         <span className="twc-chip self-start">Neighborhood</span>
         <h1 id="hood-title" className="twc-h3">{hood.name}</h1>
-        <p>One corner of our constellation across Western Queens, with its own color and its own people.</p>
+        <p>One corner of our constellation{area ? ` in ${area.name}` : ""}, with its own color and its own people.</p>
       </div>
     </section>
   );
@@ -206,7 +209,7 @@ function Gatherings({ hood }: { hood: Neighborhood }) {
   const member = viewer.data?.member === true || viewer.data?.admin === true;
   const events = useQuery({ ...eventsQuery, enabled: member });
   const here = (events.data ?? []).filter((e) => e.neighborhood === hood.name).slice(0, MAX_EVENTS);
-  const across = <Link to="/events" className="twc-inlink">See what’s happening across Queens <span aria-hidden>→</span></Link>;
+  const across = <Link to="/events" className="twc-inlink">See what’s happening across the collective <span aria-hidden>→</span></Link>;
   return (
     <section aria-labelledby="hood-gatherings" className="flex flex-col gap-5">
       <h2 id="hood-gatherings" className="twc-h3 text-[clamp(2rem,5vw,2.5rem)]">Coming up in {hood.name}</h2>

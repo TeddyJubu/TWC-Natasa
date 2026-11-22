@@ -1,6 +1,6 @@
-// Where each of the original seven neighborhoods is: the map centre (a central subway stop, never anyone's
-// address), its main ZIP and that stop. Keyed by slug, so a renamed neighborhood keeps its place; one an admin adds
-// later has no entry, and the "Where you belong" card then shows no map or stop rather than a guessed one.
+// Where each of the original seven Queens neighborhoods is: the map centre (a central subway stop, never anyone's
+// address), its main ZIP and that stop. Keyed by slug, so a renamed neighborhood keeps its place; the North Brooklyn
+// ones (until someone confirms their stops) and any an admin adds later have no entry, and the "Where you belong" card then shows no map or stop rather than a guessed one.
 // ponytail: code, not columns; move to the neighborhoods table when admins need to place new ones.
 
 export type Place = { center: [lng: number, lat: number]; zip: string; stop: string; lines: string[] };

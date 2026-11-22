@@ -60,8 +60,8 @@ describe("/neighborhoods", () => {
   it("counts the neighborhoods from the data, links each tile and keeps the outline", () => {
     withLoaderData(IndexRoute, [...NEIGHBORHOOD_SEED, woodside]);
     renderWithQueries(<IndexPage />);
-    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Eight neighborhoods, one constellation.");
-    expect(screen.getAllByRole("listitem")).toHaveLength(8);
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Eleven neighborhoods, one constellation.");
+    expect(screen.getAllByRole("listitem")).toHaveLength(11);
     expect(screen.getByRole("link", { name: /Woodside/ })).toBeTruthy();
     expectNoSkippedHeadings();
   });
@@ -175,7 +175,7 @@ describe("/neighborhoods/:slug", () => {
     // Never the members-only directory, and no gatherings call for a visitor.
     expect(fake.calls).not.toContainEqual(["directoryFn"]);
     expect(fake.calls.some(([name]) => name === "eventsFn")).toBe(false);
-    expect(screen.getByRole("link", { name: /across Queens/ }).getAttribute("href")).toBe("/events");
+    expect(screen.getByRole("link", { name: /across the collective/ }).getAttribute("href")).toBe("/events");
   });
 
   it("renders the loader's public cards without a client fetch (server-rendered)", async () => {

@@ -1,4 +1,4 @@
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -10,7 +10,7 @@ const one = <T,>(db: ReturnType<typeof openDb>, sql: string, ...args: (string | 
 describe("database", () => {
   it("migrates a fresh database to the newest user_version, with foreign keys on", () => {
     const db = openDb(":memory:");
-    expect(one<{ user_version: number }>(db, "pragma user_version").user_version).toBe(17);
+    expect(one<{ user_version: number }>(db, "pragma user_version").user_version).toBe(18);
     expect(one<{ foreign_keys: number }>(db, "pragma foreign_keys").foreign_keys).toBe(1);
     expect(one<{ busy_timeout?: number; timeout?: number }>(db, "pragma busy_timeout")).toEqual({ timeout: 5000 });
   });
@@ -46,11 +46,23 @@ describe("database", () => {
     writeFileSync(join(dir, "0015_form_schedule.sql"), "this would fail if it ran again");
     writeFileSync(join(dir, "0016_events_wording.sql"), "this would fail if it ran again");
     writeFileSync(join(dir, "0017_contact_wording.sql"), "this would fail if it ran again");
-    writeFileSync(join(dir, "0018_bad.sql"), "create table half (id integer); select * from missing_table;");
-    expect(() => migrate(db, dir)).toThrow(/0018_bad\.sql/);
-    expect(one<{ user_version: number }>(db, "pragma user_version").user_version).toBe(17);
+    writeFileSync(join(dir, "0018_north_brooklyn_neighborhoods.sql"), "this would fail if it ran again");
+    writeFileSync(join(dir, "0019_bad.sql"), "create table half (id integer); select * from missing_table;");
+    expect(() => migrate(db, dir)).toThrow(/0019_bad\.sql/);
+    expect(one<{ user_version: number }>(db, "pragma user_version").user_version).toBe(18);
     expect(one(db, "select name from sqlite_master where name = 'half'")).toBeUndefined();
-    expect(() => migrate(db, dir)).toThrow(/0018/);
+    expect(() => migrate(db, dir)).toThrow(/0019/);
+  });
+
+  it("0018 adds the North Brooklyn neighborhoods after any others, and leaves a row an admin already made", () => {
+    const db = openDb(":memory:");
+    const sql = readFileSync(new URL("../../db/migrations/0018_north_brooklyn_neighborhoods.sql", import.meta.url), "utf8");
+    db.exec("delete from neighborhoods where slug in ('greenpoint', 'williamsburg', 'bushwick')");
+    db.exec("insert into neighborhoods (slug, name, color, sort_order) values ('bayside', 'Bayside', '#123456', 40), ('wburg', 'Williamsburg', '#654321', 41)");
+    db.exec(sql);
+    expect(db.prepare("select slug, color from neighborhoods where sort_order >= 40 order by sort_order").all().map((r) => ({ ...r }))).toEqual([
+      { slug: "bayside", color: "#123456" }, { slug: "wburg", color: "#654321" }, { slug: "greenpoint", color: "#737a4e" }, { slug: "bushwick", color: "#b85a45" },
+    ]);
   });
 
   it("0014: a profile's feed loves and replies are found by index, not a scan, when she is deleted or counted", () => {

@@ -15,13 +15,14 @@ import { introsQuery, profileQuery, viewerQuery, type ProfileData } from "@/feat
 import { Composer } from "@/features/feed/Composer";
 import { FeedPost, MiniStamp } from "@/features/feed/FeedPost";
 import { feedQuery } from "@/features/feed/queries";
+import { areaOfPlace } from "@/features/applications/schema";
 import type { FeedFilter } from "@/features/feed/kinds";
 
 export const Route = createFileRoute("/_authenticated/feed")({
   head: () => ({
     meta: [
       { title: "The feed — The Women’s Collective" },
-      { name: "description", content: "News, asks, offers and events from members across Queens." },
+      { name: "description", content: "News, asks, offers and events from members across North Brooklyn and Queens." },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -39,6 +40,7 @@ function FeedPage() {
   const member = viewer.data?.member === true || viewer.data?.admin === true;
   const name = own?.profile.full_name || user.name || user.email;
   const hood = own?.profile.neighborhood ?? null;
+  const area = areaOfPlace(hood);
   const [filter, setFilter] = React.useState<FeedFilter>("all");
   const [openMember, setOpenMember] = React.useState<MemberProfile | null>(null);
   const feed = useInfiniteQuery({ ...feedQuery(filter), enabled: member });
@@ -59,7 +61,7 @@ function FeedPage() {
           <div className="air-feed-main">
             <section className="air-feed-mast">
               <div>
-                <p className="air-lbl">{today} · Queens edition</p>
+                <p className="air-lbl">{today} · {area ? `${area.name} edition` : "Members’ edition"}</p>
                 <h1>The feed</h1>
               </div>
               {head && <p className="air-feed-note"><span aria-hidden className="air-dot" />{head.week ? `${head.week} new this week` : "Quiet this week"}</p>}
@@ -79,7 +81,7 @@ function FeedPage() {
               </div>
             ) : (
               <>
-                <Composer name={name} image={own?.avatarUrl} />
+                <Composer name={name} image={own?.avatarUrl} hood={hood} />
                 <div role="group" aria-label="Filter the feed" className="air-feed-filters">
                   {filters.map(([key, label]) => (
                     <button key={key} type="button" aria-pressed={filter === key} onClick={() => setFilter(key)} className={cn("air-filter", ring)}>{label}</button>
@@ -163,7 +165,7 @@ function Neighbors({ userId, hood, onOpen }: { userId: string; hood: string | nu
       <div className="air-sheet air-sheet--pair">
         {list.map((m) => <Stamp key={m.id} member={m} label={`View ${m.name}’s profile`} onClick={() => onOpen(m)} />)}
       </div>
-      <p className="air-feed-why">{hood ? `Neighbors from ${hood} first, then across Queens.` : "Neighbors from across Queens."}</p>
+      <p className="air-feed-why">{hood ? `Neighbors from ${hood} first, then across the collective.` : "Neighbors from across the collective."}</p>
     </section>
   );
 }

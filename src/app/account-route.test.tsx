@@ -455,9 +455,15 @@ describe("/account", () => {
       renderAccount({ neighborhood: "Bayside" }, [], [], false, [[["neighborhoods"], [...NEIGHBORHOOD_SEED, { slug: "bayside", name: "Bayside", color: "#123456", logoUrl: null, active: true }]]]);
       const text = where().textContent;
       expect(text).toContain("Bayside");
-      expect(text).not.toMatch(/Nearest stop|Gathers at|°/);
+      expect(text).not.toMatch(/Nearest stop|Gathers at|°|Queens|Brooklyn/);
       expect(within(where()).queryByRole("group")).toBeNull();
       expect(text).toContain("Just you, for now");
+    });
+
+    it("words her post from her own area", () => {
+      renderAccount({ neighborhood: "Greenpoint" });
+      expect(where().textContent).toContain("Brooklyn, New York");
+      expect(where().textContent).not.toContain("Queens");
     });
 
     it("without a neighborhood, offers to choose one in the public card's picker", () => {

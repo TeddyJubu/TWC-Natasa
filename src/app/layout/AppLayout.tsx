@@ -152,7 +152,7 @@ export function AppFooter({ bare = false }: { bare?: boolean }) {
         </div>
         <p aria-hidden className="twc-footer__word">The Women’s Collective</p>
         <div className="twc-footer__legal">
-          <span>The Women’s Collective · North Brooklyn</span>
+          <span>The Women’s Collective · North Brooklyn and Queens</span>
         </div>
       </div>
     </footer>

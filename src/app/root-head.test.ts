@@ -20,9 +20,9 @@ describe("root head", () => {
   it("sets a real default title and description, and no @Lovable twitter:site", () => {
     vi.stubEnv("VITE_SITE_URL", "");
     const { meta } = head(["/"]);
-    expect(meta.find((m) => "title" in m)?.title).toBe("The Women’s Collective — Find Your People in Queens");
+    expect(meta.find((m) => "title" in m)?.title).toBe("The Women’s Collective — North Brooklyn and Queens");
     expect(metaContent(meta, "description")).toBe(
-      "A community for women founders, entrepreneurs, creatives, freelancers, professionals, and neighbors across Western Queens.",
+      "A community for women founders, entrepreneurs, creatives, freelancers, professionals, and neighbors across North Brooklyn and Queens.",
     );
     expect(metaContent(meta, "twitter:site")).toBeUndefined();
   });

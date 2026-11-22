@@ -29,6 +29,7 @@ vi.spyOn(Admin, "useRouteContext").mockReturnValue({ user: { id: "u1", email: "r
 vi.spyOn(Home, "useLoaderData").mockReturnValue(undefined as never);
 vi.spyOn(Members, "useLoaderData").mockReturnValue(undefined as never);
 vi.spyOn(Join, "useLoaderData").mockReturnValue({ kind: "application", open: true, closed: null } as never);
+vi.spyOn(Join, "useSearch").mockReturnValue({} as never);
 afterEach(() => {
   cleanup();
 });

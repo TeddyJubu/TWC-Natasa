@@ -8,7 +8,7 @@ import { hasColor, textOn } from "@/features/neighborhoods/tone";
 import { HoodLogo } from "@/features/neighborhoods/HoodLogo";
 
 const TITLE = "Neighborhoods — The Women’s Collective";
-const DESCRIPTION = "Each Western Queens neighborhood in The Women’s Collective has its own identity and color. Find yours and meet the women nearby.";
+const DESCRIPTION = "Each North Brooklyn and Queens neighborhood in The Women’s Collective has its own identity and color. Find yours and meet the women nearby.";
 
 export const Route = createFileRoute("/neighborhoods")({
   // Active ones only, in the admin's sort order: a neighborhood added in admin shows up here without code.
@@ -64,7 +64,7 @@ function NeighborhoodsPage() {
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3 rounded-[6px] px-6 py-[22px] shadow-[inset_0_0_0_1px_rgb(31_31_28/0.15)]">
             <span className="twc-chip twc-chip--ring">Nearby</span>
             <span className="flex min-w-0 flex-[1_1_320px] flex-col gap-0.5">
-              <span className="font-display text-2xl leading-[1.3]">Another Queens neighborhood?</span>
+              <span className="font-display text-2xl leading-[1.3]">Another neighborhood?</span>
               <span className="text-[15px] text-sb-muted">
                 Woodside, East Elmhurst and nearby neighbors belong here too.{" "}
                 <Link to="/join" className="twc-inlink">Introduce yourself</Link>

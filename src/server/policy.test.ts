@@ -114,7 +114,7 @@ afterAll(() => vi.unstubAllEnvs());
 describe("access rules (ported from the RLS checks)", () => {
   // ---------- Anonymous visitor ----------
   it("anon cannot read the directory", () => throwsAccess(() => directory(anon())));
-  it("anon can read neighborhoods", () => expect(listNeighborhoods(anon())).toHaveLength(7));
+  it("anon can read neighborhoods", () => expect(listNeighborhoods(anon())).toHaveLength(10));
   it("anon can submit an application", () => {
     apply(null, "new@x.test", "New Applicant");
     expect(app("new@x.test").user_id).toBeNull();

@@ -17,6 +17,7 @@ const Page = Route.options.component as React.ComponentType;
 const openState = { kind: "application" as const, open: true, closed: null as string | null };
 beforeEach(() => {
   vi.spyOn(Route, "useLoaderData").mockReturnValue(openState as never);
+  vi.spyOn(Route, "useSearch").mockReturnValue({ area: "north-brooklyn" } as never);
 });
 afterEach(() => {
   cleanup();
@@ -231,13 +232,32 @@ describe("/join neighborhoods", () => {
     const input = byLabel(/where are you based/i) as HTMLInputElement;
     expect([input.tagName, input.required, input.maxLength]).toEqual(["INPUT", true, 60]);
     expect(screen.getByRole("group", { name: /connection to North Brooklyn/i })).toBeTruthy();
-    expect(document.body.textContent).not.toMatch(/Queens/);
+    expect(screen.queryByRole("group", { name: /connection to Queens/i })).toBeNull();
+  });
+});
+
+describe("plain /join", () => {
+  it("asks for the area first: both areas, no form and no assumed answer", () => {
+    vi.spyOn(Route, "useSearch").mockReturnValue({} as never);
+    renderSignedOut();
+    expect(screen.getByRole("heading", { name: "Which area is yours?", level: 2 })).toBeTruthy();
+    expect(screen.getByRole("link", { name: /^North Brooklyn/ })).toBeTruthy();
+    expect(screen.getByRole("link", { name: /^Queens/ })).toBeTruthy();
+    expect(document.querySelector("input[name=area]")).toBeNull();
+    expect(screen.queryByRole("button", { name: /submit application/i })).toBeNull();
+    expectNoSkippedHeadings();
+  });
+
+  it("names the chosen area above the form and offers the other", () => {
+    renderSignedOut();
+    expect(screen.getByText("North Brooklyn").tagName).toBe("B");
+    expect(screen.getByRole("link", { name: "Switch to Queens" })).toBeTruthy();
   });
 });
 
 describe("/join?area=queens", () => {
   it("takes a typed neighborhood, asks about Queens and sends its area", () => {
-    vi.spyOn(Route, "useLoaderData").mockReturnValue({ ...openState, areaId: "queens" } as never);
+    vi.spyOn(Route, "useSearch").mockReturnValue({ area: "queens" } as never);
     renderSignedOut();
     expect(byLabel(/where are you based/i).tagName).toBe("INPUT");
     expect(screen.getByRole("group", { name: /connection to Queens/i })).toBeTruthy();

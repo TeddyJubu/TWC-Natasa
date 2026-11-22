@@ -28,7 +28,7 @@ export const Route = createFileRoute("/members_/$slug")({
     const { member, isPublic } = loaderData;
     const title = `${member.name} — The Women’s Collective`;
     const description = [member.role && member.business ? `${member.role} at ${member.business}` : member.role || member.business, member.neighborhood]
-      .filter(Boolean).join(", ") || "A member of The Women’s Collective in Queens.";
+      .filter(Boolean).join(", ") || "A member of The Women’s Collective.";
     // Only a public page gets a canonical and structured data; a members-only one stays noindex without them.
     const raw = import.meta.env.VITE_SITE_URL as string | undefined;
     const site = parseSiteUrl(raw);

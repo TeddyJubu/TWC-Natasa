@@ -105,8 +105,8 @@ export function organizationLd(site: string) {
     name: "The Women’s Collective",
     url: `${site}/`,
     logo: `${site}/apple-touch-icon.png`,
-    description: "A community for women building businesses, careers, creative work, and real relationships close to home in Western Queens.",
-    areaServed: { "@type": "Place", name: "Western Queens, New York" },
+    description: "A community for women building businesses, careers, creative work, and real relationships close to home in North Brooklyn and Queens.",
+    areaServed: [{ "@type": "Place", name: "North Brooklyn, New York" }, { "@type": "Place", name: "Queens, New York" }],
     founder: { "@type": "Person", name: "Nataša Tuohy" },
   };
 }

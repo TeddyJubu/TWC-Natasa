@@ -32,9 +32,9 @@ export const Route = createFileRoute("/")({
       : [];
     return {
       meta: [
-        { title: "The Women’s Collective — Find your people in Queens" },
-        { name: "description", content: "A community for women building businesses, careers, creative work, and real relationships close to home in Western Queens." },
-        { property: "og:title", content: "The Women’s Collective — Find your people in Queens" },
+        { title: "The Women’s Collective — North Brooklyn and Queens" },
+        { name: "description", content: "A community for women building businesses, careers, creative work, and real relationships close to home in North Brooklyn and Queens." },
+        { property: "og:title", content: "The Women’s Collective — North Brooklyn and Queens" },
         { property: "og:description", content: "Find your people, share what you do, and help someone else shine." },
         { property: "og:type", content: "website" },
         { name: "twitter:card", content: "summary_large_image" },
@@ -66,12 +66,12 @@ const ROLES = [
 const BRICKS = [
   { title: "Share what you do", text: "Introduce your business, work, or project and help neighbors understand what you bring.", tone: "bg-sb-mustard text-sb-ink" },
   { title: "Find collaborators", text: "Build partnerships, exchange referrals, and discover opportunities through people nearby.", tone: "bg-sb-rose text-sb-ink" },
-  { title: "Show up locally", text: "Promote women-owned businesses and learn about events and meetups across Queens.", tone: "bg-sb-terracotta text-white" },
+  { title: "Show up locally", text: "Promote women-owned businesses and learn about events and meetups close to home.", tone: "bg-sb-terracotta text-white" },
 ];
 
 // Three on the homepage; the rest live on /faq. "Which neighborhoods" is left out: the ribbon and the colour row answer it.
 const FAQ = [
-  { q: "Who is the collective for?", a: "Women in Queens who are building something — a business, a career, a creative practice — and want real relationships close to home. Founders, freelancers, makers, and the newly curious are all welcome. No follower count or pitch deck required." },
+  { q: "Who is the collective for?", a: "Women in North Brooklyn and Queens who are building something — a business, a career, a creative practice — and want real relationships close to home. Founders, freelancers, makers, and the newly curious are all welcome. No follower count or pitch deck required." },
   { q: "Is the community inclusive?", a: "Yes. We welcome women from all backgrounds, including moms, married and single women, LGBTQ+ members, non-binary people who feel aligned with the community, immigrants, international members, and people from diverse cultures." },
   { q: "What happens after I apply?", a: "A real person reads every application. We’ll be in touch by email about next steps." },
 ];
@@ -175,7 +175,7 @@ function Hero() {
           <div aria-hidden className="absolute inset-x-0 top-0 h-2/5 bg-linear-to-b from-sb-paper/50 to-transparent" />
           <p className="sb-rise absolute bottom-3 left-3 flex items-center gap-2 whitespace-nowrap rounded-full bg-sb-paper/90 px-[18px] py-2.5 font-display text-[13px] uppercase tracking-[1.6px] backdrop-blur-sm max-[359px]:px-3 max-[359px]:text-[11px] lg:bottom-7 lg:left-8" style={delay(HERO_BEATS.chip)}>
             <Icon name="pin" className="size-3.5" />
-            Western Queens, New York
+            North Brooklyn &amp; Queens
           </p>
         </div>
         <div className="sb-drop absolute right-[3%] top-[40%] z-10 w-[120px] min-[360px]:top-[44%] min-[360px]:w-[140px] sm:w-[176px] lg:top-[38%] lg:w-[190px] xl:top-[42%] xl:w-[212px]" style={delay(HERO_BEATS.polaroid)}>
@@ -254,7 +254,7 @@ function NorthBrooklyn() {
         <div className="flex flex-col gap-5">
           <p className={script}>just across the creek</p>
           <h2 id="brooklyn-title" className={cn(h2, "motion-scroll-reveal")}>
-            Our neighbors in North Brooklyn.
+            We’re in North Brooklyn too.
           </h2>
           <p className="motion-scroll-reveal max-w-[440px] font-geist text-[17px] leading-[1.6]">
             Greenpoint, Williamsburg, East Williamsburg and Bushwick sit across Newtown Creek from Long Island City.
@@ -324,7 +324,7 @@ function WhoYoullMeet() {
         </li>
       </ul>
       <p className="motion-scroll-reveal mt-2.5 font-display text-base leading-[22px] text-sb-muted lg:mt-4 lg:text-xl">
-        a generous, engaged community across Queens
+        a generous, engaged community across North Brooklyn and Queens
       </p>
 
       <div className="sb-paper mt-12 grid w-full max-w-[1120px] items-center gap-x-14 gap-y-10 rounded-[22px] bg-sb-cream px-6 pb-10 pt-12 text-left lg:mt-20 lg:grid-cols-[280px_1fr] lg:p-14 xl:gap-x-20 xl:px-20">
@@ -335,7 +335,7 @@ function WhoYoullMeet() {
         <div className="flex flex-col items-start gap-4">
           <h3 className="font-script text-[32px] lowercase leading-none text-sb-blue-ink lg:text-[40px]">Our mission</h3>
           <p className="motion-scroll-reveal font-display text-[clamp(1.5rem,2.5vw,2.125rem)] leading-[1.25] text-balance">
-            The Women’s Collective brings women across Queens together to meet, share knowledge, support one another’s work, and build real relationships close to home.
+            The Women’s Collective brings women across North Brooklyn and Queens together to meet, share knowledge, support one another’s work, and build real relationships close to home.
           </p>
           <p className="motion-scroll-reveal max-w-[620px] font-geist text-[17px] leading-[1.6] text-sb-muted">
             When women know who is around them, they can recommend each other, collaborate, show up for each other’s events, and create opportunities that would be harder to build alone.
@@ -363,7 +363,7 @@ function MeetTheMembers() {
       <div className="flex flex-col items-center gap-2.5">
         <p className={cn(script, "text-sb-blue-ink")}>meet the members</p>
         <h2 id="members-title" className={cn(h2, "motion-scroll-reveal")}>Women doing remarkable work nearby.</h2>
-        <p className="max-w-[560px] font-geist text-[17px] leading-[1.6] text-sb-muted">Discover the people, practices, and ideas taking shape across Queens.</p>
+        <p className="max-w-[560px] font-geist text-[17px] leading-[1.6] text-sb-muted">Discover the people, practices, and ideas taking shape across North Brooklyn and Queens.</p>
       </div>
       {portraits.length > 0 && (
         <ul className="flex flex-wrap justify-center gap-x-6 gap-y-7 px-2 pb-6 pt-3">
@@ -548,7 +548,7 @@ function Membership() {
             <div className="flex flex-col gap-5">
               <div className="flex items-center justify-between gap-3 font-fragment text-[13px]">
                 <span className="tracking-[2px]">ADMIT ONE</span>
-                <span className="tracking-[1px] text-sb-paper/65">Nº 0001 — QUEENS</span>
+                <span className="tracking-[1px] text-sb-paper/65">Nº 0001 — NEW YORK</span>
               </div>
               <p className="font-geist text-[17px] leading-[27px] text-sb-paper/85">The application helps us learn about you, your work, and how you would like to participate in the community.</p>
             </div>

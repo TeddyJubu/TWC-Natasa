@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { GUIDELINES, parseApplication } from "./schema";
+import { GUIDELINES, areaOfPlace, parseApplication } from "./schema";
 
 type Entries = Record<string, string | string[]>;
 
@@ -10,6 +10,7 @@ const minimum: Entries = {
   pronouns: " ",
   email: " rosa@x.test ",
   phone: "718-555-0100",
+  area: "north-brooklyn",
   neighborhood: "Williamsburg",
   connection: ["I live here", "I own a business here"],
   business: "",
@@ -41,10 +42,18 @@ function formData(over: Entries = {}, omit: string[] = []) {
   return fd;
 }
 
+describe("areaOfPlace", () => {
+  it("finds a neighborhood's area, and none for a place on neither list", () => {
+    expect(areaOfPlace(" greenpoint ")?.name).toBe("North Brooklyn");
+    expect(areaOfPlace("Astoria")?.name).toBe("Queens");
+    for (const unknown of ["Bayside", "", null, undefined]) expect(areaOfPlace(unknown)).toBeUndefined();
+  });
+});
+
 describe("parseApplication", () => {
   it("records the area of the link, and names that area when its question is left empty", () => {
     expect(parseApplication(formData({ area: "queens", neighborhood: "Astoria" })).answers.area).toBe("Queens");
-    expect(parseApplication(formData({ area: "nope" })).answers.area).toBe("North Brooklyn");
+    expect(() => parseApplication(formData({ area: "nope" }))).toThrow(/choose your area/i);
     expect(() => parseApplication(formData({ area: "queens", neighborhood: "Astoria" }, ["connection"]))).toThrow(/connection to Queens/);
   });
 

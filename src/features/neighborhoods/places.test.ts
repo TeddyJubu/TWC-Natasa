@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { NEIGHBORHOOD_SEED } from "./queries";
+import { areaOfPlace } from "@/features/applications/schema";
 import { PLACES, formatCoords } from "./places";
 
 describe("neighborhood places", () => {
-  it("places every seeded neighborhood in Queens, with a five-digit 11xxx ZIP and at least one line", () => {
-    expect(Object.keys(PLACES).sort()).toEqual(NEIGHBORHOOD_SEED.map((h) => h.slug).sort());
+  it("places every seeded Queens neighborhood, and no Brooklyn one until its stop is confirmed, with a five-digit 11xxx ZIP and at least one line", () => {
+    expect(Object.keys(PLACES).sort()).toEqual(NEIGHBORHOOD_SEED.filter((h) => areaOfPlace(h.name)?.id === "queens").map((h) => h.slug).sort());
     for (const { center: [lng, lat], zip, lines } of Object.values(PLACES)) {
       expect(lat).toBeGreaterThan(40.68); expect(lat).toBeLessThan(40.8);
       expect(lng).toBeGreaterThan(-73.97); expect(lng).toBeLessThan(-73.8);

@@ -8,7 +8,7 @@ import { Icon, Scallop, TwcRibbon } from "@/app/layout/twc";
 import { useNeighborhoods } from "@/features/neighborhoods/queries";
 
 const TITLE = "About — The Women’s Collective";
-const DESCRIPTION = "The Women’s Collective brings women across Queens together to meet, share knowledge, support one another’s work, and build real relationships close to home.";
+const DESCRIPTION = "The Women’s Collective brings women across North Brooklyn and Queens together to meet, share knowledge, support one another’s work, and build real relationships close to home.";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
@@ -34,7 +34,7 @@ const STEPS = [
 
 const VALUES = [
   { title: "Generous", text: "Not networking for networking’s sake. We give referrals, make introductions and share what we know." },
-  { title: "Local", text: "Rooted in Western Queens, from Long Island City to Rego Park. Each neighborhood has its own identity and color." },
+  { title: "Local", text: "Rooted in North Brooklyn and Queens, from Greenpoint to Rego Park. Each neighborhood has its own identity and color." },
   { title: "Inclusive", text: "Women from all backgrounds, including moms, LGBTQ+ members, non-binary people who feel aligned with the community, immigrants, and international members." },
 ];
 
@@ -50,7 +50,7 @@ function AboutPage() {
             <p className="twc-eyebrow-script">about the collective</p>
             <h1 className="twc-display">A collective built close to home.</h1>
             <p className="twc-lede max-w-[560px]">{DESCRIPTION}</p>
-            <p className="twc-chip twc-chip--ring self-start"><Icon name="pin" />Western Queens, New York</p>
+            <p className="twc-chip twc-chip--ring self-start"><Icon name="pin" />North Brooklyn and Queens, New York</p>
           </div>
           <div className="relative min-h-[440px] min-w-0 flex-[1_1_380px]">
             <img src={aboutGathering} srcSet={aboutGatheringSrcSet} sizes={aboutGatheringSizes} alt="A group of women laughing together outdoors on a sunny day" width={1280} height={1600} fetchPriority="high" className="twc-photo twc-photo--arch absolute left-0 top-0 aspect-[5/7] w-[min(300px,80%)]" />
@@ -154,7 +154,7 @@ function AboutPage() {
               <span aria-hidden className="font-script text-[30px] leading-[1.3] text-sb-sun">← that’s you</span>
             </div>
             <div className="twc-ticket__stub">
-              <div className="twc-ticket__meta"><span>Admit one</span><span>Nº 0001 — Queens</span></div>
+              <div className="twc-ticket__meta"><span>Admit one</span><span>Nº 0001 — New York</span></div>
               <p className="text-base leading-[1.6] text-sb-paper/85">The application helps us learn about you, your work, and how you would like to participate in the community.</p>
               <Link to="/join" className="twc-btn twc-btn--paper">Start your application <Icon name="arrow" className="twc-arrow" /></Link>
             </div>

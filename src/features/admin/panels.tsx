@@ -1205,7 +1205,7 @@ function AreasCard() {
   const copy = useQuery(adminFormCopyQuery("application"));
   const shown = AREAS.filter((a) => picked === "all" || a.id === picked);
   return (
-    <Card id="areas" title="Areas" subtitle="One shared form with a link for each area. Each link asks about its own area, and applicants type their neighborhood.">
+    <Card id="areas" title="Areas" subtitle="One shared form. Plain /join asks people to choose an area first; each link below skips that step and asks about its own area. Applicants type their neighborhood.">
       <div className={cn(pad, "flex flex-col gap-3 py-4")}>
         <div role="group" aria-label="Area" className="flex flex-wrap gap-2">
           {[{ id: "all", name: "All" }, ...AREAS].map((a) => (

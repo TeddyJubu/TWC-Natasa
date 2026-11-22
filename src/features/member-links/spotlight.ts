@@ -1,4 +1,4 @@
-import { AREAS } from "@/features/applications/schema";
+import { areaOfPlace } from "@/features/applications/schema";
 
 // The Weekly Spotlight form (/spotlight?t=…, inventory backoffice.md §2b, OPS-029): the question labels, the old Google
 // Form column names as stored answer keys, and the one check both the form and POST /api/spotlight run. Answers are
@@ -34,8 +34,7 @@ export const SPOTLIGHT_QUESTIONS: readonly Question[] = [
 
 /** A question's words for this member: the area question names her area, or stays general if her neighborhood isn't on a list. */
 export function spotlightLabel(q: Pick<Question, "key" | "label">, neighborhood: string): string {
-  const place = neighborhood.trim().toLowerCase();
-  const area = AREAS.find((a) => a.neighborhoods.some((n) => n.toLowerCase() === place));
+  const area = areaOfPlace(neighborhood);
   return q.key === AREA_QUESTION && area ? `What does ${area.name} mean to you?` : q.label;
 }
 

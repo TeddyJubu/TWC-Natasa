@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_authenticated/directory")({
   head: () => ({
     meta: [
       { title: "Members — The Women’s Collective" },
-      { name: "description", content: "The member directory: a sheet of stamps, one for every member across Queens." },
+      { name: "description", content: "The member directory: a sheet of stamps, one for every member across North Brooklyn and Queens." },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -81,7 +81,7 @@ function DirectoryPage() {
             </div>
             <div>
               <p className="air-dir-lede">
-                <b>{all.length || "No"} {all.length === 1 ? "member" : "members"} across Queens</b>, printed one stamp at a time. Tear one out to meet her.
+                <b>{all.length || "No"} {all.length === 1 ? "member" : "members"} across North Brooklyn and Queens</b>, printed one stamp at a time. Tear one out to meet her.
               </p>
               <dl className="air-dir-stats">
                 <div><dt>Members</dt><dd>{all.length}</dd></div>

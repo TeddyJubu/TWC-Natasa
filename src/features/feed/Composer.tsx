@@ -7,12 +7,13 @@ import { Icon } from "@/app/layout/icons";
 import { errorMessage } from "@/features/account/helpers";
 import { AVATAR_TYPES } from "@/features/members/mutations";
 import { FEED_KINDS, KINDS, MAX_ALT, MAX_PHOTOS, MAX_POST, type FeedKind } from "./kinds";
+import { areaOfPlace } from "@/features/applications/schema";
 import { MiniStamp } from "./FeedPost";
 import { photoProblem, preparePhoto, useCreatePost, type DraftPhoto } from "./mutations";
 
 type Picked = DraftPhoto & { url: string };
 
-export function Composer({ name, image }: { name: string; image?: string }) {
+export function Composer({ name, image, hood }: { name: string; image?: string; hood?: string | null }) {
   const create = useCreatePost();
   const [kind, setKind] = React.useState<FeedKind>("update");
   const [body, setBody] = React.useState("");
@@ -75,7 +76,7 @@ export function Composer({ name, image }: { name: string; image?: string }) {
         <div className="min-w-0 flex-1">
           <label htmlFor="compose-body" className="sr-only">What’s new, {first}?</label>
           <textarea ref={field} id="compose-body" value={body} onChange={(e) => setBody(e.target.value)} maxLength={MAX_POST} rows={2}
-            placeholder={`What’s new in your corner of Queens, ${first}?`} className="air-compose-field" />
+            placeholder={`What’s new in your corner of ${areaOfPlace(hood)?.name ?? "the neighborhood"}, ${first}?`} className="air-compose-field" />
           <p className="air-compose-to"><Icon name="globe" className="size-3.5" />Posting to every member of the collective</p>
         </div>
       </div>

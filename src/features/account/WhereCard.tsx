@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { cn, formatCatalogueNumber, initials } from "@/index";
 import type { Neighborhood } from "@/features/neighborhoods/queries";
 import { PLACES, formatCoords } from "@/features/neighborhoods/places";
+import { areaOfPlace } from "@/features/applications/schema";
 import { eventsQuery } from "@/features/events/queries";
 import { introsQuery } from "@/features/members/queries";
 import { ring } from "@/app/layout/app-classes";
@@ -21,6 +22,7 @@ export function WhereCard({ editor, userId, hood, approved, avatar, hoodList }: 
   const { card } = editor;
   const slug = hoodList.find((h) => h.name === hood)?.slug;
   const place = slug ? PLACES[slug] : undefined;
+  const borough = areaOfPlace(hood)?.borough;
   // Both share their cards' caches (Gatherings, Introductions); members only, like those cards.
   const events = useQuery({ ...eventsQuery, enabled: approved && !!hood }).data ?? [];
   const intros = useQuery({ ...introsQuery(userId, hood), enabled: approved && !!hood }).data;
@@ -57,7 +59,7 @@ export function WhereCard({ editor, userId, hood, approved, avatar, hoodList }: 
                 </g>
               </g>
               <text fontFamily="var(--font-plex)" fontSize="6.8" fontWeight="600" letterSpacing="1.45" fill="var(--bl-air-red)">
-                <textPath href="#air-mring">{hood.toUpperCase()} · QUEENS · NEW YORK ·</textPath>
+                <textPath href="#air-mring">{hood.toUpperCase()} · {borough ? `${borough.toUpperCase()} · ` : ""}NEW YORK ·</textPath>
               </text>
               <text x="52" y="57" textAnchor="middle" fontFamily="var(--font-gilda)" fontSize="13.5" fontWeight="400" fill="var(--bl-air-red)">{place.zip}</text>
             </svg>
@@ -76,7 +78,7 @@ export function WhereCard({ editor, userId, hood, approved, avatar, hoodList }: 
         <div className="air-post-col">
           <span className="air-lbl">Home post</span>
           <p className="air-post-name">{hood}</p>
-          <p className="air-post-city">Queens, New York{place ? ` ${place.zip}` : ""}</p>
+          <p className="air-post-city">{borough ? `${borough}, ` : ""}New York{place ? ` ${place.zip}` : ""}</p>
           {place && <p className="air-post-coords">{formatCoords(place.center)}</p>}
           <dl className="air-rule mt-5">
             {place && (

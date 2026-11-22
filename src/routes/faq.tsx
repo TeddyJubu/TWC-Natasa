@@ -12,8 +12,8 @@ const FAQ_GROUPS: Group[] = [
     id: "membership",
     title: "Membership",
     items: [
-      { q: "Who is the collective for?", a: "Women in Queens who are building something — a business, a career, a creative practice — and want real relationships close to home. Founders, freelancers, makers, and the newly curious are all welcome. No follower count or pitch deck required." },
-      { q: "Which neighborhoods are included?", a: "Long Island City, Astoria, Sunnyside, Woodside, Jackson Heights, Elmhurst, East Elmhurst, Forest Hills, Rego Park, and surrounding Queens neighborhoods." },
+      { q: "Who is the collective for?", a: "Women in North Brooklyn and Queens who are building something — a business, a career, a creative practice — and want real relationships close to home. Founders, freelancers, makers, and the newly curious are all welcome. No follower count or pitch deck required." },
+      { q: "Which neighborhoods are included?", a: "In North Brooklyn: Greenpoint, Williamsburg and Bushwick. In Queens: Long Island City, Astoria, Sunnyside, Woodside, Jackson Heights, Elmhurst, East Elmhurst, Forest Hills and Rego Park. Surrounding neighborhoods are welcome too." },
       { q: "Is the community inclusive?", a: "Yes. We welcome women from all backgrounds, including moms, married and single women, LGBTQ+ members, non-binary people who feel aligned with the community, immigrants, international members, and people from diverse cultures." },
       { q: "What happens after I apply?", a: "A real person reads every application. We’ll be in touch by email about next steps." },
       { q: "Can I create an account before I’m approved?", a: "Yes. Create your login now; your profile unlocks once the collective approves your application." },
@@ -65,7 +65,7 @@ const FAQ_LD = {
 };
 
 const TITLE = "Questions — The Women’s Collective";
-const DESCRIPTION = "Answers about membership, profiles, headshots, events and privacy at The Women’s Collective in Western Queens.";
+const DESCRIPTION = "Answers about membership, profiles, headshots, events and privacy at The Women’s Collective in North Brooklyn and Queens.";
 
 export const Route = createFileRoute("/faq")({
   head: () => ({
@@ -94,7 +94,7 @@ function FaqPage() {
       <main id="main" tabIndex={-1} className="outline-none">
         <section className="twc-wrap flex flex-wrap items-start gap-x-16 gap-y-12 pb-[88px] pt-[72px]">
           <div className="flex min-w-0 max-w-[380px] flex-[1_1_300px] flex-col gap-5">
-            <p className="twc-eyebrow-script">a collective for queens</p>
+            <p className="twc-eyebrow-script">a collective close to home</p>
             <h1 className="twc-h2">Questions, answered.</h1>
             <p className="text-[17px] leading-[1.65] text-sb-muted">Everything you might wonder before you apply, and after you’re in.</p>
             <nav aria-labelledby="toc-h" className="mt-3 flex flex-col gap-3">
@@ -140,7 +140,7 @@ function FaqPage() {
               <h2 className="twc-display md:text-[72px]">Still wondering?</h2>
             </div>
             <div className="twc-ticket__stub">
-              <div className="twc-ticket__meta"><span>Admit one</span><span>Nº 0001 — Queens</span></div>
+              <div className="twc-ticket__meta"><span>Admit one</span><span>Nº 0001 — New York</span></div>
               <p className="text-base leading-[1.6] text-sb-paper/85">A real person reads every note.</p>
               <div className="flex flex-wrap gap-2.5">
                 <Link to="/contact" className="twc-btn twc-btn--sun">Contact us <Icon name="arrow" className="twc-arrow" /></Link>

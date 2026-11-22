@@ -7,7 +7,7 @@ import { Icon, Scallop, TwcRibbon } from "@/app/layout/twc";
 import { useNeighborhoods } from "@/features/neighborhoods/queries";
 
 const TITLE = "The Fellowship — The Women’s Collective";
-const DESCRIPTION = "Membership in The Women’s Collective: a directory of women across Western Queens, the events that bring them together, and a real person who reads every application.";
+const DESCRIPTION = "Membership in The Women’s Collective: a directory of women across North Brooklyn and Queens, the events that bring them together, and a real person who reads every application.";
 
 export const Route = createFileRoute("/fellowship")({
   head: () => ({
@@ -43,7 +43,7 @@ function FellowshipPage() {
             <p className="twc-eyebrow-script">membership</p>
             <h1 className="twc-display">The Fellowship.</h1>
             <p className="twc-lede max-w-[560px]">Read by a person, and small enough that people recognize each other.</p>
-            <p className="twc-chip twc-chip--ring self-start"><Icon name="pin" />Western Queens, New York</p>
+            <p className="twc-chip twc-chip--ring self-start"><Icon name="pin" />North Brooklyn and Queens, New York</p>
           </div>
           <div className="relative min-h-[380px] min-w-0 flex-[1_1_380px]">
             <img src={membersGathering} srcSet={membersGatheringSrcSet} sizes={membersGatheringSizes} alt="Two women in conversation at a stylish indoor event, holding wine glasses" width={1600} height={1069} fetchPriority="high" className="twc-photo twc-photo--arch absolute left-0 top-0 aspect-[5/6] w-[min(300px,80%)]" />
@@ -63,7 +63,7 @@ function FellowshipPage() {
           <div className="twc-wrap flex max-w-[820px] flex-col gap-[18px]">
             <p className="twc-eyebrow">What it is</p>
             <h2 className="twc-h3">A directory, and the people behind it.</h2>
-            <p className="text-[17px] leading-[1.65] text-sb-muted">At its simplest, The Women’s Collective is a list of women across Western Queens: what they do, what they’re building, and the card they choose to share.</p>
+            <p className="text-[17px] leading-[1.65] text-sb-muted">At its simplest, The Women’s Collective is a list of women across North Brooklyn and Queens: what they do, what they’re building, and the card they choose to share.</p>
             <p className="text-[17px] leading-[1.65] text-sb-muted">What makes it worth joining is the part that isn’t a list: events, and a group of people who answer when you write to them. The only thing membership asks of you is that you participate.</p>
             <p className="text-[17px] leading-[1.65] text-sb-muted">
               Wondering whether it’s for you? <Link to="/faq" hash="membership" className="twc-inlink">Who the collective is for</Link> is on the questions page.
@@ -123,7 +123,7 @@ function FellowshipPage() {
               <h2 className="twc-display">A real person reads every application.</h2>
             </div>
             <div className="twc-ticket__stub">
-              <div className="twc-ticket__meta"><span>Admit one</span><span>Western Queens</span></div>
+              <div className="twc-ticket__meta"><span>Admit one</span><span>North Brooklyn &amp; Queens</span></div>
               <p className="text-base leading-[1.6] text-sb-paper/85">Tell us about your work and who you hope to meet. Prefer to see us first? Come to something.</p>
               <div className="flex flex-col gap-3">
                 <Link to="/join" className="twc-btn twc-btn--paper">Start your application <Icon name="arrow" className="twc-arrow" /></Link>

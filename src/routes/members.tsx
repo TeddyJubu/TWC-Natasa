@@ -17,9 +17,9 @@ export const Route = createFileRoute("/members")({
   head: () => ({
     meta: [
       { title: "Member directory — The Women’s Collective" },
-      { name: "description", content: "Meet a diverse community of women founders, creatives, professionals, and local leaders across Queens." },
+      { name: "description", content: "Meet a diverse community of women founders, creatives, professionals, and local leaders across North Brooklyn and Queens." },
       { property: "og:title", content: "Member directory — The Women’s Collective" },
-      { property: "og:description", content: "Discover women doing remarkable work across Queens and the connections they hope to build." },
+      { property: "og:description", content: "Discover women doing remarkable work across North Brooklyn and Queens and the connections they hope to build." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

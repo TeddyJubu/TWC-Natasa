@@ -18,13 +18,18 @@ export const queensOptions = ["Long Island City", "Astoria", "Sunnyside", "Woods
  * One shared form with a link per area (user decision, 2026-11-22): each link has its own question. Applicants type their
  * neighborhood; `neighborhoods` are only the names we recognize, so Spotlight can name a member's area.
  */
-export type Area = { id: string; name: string; href: string; neighborhoods: readonly string[]; connection: string };
+export type Area = { id: string; name: string; borough: string; href: string; neighborhoods: readonly string[]; connection: string };
 export const AREAS: readonly Area[] = [
-  { id: "north-brooklyn", name: "North Brooklyn", href: "/join", neighborhoods: locationOptions, connection: "What is your connection to North Brooklyn?" },
-  { id: "queens", name: "Queens", href: "/join?area=queens", neighborhoods: queensOptions, connection: "What is your connection to Queens?" },
+  { id: "north-brooklyn", name: "North Brooklyn", borough: "Brooklyn", href: "/join?area=north-brooklyn", neighborhoods: locationOptions, connection: "What is your connection to North Brooklyn?" },
+  { id: "queens", name: "Queens", borough: "Queens", href: "/join?area=queens", neighborhoods: queensOptions, connection: "What is your connection to Queens?" },
 ];
-/** The area a link names; anything else is the form's original area, so an old or mistyped link still works. */
-export const areaById = (id: unknown): Area => AREAS.find((a) => a.id === id) ?? AREAS[0]!;
+/** The area a link names, or undefined: plain /join then asks, rather than assuming one. */
+export const areaById = (id: unknown): Area | undefined => AREAS.find((a) => a.id === id);
+/** The area a neighborhood is in, or undefined for one on neither list, so its wording stays neutral. */
+export function areaOfPlace(place: string | null | undefined): Area | undefined {
+  const name = place?.trim().toLowerCase();
+  return name ? AREAS.find((a) => a.neighborhoods.some((n) => n.toLowerCase() === name)) : undefined;
+}
 export const connectionOptions = ["I live here", "I work here", "I own a business here", "I have clients here", "I regularly participate in the local community", "Other"];
 export const industryOptions = ["Arts and culture", "Beauty and wellness", "Coaching and consulting", "Design and interiors", "Education", "Finance and legal", "Food and hospitality", "Health and fitness", "Marketing and media", "Mental health and healing", "Nonprofit and community work", "Parenting and family services", "Real estate", "Retail and products", "Technology", "Travel", "Writing and publishing", "Other"];
 export const communityOptions = ["Professional connections", "Friendship and community", "Referrals", "Collaborators", "Clients", "Mentorship", "Education", "Local events", "Speaking opportunities", "Vendor opportunities", "Community resources", "Business visibility"];
@@ -153,6 +158,7 @@ export function parseApplication(form: FormData): ApplicationInput {
     throw new Error("Please check “Email address”: it should look like name@example.com.");
   }
   const area = areaById(r.text("area"));
+  if (!area) throw new Error("Please choose your area: North Brooklyn or Queens.");
   const neighborhood = r.required("neighborhood", "Where are you based?");
   if (neighborhood.length > LIMITS.neighborhood) throw new Error(`Please keep your location under ${LIMITS.neighborhood} characters.`);
 

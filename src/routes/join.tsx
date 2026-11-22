@@ -4,6 +4,7 @@ import { cn } from "@/index";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import { StatusPage } from "@/app/layout/StatusPages";
 import { ApplicationForm } from "@/features/applications/ApplicationForm";
+import { AreaChoice, AreaSwitch } from "@/features/applications/AreaChoice";
 import { useSubmitApplication } from "@/features/applications/mutations";
 import { AREAS, areaById } from "@/features/applications/schema";
 import { applicantQuery } from "@/features/applications/queries";
@@ -14,24 +15,25 @@ import { loadFormCopy } from "@/features/form-copy/queries";
 import { paragraphs } from "@/features/forms/schema";
 
 export const Route = createFileRoute("/join")({
-  // ?area= picks the area's link; an unknown one is dropped, and no area is the form's original, North Brooklyn.
+  // ?area= skips the area question; an unknown one is dropped, and no area asks it. Not a loader dep: changing area
+  // mustn't reload the page, so the form keeps what she has typed.
   validateSearch: (raw: Record<string, unknown>): { area?: string } =>
     (AREAS.some((a) => a.id === raw.area) ? { area: raw.area as string } : {}),
-  loaderDeps: ({ search }) => ({ area: search.area }),
-  loader: async ({ deps }) => {
+  loader: async () => {
     const [state, copy] = await Promise.all([publicFormStateFn({ data: { kind: "application" } }), loadFormCopy("application")]);
-    return { ...state, copy, areaId: deps.area };
+    return { ...state, copy };
   },
-  head: ({ loaderData }) => ({
-    meta: [
+  head: ({ match }) => {
+    const where = areaById(match.search.area)?.name ?? "North Brooklyn and Queens";
+    return { meta: [
       { title: "Join The Women’s Collective — Membership application" },
-      { name: "description", content: `Apply to The Women’s Collective, a community connecting women across ${areaById(loaderData?.areaId).name}.` },
+      { name: "description", content: `Apply to The Women’s Collective, a community connecting women across ${where}.` },
       { property: "og:title", content: "Join The Women’s Collective — Membership application" },
-      { property: "og:description", content: `Tell us about you, your work, and how you hope to take part in our ${areaById(loaderData?.areaId).name} community.` },
+      { property: "og:description", content: `Tell us about you, your work, and how you hope to take part in our ${where} community.` },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
+    ] };
+  },
   component: JoinPage,
 });
 
@@ -40,7 +42,7 @@ const sections = ["About", "Work", "Community", "WhatsApp", "Spotlight", "Direct
 function JoinPage() {
   const state = Route.useLoaderData();
   const t = (text: string) => state.copy?.[text] ?? text;
-  const area = areaById(state.areaId);
+  const area = areaById(Route.useSearch().area);
   const { mutateAsync: submit } = useSubmitApplication();
   const navigate = useNavigate();
   // Prefill is a convenience: while it loads, or if it fails, the form simply starts empty.
@@ -78,14 +80,18 @@ function JoinPage() {
             <span aria-hidden className="font-script text-[28px] leading-[1.3] text-sb-sun">← that’s you</span>
           </div>
         </div>
-        <ApplicationForm
-          key={area.id}
-          area={area}
-          submit={submit}
-          initial={applicant ?? undefined}
-          // ponytail: pre-launch an applicant only needs to apply, so no login step; the thank-you is its own page.
-          onSent={() => void navigate({ to: "/join/thanks" })}
-        />
+        {area ? (
+          <>
+            <AreaSwitch area={area} />
+            <ApplicationForm
+              area={area}
+              submit={submit}
+              initial={applicant ?? undefined}
+              // ponytail: pre-launch an applicant only needs to apply, so no login step; the thank-you is its own page.
+              onSent={() => void navigate({ to: "/join/thanks" })}
+            />
+          </>
+        ) : <AreaChoice />}
       </main>
       </FormCopyProvider>
       <AppFooter bare />

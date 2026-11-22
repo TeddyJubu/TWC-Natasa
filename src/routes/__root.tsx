@@ -25,8 +25,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       meta: [
         { charSet: "utf-8" },
         { name: "viewport", content: "width=device-width, initial-scale=1" },
-        { title: "The Women’s Collective — Find Your People in Queens" },
-        { name: "description", content: "A community for women founders, entrepreneurs, creatives, freelancers, professionals, and neighbors across Western Queens." },
+        { title: "The Women’s Collective — North Brooklyn and Queens" },
+        { name: "description", content: "A community for women founders, entrepreneurs, creatives, freelancers, professionals, and neighbors across North Brooklyn and Queens." },
         { property: "og:type", content: "website" },
         { property: "og:site_name", content: "The Women’s Collective" },
         { property: "og:locale", content: "en_US" },

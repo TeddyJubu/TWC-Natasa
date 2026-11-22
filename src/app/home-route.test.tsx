@@ -121,7 +121,7 @@ describe("/ (home) structure", () => {
 
   it("North Brooklyn follows the hero: labelled map, four neighbors, link to /neighborhoods", () => {
     renderWithQueries(<Page />, [[["public-profiles"], []]]);
-    const section = screen.getByRole("heading", { name: "Our neighbors in North Brooklyn.", level: 2 }).closest("section")!;
+    const section = screen.getByRole("heading", { name: "We’re in North Brooklyn too.", level: 2 }).closest("section")!;
     expect(section.previousElementSibling).toBe(screen.getByRole("heading", { level: 1 }).closest("section"));
     expect(within(section).getByRole("img").getAttribute("aria-label")).toMatch(/Newtown Creek/);
     expect(within(section).getAllByRole("listitem").map((li) => li.lastElementChild!.textContent)).toEqual(["Greenpoint", "Williamsburg", "East Williamsburg", "Bushwick"]);

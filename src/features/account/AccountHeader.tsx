@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { formatCatalogueNumber, initials } from "@/index";
 import type { Profile } from "@/features/members/queries";
 import { useUploadAvatar } from "@/features/members/mutations";
+import { areaOfPlace } from "@/features/applications/schema";
 import { bookingQuery, eventsQuery, rsvpsQuery } from "@/features/events/queries";
 import { eventWhen } from "@/features/events/format";
 import { redButton } from "@/app/layout/app-classes";
@@ -122,6 +123,10 @@ const WAVE = "q12.5 -8 25 0 t25 0 t25 0 t25 0 t25 0 t25 0 t25 0 t25 0";
 
 /** The cancellation over the stamp: wavy lines, and once she has joined, a ring dated the day she did. */
 function Postmark({ hood, date }: { hood: string | null; date: Date | null }) {
+  const borough = areaOfPlace(hood)?.borough;
+  const place = `${hood ? `${hood.toUpperCase()} · ` : ""}${borough ? `${borough.toUpperCase()}, NY` : "NEW YORK"} ·`;
+  // ponytail: the ring holds about 34 characters; a longer place drops "AIR MAIL" instead of clipping it mid-word.
+  const ring = place.length <= 23 ? `${place} AIR MAIL ·` : place;
   const part = (o: Intl.DateTimeFormatOptions) => date!.toLocaleDateString("en-US", { timeZone: NY, ...o }).toUpperCase();
   return (
     <svg aria-hidden viewBox="0 0 330 120" className="air-cancel">
@@ -134,7 +139,7 @@ function Postmark({ hood, date }: { hood: string | null; date: Date | null }) {
           <circle cx="270" cy="60" r="51" fill="none" stroke="var(--bl-air-red)" strokeWidth="2.6" />
           <circle cx="270" cy="60" r="43" fill="none" stroke="var(--bl-air-red)" strokeWidth="1.1" />
           <text fontFamily="var(--font-plex)" fontSize="7.6" fontWeight="600" letterSpacing="1.7">
-            <textPath href="#air-ring">{hood ? `${hood.toUpperCase()} · ` : ""}QUEENS, NY · AIR MAIL ·</textPath>
+            <textPath href="#air-ring">{ring}</textPath>
           </text>
           <text x="270" y="59" textAnchor="middle" fontFamily="var(--font-gilda)" fontSize="16" fontWeight="400">{part({ day: "numeric" })} {part({ month: "short" })}</text>
           <text x="270" y="73" textAnchor="middle" fontFamily="var(--font-plex)" fontSize="9" fontWeight="600" letterSpacing="1.6">{part({ year: "numeric" })}</text>
