@@ -1,8 +1,9 @@
 /**
  * On approval, copy a private draft of the member profile from her newest approved application.
  * Only blank profile fields; never directory_visible / public_profile; never phone or consents.
- * One-shot via `application_draft_at` (blank-only thereafter). Visibility flags do not skip —
- * a pending saved directory/public choice must still get the draft on approve.
+ * One-shot via `application_draft_at`. Admin approve passes `fromApproval` so a pending saved
+ * directory/public choice still gets the draft; the claim path (`ownProfile`) skips when the
+ * card is already listed or public so a later load never writes answers onto a live page.
  */
 import type { DB } from "@/server/db";
 
@@ -112,22 +113,28 @@ export function draftFromApplication(
 /**
  * Fills blank profile fields from the member's newest approved application. No-op when she has
  * none, or when `application_draft_at` is already set (one-shot: never restore a cleared field).
- * Visibility flags are ignored — a pending member may save directory/public choices before
- * approval, and those must not skip the draft. Never flips visibility. Call inside the same
- * transaction as an approval when one exists.
+ * Without `fromApproval`, skips when the card is already listed or public (claim path must not
+ * publish answers onto a live page). With `fromApproval`, visibility is ignored so a pending
+ * saved directory choice still gets the draft in the approve transaction. Never flips visibility.
  */
-export function prefillProfileFromApplication(db: DB, profileId: string): void {
+export function prefillProfileFromApplication(
+  db: DB,
+  profileId: string,
+  opts: { fromApproval?: boolean } = {},
+): void {
   const profile = db.prepare(
     `select full_name, role_title, business, neighborhood, specialty, bio, looking_for, website,
-            application_draft_at from profiles where id = ?`,
+            directory_visible, public_profile, application_draft_at from profiles where id = ?`,
   ).get(profileId) as {
     full_name: string; role_title: string; business: string; neighborhood: string | null;
     specialty: string; bio: string; looking_for: string; website: string;
-    application_draft_at: string | null;
+    directory_visible: number; public_profile: number; application_draft_at: string | null;
   } | undefined;
   if (!profile) return;
   // Already applied once: never restore a field she cleared and saved.
   if (profile.application_draft_at) return;
+  // Claim / account load: do not push application answers onto an already-live card.
+  if (!opts.fromApproval && (profile.directory_visible === 1 || profile.public_profile === 1)) return;
 
   const app = db.prepare(
     `select full_name, neighborhood, answers from applications
