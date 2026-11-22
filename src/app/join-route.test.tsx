@@ -226,21 +226,20 @@ describe("/join", () => {
 });
 
 describe("/join neighborhoods", () => {
-  it("offers only Greenpoint, Williamsburg and Bushwick, and asks about North Brooklyn", () => {
+  it("takes a typed neighborhood, and asks about North Brooklyn", () => {
     renderSignedOut();
-    const select = byLabel(/where are you based/i) as HTMLSelectElement;
-    expect([...select.options].map((o) => o.textContent)).toEqual(["Choose a neighborhood", "Greenpoint", "Williamsburg", "Bushwick"]);
+    const input = byLabel(/where are you based/i) as HTMLInputElement;
+    expect([input.tagName, input.required, input.maxLength]).toEqual(["INPUT", true, 60]);
     expect(screen.getByRole("group", { name: /connection to North Brooklyn/i })).toBeTruthy();
     expect(document.body.textContent).not.toMatch(/Queens/);
   });
 });
 
 describe("/join?area=queens", () => {
-  it("offers the Queens neighborhoods, asks about Queens and sends its area", () => {
+  it("takes a typed neighborhood, asks about Queens and sends its area", () => {
     vi.spyOn(Route, "useLoaderData").mockReturnValue({ ...openState, areaId: "queens" } as never);
     renderSignedOut();
-    const select = byLabel(/where are you based/i) as HTMLSelectElement;
-    expect([...select.options].map((o) => o.textContent).slice(1)).toEqual(["Long Island City", "Astoria", "Sunnyside", "Jackson Heights", "Elmhurst", "Forest Hills", "Rego Park"]);
+    expect(byLabel(/where are you based/i).tagName).toBe("INPUT");
     expect(screen.getByRole("group", { name: /connection to Queens/i })).toBeTruthy();
     expect((document.querySelector("input[name=area]") as HTMLInputElement).value).toBe("queens");
   });

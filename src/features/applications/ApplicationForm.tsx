@@ -148,7 +148,7 @@ function ApplicationFields({ area, initial, busy, failure, onSubmit, onEdit }: F
             <Field id="pronouns" label="Pronouns" optional><Input name="pronouns" /></Field>
             <Field id="email" label="Email address"><Input ref={emailInput} name="email" type="email" autoComplete="email" maxLength={254} required /></Field>
             <Field id="phone" label="Phone number"><Input name="phone" type="tel" autoComplete="tel" required /></Field>
-            <Field id="neighborhood" label="Where are you based?"><Select name="neighborhood" required defaultValue=""><option value="">Choose a neighborhood</option>{area.neighborhoods.map((item) => <option key={item}>{item}</option>)}</Select></Field>
+            <Field id="neighborhood" label="Where are you based?" hint="Just your neighborhood, not your street address."><Input name="neighborhood" maxLength={LIMITS.neighborhood} required /></Field>
           </div>
           <Choices name="connection" legend={area.connection} hint="Select all that apply." options={connectionOptions} required />
         </Section>

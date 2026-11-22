@@ -20,9 +20,9 @@ export function submitApplication({ db, actor }: Ctx, input: unknown): Stored {
   if (!isObject(input) || !isObject(input.answers)) throw bad("application");
   const stored = { email: str(input.email, "email", 254), fullName: str(input.fullName, "name", 120), answers: input.answers };
   const neighborhood = str(input.neighborhood ?? "", "neighborhood", 60);
-  // A page opened before areas existed sends none; one that names an area must pick from that area's neighborhoods.
+  // A page opened before areas existed sends none; any other value must be a real area.
   const { area } = stored.answers;
-  if (area !== undefined && !AREAS.find((a) => a.name === area)?.neighborhoods.includes(neighborhood)) throw bad("neighborhood");
+  if (area !== undefined && !AREAS.some((a) => a.name === area)) throw bad("area");
   db.prepare("insert into applications (email, full_name, neighborhood, answers, user_id) values (?, ?, ?, ?, ?)").run(
     stored.email, stored.fullName, neighborhood, JSON.stringify(stored.answers), actor?.id ?? null,
   );

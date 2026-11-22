@@ -4,7 +4,7 @@
 // become plain optional ones (custom forms have no conditions). built-in-copies.test.ts checks every label against
 // the page source, so a wording change on a page shows up here.
 import {
-  communityOptions, connectionOptions, directoryOptions, eventOptions, heardOptions, industryOptions, locationOptions, supportOptions,
+  communityOptions, connectionOptions, directoryOptions, eventOptions, heardOptions, industryOptions, supportOptions,
 } from "@/features/applications/schema";
 import { TOPICS } from "@/features/contact/schema";
 import { COLLABORATIONS } from "@/features/contact/partnership";
@@ -36,7 +36,7 @@ export const BUILT_IN_COPIES: Record<CopyForm, FormTemplate> = {
       q("pronouns", "short", "Pronouns"),
       q("email", "email", "Email address", true),
       q("phone", "phone", "Phone number", true),
-      q("neighborhood", "dropdown", "Where are you based?", true, { choices: pick(locationOptions) }),
+      q("neighborhood", "short", "Where are you based?", true),
       q("connection", "checkboxes", "What is your connection to North Brooklyn?", true, { help: ALL, choices: pick(connectionOptions) }),
       q("business", "short", "Business or organization name"),
       q("role", "short", "Professional title or role", true),

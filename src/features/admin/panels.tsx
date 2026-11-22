@@ -1199,13 +1199,13 @@ export function BuiltInFormPanel({ kind }: { kind: BuiltIn }) {
   );
 }
 
-/** The join form's areas: a link each, with the question and neighborhoods that link shows. "All" lists them side by side. */
+/** The join form's areas: a link each, with the question that link shows. "All" lists them side by side. */
 function AreasCard() {
   const [picked, setPicked] = React.useState("all");
   const copy = useQuery(adminFormCopyQuery("application"));
   const shown = AREAS.filter((a) => picked === "all" || a.id === picked);
   return (
-    <Card id="areas" title="Areas" subtitle="One shared form with a link for each area. Each link asks about its own area and offers its own neighborhoods.">
+    <Card id="areas" title="Areas" subtitle="One shared form with a link for each area. Each link asks about its own area, and applicants type their neighborhood.">
       <div className={cn(pad, "flex flex-col gap-3 py-4")}>
         <div role="group" aria-label="Area" className="flex flex-wrap gap-2">
           {[{ id: "all", name: "All" }, ...AREAS].map((a) => (
@@ -1219,9 +1219,6 @@ function AreasCard() {
           <h3 id={`area-${a.id}`} className="font-gilda text-[22px]/[1.2] text-ink">{a.name}</h3>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2"><PublicLink href={a.href} /><CopyLink path={a.href} /></div>
           <p className="text-[15px] text-ink">{copy.data?.[a.connection] ?? a.connection}</p>
-          <ul aria-label={`${a.name} neighborhoods`} className="flex flex-wrap gap-2">
-            {a.neighborhoods.map((n) => <li key={n} className="rounded-full bg-app-sunken px-3 py-1 text-[13px] text-ink">{n}</li>)}
-          </ul>
         </section>
       ))}
     </Card>

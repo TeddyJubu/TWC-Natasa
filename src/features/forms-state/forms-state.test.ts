@@ -73,10 +73,9 @@ describe("an application's area", () => {
     email: "rosa@x.test", fullName: "Rosa", neighborhood, answers: area ? { area } : {},
   });
 
-  it("takes a neighborhood from its own area, and refuses one from another or an unknown area", () => {
-    apply("Astoria", "Queens");
-    apply("Greenpoint", "North Brooklyn");
-    expect(() => apply("Greenpoint", "Queens")).toThrow();
+  it("takes any typed neighborhood under a real area, and refuses an unknown area", () => {
+    apply("Woodside", "Queens");
+    apply("Clinton Hill", "North Brooklyn");
     expect(() => apply("Astoria", "Mars")).toThrow();
     expect(db.prepare("select count(*) as n from applications").get()).toEqual({ n: 2 });
   });

@@ -13,8 +13,11 @@ export const GUIDELINES = [
 
 /** The page's answer choices (shared with the admin's copy of this form, `built-in-copies.ts`). */
 export const locationOptions = ["Greenpoint", "Williamsburg", "Bushwick"];
-export const queensOptions = ["Long Island City", "Astoria", "Sunnyside", "Jackson Heights", "Elmhurst", "Forest Hills", "Rego Park"];
-/** One shared form with a link per area (user decision, 2026-11-22): each link has its own neighborhoods and question. */
+export const queensOptions = ["Long Island City", "Astoria", "Sunnyside", "Woodside", "Jackson Heights", "Elmhurst", "East Elmhurst", "Forest Hills", "Rego Park"];
+/**
+ * One shared form with a link per area (user decision, 2026-11-22): each link has its own question. Applicants type their
+ * neighborhood; `neighborhoods` are only the names we recognize, so Spotlight can name a member's area.
+ */
 export type Area = { id: string; name: string; href: string; neighborhoods: readonly string[]; connection: string };
 export const AREAS: readonly Area[] = [
   { id: "north-brooklyn", name: "North Brooklyn", href: "/join", neighborhoods: locationOptions, connection: "What is your connection to North Brooklyn?" },
@@ -39,7 +42,7 @@ export interface ApplicationAnswers {
   preferredName?: string;
   pronouns?: string;
   phone: string;
-  /** The option chosen under "Where are you based?"; the typed place (if any) is the application's `neighborhood`. */
+  /** What she typed under "Where are you based?"; also the application's `neighborhood`. */
   basedIn: string;
   /** Which area's link she applied through. Absent on applications from before areas. */
   area?: string;
