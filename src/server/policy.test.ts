@@ -20,7 +20,7 @@ import { submitApplication } from "@/features/applications/applications.server";
 import { listNeighborhoods } from "@/features/neighborhoods/neighborhoods.server";
 import { receiveMessage } from "@/features/contact/contact.server";
 import {
-  addLoggedAction, addNote, adminActions, adminApplications, adminCsv, adminInbox, adminLoggedActions, adminMembers,
+  addLoggedAction, addNote, adminActions, adminApplications, adminCsv, adminImportedMembers, adminInbox, adminLoggedActions, adminMembers,
   adminNewsletterSubscribers, adminNotes, archiveMessage, deleteNote, createNeighborhood, editLoggedAction,
   removeLoggedAction, restoreLoggedAction, reviewApplication, setBookingStatus,
   setMemberNeighborhood, setMemberStatus,
@@ -384,6 +384,10 @@ describe("access rules (ported from the RLS checks)", () => {
   });
   it("pending member cannot read an applicant's application", () => throwsAccess(() => adminApplications(as(id("15")))));
   it("pending member cannot join to an applicant's email", () => throwsAccess(() => adminMembers(as(id("15")))));
+  it("only an admin can read imported members' emails", () => {
+    throwsAccess(() => adminImportedMembers(as(id("14"))));
+    throwsAccess(() => adminImportedMembers(as(id("15"))));
+  });
 
   // Review fixes. 16: a second admin who reviews and then deletes her login. 17: declined before sign-up.
   it("fixture: second admin recorded as reviewer", () => {

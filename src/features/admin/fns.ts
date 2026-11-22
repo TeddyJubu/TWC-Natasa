@@ -14,6 +14,11 @@ export const adminMembersFn = createServerFn().handler(async () => {
   return serve(m.adminMembers);
 });
 
+export const adminImportedMembersFn = createServerFn().handler(async () => {
+  const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./admin.server")]);
+  return serve(m.adminImportedMembers);
+});
+
 export const adminNeighborhoodsFn = createServerFn().handler(async () => {
   const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./admin.server")]);
   return serve(m.adminNeighborhoods);

@@ -12,9 +12,9 @@ import { useNeighborhoods } from "@/features/neighborhoods/queries";
 import { pickerNames } from "@/features/neighborhoods/options";
 import {
   adminActionsQuery, adminApplicationsQuery, adminBookingsQuery, adminInboxQuery, adminLoggedActionsQuery,
-  adminMembersQuery, adminNeighborhoodsQuery, adminNewsletterQuery, adminNotesQuery,
+  adminImportedMembersQuery, adminMembersQuery, adminNeighborhoodsQuery, adminNewsletterQuery, adminNotesQuery,
   type AdminApplication, type AdminBooking, type AdminMember, type AdminNeighborhood, type AdminNote,
-  type InboxMessage, type LoggedAction,
+  type ImportedMember, type InboxMessage, type LoggedAction,
 } from "./queries";
 import {
   LogoNotSavedError, useAddLoggedAction, useAddNote, useArchiveMessage, useCreateNeighborhood, useDeleteNote,
@@ -568,8 +568,12 @@ const cell = "py-4 pr-5 first:pl-5 last:pr-5 sm:first:pl-7 sm:last:pr-7";
 /** Table header cells: the kit's eyebrow. */
 const headCell = cn(cell, "twc-eyebrow py-3.5 whitespace-nowrap");
 
+const NOT_SIGNED_UP = "not_signed_up";
+const MEMBER_FILTER: Option[] = [...STATUS_FILTER, { value: NOT_SIGNED_UP, label: "Not signed up yet" }];
+
 export function MembersPanel({ query = "" }: { query?: string }) {
   const members = useQuery(adminMembersQuery);
+  const imported = useQuery(adminImportedMembersQuery);
   const links = useQuery(reviewLinkStatesQuery);
   const spotlightLinks = useQuery(spotlightLinkStatesQuery);
   const notes = useQuery(adminNotesQuery);
@@ -577,7 +581,9 @@ export function MembersPanel({ query = "" }: { query?: string }) {
   const apps = useQuery(adminApplicationsQuery);
   const [status, setStatus] = React.useState("");
   const [hood, setHood] = React.useState("");
-  const all = members.data ?? [];
+  const waiting = imported.data ?? [];
+  const all = [...(members.data ?? []), ...waiting.map((m) => ({ ...m, status: NOT_SIGNED_UP } as const))]
+    .sort((a, b) => a.full_name.localeCompare(b.full_name));
   const appFor = React.useMemo(() => newestByUser(apps.data ?? []), [apps.data]);
   // The neighborhoods members actually have, so the filter never offers an empty choice.
   const hoods = [...new Set(all.map((m) => m.neighborhood).filter((n): n is string => !!n))].sort((a, b) => a.localeCompare(b));
@@ -587,13 +593,14 @@ export function MembersPanel({ query = "" }: { query?: string }) {
   const page = usePage(list);
   return (
     <Card id="members" title="All members" action={<CsvButton kind="members" />}
-      subtitle={members.data ? `${shownOf(list.length, all.length)}${all.length} profiles · approve or decline directly` : "Every member profile"}>
+      subtitle={members.data ? `${shownOf(list.length, all.length)}${members.data.length} profiles${waiting.length ? ` · ${waiting.length} not signed up yet` : ""} · approve or decline directly` : "Every member profile"}>
       <QueryGate query={members} what="members">
         <div className={cn(pad, "flex flex-wrap gap-4 py-4")}>
-          <FilterSelect id="members-status" label="Status" value={status} options={STATUS_FILTER} onChange={setStatus} />
+          <FilterSelect id="members-status" label="Status" value={status} options={MEMBER_FILTER} onChange={setStatus} />
           <FilterSelect id="members-hood" label="Neighborhood" value={hood} onChange={setHood}
             options={[{ value: "", label: "Any neighborhood" }, ...hoods.map((n) => ({ value: n, label: n })), { value: NO_HOOD, label: "No neighborhood" }]} />
         </div>
+        {imported.isError && <InlineError message="We couldn’t load members who haven’t signed up yet." onRetry={() => void imported.refetch()} />}
         {links.isError && <InlineError message="We couldn’t load review links right now." onRetry={() => void links.refetch()} />}
         {spotlightLinks.isError && <InlineError message="We couldn’t load Spotlight links right now." onRetry={() => void spotlightLinks.refetch()} />}
         {notes.isError && <InlineError message="We couldn’t load notes right now." onRetry={() => void notes.refetch()} />}
@@ -610,16 +617,32 @@ export function MembersPanel({ query = "" }: { query?: string }) {
                   <th scope="col" className={headCell}><span className="sr-only">Actions</span></th>
                 </tr>
               </thead>
-              <tbody>{page.rows.map((m) => (
+              <tbody>{page.rows.map((m) => (m.status === NOT_SIGNED_UP ? <ImportedRow key={m.id} member={m} /> : (
                 <MemberRow key={m.id} member={m} link={links.data?.[m.id] ?? null} spotlight={spotlightLinks.data?.[m.id] ?? null}
                   notes={notesFor(notes.data, "member_id", m.id)} actions={actionsFor(logged.data, "member_id", m.id)} app={appFor.get(m.id) ?? null} />
-              ))}</tbody>
+              )))}</tbody>
             </table>
           </div>
         )}
         {page.more}
       </QueryGate>
     </Card>
+  );
+}
+
+/** No account yet, so nothing to approve, edit or link: signing up with this email claims the record (0004). */
+function ImportedRow({ member }: { member: ImportedMember }) {
+  return (
+    <tr className="border-b border-app-rule align-top last:border-0">
+      <th scope="row" className={cn(cell, "font-medium text-ink")}>{member.full_name || "Unnamed member"}</th>
+      <td className={cell}><Chip>Not signed up yet</Chip></td>
+      <td className={cell}>{member.neighborhood ?? "—"}</td>
+      <td className={cell}>No</td>
+      <td className={cell}>No</td>
+      <td className={cn(cell, "twc-index whitespace-nowrap")}>—</td>
+      <td className={cn(cell, "break-all")}>{member.email}</td>
+      <td className={cn(cell, meta)}>Approved automatically when they sign up with this email.</td>
+    </tr>
   );
 }
 

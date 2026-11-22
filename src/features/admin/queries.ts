@@ -1,13 +1,13 @@
 // Admin reads (§2.7): server functions that start with requireAdmin.
 import { queryOptions } from "@tanstack/react-query";
 import {
-  adminActionsFn, adminApplicationsFn, adminBookingsFn, adminInboxFn, adminLoggedActionsFn,
+  adminActionsFn, adminApplicationsFn, adminBookingsFn, adminImportedMembersFn, adminInboxFn, adminLoggedActionsFn,
   adminMembersFn, adminNeighborhoodsFn, adminNewsletterSubscribersFn, adminNotesFn,
 } from "./fns";
 
 export type {
   AdminAction, AdminApplication, AdminBooking, AdminMember, AdminNeighborhood, AdminNote,
-  InboxMessage, LoggedAction, NewsletterSubscriber,
+  ImportedMember, InboxMessage, LoggedAction, NewsletterSubscriber,
 } from "./admin.server";
 
 /** Pending first, then newest. */
@@ -20,6 +20,12 @@ export const adminApplicationsQuery = queryOptions({
 export const adminMembersQuery = queryOptions({
   queryKey: ["admin", "members"],
   queryFn: () => adminMembersFn(),
+});
+
+/** Old-site members who haven't signed up yet; shown in All members, read-only. */
+export const adminImportedMembersQuery = queryOptions({
+  queryKey: ["admin", "imported-members"],
+  queryFn: () => adminImportedMembersFn(),
 });
 
 /** All neighborhoods, inactive ones included, in display order (logo URLs carry a per-fetch ?v=). */

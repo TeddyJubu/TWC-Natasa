@@ -5,7 +5,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { openDb, type DB } from "@/server/db";
 import { mediaFile } from "@/server/media";
 import {
-  addLoggedAction, addNote, adminActions, adminApplications, adminCsv, adminLoggedActions, adminMembers, adminNeighborhoods,
+  addLoggedAction, addNote, adminActions, adminApplications, adminCsv, adminImportedMembers, adminLoggedActions, adminMembers, adminNeighborhoods,
   adminNewsletterSubscribers, adminNotes, deleteNote, editLoggedAction, removeLoggedAction, restoreLoggedAction,
   reviewApplication, saveNeighborhoodLogo, setMemberNeighborhood, setMemberStatus,
 } from "./admin.server";
@@ -226,5 +226,30 @@ describe("duplicates and member summary (CRM-072/073, CRM-038/060)", () => {
     expect(me.newsletter).toEqual({ consent: null });
     expect(me.applications).toBe(1); // her account email; the others are someone else's
     for (const id of [mine, imported, twiceA, twiceB, alone]) db.prepare("delete from applications where id = ?").run(id);
+  });
+});
+
+describe("imported members who haven't signed up (legacy_members, 0004)", () => {
+  beforeAll(() => {
+    const now = new Date().toISOString();
+    const add = db.prepare("insert into legacy_members (legacy_id, email, full_name, business, member_since, data, user_id) values (?, ?, ?, ?, ?, ?, ?)");
+    add.run("m-waiting", "waiting@x.test", "Nell", "Bakery", "2024-03-01T00:00:00.000Z", JSON.stringify({ neighborhood_city: " Astoria " }), null);
+    add.run("m-claimed", "claimed@x.test", "Cora", "", null, "{}", ADMIN);
+    add.run("m-started", "started@x.test", "Sia", "", null, "{}", null);
+    db.prepare(`insert into "user" (id, name, email, emailVerified, createdAt, updatedAt) values ('00000000-0000-4000-8000-0000000000b1', 'Sia', 'Started@x.test', 0, ?, ?)`).run(now, now);
+  });
+
+  it("lists only people with no account, with the neighborhood from their old record", () => {
+    const rows = adminImportedMembers(admin());
+    expect(rows.find((m) => m.id === "m-waiting")).toEqual({
+      id: "m-waiting", email: "waiting@x.test", full_name: "Nell", business: "Bakery", neighborhood: "Astoria", member_since: "2024-03-01T00:00:00.000Z",
+    });
+    expect(rows.map((m) => m.id)).not.toContain("m-claimed");
+    expect(rows.map((m) => m.id)).not.toContain("m-started"); // already a row in All members under that account
+  });
+
+  it("are in the members CSV, marked as not signed up", () => {
+    expect(adminCsv(admin(), { kind: "members" }).csv).toContain(
+      `"Nell","not signed up yet","No","No","","waiting@x.test","Bakery","Astoria","2024-03-01T00:00:00.000Z"`);
   });
 });

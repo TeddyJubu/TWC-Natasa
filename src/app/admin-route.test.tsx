@@ -104,14 +104,14 @@ describe("_admin guard", () => {
 });
 
 const FETCH = Symbol("fetch");
-type AdminKey = "inbox" | "applications" | "members" | "neighborhoods" | "bookings" | "events" | "review-links" | "spotlight-links" | "reviews" | "spotlights" | "forms-state" | "form-responses" | "notes" | "actions" | "logged-actions" | "newsletter";
+type AdminKey = "inbox" | "applications" | "members" | "imported-members" | "neighborhoods" | "bookings" | "events" | "review-links" | "spotlight-links" | "reviews" | "spotlights" | "forms-state" | "form-responses" | "notes" | "actions" | "logged-actions" | "newsletter";
 const formsState = [
   { kind: "application", open: true, message: "", updated_at: "2026-11-10T00:00:00Z", updated_by: null },
   { kind: "review", open: true, message: "", updated_at: "2026-11-10T00:00:00Z", updated_by: null },
 ];
 /** Seeds every admin read (empty lists, plus `members`) unless overridden; FETCH leaves that read to the queued fake results. */
 function renderAdmin(over: Partial<Record<AdminKey, unknown>> = {}, extra: [unknown[], unknown][] = [], Component: React.ComponentType = AllPanels) {
-  const data: Record<AdminKey, unknown> = { inbox: [], applications: [], members, neighborhoods: [], bookings: [], events: [], "review-links": {}, "spotlight-links": {}, reviews: [], spotlights: [], "forms-state": formsState, "form-responses": [], notes: [], actions: [], "logged-actions": [], newsletter: [], ...over };
+  const data: Record<AdminKey, unknown> = { inbox: [], applications: [], members, "imported-members": [], neighborhoods: [], bookings: [], events: [], "review-links": {}, "spotlight-links": {}, reviews: [], spotlights: [], "forms-state": formsState, "form-responses": [], notes: [], actions: [], "logged-actions": [], newsletter: [], ...over };
   const seed = Object.entries(data).filter(([, v]) => v !== FETCH).map(([k, v]) => [["admin", k], v] as [unknown[], unknown]);
   return renderWithQueries(<Component />, [...seed, ...extra]);
 }
@@ -431,6 +431,19 @@ describe("/admin", () => {
       fireEvent.change(within(all).getByLabelText("Neighborhood"), { target: { value: "" } });
       fireEvent.change(within(all).getByLabelText("Status"), { target: { value: "approved" } });
       expect(within(all).getAllByRole("rowheader").map((h) => h.textContent)).toEqual(["Natasa Admin", "Rosa Diaz"]);
+    });
+
+    it("imported members who haven't signed up are read-only rows, in name order, with their own filter", () => {
+      renderAdmin({ "imported-members": [{ id: "m-1", email: "nell@x.test", full_name: "Nell Ames", business: "Bakery", neighborhood: "Ridgewood", member_since: null }] });
+      const all = card("All members");
+      expect(within(all).getAllByRole("rowheader").map((h) => h.textContent)).toEqual(["Natasa Admin", "Nell Ames", "Rosa Diaz"]);
+      expect(within(all).getByText(/2 profiles · 1 not signed up yet/)).toBeTruthy();
+      const row = within(all).getByRole("rowheader", { name: "Nell Ames" }).closest("tr")!;
+      expect(within(row).getByText("Not signed up yet")).toBeTruthy();
+      expect(within(row).getByText("nell@x.test")).toBeTruthy();
+      expect(within(row).queryByRole("button")).toBeNull();
+      fireEvent.change(within(all).getByLabelText("Status"), { target: { value: "not_signed_up" } });
+      expect(within(all).getAllByRole("rowheader").map((h) => h.textContent)).toEqual(["Nell Ames"]);
     });
 
     it("a member's Details show her newest application with its origin, and save a corrected neighborhood", async () => {

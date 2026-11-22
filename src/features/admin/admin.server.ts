@@ -28,6 +28,8 @@ export type AdminApplication = {
  * `applications`: how many applications are linked to her account or sent from her account email (CRM-038).
  */
 export type AdminMember = Profile & { email: string | null; newsletter: { consent: 0 | 1 | null } | null; applications: number };
+/** An old-site member (legacy_members, 0004) with no account here yet: read-only until she signs up. */
+export type ImportedMember = { id: string; email: string; full_name: string; business: string; neighborhood: string | null; member_since: string | null };
 export type AdminNeighborhood = NeighborhoodRow & { logoUrl: string | null };
 export type AdminBooking = Booking;
 /** Someone who saved a seat: admin-only (the email especially). */
@@ -62,6 +64,18 @@ export function adminMembers({ db, actor }: Ctx): AdminMember[] {
     const applications = emails.filter((a) => a.user_id === m.id || (account !== undefined && a.email.toLowerCase() === account)).length;
     return { ...m, newsletter: newsletter.get(account ?? "") ?? newsletter.get(m.email?.toLowerCase() ?? "") ?? null, applications };
   }).sort((a, b) => a.full_name.localeCompare(b.full_name));
+}
+
+/** Unclaimed imports, minus any email that already has an account (unverified ones too): those are in adminMembers. */
+export function adminImportedMembers({ db, actor }: Ctx): ImportedMember[] {
+  requireAdmin(db, actor);
+  return db.prepare(
+    `select l.legacy_id as id, l.email, l.full_name, l.business, l.member_since,
+       nullif(trim(json_extract(l.data, '$.neighborhood_city')), '') as neighborhood
+     from legacy_members l
+     where l.user_id is null and not exists (select 1 from "user" u where lower(u.email) = l.email)
+     order by l.full_name`,
+  ).all() as ImportedMember[];
 }
 
 /** All neighborhoods, inactive ones included. A per-fetch ?v= stops the browser reusing a replaced logo. */
@@ -309,9 +323,12 @@ export function adminCsv(c: Ctx, input: unknown): CsvExport {
     ]);
     return { filename, csv: toCsv(["Submitted (UTC)", "Name", "Email", "Neighborhood", "Business", "Status", "Reviewed (UTC)", "Account", "Answers (JSON)"], rows) };
   }
-  const rows = adminMembers(c).map((m) => [
-    m.full_name, m.status, yesNo(m.directory_visible), yesNo(m.public_profile), m.catalogue_number, m.email, m.business, m.neighborhood, m.member_since,
-  ]);
+  const rows = [
+    ...adminMembers(c).map((m) => [
+      m.full_name, m.status, yesNo(m.directory_visible), yesNo(m.public_profile), m.catalogue_number, m.email, m.business, m.neighborhood, m.member_since,
+    ]),
+    ...adminImportedMembers(c).map((m) => [m.full_name, "not signed up yet", "No", "No", null, m.email, m.business, m.neighborhood, m.member_since]),
+  ];
   return { filename, csv: toCsv(["Name", "Status", "Listed", "Public", "Catalogue", "Email", "Business", "Neighborhood", "Member since"], rows) };
 }
 
