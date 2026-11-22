@@ -10,7 +10,7 @@ const one = <T,>(db: ReturnType<typeof openDb>, sql: string, ...args: (string | 
 describe("database", () => {
   it("migrates a fresh database to the newest user_version, with foreign keys on", () => {
     const db = openDb(":memory:");
-    expect(one<{ user_version: number }>(db, "pragma user_version").user_version).toBe(18);
+    expect(one<{ user_version: number }>(db, "pragma user_version").user_version).toBe(19);
     expect(one<{ foreign_keys: number }>(db, "pragma foreign_keys").foreign_keys).toBe(1);
     expect(one<{ busy_timeout?: number; timeout?: number }>(db, "pragma busy_timeout")).toEqual({ timeout: 5000 });
   });
@@ -47,11 +47,12 @@ describe("database", () => {
     writeFileSync(join(dir, "0016_events_wording.sql"), "this would fail if it ran again");
     writeFileSync(join(dir, "0017_contact_wording.sql"), "this would fail if it ran again");
     writeFileSync(join(dir, "0018_north_brooklyn_neighborhoods.sql"), "this would fail if it ran again");
-    writeFileSync(join(dir, "0019_bad.sql"), "create table half (id integer); select * from missing_table;");
-    expect(() => migrate(db, dir)).toThrow(/0019_bad\.sql/);
-    expect(one<{ user_version: number }>(db, "pragma user_version").user_version).toBe(18);
+    writeFileSync(join(dir, "0019_application_draft.sql"), "this would fail if it ran again");
+    writeFileSync(join(dir, "0020_bad.sql"), "create table half (id integer); select * from missing_table;");
+    expect(() => migrate(db, dir)).toThrow(/0020_bad\.sql/);
+    expect(one<{ user_version: number }>(db, "pragma user_version").user_version).toBe(19);
     expect(one(db, "select name from sqlite_master where name = 'half'")).toBeUndefined();
-    expect(() => migrate(db, dir)).toThrow(/0019/);
+    expect(() => migrate(db, dir)).toThrow(/0020/);
   });
 
   it("0018 adds the North Brooklyn neighborhoods after any others, and leaves a row an admin already made", () => {

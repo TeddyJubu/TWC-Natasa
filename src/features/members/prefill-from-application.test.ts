@@ -49,8 +49,11 @@ afterAll(() => vi.unstubAllEnvs());
 const profile = () =>
   db.prepare(
     `select full_name, role_title, business, neighborhood, specialty, bio, looking_for, website,
-            directory_visible, public_profile, status from profiles where id = ?`,
+            directory_visible, public_profile, application_draft_at, status from profiles where id = ?`,
   ).get(MEMBER) as Record<string, unknown>;
+
+/** Reset the one-shot stamp so each approval case can prefill again. */
+const clearDraft = () => db.prepare("update profiles set application_draft_at = null where id = ?").run(MEMBER);
 
 const insertApp = (extra: object = {}, userId: string | null = MEMBER) =>
   (db.prepare(
@@ -131,6 +134,7 @@ describe("draftFromApplication", () => {
 
 describe("prefill on approval", () => {
   it("reviewApplication fills blank fields and never turns on visibility", () => {
+    clearDraft();
     db.prepare("update profiles set full_name = '', role_title = '', business = '', neighborhood = null, specialty = '', bio = '', looking_for = '', website = '', directory_visible = 0, public_profile = 0, status = 'pending' where id = ?").run(MEMBER);
     const id = insertApp();
     reviewApplication(admin(), { id, status: "approved" });
@@ -151,6 +155,7 @@ describe("prefill on approval", () => {
   });
 
   it("never overwrites fields the member or an admin already wrote", () => {
+    clearDraft();
     db.prepare("update profiles set full_name = 'Bea Kept', role_title = 'Owner', business = '', neighborhood = 'Sunnyside', specialty = '', bio = 'Kept bio', looking_for = '', website = '', directory_visible = 0, public_profile = 0, status = 'pending' where id = ?").run(MEMBER);
     const id = insertApp();
     reviewApplication(admin(), { id, status: "approved" });
@@ -166,6 +171,7 @@ describe("prefill on approval", () => {
   });
 
   it("setMemberStatus prefills the same way", () => {
+    clearDraft();
     db.prepare("update profiles set full_name = '', role_title = '', business = '', neighborhood = null, specialty = '', bio = '', looking_for = '', website = '', directory_visible = 0, public_profile = 0, status = 'pending' where id = ?").run(MEMBER);
     const id = insertApp();
     setMemberStatus(admin(), { id: MEMBER, status: "approved" });
@@ -180,6 +186,7 @@ describe("prefill on approval", () => {
   });
 
   it("undo-decline (back to pending) does not prefill", () => {
+    clearDraft();
     db.prepare("update profiles set full_name = '', role_title = '', business = '', neighborhood = null, specialty = '', bio = '', looking_for = '', website = '', status = 'pending' where id = ?").run(MEMBER);
     const id = insertApp();
     setMemberStatus(admin(), { id: MEMBER, status: "declined" });
@@ -194,6 +201,7 @@ describe("prefill on approval", () => {
   });
 
   it("never copies phone into the profile", () => {
+    clearDraft();
     db.prepare("update profiles set role_title = '', business = '', status = 'pending' where id = ?").run(MEMBER);
     const id = insertApp();
     reviewApplication(admin(), { id, status: "approved" });
@@ -204,6 +212,7 @@ describe("prefill on approval", () => {
   });
 
   it("claim path: ownProfile prefills from an approved application only", () => {
+    clearDraft();
     db.prepare("update profiles set full_name = 'Bea', role_title = '', business = '', neighborhood = null, specialty = '', bio = '', looking_for = '', website = '', directory_visible = 0, public_profile = 0, status = 'approved' where id = ?").run(MEMBER);
     const pending = insertApp({ role: "Intruder", business: "Not Me", directory: { choice: "no" } });
     // Pending must not win; only the approved row is trusted.
@@ -229,6 +238,7 @@ describe("prefill on approval", () => {
   });
 
   it("does not prefill when the card is already listed or public", () => {
+    clearDraft();
     db.prepare("update profiles set full_name = 'Bea', role_title = '', business = '', neighborhood = null, specialty = '', bio = '', looking_for = '', website = '', directory_visible = 1, public_profile = 1, status = 'approved' where id = ?").run(MEMBER);
     const id = insertApp();
     db.prepare("update applications set status = 'approved' where id = ?").run(id);
@@ -238,8 +248,21 @@ describe("prefill on approval", () => {
   });
 
   it("ignores a pending application even when it is the newest linked row", () => {
-    db.prepare("update profiles set full_name = 'Bea', role_title = '', business = '', neighborhood = null, specialty = '', bio = '', looking_for = '', website = '', directory_visible = 0, public_profile = 0, status = 'approved' where id = ?").run(MEMBER);
+    db.prepare("update profiles set full_name = 'Bea', role_title = '', business = '', neighborhood = null, specialty = '', bio = '', looking_for = '', website = '', directory_visible = 0, public_profile = 0, application_draft_at = null, status = 'approved' where id = ?").run(MEMBER);
     const id = insertApp({ role: "Pending only" });
+    prefillProfileFromApplication(db, MEMBER);
+    expect(profile().role_title).toBe("");
+    db.prepare("delete from applications where id = ?").run(id);
+  });
+
+  it("is one-shot: clearing a field after prefill does not restore it on the next read", () => {
+    db.prepare("update profiles set full_name = 'Bea', role_title = '', business = '', neighborhood = null, specialty = '', bio = '', looking_for = '', website = '', directory_visible = 0, public_profile = 0, application_draft_at = null, status = 'approved' where id = ?").run(MEMBER);
+    const id = insertApp({ directory: { choice: "no" } });
+    db.prepare("update applications set status = 'approved' where id = ?").run(id);
+    prefillProfileFromApplication(db, MEMBER);
+    expect(profile().role_title).toBe("Founder");
+    expect(profile().application_draft_at).toBeTruthy();
+    db.prepare("update profiles set role_title = '' where id = ?").run(MEMBER);
     prefillProfileFromApplication(db, MEMBER);
     expect(profile().role_title).toBe("");
     db.prepare("delete from applications where id = ?").run(id);
