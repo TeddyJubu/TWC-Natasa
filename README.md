@@ -343,7 +343,8 @@ after a change under `eve/`, repeat the build and restart `twc-eve.service`.
 ### Backup
 
 `twc-natasa-backup.timer` copies the database with SQLite's online backup and tars the uploads every night at
-04:15 UTC, keeping 30 days. By hand:
+04:15 UTC, keeping 30 days. It leaves out `uploads/covers/`, because the app downloads those again from each event's
+cover address. By hand:
 
 ```sh
 sqlite3 /var/lib/twc-natasa/data/twc.db ".backup '/var/backups/twc-natasa/manual-$(date +%F).db'"

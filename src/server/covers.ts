@@ -14,7 +14,7 @@ const UID = /^[\w-]{1,64}$/;
 const FAILURE_TTL = 5 * 60_000;
 const MAX_FAILURES = 500;
 const MAX_DOWNLOADS = 3;
-// Small on purpose: the nightly backup tars all of uploads/ and keeps 30 days of it.
+// Small on purpose: these are copies that can be downloaded again, on a small disk, and the nightly backup excludes them.
 export const COVER_LIMITS = { files: 200, bytes: 50 * 1024 * 1024 };
 
 /** What Cal says about an event's cover; `unlisted` keeps it out of shared caches. */
