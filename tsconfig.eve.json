@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["src/features/eve/EveChat.tsx", "src/features/eve/eve-llm.ts", "src/features/eve/genui/**/*"],
+  "exclude": []
+}

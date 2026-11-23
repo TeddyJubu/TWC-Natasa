@@ -1,0 +1,18 @@
+{
+  "name": "twc-eve",
+  "private": true,
+  "type": "module",
+  "description": "Eve, the admin assistant: a separate Node 24 service on 127.0.0.1. The app proxies to it and checks every call.",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "dev": "eve dev",
+    "build": "eve build",
+    "start": "eve start --host 127.0.0.1 --port 8790"
+  },
+  "dependencies": {
+    "@openuidev/lang-core": "1.1.1",
+    "ai": "7.0.172",
+    "eve": "1.3.0",
+    "zod": "4.4.3"
+  }
+}

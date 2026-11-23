@@ -1,5 +1,6 @@
 {
   "include": ["src/**/*.ts", "src/**/*.tsx", "vite.config.ts", "vitest.config.ts"],
+  "exclude": ["src/features/eve/EveChat.tsx", "src/features/eve/eve-llm.ts", "src/features/eve/genui"],
   "compilerOptions": {
     "target": "ES2022",
     "jsx": "react-jsx",

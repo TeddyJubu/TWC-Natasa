@@ -1,6 +1,11 @@
+@layer ui-sdk;
 @import "tailwindcss";
 @import "./design-system/styles/theme.css";
 @import "./app/twc.css";
+@import "./features/eve/eve-dock.css";
+/* Eve's chat components have their own Tailwind pass (features/eve/eve.css), loaded with the chat. */
+@source not "./features/eve/genui";
+@source not "./features/eve/EveChat.tsx";
 
 /* Route focus (useRouteFocus) lands on the page h1; it is a target, not a control, so no ring. */
 #main [tabindex="-1"]:focus { outline: none; }

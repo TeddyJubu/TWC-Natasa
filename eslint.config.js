@@ -7,7 +7,7 @@ import tseslint from "typescript-eslint";
 export default tseslint.config(
   {
     // Generated files are never hand-edited, so they aren't linted: TanStack Router's routeTree.gen.ts.
-    ignores: ["dist", ".output", ".nitro", ".tanstack", "data", ".migration", "src/routeTree.gen.ts"],
+    ignores: ["dist", ".output", ".nitro", ".tanstack", "data", ".migration", "src/routeTree.gen.ts", "eve/.eve", "eve/.output"],
   },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
@@ -31,6 +31,11 @@ export default tseslint.config(
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
     },
+  },
+  // OpenUI's defineComponent takes each React component as a `component` property, which this rule can't recognise.
+  {
+    files: ["src/features/eve/genui/**/*.{ts,tsx}"],
+    rules: { "react-hooks/rules-of-hooks": "off", "react-refresh/only-export-components": "off" },
   },
   // Boundary (a): design-system source may only import from itself (attach copies only that subtree).
   {

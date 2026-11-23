@@ -5,7 +5,8 @@
 /** Form pages and sign-in, matched exactly; `/f/<slug>` and `/f/<slug>/thanks` by prefix. */
 export const OPEN_PAGES = new Set(["/join", "/join/thanks", "/review", "/contact", "/partnerships", "/spotlight", "/auth", "/reset-password", "/verified"]);
 /** The body-taking routes those pages post to; `/api/forms/<slug>` and Better Auth's `/api/auth/*` by prefix. */
-export const OPEN_APIS = new Set(["/api/applications", "/api/contact", "/api/partnerships", "/api/review", "/api/spotlight"]);
+// `/api/eve-tools` is the Eve service on this machine, which has no PIN cookie; every call needs its signed admin token.
+export const OPEN_APIS = new Set(["/api/applications", "/api/contact", "/api/partnerships", "/api/review", "/api/spotlight", "/api/eve-tools"]);
 const OPEN_PREFIXES = ["/f/", "/api/forms/", "/api/auth/", "/assets/"];
 
 /**

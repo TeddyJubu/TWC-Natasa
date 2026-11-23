@@ -320,6 +320,21 @@ create a listed test event and event type, then
 `E2E_SANDBOX_CAL=yes E2E_ATTENDEE_EMAIL=… E2E_BASE_URL=… E2E_PIN_COOKIE=… E2E_EVENT_SLUG=… E2E_EVENT_TITLE=… E2E_TYPE_SLUG=… E2E_TYPE_TITLE=… bun run test:e2e`.
 It skips itself for any `thewomenscollective.club` site or attendee. Remove the test data afterward.
 
+### Eve (admin assistant)
+
+Eve runs as its own service because it needs Node 24 and the app runs on Node 22. Until it is set up, the Eve button
+still shows on admin pages and says Eve isn't set up; nothing else changes. To turn it on:
+
+1. Install Node 24 at `/opt/node-24`, then `cd /opt/twc-natasa/eve && bun install --frozen-lockfile && EVE_TELEMETRY_DISABLED=1 /opt/node-24/bin/node node_modules/.bin/eve build`.
+2. Generate one secret (`openssl rand -base64 48`). Put it in `/etc/twc-natasa/app.env` as `EVE_SHARED_SECRET`, and in a
+   new root-owned `/etc/twc-natasa/eve.env` (mode 640, group `www-data`) with the same `EVE_SHARED_SECRET`, plus `ANTHROPIC_API_KEY`.
+3. `mkdir -p /opt/twc-natasa/eve/.eve && chown -R www-data /opt/twc-natasa/eve/.eve`, install `deploy/eve/twc-eve.service`,
+   enable it, and restart `twc-natasa.service`.
+
+Conversations are stored in `eve/.eve/.workflow-data`, so include that folder in the retention and backup decisions.
+Messages and the records Eve reads go to Anthropic to generate answers. The deploy script doesn't rebuild this service:
+after a change under `eve/`, repeat the build and restart `twc-eve.service`.
+
 ### Backup
 
 `twc-natasa-backup.timer` copies the database with SQLite's online backup and tars the uploads every night at

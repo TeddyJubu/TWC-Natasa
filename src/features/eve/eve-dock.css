@@ -1,0 +1,16 @@
+/* The floating Eve button and panel. In the main stylesheet because the button is on every admin page; the chat's own
+   styles (eve.css) load with the chat. */
+.eve-dock { position: fixed; right: 1rem; bottom: 1rem; z-index: 40; display: flex; flex-direction: column; align-items: flex-end; gap: 0.75rem; max-width: calc(100vw - 2rem); }
+.eve-trigger {
+  display: inline-flex; align-items: center; gap: 0.5rem; min-height: 2.75rem; padding: 0 1.1rem 0 0.9rem; border: 1px solid var(--bl-air-line); border-radius: 999px;
+  background: var(--bl-air-paper); color: var(--bl-air-navy); box-shadow: var(--bl-air-shadow-menu); font-weight: 600; font-size: 0.9375rem; cursor: pointer;
+  transition: background-color 150ms ease;
+}
+.eve-trigger:hover { background: var(--bl-air-tint); }
+.eve-trigger:focus-visible { outline: 2px solid var(--bl-air-navy); outline-offset: 2px; }
+.eve-panel:not([hidden]) {
+  display: block; width: min(27rem, calc(100vw - 2rem)); height: min(42rem, calc(100dvh - 6.5rem)); overflow: hidden; border: 1px solid var(--bl-air-line);
+  border-radius: var(--bl-air-radius-card); background: var(--bl-air-paper); color: var(--bl-air-navy); box-shadow: var(--bl-air-shadow-menu);
+}
+@media print { .eve-dock { display: none; } }
+@media (prefers-reduced-motion: reduce) { .eve-trigger { transition: none; } }

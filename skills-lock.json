@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "skills": {
+    "eve": {
+      "source": "vercel/eve",
+      "commit": "e254c0ff805dbe126fefc011defe23f057fefacf",
+      "sourceType": "github",
+      "skillPath": "skills/eve/SKILL.md",
+      "computedHash": "9c1eaa91f1aa5a1733b90937ee5186bc14f43e88ef6524a956750e535b0e2a60"
+    },
+    "ui-sdk": {
+      "source": "vercel-labs/ui",
+      "commit": "a349d52a7c019260202dcb2139b28d073e218b28",
+      "sourceType": "github",
+      "skillPath": "packages/core/skills/ui-sdk/SKILL.md",
+      "computedHash": "cabe635c8f279e77b50a265c499ea2e8ebd471574b96acfc61a11a147d553e6d"
+    }
+  }
+}

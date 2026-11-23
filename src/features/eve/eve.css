@@ -1,0 +1,94 @@
+/* Eve's chat: the shadcn components on the airmail tokens, loaded only when the chat opens. Its utilities are nested
+   under .eve-root: a second copy of `.flex` at page level would override the app's own `lg:hidden` and break the layout. */
+@import "tailwindcss/theme.css" theme(reference inline);
+@source "./genui";
+@source "./EveChat.tsx";
+
+.eve-root, [data-radix-popper-content-wrapper] {
+  @tailwind utilities source(none);
+}
+.eve-root { height: 100%; }
+
+@theme reference inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+/* Radix menus portal to <body>, outside .eve-root, so they need the same tokens. */
+.eve-root, [data-radix-popper-content-wrapper] {
+  --radius: 0.625rem;
+  --background: var(--bl-air-paper);
+  --foreground: var(--bl-air-navy);
+  --card: var(--bl-air-paper);
+  --card-foreground: var(--bl-air-navy);
+  --popover: var(--bl-air-paper);
+  --popover-foreground: var(--bl-air-navy);
+  --primary: var(--bl-air-navy);
+  --primary-foreground: var(--bl-air-paper);
+  --secondary: var(--bl-air-tint);
+  --secondary-foreground: var(--bl-air-navy);
+  --muted: var(--bl-air-tint);
+  --muted-foreground: var(--bl-air-muted);
+  --accent: var(--bl-air-tint);
+  --accent-foreground: var(--bl-air-navy);
+  --destructive: var(--bl-air-red);
+  --destructive-foreground: var(--bl-air-paper);
+  --border: var(--bl-air-line);
+  --input: var(--bl-air-line);
+  --ring: var(--bl-air-navy);
+  --chart-1: var(--bl-air-navy);
+  --chart-2: var(--bl-air-sky);
+  --chart-3: var(--bl-air-red);
+  --chart-4: var(--bl-air-muted);
+  --chart-5: var(--bl-air-rule);
+}
+.eve-root *, [data-radix-popper-content-wrapper] * { border-color: var(--border); }
+
+.eve-head { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.75rem 0.75rem 0.75rem 1rem; border-bottom: 1px solid var(--border); }
+.eve-title { font-family: var(--font-display, serif); font-size: 1.25rem; font-weight: 400; line-height: 1.2; }
+.eve-log { display: flex; flex: 1; min-height: 0; flex-direction: column; gap: 0.75rem; overflow-y: auto; padding: 1rem; }
+.eve-log:focus-visible { outline: 2px solid var(--ring); outline-offset: -2px; }
+.eve-user { align-self: flex-end; max-width: 85%; padding: 0.5rem 0.75rem; border-radius: 0.875rem 0.875rem 0.25rem; background: var(--primary); color: var(--primary-foreground); font-size: 0.875rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+.eve-answer { min-width: 0; font-size: 0.875rem; overflow-wrap: anywhere; }
+.eve-prose { line-height: 1.5; }
+.eve-prose > * + * { margin-top: 0.5rem; }
+.eve-prose ul { list-style: disc; padding-left: 1.25rem; }
+.eve-prose ol { list-style: decimal; padding-left: 1.25rem; }
+.eve-prose strong { font-weight: 600; }
+.eve-prose table { display: block; overflow-x: auto; border-collapse: collapse; font-size: 0.8125rem; }
+.eve-prose th, .eve-prose td { padding: 0.25rem 0.5rem; border: 1px solid var(--border); text-align: left; }
+.eve-card { display: flex; flex-direction: column; gap: 0.5rem; padding: 0.75rem; border: 1px solid var(--primary); border-radius: var(--radius); background: var(--muted); }
+.eve-fields { display: flex; flex-direction: column; gap: 0.25rem; max-height: 11rem; overflow-y: auto; font-size: 0.8125rem; }
+.eve-fields > div { display: grid; grid-template-columns: minmax(0, 6.5rem) minmax(0, 1fr); gap: 0.5rem; }
+.eve-fields dt { color: var(--muted-foreground); overflow-wrap: anywhere; }
+.eve-fields dd { overflow-wrap: anywhere; white-space: pre-wrap; }
+.eve-warn { color: var(--destructive); font-size: 0.8125rem; font-weight: 600; }
+.eve-notice { font-size: 0.8125rem; color: var(--muted-foreground); }
+.eve-link { width: 100%; margin-top: 0.25rem; padding: 0.25rem 0.5rem; border: 1px solid var(--border); border-radius: var(--radius-sm, 0.375rem); background: var(--background); color: var(--foreground); font-size: 0.75rem; }
+.eve-compose { display: flex; align-items: flex-end; gap: 0.5rem; padding: 0.75rem; border-top: 1px solid var(--border); }

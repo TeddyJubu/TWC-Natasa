@@ -1,0 +1,27 @@
+[Unit]
+Description=Eve, The Women's Collective admin assistant (Node 24, loopback only)
+After=network-online.target twc-natasa.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/twc-natasa/eve
+EnvironmentFile=/etc/twc-natasa/eve.env
+Environment=EVE_TELEMETRY_DISABLED=1
+Environment=TWC_APP_URL=http://127.0.0.1:8788
+ExecStart=/opt/node-24/bin/node node_modules/.bin/eve start --host 127.0.0.1 --port 8790
+Restart=always
+RestartSec=5s
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/twc-natasa/eve/.eve
+LimitNOFILE=4096
+MemoryHigh=384M
+MemoryMax=512M
+
+[Install]
+WantedBy=multi-user.target

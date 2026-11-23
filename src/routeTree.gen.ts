@@ -40,6 +40,8 @@ import { Route as ApiSplatRouteImport } from './routes/api/$'
 import { Route as ApiApplicationsRouteImport } from './routes/api/applications'
 import { Route as ApiBookRouteImport } from './routes/api/book'
 import { Route as ApiContactRouteImport } from './routes/api/contact'
+import { Route as ApiEveProposalsRouteImport } from './routes/api/eve-proposals'
+import { Route as ApiEveToolsRouteImport } from './routes/api/eve-tools'
 import { Route as ApiFeedRouteImport } from './routes/api/feed'
 import { Route as ApiImagesRouteImport } from './routes/api/images'
 import { Route as ApiNeighborhoodLogosRouteImport } from './routes/api/neighborhood-logos'
@@ -58,6 +60,7 @@ import { Route as NeighborhoodsSlugRouteImport } from './routes/neighborhoods_.$
 import { Route as AuthenticatedAdminAdminRouteImport } from './routes/_authenticated/_admin/admin'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiBookingUidRouteImport } from './routes/api/booking.$uid'
+import { Route as ApiEveSplatRouteImport } from './routes/api/eve.$'
 import { Route as ApiFormsSlugRouteImport } from './routes/api/forms.$slug'
 import { Route as FSlugThanksRouteImport } from './routes/f.$slug_.thanks'
 import { Route as AuthenticatedAdminAdminSectionRouteImport } from './routes/_authenticated/_admin/admin_.$section'
@@ -221,6 +224,16 @@ const ApiContactRoute = ApiContactRouteImport.update({
   path: '/api/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiEveProposalsRoute = ApiEveProposalsRouteImport.update({
+  id: '/api/eve-proposals',
+  path: '/api/eve-proposals',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiEveToolsRoute = ApiEveToolsRouteImport.update({
+  id: '/api/eve-tools',
+  path: '/api/eve-tools',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiFeedRoute = ApiFeedRouteImport.update({
   id: '/api/feed',
   path: '/api/feed',
@@ -311,6 +324,11 @@ const ApiBookingUidRoute = ApiBookingUidRouteImport.update({
   path: '/api/booking/$uid',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiEveSplatRoute = ApiEveSplatRouteImport.update({
+  id: '/api/eve/$',
+  path: '/api/eve/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiFormsSlugRoute = ApiFormsSlugRouteImport.update({
   id: '/api/forms/$slug',
   path: '/api/forms/$slug',
@@ -387,6 +405,8 @@ export interface FileRoutesByFullPath {
   '/api/applications': typeof ApiApplicationsRoute
   '/api/book': typeof ApiBookRoute
   '/api/contact': typeof ApiContactRoute
+  '/api/eve-proposals': typeof ApiEveProposalsRoute
+  '/api/eve-tools': typeof ApiEveToolsRoute
   '/api/feed': typeof ApiFeedRoute
   '/api/images': typeof ApiImagesRoute
   '/api/neighborhood-logos': typeof ApiNeighborhoodLogosRoute
@@ -405,6 +425,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminAdminRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/booking/$uid': typeof ApiBookingUidRoute
+  '/api/eve/$': typeof ApiEveSplatRoute
   '/api/forms/$slug': typeof ApiFormsSlugRoute
   '/f/$slug/thanks': typeof FSlugThanksRoute
   '/admin/$section': typeof AuthenticatedAdminAdminSectionRoute
@@ -444,6 +465,8 @@ export interface FileRoutesByTo {
   '/api/applications': typeof ApiApplicationsRoute
   '/api/book': typeof ApiBookRoute
   '/api/contact': typeof ApiContactRoute
+  '/api/eve-proposals': typeof ApiEveProposalsRoute
+  '/api/eve-tools': typeof ApiEveToolsRoute
   '/api/feed': typeof ApiFeedRoute
   '/api/images': typeof ApiImagesRoute
   '/api/neighborhood-logos': typeof ApiNeighborhoodLogosRoute
@@ -462,6 +485,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminAdminRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/booking/$uid': typeof ApiBookingUidRoute
+  '/api/eve/$': typeof ApiEveSplatRoute
   '/api/forms/$slug': typeof ApiFormsSlugRoute
   '/f/$slug/thanks': typeof FSlugThanksRoute
   '/admin/$section': typeof AuthenticatedAdminAdminSectionRoute
@@ -504,6 +528,8 @@ export interface FileRoutesById {
   '/api/applications': typeof ApiApplicationsRoute
   '/api/book': typeof ApiBookRoute
   '/api/contact': typeof ApiContactRoute
+  '/api/eve-proposals': typeof ApiEveProposalsRoute
+  '/api/eve-tools': typeof ApiEveToolsRoute
   '/api/feed': typeof ApiFeedRoute
   '/api/images': typeof ApiImagesRoute
   '/api/neighborhood-logos': typeof ApiNeighborhoodLogosRoute
@@ -522,6 +548,7 @@ export interface FileRoutesById {
   '/_authenticated/_admin/admin': typeof AuthenticatedAdminAdminRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/booking/$uid': typeof ApiBookingUidRoute
+  '/api/eve/$': typeof ApiEveSplatRoute
   '/api/forms/$slug': typeof ApiFormsSlugRoute
   '/f/$slug_/thanks': typeof FSlugThanksRoute
   '/_authenticated/_admin/admin_/$section': typeof AuthenticatedAdminAdminSectionRoute
@@ -563,6 +590,8 @@ export interface FileRouteTypes {
     | '/api/applications'
     | '/api/book'
     | '/api/contact'
+    | '/api/eve-proposals'
+    | '/api/eve-tools'
     | '/api/feed'
     | '/api/images'
     | '/api/neighborhood-logos'
@@ -581,6 +610,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/api/auth/$'
     | '/api/booking/$uid'
+    | '/api/eve/$'
     | '/api/forms/$slug'
     | '/f/$slug/thanks'
     | '/admin/$section'
@@ -620,6 +650,8 @@ export interface FileRouteTypes {
     | '/api/applications'
     | '/api/book'
     | '/api/contact'
+    | '/api/eve-proposals'
+    | '/api/eve-tools'
     | '/api/feed'
     | '/api/images'
     | '/api/neighborhood-logos'
@@ -638,6 +670,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/api/auth/$'
     | '/api/booking/$uid'
+    | '/api/eve/$'
     | '/api/forms/$slug'
     | '/f/$slug/thanks'
     | '/admin/$section'
@@ -679,6 +712,8 @@ export interface FileRouteTypes {
     | '/api/applications'
     | '/api/book'
     | '/api/contact'
+    | '/api/eve-proposals'
+    | '/api/eve-tools'
     | '/api/feed'
     | '/api/images'
     | '/api/neighborhood-logos'
@@ -697,6 +732,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_admin/admin'
     | '/api/auth/$'
     | '/api/booking/$uid'
+    | '/api/eve/$'
     | '/api/forms/$slug'
     | '/f/$slug_/thanks'
     | '/_authenticated/_admin/admin_/$section'
@@ -735,6 +771,8 @@ export interface RootRouteChildren {
   ApiApplicationsRoute: typeof ApiApplicationsRoute
   ApiBookRoute: typeof ApiBookRoute
   ApiContactRoute: typeof ApiContactRoute
+  ApiEveProposalsRoute: typeof ApiEveProposalsRoute
+  ApiEveToolsRoute: typeof ApiEveToolsRoute
   ApiFeedRoute: typeof ApiFeedRoute
   ApiImagesRoute: typeof ApiImagesRoute
   ApiNeighborhoodLogosRoute: typeof ApiNeighborhoodLogosRoute
@@ -752,6 +790,7 @@ export interface RootRouteChildren {
   NeighborhoodsSlugRoute: typeof NeighborhoodsSlugRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiBookingUidRoute: typeof ApiBookingUidRoute
+  ApiEveSplatRoute: typeof ApiEveSplatRoute
   ApiFormsSlugRoute: typeof ApiFormsSlugRoute
   FSlugThanksRoute: typeof FSlugThanksRoute
   ApiGatheringsUidRsvpRoute: typeof ApiGatheringsUidRsvpRoute
@@ -976,6 +1015,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiContactRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/eve-proposals': {
+      id: '/api/eve-proposals'
+      path: '/api/eve-proposals'
+      fullPath: '/api/eve-proposals'
+      preLoaderRoute: typeof ApiEveProposalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/eve-tools': {
+      id: '/api/eve-tools'
+      path: '/api/eve-tools'
+      fullPath: '/api/eve-tools'
+      preLoaderRoute: typeof ApiEveToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/feed': {
       id: '/api/feed'
       path: '/api/feed'
@@ -1100,6 +1153,13 @@ declare module '@tanstack/react-router' {
       path: '/api/booking/$uid'
       fullPath: '/api/booking/$uid'
       preLoaderRoute: typeof ApiBookingUidRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/eve/$': {
+      id: '/api/eve/$'
+      path: '/api/eve/$'
+      fullPath: '/api/eve/$'
+      preLoaderRoute: typeof ApiEveSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/forms/$slug': {
@@ -1234,6 +1294,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiApplicationsRoute: ApiApplicationsRoute,
   ApiBookRoute: ApiBookRoute,
   ApiContactRoute: ApiContactRoute,
+  ApiEveProposalsRoute: ApiEveProposalsRoute,
+  ApiEveToolsRoute: ApiEveToolsRoute,
   ApiFeedRoute: ApiFeedRoute,
   ApiImagesRoute: ApiImagesRoute,
   ApiNeighborhoodLogosRoute: ApiNeighborhoodLogosRoute,
@@ -1251,6 +1313,7 @@ const rootRouteChildren: RootRouteChildren = {
   NeighborhoodsSlugRoute: NeighborhoodsSlugRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiBookingUidRoute: ApiBookingUidRoute,
+  ApiEveSplatRoute: ApiEveSplatRoute,
   ApiFormsSlugRoute: ApiFormsSlugRoute,
   FSlugThanksRoute: FSlugThanksRoute,
   ApiGatheringsUidRsvpRoute: ApiGatheringsUidRsvpRoute,

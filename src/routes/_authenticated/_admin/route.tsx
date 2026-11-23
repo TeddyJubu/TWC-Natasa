@@ -1,5 +1,6 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { viewerFn } from "@/features/auth/fns";
+import { EveLauncher } from "@/features/eve/EveLauncher";
 
 /** Asks the server about this session only; anything but exactly `true` (including an error) counts as no. */
 async function isAdmin(): Promise<boolean> {
@@ -15,5 +16,5 @@ export const Route = createFileRoute("/_authenticated/_admin")({
   beforeLoad: async () => {
     if (!(await isAdmin())) throw redirect({ to: "/account" });
   },
-  component: () => <Outlet />,
+  component: () => <><Outlet /><EveLauncher /></>,
 });
