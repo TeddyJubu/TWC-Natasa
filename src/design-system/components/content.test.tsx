@@ -2,7 +2,8 @@
 import * as React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
-import { Accordion, CurvedGallery, Ribbon, Tabs } from "./content";
+import { Accordion, CurvedGallery, Ribbon } from "./content";
+import { Tabs } from "./tabs";
 
 // The WebGL engine can't run in jsdom; the gallery only decides when to mount it.
 vi.mock("./circular-gallery", () => ({ CircularGalleryEngine: () => <div data-testid="engine" /> }));

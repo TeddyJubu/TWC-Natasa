@@ -5,7 +5,7 @@ import type { MemberProfile } from "@/index";
 import { demoMembers } from "@/showcase/demo-members";
 import { NEIGHBORHOOD_SEED } from "@/features/neighborhoods/queries";
 import { QueryClient } from "@tanstack/react-query";
-import { renderWithQueries, stubDialog } from "@/test/dom";
+import { renderWithQueries } from "@/test/dom";
 
 vi.mock("@/features/members/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs }));
@@ -22,12 +22,9 @@ beforeEach(() => {
 });
 
 const Page = Route.options.component as React.ComponentType;
-let restoreDialog: (() => void) | undefined;
 afterEach(() => {
   cleanup();
   fake.reset();
-  restoreDialog?.();
-  restoreDialog = undefined;
 });
 
 // Query functions call their server function asynchronously, so let pending work settle first.
@@ -243,7 +240,6 @@ describe("/members", () => {
     ["approved members", viewer(true, true), "directory"],
     ["visitors", viewer(false, false), "public-profiles"],
   ] as const)("%s open a card into a dialog with that member's bio", (_who, v, key) => {
-    restoreDialog = stubDialog();
     renderWithQueries(<Page />, [v, [[key], [{ ...card("Rosa Diaz", 12), bio: "Rosa bakes for the block." }, card("Lena Ortiz", 15)]]]);
     expect(screen.queryByRole("dialog")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "View Rosa Diaz’s profile" }));

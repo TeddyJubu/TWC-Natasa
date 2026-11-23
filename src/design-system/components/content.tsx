@@ -157,64 +157,6 @@ export const Ribbon = React.forwardRef<HTMLDivElement, RibbonProps>(({ className
 });
 Ribbon.displayName = "Ribbon";
 
-/* ---------- Tabs: serif tabs with underline ---------- */
-export interface TabsProps extends React.HTMLAttributes<HTMLDivElement> {
-  items: { label: string; content: React.ReactNode }[];
-  defaultIndex?: number;
-}
-export const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(({ className, items, defaultIndex = 0, ...p }, ref) => {
-  const [active, setActive] = React.useState(defaultIndex);
-  const id = React.useId();
-  const tabs = React.useRef<(HTMLButtonElement | null)[]>([]);
-  const select = (i: number) => {
-    setActive(i);
-    tabs.current[i]?.focus();
-  };
-  // Automatic activation: arrows (wrapping), Home and End move focus and select.
-  const onKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>, i: number) => {
-    const last = items.length - 1;
-    const next = { ArrowRight: i === last ? 0 : i + 1, ArrowLeft: i === 0 ? last : i - 1, Home: 0, End: last }[e.key];
-    // Modified arrows belong to the browser (Alt+Left = back, Cmd+Arrow = line start/end).
-    if (next === undefined || e.altKey || e.ctrlKey || e.metaKey) return;
-    e.preventDefault();
-    select(next);
-  };
-  return (
-    <div ref={ref} className={cn("flex flex-col gap-12", className)} {...p}>
-      <div role="tablist" className="grid border-b border-line" style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0,1fr))` }}>
-        {items.map((it, i) => (
-          <button
-            key={it.label}
-            ref={(el) => { tabs.current[i] = el; }}
-            type="button"
-            role="tab"
-            id={`${id}-t${i}`}
-            aria-selected={active === i}
-            aria-controls={`${id}-p${i}`}
-            tabIndex={active === i ? 0 : -1}
-            onClick={() => setActive(i)}
-            onKeyDown={(e) => onKeyDown(e, i)}
-            className={cn(
-              "-mb-px rounded-sm border-b-2 pb-10 font-display text-2xl transition-colors md:text-3xl focus-visible:text-sky focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-canvas",
-              active === i ? "border-ink text-ink" : "border-transparent text-ink-faint hover:text-ink-muted",
-            )}
-          >
-            {it.label}
-          </button>
-        ))}
-      </div>
-      {/* Every panel exists so each aria-controls resolves; only the active one mounts its content
-          (inactive content would fetch and keep state for nothing). Unhiding replays motion-panel-in. */}
-      {items.map((it, i) => (
-        <div key={it.label} role="tabpanel" id={`${id}-p${i}`} aria-labelledby={`${id}-t${i}`} hidden={active !== i} className="motion-panel-in">
-          {active === i ? it.content : null}
-        </div>
-      ))}
-    </div>
-  );
-});
-Tabs.displayName = "Tabs";
-
 /* ---------- FeatureCard ---------- */
 const featureVariants = cva("group relative flex min-h-80 flex-col justify-end overflow-hidden rounded-card p-7 transition-[transform,box-shadow] duration-300 ease-[var(--ease-snap)] hover:-translate-y-1 hover:shadow-soft motion-reduce:transform-none motion-reduce:transition-none", {
   variants: {

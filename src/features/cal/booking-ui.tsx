@@ -2,7 +2,7 @@
 import * as React from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { cn } from "@/index";
+import { cn, MultiSelectControl, SelectControl } from "@/index";
 import { calSlotsQuery, CalRequestError, invalidateCal, manageBooking, sendBooking } from "./queries";
 import { browserTimeZone, firstWeekday, formatDay, formatRange, formatTime, monthCells, monthKey, shiftMonth, timeZones } from "./time";
 import { checkBooking, isEmail, MAX_GUESTS, type BookingField, type CalSlot, type PublicBooking, type PublicEventType, type SlotsByDay } from "./types";
@@ -44,7 +44,7 @@ export function TimezoneSelect({ value, onChange }: { value: string; onChange: (
   const zones = React.useMemo(() => timeZones(value), [value]);
   return (
     <FormField label="Time zone">
-      {(p) => <select {...p} className="twc-input" value={value} onChange={(e) => onChange(e.target.value)}>{zones.map((z) => <option key={z} value={z}>{z.replace(/_/g, " ")}</option>)}</select>}
+      {(p) => <SelectControl {...p} className="twc-input" value={value} onValueChange={onChange}>{zones.map((z) => <option key={z} value={z}>{z.replace(/_/g, " ")}</option>)}</SelectControl>}
     </FormField>
   );
 }
@@ -201,13 +201,13 @@ function CustomField({ field, value, error, onChange }: { field: BookingField; v
       {(p) => {
         if (type === "textarea") return <textarea {...p} {...placeholderProp} className="twc-input" maxLength={2000} value={text} onChange={(e) => onChange(e.target.value)} />;
         if (type === "select") {
-          return <select {...p} className="twc-input" value={text} onChange={(e) => onChange(e.target.value)}><option value="">Choose…</option>{options.map((o) => <option key={o} value={o}>{o}</option>)}</select>;
+          return <SelectControl {...p} className="twc-input" value={text} onValueChange={onChange}><option value="">Choose…</option>{options.map((o) => <option key={o} value={o}>{o}</option>)}</SelectControl>;
         }
         if (type === "multiselect") {
           return (
-            <select {...p} multiple className="twc-input" value={list} onChange={(e) => onChange([...e.target.selectedOptions].map((o) => o.value))}>
+            <MultiSelectControl {...p} className="twc-input" value={list} onValueChange={onChange}>
               {options.map((o) => <option key={o} value={o}>{o}</option>)}
-            </select>
+            </MultiSelectControl>
           );
         }
         if (type === "multiemail") {

@@ -2,6 +2,7 @@
 // and photos (the first postmarked), who loved it, and the replies. Everything shown is something a member wrote.
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
+import { askConfirm } from "@/app/layout/confirm";
 import { cn, initials } from "@/index";
 import { Chip } from "@/app/layout/app-ui";
 import { fieldClass, ring } from "@/app/layout/app-classes";
@@ -49,8 +50,8 @@ export function FeedPost({ post }: { post: Post }) {
     setReplying(true);
     requestAnimationFrame(() => replyField.current?.focus());
   }
-  function deletePost() {
-    if (!window.confirm("Delete this post? Its loves and replies go with it.")) return;
+  async function deletePost() {
+    if (!(await askConfirm("Delete this post? Its loves and replies go with it.", "Delete post", true))) return;
     // The post and its focused button go away: hand focus to the next post (else the one before, else the page), not <body>.
     const posts = [...document.querySelectorAll<HTMLElement>("article.air-entry")];
     const i = posts.indexOf(self.current!);
@@ -146,8 +147,8 @@ function Thread({ post, replying, field }: { post: Post; replying: boolean; fiel
     e.preventDefault();
     if (body.trim()) send.mutate(body, { onSuccess: () => setBody("") });
   }
-  function deleteReply(r: FeedReply, button: HTMLElement) {
-    if (!window.confirm("Delete this reply?")) return;
+  async function deleteReply(r: FeedReply, button: HTMLElement) {
+    if (!(await askConfirm("Delete this reply?", "Delete reply", true))) return;
     const post = button.closest("article"); // its button goes with it, so focus returns to the post
     remove.mutateAsync(r.id).then(() => post?.focus(), () => {});
   }

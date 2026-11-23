@@ -5,7 +5,7 @@ import { QueryClient } from "@tanstack/react-query";
 import { isNotFound } from "@tanstack/react-router";
 import type { MemberProfile } from "@/index";
 import { NEIGHBORHOOD_SEED, type Neighborhood } from "@/features/neighborhoods/queries";
-import { renderWithQueries, stubDialog } from "@/test/dom";
+import { renderWithQueries } from "@/test/dom";
 import { expectNoSkippedHeadings } from "@/test/headings";
 
 vi.mock("@/features/neighborhoods/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
@@ -26,13 +26,10 @@ const runLoader = (route: { options: { loader?: unknown } }, slug?: string) =>
 const withLoaderData = (route: typeof IndexRoute | typeof SlugRoute, data: unknown) =>
   vi.spyOn(route, "useLoaderData").mockReturnValue(data as never);
 
-let restoreDialog: (() => void) | undefined;
 afterEach(() => {
   cleanup();
   fake.reset();
   vi.restoreAllMocks();
-  restoreDialog?.();
-  restoreDialog = undefined;
 });
 const settle = () => act(() => new Promise((r) => setTimeout(r, 20)));
 
@@ -187,15 +184,13 @@ describe("/neighborhoods/:slug", () => {
   });
 
   it("opens a member in the dialog", () => {
-    restoreDialog = stubDialog();
     withLoaderData(SlugRoute, { hood: astoria });
     renderWithQueries(<SlugPage />, [visitor, [["public-profiles"], [card("Rosa Diaz", "Astoria")]]]);
     fireEvent.click(screen.getByRole("button", { name: "View Rosa Diaz’s profile" }));
-    expect(document.querySelector("dialog[open]")?.textContent).toContain("Rosa Diaz");
+    expect(screen.getByRole("dialog", { name: /Rosa Diaz/ }).textContent).toContain("Rosa Diaz");
   });
 
   it("links the open member to her full page, like /members", () => {
-    restoreDialog = stubDialog();
     withLoaderData(SlugRoute, { hood: astoria });
     renderWithQueries(<SlugPage />, [visitor, [["public-profiles"], [{ ...card("Rosa Diaz", "Astoria"), catalogueNumber: 12 }]]]);
     fireEvent.click(screen.getByRole("button", { name: "View Rosa Diaz’s profile" }));

@@ -5,7 +5,7 @@ import type { MemberProfile } from "@/index";
 import { demoMembers } from "@/showcase/demo-members";
 import type { Profile } from "@/features/members/queries";
 import { NEIGHBORHOOD_SEED } from "@/features/neighborhoods/queries";
-import { renderWithQueries, stubDialog } from "@/test/dom";
+import { chooseValue, renderWithQueries, selectOptions } from "@/test/dom";
 import { restoreTz, setTz } from "@/test/tz";
 import { fake } from "@/test/fake-fns";
 
@@ -19,7 +19,6 @@ import { Route } from "@/routes/_authenticated/account";
 
 vi.spyOn(Route, "useRouteContext").mockReturnValue({ user: { id: "u1" } } as never);
 const Page = Route.options.component as React.ComponentType;
-let restoreDialog: (() => void) | undefined;
 beforeEach(() => {
   // Hide the one-time “You’re in” panel unless a test clears storage on purpose.
   localStorage.setItem("twc-youre-in:v1:u1", "1");
@@ -27,8 +26,6 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   fake.reset();
-  restoreDialog?.();
-  restoreDialog = undefined;
 });
 
 const base: Profile = {
@@ -120,6 +117,7 @@ describe("/account", () => {
 
   it("shows an Admin tab, linking /admin, to admins only", () => {
     renderAccount({}, [], [], true);
+    fireEvent.click(screen.getByRole("button", { name: /account menu/ }));
     const nav = screen.getByRole("navigation", { name: "My account" });
     expect(within(nav).getByRole("link", { name: "Admin" }).getAttribute("href")).toBe("/admin");
     expect(within(nav).getByRole("link", { name: "Admin" }).getAttribute("aria-current")).toBeNull();
@@ -172,7 +170,6 @@ describe("/account", () => {
   });
 
   it("an approved member's cover: verified badge, specialty, work and place, her number and join date, a card preview", async () => {
-    restoreDialog = stubDialog();
     renderAccount();
     const cover = screen.getByRole("region", { name: "Rosa Diaz" });
     expect(within(cover).getByText("Verified member")).toBeTruthy();
@@ -217,7 +214,7 @@ describe("/account", () => {
   it("hides an inactive neighborhood from the select unless it is her current one", () => {
     const hoods = NEIGHBORHOOD_SEED.map((n) => (n.slug === "rego-park" ? { ...n, active: false } : n));
     const options = () =>
-      within(screen.getByRole("combobox", { name: /neighborhood/i })).getAllByRole("option").map((o) => o.textContent);
+      selectOptions(screen.getByRole("combobox", { name: /neighborhood/i })).map((o) => o.textContent);
     renderAccount({ neighborhood: "Astoria" }, [], [], false, [[["neighborhoods"], hoods]]);
     editPublicCard();
     expect(options()).toContain("Sunnyside");
@@ -226,19 +223,19 @@ describe("/account", () => {
     renderAccount({ neighborhood: "Rego Park" }, [], [], false, [[["neighborhoods"], hoods]]);
     editPublicCard();
     expect(options().filter((o) => o === "Rego Park")).toHaveLength(1);
-    expect((screen.getByRole("combobox", { name: /neighborhood/i }) as HTMLSelectElement).value).toBe("Rego Park");
+    expect(screen.getByRole("combobox", { name: /neighborhood/i }).textContent).toContain("Rego Park");
   });
 
   describe("no neighborhood", () => {
-    const select = () => screen.getByRole("combobox", { name: /neighborhood/i }) as HTMLSelectElement;
+    const select = () => screen.getByRole("combobox", { name: /neighborhood/i });
 
     it("offers a blank first choice, selected when she has none", () => {
       renderAccount({ neighborhood: null });
       editPublicCard();
-      const first = within(select()).getAllByRole("option")[0] as HTMLOptionElement;
+      const first = selectOptions(select())[0]!;
       expect(first.textContent).toBe("Choose your neighborhood");
-      expect(first.value).toBe("");
-      expect(select().value).toBe("");
+      expect(first.dataset.value).toBe("");
+      expect(select().hasAttribute("data-placeholder")).toBe(true);
     });
 
     it("says it isn't chosen yet and introduces neighbors from across the constellation", () => {
@@ -255,7 +252,7 @@ describe("/account", () => {
     it("saves the blank choice as null", async () => {
       renderAccount({ neighborhood: "Astoria" });
       editPublicCard();
-      fireEvent.change(select(), { target: { value: "" } });
+      chooseValue(select(), "");
       fake.results = [{ ...base, neighborhood: null }];
       fireEvent.click(save());
       await waitFor(() => expect(fake.calls).toContainEqual(["saveProfileFn", expect.objectContaining({ neighborhood: null })]));
@@ -263,8 +260,8 @@ describe("/account", () => {
   });
 
   describe("public profile switch", () => {
-    const publicSwitch = () => screen.getByRole("switch", { name: /show my profile on the public website/i }) as HTMLInputElement;
-    const directorySwitch = () => screen.getByRole("switch", { name: /^show me in the member directory/i }) as HTMLInputElement;
+    const publicSwitch = () => screen.getByRole("switch", { name: /show my profile on the public website/i }) as HTMLButtonElement;
+    const directorySwitch = () => screen.getByRole("switch", { name: /^show me in the member directory/i }) as HTMLButtonElement;
 
     it("says plainly that anyone on the internet can see the card", () => {
       renderAccount();
@@ -308,11 +305,11 @@ describe("/account", () => {
 
     it("switching the directory off un-publishes on save, and re-listing doesn't republish", async () => {
       renderAccount({ directory_visible: true, public_profile: true });
-      expect(publicSwitch().checked).toBe(true);
+      expect(publicSwitch().getAttribute("aria-checked")).toBe("true");
       fireEvent.click(directorySwitch());
-      expect(publicSwitch().checked).toBe(false);
+      expect(publicSwitch().getAttribute("aria-checked")).toBe("false");
       fireEvent.click(directorySwitch());
-      expect(publicSwitch().checked).toBe(false);
+      expect(publicSwitch().getAttribute("aria-checked")).toBe("false");
       fireEvent.click(directorySwitch());
       fake.results = [{ ...base }];
       fireEvent.click(save());
@@ -366,7 +363,6 @@ describe("/account", () => {
     });
 
     it("open a card into a dialog with that member's bio", () => {
-      restoreDialog = stubDialog();
       renderAccount({}, [{ ...card("Lena Ortiz", 40), bio: "Lena paints murals." }, card("Mei Chen", 41)]);
       expect(screen.queryByRole("dialog")).toBeNull();
       fireEvent.click(screen.getByRole("button", { name: "View Lena Ortiz’s profile" }));
@@ -469,7 +465,6 @@ describe("/account", () => {
     });
 
     it("Preview card opens her member pass with her unsaved values", () => {
-      restoreDialog = stubDialog();
       renderAccount();
       editPublicCard();
       fireEvent.change(screen.getByLabelText(/^full name/i), { target: { value: "Rosa M. Diaz" } });
@@ -523,6 +518,7 @@ describe("/account", () => {
   describe("navigation", () => {
     it("tabs anchor this page's account cards; sign out sits beside her name", () => {
       renderAccount();
+      fireEvent.click(screen.getByRole("button", { name: /account menu/ }));
       const nav = screen.getByRole("navigation", { name: "My account" });
       const href = (name: string) => within(nav).getByRole("link", { name }).getAttribute("href");
       for (const name of ["Home", "Members", "Gatherings", "Introductions", "Admin"]) expect(within(nav).queryByRole("link", { name })).toBeNull();
@@ -602,7 +598,7 @@ describe("/account", () => {
       renderAccount();
       fireEvent.click(button("Add preferred date"));
       fireEvent.change(screen.getByLabelText(/preferred date/i), { target: { value: "2099-12-03" } });
-      fireEvent.change(screen.getByLabelText(/time of day/i), { target: { value: "Evening" } });
+      chooseValue(screen.getByLabelText(/time of day/i), "Evening");
       fireEvent.change(screen.getByLabelText(/^notes/i), { target: { value: "Bringing cakes" } });
       fake.results = [{ id: "b1", user_id: "u1", preferred_date: "2099-12-03", preferred_time: "Evening", notes: "Bringing cakes", status: "requested", created_at: "" }];
       fireEvent.click(button(/request my session/i));

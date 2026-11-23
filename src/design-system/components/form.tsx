@@ -1,19 +1,8 @@
 import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
+import type { VariantProps } from "class-variance-authority";
 import { cn } from "../lib/utils";
+import { fieldVariants } from "./field-variants";
 
-const fieldVariants = cva(
-  "peer w-full font-sans text-base text-ink placeholder:text-ink-muted/85 transition-[border-color,background-color,box-shadow,transform] duration-300 ease-[var(--ease-snap)] hover:border-ink-muted focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 aria-[invalid=true]:border-danger aria-[invalid=true]:focus-visible:ring-danger/20 motion-reduce:transition-none",
-  {
-    variants: {
-      variant: {
-        editorial: "border-x-0 border-b border-t-0 border-line bg-transparent px-0 focus-visible:border-sky focus-visible:shadow-[inset_0_-1px_0_var(--bl-sky)] focus-visible:ring-0",
-        boxed: "rounded-control border border-line bg-surface px-4 focus-visible:-translate-y-0.5 focus-visible:border-sky focus-visible:bg-canvas focus-visible:ring-2 focus-visible:ring-ring/20",
-      },
-    },
-    defaultVariants: { variant: "editorial" },
-  },
-);
 
 export interface LabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
   index?: string;
@@ -39,11 +28,6 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(({ 
 ));
 Textarea.displayName = "Textarea";
 
-export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement>, VariantProps<typeof fieldVariants> {}
-export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(({ className, variant, children, ...p }, ref) => (
-  <select ref={ref} className={cn(fieldVariants({ variant }), "h-field cursor-pointer", className)} {...p}>{children}</select>
-));
-Select.displayName = "Select";
 
 export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type"> {
   label: React.ReactNode;
@@ -136,23 +120,6 @@ export const FormField = React.forwardRef<HTMLDivElement, FormFieldProps>(({ cla
   );
 });
 FormField.displayName = "FormField";
-
-export interface SwitchProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type"> {
-  label: React.ReactNode;
-  description?: React.ReactNode;
-}
-export const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(({ className, label, description, id, ...p }, ref) => {
-  const auto = React.useId();
-  const sid = id ?? auto;
-  return (
-    <label htmlFor={sid} className={cn("group flex cursor-pointer items-start justify-between gap-5 border-y border-line py-4 transition-colors hover:border-ink-muted has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50", className)}>
-      <span><span className="block font-sans text-sm text-ink">{label}</span>{description && <span className="mt-1 block font-sans text-xs leading-relaxed text-ink-muted">{description}</span>}</span>
-      <input ref={ref} id={sid} type="checkbox" role="switch" className="peer sr-only" {...p} />
-      <span aria-hidden className="relative mt-0.5 h-6 w-11 shrink-0 rounded-full bg-surface-strong transition-[transform,background-color] duration-300 ease-[var(--ease-snap)] group-hover:scale-105 after:absolute after:left-1 after:top-1 after:size-4 after:rounded-full after:bg-ink after:transition-transform after:duration-300 after:ease-[var(--ease-snap)] peer-checked:bg-ink peer-checked:after:translate-x-5 peer-checked:after:bg-canvas peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-canvas motion-reduce:transform-none motion-reduce:transition-none" />
-    </label>
-  );
-});
-Switch.displayName = "Switch";
 
 export interface FileUploadProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type"> {
   label: React.ReactNode;

@@ -2,12 +2,14 @@
 // menu (the account sections, plus Admin for admins), and the page. The admin pages keep AppShell's sidebar.
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
+import { Popover, PopoverContent, PopoverTrigger } from "@ui-sdk/react/popover";
 import { ConstellationLogo, cn, formatCatalogueNumber, initials } from "@/index";
 import { MY_ACCOUNT, useActiveSection } from "@/app/layout/shell-nav";
 import { ring } from "@/app/layout/app-classes";
 import { Icon } from "@/app/layout/icons";
 import { useSignOut } from "@/app/layout/sign-out";
 import { useButtonSparkles } from "@/app/layout/sparkles";
+import { ConfirmHost } from "@/app/layout/ConfirmHost";
 
 /** The signed-in pages on this frame. */
 export type AirPage = "/account" | "/feed" | "/directory";
@@ -21,6 +23,7 @@ export function AirShell({ page = "/account", admin, name, avatar, catalogueNumb
   useButtonSparkles();
   return (
     <div className="app-ground air min-h-screen">
+      <ConfirmHost />
       <div className="air-wrap">
         <header className="air-top">
           <Link to="/" aria-label="The Women’s Collective home" className={cn("air-brand", ring)}>
@@ -48,34 +51,20 @@ function AccountMenu({ page, admin, active, name, avatar, catalogueNumber }: {
   page: AirPage; admin: boolean; active: string | null; name: string; avatar?: string; catalogueNumber: number | null;
 }) {
   const [open, setOpen] = React.useState(false);
-  const root = React.useRef<HTMLDivElement>(null);
-  const button = React.useRef<HTMLButtonElement>(null);
-  const menuId = React.useId();
-
-  React.useEffect(() => {
-    if (!open) return;
-    const outside = (e: PointerEvent) => { if (!root.current?.contains(e.target as Node)) setOpen(false); };
-    const escape = (e: KeyboardEvent) => { if (e.key === "Escape") { setOpen(false); button.current?.focus(); } };
-    document.addEventListener("pointerdown", outside);
-    document.addEventListener("keydown", escape);
-    return () => { document.removeEventListener("pointerdown", outside); document.removeEventListener("keydown", escape); };
-  }, [open]);
-
   const close = () => setOpen(false);
   return (
-    <div ref={root} className="air-me" data-open={open || undefined}>
-      <button
-        ref={button} type="button" aria-expanded={open} aria-controls={menuId} aria-label={`${name || "Your account"}, account menu`}
-        onClick={() => setOpen((o) => !o)} className={cn("air-me-btn", ring)}
-      >
+    <Popover open={open} onOpenChange={setOpen} openOnHover delay={0} closeDelay={120}>
+    <div className="air-me" data-open={open || undefined}>
+      <PopoverTrigger aria-label={`${name || "Your account"}, account menu`} className={cn("air-me-btn", ring)}>
         <span className="air-avatar" aria-hidden>{avatar ? <img src={avatar} alt="" /> : initials(name)}</span>
         <span className="hidden min-w-0 text-left lg:block" aria-hidden>
           <b className="block max-w-44 truncate text-sm font-semibold">{name}</b>
           {catalogueNumber !== null && <small className="air-lbl mb-0 text-[9.5px]">Member No. {formatCatalogueNumber(catalogueNumber)}</small>}
         </span>
         <Icon name="chevron-down" className="air-me-chev size-4" />
-      </button>
-      <nav id={menuId} aria-label="My account" className="air-menu">
+      </PopoverTrigger>
+      <PopoverContent keepMounted side="bottom" align="end" sideOffset={8} className="air-menu">
+      <nav aria-label="My account">
         <ul>
           {MY_ACCOUNT.map((item) => (
             <li key={item.hash}>
@@ -84,7 +73,7 @@ function AccountMenu({ page, admin, active, name, avatar, catalogueNumber }: {
                   <Icon name={item.icon} className="size-4" />{item.label}
                 </a>
               ) : (
-                <Link to="/account" hash={item.hash} className={ring}><Icon name={item.icon} className="size-4" />{item.label}</Link>
+                <Link to="/account" hash={item.hash} onClick={close} className={ring}><Icon name={item.icon} className="size-4" />{item.label}</Link>
               )}
             </li>
           ))}
@@ -99,9 +88,11 @@ function AccountMenu({ page, admin, active, name, avatar, catalogueNumber }: {
             </Link>
           </li>
           {/* UX only: /admin's guard and every admin server function check again. */}
-          {admin && <li><Link to="/admin" className={ring}><Icon name="shield-check" className="size-4" />Admin</Link></li>}
+          {admin && <li><Link to="/admin" onClick={close} className={ring}><Icon name="shield-check" className="size-4" />Admin</Link></li>}
         </ul>
       </nav>
+      </PopoverContent>
     </div>
+    </Popover>
   );
 }

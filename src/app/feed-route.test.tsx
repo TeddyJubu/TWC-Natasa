@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { renderWithQueries } from "@/test/dom";
 import { headingSkips } from "@/test/headings";
 import { fake } from "@/test/fake-fns";
@@ -51,6 +51,12 @@ const seed = (viewer = { signedIn: true, member: true, admin: false }): [unknown
   [["rsvps", "u1"], []],
 ];
 const post = (name: RegExp) => screen.getByRole("article", { name });
+
+const { confirm } = vi.hoisted(() => ({ confirm: vi.fn() }));
+vi.mock("@/app/layout/confirm", async (orig) => ({
+  ...(await orig<typeof import("@/app/layout/confirm")>()),
+  askConfirm: (message: string) => Promise.resolve(confirm(message)),
+}));
 
 describe("/feed", () => {
   it("stays out of search", () => {
@@ -166,16 +172,17 @@ describe("/feed", () => {
   it("asks before deleting her own post", async () => {
     renderWithQueries(<Page />, seed());
     fake.results = [undefined, page]; // the delete, then the feed's refetch
-    const confirm = vi.spyOn(window, "confirm").mockReturnValueOnce(false).mockReturnValueOnce(true);
+    confirm.mockReset().mockReturnValueOnce(false).mockReturnValueOnce(true);
     const del = within(post(/^Ask from Rosa/)).getByRole("button", { name: "Delete this post" });
     fireEvent.click(del);
+    await waitFor(() => expect(confirm).toHaveBeenCalledTimes(1));
+    await act(async () => {});
     expect(fake.calls.some(([name]) => name === "deletePostFn")).toBe(false);
     fireEvent.click(del);
     await waitFor(() => expect(fake.calls).toContainEqual(["deletePostFn", { id: "p2" }]));
     // Her button went with the post, so focus moves to a neighbouring post rather than the page.
     await waitFor(() => expect(document.activeElement?.tagName).toBe("ARTICLE"));
     expect(document.activeElement?.getAttribute("aria-label")).not.toMatch(/^Ask from Rosa/);
-    confirm.mockRestore();
   });
 
   it("is locked for anyone not yet welcomed in", () => {

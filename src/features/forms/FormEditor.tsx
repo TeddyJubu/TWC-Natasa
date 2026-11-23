@@ -3,7 +3,9 @@
 // form-draft.ts and never shown; the link, open/closed and the closed message live on the Settings tab, so saving the
 // sheet can never undo them. Writes go through saveAdminForm → saveForm / checkQuestions.
 import * as React from "react";
-import { cn } from "@/index";
+import { Switch, SwitchThumb } from "@ui-sdk/react/switch";
+import { askConfirm } from "@/app/layout/confirm";
+import { cn, SelectControl } from "@/index";
 import { primaryButton, ring, secondaryButton } from "@/app/layout/app-classes";
 import { Icon } from "@/app/layout/icons";
 import type { QuestionType } from "./schema";
@@ -32,11 +34,12 @@ const rowsFor = (text: string, perLine: number) => text.split("\n").reduce((n, l
 const oneLine = (text: string) => text.replace(/\s*\n\s*/g, " ");
 
 /** A compact on/off switch for inside a question (the card-row `Toggle` is for settings rows). */
-function Switch({ label, ...input }: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
+function CompactSwitch({ label, ...control }: { label: string } & Omit<React.ComponentProps<typeof Switch>, "children" | "className">) {
   return (
     <label className="flex cursor-pointer items-center gap-2.5 text-[13px] text-ink has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-60">
-      <input type="checkbox" role="switch" className="peer sr-only" {...input} />
-      <span aria-hidden className="relative h-5.5 w-9.5 shrink-0 rounded-full bg-ink/30 transition-colors duration-150 peer-checked:bg-ink peer-focus-visible:outline-2 peer-focus-visible:outline-offset-3 peer-focus-visible:outline-app-accent after:absolute after:top-0.75 after:left-0.75 after:size-4 after:rounded-full after:bg-app after:transition-transform after:duration-300 after:ease-snap peer-checked:after:translate-x-4 motion-reduce:transition-none motion-reduce:after:transition-none" />
+      <Switch {...control} className="relative h-5.5 w-9.5 shrink-0 cursor-[inherit] rounded-full bg-ink/30 transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-app-accent data-checked:bg-ink motion-reduce:transition-none">
+        <SwitchThumb className="absolute top-0.75 left-0.75 size-4 rounded-full bg-app transition-transform duration-300 ease-snap data-checked:translate-x-4 motion-reduce:transition-none" />
+      </Switch>
       {label}
     </label>
   );
@@ -79,8 +82,8 @@ export function QuestionsEditor({ idPrefix, initial, busy, error, saved, onSave 
     setQuestions((list) => [...list, q]);
     setFocusField(id(`${q.uid}-label`));
   };
-  const remove = (q: DraftQuestion, n: number) => {
-    if (q.label.trim() && !window.confirm(`Remove question ${n}, “${q.label.trim()}”? Answers already sent keep it in the CSV.`)) return;
+  const remove = async (q: DraftQuestion, n: number) => {
+    if (q.label.trim() && !(await askConfirm(`Remove question ${n}, “${q.label.trim()}”? Answers already sent keep it in the CSV.`, "Remove question", true))) return;
     setQuestions((list) => list.filter((x) => x.uid !== q.uid));
   };
   const setType = (q: DraftQuestion, type: QuestionType) =>
@@ -170,16 +173,16 @@ export function QuestionsEditor({ idPrefix, initial, busy, error, saved, onSave 
                           : <div aria-hidden className={cn("twc-input pointer-events-none text-app-muted/85 select-none", q.type === "paragraph" && "min-h-28")}>{GHOST[q.type]}</div>}
 
                       <div className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-0.5">
-                        <label className="flex items-center gap-2 text-[13px] text-app-muted">
-                          Answer type
-                          <select value={q.type} disabled={busy} onChange={(e) => setType(q, e.currentTarget.value as QuestionType)}
+                        <div className="flex items-center gap-2 text-[13px] text-app-muted">
+                          <label htmlFor={id(`${q.uid}-type`)}>Answer type</label>
+                          <SelectControl id={id(`${q.uid}-type`)} value={q.type} disabled={busy} onValueChange={(next) => setType(q, next as QuestionType)}
                             className={cn("min-h-9 cursor-pointer rounded-full bg-app py-1 pr-2 pl-3 text-[13px] text-ink shadow-[inset_0_0_0_1px_var(--color-app-line)] disabled:opacity-60", ring)}>
                             {TYPE_GROUPS.map(([group, types]) => (
                               <optgroup key={group} label={group}>{types.map(([t, label]) => <option key={t} value={t}>{label}</option>)}</optgroup>
                             ))}
-                          </select>
-                        </label>
-                        <Switch label="Required" checked={q.required} disabled={busy} onChange={(e) => { const required = e.currentTarget.checked; patch(q.uid, { required }); }} />
+                          </SelectControl>
+                        </div>
+                        <CompactSwitch label="Required" checked={q.required} disabled={busy} onCheckedChange={(required) => { patch(q.uid, { required }); }} />
                       </div>
                     </div>
                   </div>

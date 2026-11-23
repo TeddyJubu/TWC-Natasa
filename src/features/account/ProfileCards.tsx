@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
-import { ConstellationLogo, cn, formatCatalogueNumber } from "@/index";
+import { ConstellationLogo, cn, formatCatalogueNumber, SelectControl } from "@/index";
 import type { Neighborhood } from "@/features/neighborhoods/queries";
 import { pickerNames } from "@/features/neighborhoods/options";
 import type { Profile } from "@/features/members/queries";
@@ -64,10 +64,10 @@ export function PublicCard({ editor, userId, logoPath, logoUrl, hoodList }: {
         add={!editing && !hood ? { field: "neighborhood", onClick: () => add("public", "neighborhood") } : undefined}
       >
         {editing ? (
-          <select id={fieldId("neighborhood")} form={PROFILE_FORM} value={hood ?? ""} className={fieldClass} onChange={(e) => set({ neighborhood: e.currentTarget.value || null })}>
+          <SelectControl id={fieldId("neighborhood")} form={PROFILE_FORM} value={hood ?? ""} className={fieldClass} onValueChange={(next) => set({ neighborhood: next || null })}>
             <option value="">Choose your neighborhood</option>
             {options.map((x) => <option key={x}>{x}</option>)}
-          </select>
+          </SelectControl>
         ) : hood || "Not chosen yet"}
       </Field>
       {text(WEBSITE)}
@@ -234,7 +234,7 @@ export function VisibilityCard({ editor, profile }: { editor: ProfileEditor; pro
           : approved ? "Signed-in members can find you and your card." : "Signed-in members can find you once you’re approved — if this is on then."}
         checked={listed}
         // Switching the directory off also switches the public card off, so re-listing never republishes silently.
-        onChange={(e) => set(e.currentTarget.checked ? { directory_visible: true } : { directory_visible: false, public_profile: false })}
+        onCheckedChange={(on) => set(on ? { directory_visible: true } : { directory_visible: false, public_profile: false })}
       />
       <Toggle
         label="Show my profile on the public website"
@@ -242,7 +242,7 @@ export function VisibilityCard({ editor, profile }: { editor: ProfileEditor; pro
           ? "The public website shows members only, so your card isn’t published."
           : `Anyone on the internet can see your name, portrait, work, neighborhood, bio and links, on our homepage and your public page.${listed ? "" : " Turn on the member directory first."}${approved ? "" : " Takes effect after approval, if this is still on."}`}
         checked={listed && card.public_profile} disabled={!listed}
-        onChange={(e) => set({ public_profile: e.currentTarget.checked })}
+        onCheckedChange={(on) => set({ public_profile: on })}
       />
       </div>
       {slug && (

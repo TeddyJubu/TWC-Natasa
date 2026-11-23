@@ -176,7 +176,7 @@ describe("public scrapbook palette (--color-sb-* in styles.css)", () => {
     white: "#ffffff",
   };
   const twc = readFileSync(`${process.cwd()}/src/app/twc.css`, "utf8");
-  const layout = readFileSync(`${process.cwd()}/src/app/layout/AppLayout.tsx`, "utf8");
+  const menu = readFileSync(`${process.cwd()}/src/app/layout/SiteMenu.tsx`, "utf8");
 
   // [text, background]: olive and terracotta stamps carry white text; mustard, shell, sun and lilac carry ink.
   const pairs: [string, string][] = [
@@ -222,7 +222,7 @@ describe("public scrapbook palette (--color-sb-* in styles.css)", () => {
   });
 
   it("the mobile menu's ordinals are decorative and their ink blend clears AA on lilac", () => {
-    const ordinal = layout.match(/<span aria-hidden="true" className="[^"]*text-sb-ink\/(\d+)">0\{i \+ 1\}<\/span>/);
+    const ordinal = menu.match(/<span aria-hidden="true" className="[^"]*text-sb-ink\/(\d+)">0\{i \+ 1\}<\/span>/);
     expect(ordinal).not.toBeNull();
     const alpha = Number(ordinal![1]) / 100;
     expect(contrast(blend(sb.ink, sb.lilac, alpha), sb.lilac)).toBeGreaterThanOrEqual(AA);

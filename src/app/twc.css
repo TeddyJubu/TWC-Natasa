@@ -286,9 +286,7 @@ textarea.twc-input { min-height: 132px; resize: vertical; }
 .air-me-btn:hover, .air-me[data-open] .air-me-btn { background: rgb(251 250 246 / 0.8); }
 .air-me-chev { color: var(--bl-air-muted); transition: rotate var(--duration-fast); }
 .air-me[data-open] .air-me-chev { rotate: 180deg; }
-.air-menu { position: absolute; right: 0; top: 100%; z-index: 30; display: none; padding-top: 8px; }
-.air-me[data-open] .air-menu { display: block; }
-@media (hover: hover) { .air-me:hover .air-menu { display: block; } .air-me:hover .air-me-chev { rotate: 180deg; } }
+.air-menu { border-radius: var(--bl-air-radius-menu); }
 .air-menu ul { display: grid; gap: 2px; min-width: 232px; padding: 6px; border-radius: var(--bl-air-radius-menu); background: var(--bl-air-paper); box-shadow: var(--bl-air-shadow-menu); }
 .air-menu a { display: flex; align-items: center; gap: 10px; min-height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; font-weight: 500; color: var(--bl-air-muted); transition: background-color var(--duration-fast), color var(--duration-fast); }
 .air-menu a:hover { background: rgb(28 44 94 / 0.06); color: var(--bl-air-navy); }
@@ -887,3 +885,7 @@ a.air-entry-name:hover { text-decoration: underline; }
 /* The gel pill's gradient positions, registered (outside the layer) so a hover can slide them. */
 @property --gel-glow-y { syntax: "<percentage>"; inherits: false; initial-value: 108%; }
 @property --gel-core-y { syntax: "<percentage>"; inherits: false; initial-value: 10%; }
+
+/* ui-sdk popups on the airmail desk (outside the layer, so they beat the design system's utilities). */
+.air [data-slot="alert-dialog-content"], .air [data-slot="dialog-content"]:not(.pass-dialog) { border-color: var(--bl-air-rule); border-radius: var(--bl-air-radius-card); background: var(--bl-air-paper); color: var(--bl-air-navy); box-shadow: var(--bl-air-shadow-menu); }
+.air [data-slot="select-content"] { border-color: var(--bl-air-rule); border-radius: var(--bl-air-radius-cell); background: var(--bl-air-paper); color: var(--bl-air-navy); box-shadow: var(--bl-air-shadow-menu); }

@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Tabs, TabsList, TabsTab } from "@ui-sdk/react/tabs";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { cn } from "@/index";
 import { getAuthClient } from "@/app/auth-client";
@@ -56,7 +57,6 @@ function AuthPage() {
     search.reset === "done" && (search.mode ?? "signin") === "signin" ? { title: "Password changed", text: PASSWORD_CHANGED } : null,
   );
   const sent = (text: string) => setNotice({ title: "Almost there", text });
-  const tabs = React.useRef<(HTMLButtonElement | null)[]>([]);
   const setMode = (next: Mode) => {
     setModeState(next);
     setError(null);
@@ -113,16 +113,6 @@ function AuthPage() {
     if (error) setError("Google sign-in didn’t work. Please try again.");
   }
 
-  // ARIA tabs: arrows (and Home/End) move between the two tabs and select them; only the selected one is in the tab order.
-  function onTabKey(e: React.KeyboardEvent, index: number) {
-    const to = { ArrowRight: index + 1, ArrowLeft: index - 1, Home: 0, End: TABS.length - 1 }[e.key];
-    if (to === undefined) return;
-    e.preventDefault();
-    const next = (to + TABS.length) % TABS.length;
-    setMode(TABS[next][0]);
-    tabs.current[next]?.focus();
-  }
-
   const copy = COPY[mode];
   const showTabs = mode !== "forgot";
   const errorId = error ? "auth-error" : undefined;
@@ -151,17 +141,17 @@ function AuthPage() {
 
         <div className={authCard}>
           {showTabs && (
-            <div role="tablist" aria-label="Sign in or create an account" className="flex gap-1 rounded-full p-1 shadow-[inset_0_0_0_1px_rgb(31_31_28/0.25)]">
-              {TABS.map(([m, label], i) => (
-                <button key={m} ref={(el) => { tabs.current[i] = el; }} type="button" role="tab" id={`tab-${m}`}
-                  aria-selected={mode === m} aria-controls="auth-panel" tabIndex={mode === m ? 0 : -1}
-                  onClick={() => setMode(m)} onKeyDown={(e) => onTabKey(e, i)}
-                  className={cn("min-h-10 flex-1 cursor-pointer rounded-full font-display text-[13px] uppercase leading-5 tracking-[1.6px] max-[400px]:text-[12px] max-[400px]:tracking-[0.8px] outline-none transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sb-blue-ink motion-reduce:transition-none",
-                    mode === m ? "bg-sb-ink text-sb-paper" : "text-sb-ink hover:bg-sb-ink/5")}>
-                  {label}
-                </button>
-              ))}
-            </div>
+            <Tabs value={mode} onValueChange={(next) => { if (next) setMode(next as typeof mode); }}>
+              <TabsList aria-label="Sign in or create an account" className="flex gap-1 rounded-full p-1 shadow-[inset_0_0_0_1px_rgb(31_31_28/0.25)]">
+                {TABS.map(([m, label]) => (
+                  <TabsTab key={m} value={m} id={`tab-${m}`} aria-controls="auth-panel"
+                    className={cn("min-h-10 flex-1 cursor-pointer rounded-full font-display text-[13px] uppercase leading-5 tracking-[1.6px] max-[400px]:text-[12px] max-[400px]:tracking-[0.8px] outline-none transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sb-blue-ink motion-reduce:transition-none",
+                      mode === m ? "bg-sb-ink text-sb-paper" : "text-sb-ink hover:bg-sb-ink/5")}>
+                    {label}
+                  </TabsTab>
+                ))}
+              </TabsList>
+            </Tabs>
           )}
 
           <div id="auth-panel" role={showTabs ? "tabpanel" : undefined} aria-labelledby={showTabs ? `tab-${mode}` : undefined} className="flex flex-col gap-[18px]">

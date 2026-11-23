@@ -3,7 +3,7 @@ import * as React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { isRedirect } from "@tanstack/react-router";
-import { renderWithQueries, stubDialog } from "@/test/dom";
+import { chooseValue, renderWithQueries } from "@/test/dom";
 import { fake } from "@/test/fake-fns";
 
 vi.mock("@/features/admin/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
@@ -73,6 +73,12 @@ const application = (id: string, full_name: string, over: Record<string, unknown
   created_at: "2026-11-01T15:00:00Z", reviewed_at: null, reviewed_by: null, answers: { industry: ["Food"] }, duplicate: null, ...over,
 });
 
+const { confirm } = vi.hoisted(() => ({ confirm: vi.fn() }));
+vi.mock("@/app/layout/confirm", async (orig) => ({
+  ...(await orig<typeof import("@/app/layout/confirm")>()),
+  askConfirm: (message: string) => Promise.resolve(confirm(message)),
+}));
+
 describe("_admin guard", () => {
   const beforeLoad = () => (GuardRoute.options.beforeLoad as (ctx: unknown) => Promise<unknown>)({});
   const redirectsToAccount = async () => {
@@ -130,10 +136,8 @@ const demoForm = (over: Record<string, unknown> = {}) => ({
 const card = (name: string) => screen.getByRole("region", { name });
 
 describe("/admin", () => {
-  // Decisions (approve / decline / undo / booking confirm) ask window.confirm first (CRM-071).
-  let confirm: ReturnType<typeof vi.spyOn>;
-  beforeEach(() => { confirm = vi.spyOn(window, "confirm").mockReturnValue(true); });
-  afterEach(() => { confirm.mockRestore(); });
+  // Decisions (approve / decline / undo / booking confirm) ask first (CRM-071), through askConfirm.
+  beforeEach(() => { confirm.mockReset(); confirm.mockReturnValue(true); });
 
   describe("shell", () => {
     it("is one main landmark with the Home h1 in the top bar, after the skip link", () => {
@@ -270,7 +274,7 @@ describe("/admin", () => {
 
     it("a form of your own has a delete button that asks first, naming its answers; built-in forms have none", async () => {
       renderForms({ "form-responses": [demoForm({ total: 2 })] });
-      const ask = vi.spyOn(window, "confirm").mockReturnValueOnce(false).mockReturnValueOnce(true);
+      const ask = confirm.mockReset().mockReturnValueOnce(false).mockReturnValueOnce(true);
       expect(within(card("Built-in forms")).queryAllByRole("button", { name: /^Delete/ })).toHaveLength(0);
       const del = within(card("Your forms")).getByRole("button", { name: "Delete Salon RSVP (demo)" });
       fake.reset();
@@ -279,7 +283,6 @@ describe("/admin", () => {
       expect(fake.calls).toEqual([]);
       fireEvent.click(del);
       await waitFor(() => expect(fake.calls[0]).toEqual(["deleteAdminFormFn", { id: "demo0001" }]));
-      ask.mockRestore();
     });
 
     it("New form asks only for a name and web address, then folds away again", () => {
@@ -346,7 +349,7 @@ describe("/admin", () => {
       expect(within(inbox).getByText(/1 waiting/)).toBeTruthy();
       expect(within(inbox).getByRole("article", { name: "Rosa Diaz" })).toBeTruthy();
       expect(within(inbox).queryByRole("article", { name: "Ana Ruiz" })).toBeNull();
-      fireEvent.change(within(inbox).getByLabelText("View"), { target: { value: "archived" } });
+      chooseValue(within(inbox).getByLabelText("View"), "archived");
       expect(within(inbox).getByText(/1 archived/)).toBeTruthy();
       expect(within(inbox).queryByRole("article", { name: "Rosa Diaz" })).toBeNull();
       const ana = within(inbox).getByRole("article", { name: "Ana Ruiz" });
@@ -420,16 +423,16 @@ describe("/admin", () => {
         members: [...members, member("u2", "Ida Moss", { status: "pending", neighborhood: null })],
       });
       const apps = card("Applications");
-      fireEvent.change(within(apps).getByLabelText("Status"), { target: { value: "approved" } });
+      chooseValue(within(apps).getByLabelText("Status"), "approved");
       fireEvent.change(screen.getByRole("searchbox"), { target: { value: "pia" } });
       expect(within(apps).getAllByRole("article").map((a) => a.querySelector("h3")!.textContent)).toEqual(["Pia Stone"]);
       expect(within(apps).getByText(/1 of 3 shown/)).toBeTruthy();
       fireEvent.change(screen.getByRole("searchbox"), { target: { value: "" } });
       const all = card("All members");
-      fireEvent.change(within(all).getByLabelText("Neighborhood"), { target: { value: " none" } });
+      chooseValue(within(all).getByLabelText("Neighborhood"), " none");
       expect(within(all).getAllByRole("rowheader").map((h) => h.textContent)).toEqual(["Ida Moss"]);
-      fireEvent.change(within(all).getByLabelText("Neighborhood"), { target: { value: "" } });
-      fireEvent.change(within(all).getByLabelText("Status"), { target: { value: "approved" } });
+      chooseValue(within(all).getByLabelText("Neighborhood"), "");
+      chooseValue(within(all).getByLabelText("Status"), "approved");
       expect(within(all).getAllByRole("rowheader").map((h) => h.textContent)).toEqual(["Natasa Admin", "Rosa Diaz"]);
     });
 
@@ -442,7 +445,7 @@ describe("/admin", () => {
       expect(within(row).getByText("Not signed up yet")).toBeTruthy();
       expect(within(row).getByText("nell@x.test")).toBeTruthy();
       expect(within(row).queryByRole("button")).toBeNull();
-      fireEvent.change(within(all).getByLabelText("Status"), { target: { value: "not_signed_up" } });
+      chooseValue(within(all).getByLabelText("Status"), "not_signed_up");
       expect(within(all).getAllByRole("rowheader").map((h) => h.textContent)).toEqual(["Nell Ames"]);
     });
 
@@ -461,7 +464,7 @@ describe("/admin", () => {
       const save = within(details).getByRole("button", { name: "Save" }) as HTMLButtonElement;
       expect(save.disabled).toBe(true);
       fake.results = [undefined, members];
-      fireEvent.change(within(details).getByLabelText("Neighborhood for Rosa Diaz"), { target: { value: "Sunnyside" } });
+      chooseValue(within(details).getByLabelText("Neighborhood for Rosa Diaz"), "Sunnyside");
       fireEvent.click(save);
       await settle();
       expect(fake.calls[0]).toEqual(["setMemberNeighborhoodFn", { id: "u1", neighborhood: "Sunnyside" }]);
@@ -477,7 +480,7 @@ describe("/admin", () => {
       expect(within(pia).getByText("Possible duplicate")).toBeTruthy();
       expect(pia.textContent).toContain("This email already belongs to a member");
       expect(within(apps).getByRole("article", { name: "Lu Smith" }).textContent).not.toContain("Possible duplicate");
-      fireEvent.change(within(apps).getByLabelText("Status"), { target: { value: "duplicate" } });
+      chooseValue(within(apps).getByLabelText("Status"), "duplicate");
       expect(within(apps).getAllByRole("article").map((a) => a.querySelector("h3")!.textContent)).toEqual(["Pia Baker"]);
     });
 
@@ -511,7 +514,7 @@ describe("/admin", () => {
       const row = within(card("Applications")).getByRole("article", { name: "Pia Baker" });
       expect(within(row).getByText((_, el) => el?.textContent === "Call · 2026-11-01 — Intro")).toBeTruthy();
       expect(within(row).getByText("Logged actions (1)")).toBeTruthy();
-      fireEvent.change(within(row).getByLabelText("Type"), { target: { value: "meeting" } });
+      chooseValue(within(row).getByLabelText("Type"), "meeting");
       fireEvent.change(within(row).getByLabelText("Date"), { target: { value: "2026-11-09" } });
       fake.results = ["la2", [{
         id: "la1", application_id: "a1", member_id: null, kind: "call", action_date: "2026-11-01", note: "Intro",
@@ -605,15 +608,12 @@ describe("/admin", () => {
     });
 
     describe("declining", () => {
-      let restore: () => void;
-      beforeEach(() => { restore = stubDialog(); });
-      afterEach(() => restore());
       const openDecline = async () => {
         fake.results = [[application("a1", "Pia Pending", { email: "pia@x.test" })]];
         renderAdmin({ applications: FETCH });
         const row = await within(card("Applications")).findByRole("article");
         fireEvent.click(within(row).getByRole("button", { name: "Decline Pia Pending" }));
-        return { row, dialog: within(row).getByRole("dialog", { name: "Decline Pia Pending?" }) };
+        return { row, dialog: within(row).getByRole("alertdialog", { name: "Decline Pia Pending?" }) };
       };
       const sent = () => fake.calls.filter((c) => c[0] === "declineAndEmailFn");
 
@@ -631,7 +631,7 @@ describe("/admin", () => {
       it("Keep as is changes nothing and sends nothing", async () => {
         const { row, dialog } = await openDecline();
         fireEvent.click(within(dialog).getByRole("button", { name: "Keep as is" }));
-        expect(within(row).queryByRole("dialog")).toBeNull();
+        expect(within(row).queryByRole("alertdialog")).toBeNull();
         await settle();
         expect(fake.calls.some((c) => c[0] === "reviewApplicationFn")).toBe(false);
         expect(sent()).toEqual([]);
@@ -670,7 +670,7 @@ describe("/admin", () => {
         });
         const row = screen.getByRole("row", { name: /Lena Ortiz/ });
         fireEvent.click(within(row).getByRole("button", { name: "Decline Lena Ortiz" }));
-        const dialog = within(row).getByRole("dialog", { name: "Decline Lena Ortiz?" });
+        const dialog = within(row).getByRole("alertdialog", { name: "Decline Lena Ortiz?" });
         expect(within(dialog).getByText("applied@x.test")).toBeTruthy();
         expect(dialog.textContent).toMatch(/Dear Lena O\.,/);
         fake.results = [{ sent: true }];
@@ -683,7 +683,7 @@ describe("/admin", () => {
         renderAdmin({ members: [member("u3", "Noor Haddad", { status: "pending", catalogue_number: null, email: null })] });
         const row = screen.getByRole("row", { name: /Noor Haddad/ });
         fireEvent.click(within(row).getByRole("button", { name: "Decline Noor Haddad" }));
-        const dialog = within(row).getByRole("dialog");
+        const dialog = within(row).getByRole("alertdialog");
         expect(within(dialog).getByText("No email address on file")).toBeTruthy();
         expect((within(dialog).getByRole("button", { name: "Decline and send email" }) as HTMLButtonElement).disabled).toBe(true);
         expect((within(dialog).getByRole("button", { name: "Decline without email" }) as HTMLButtonElement).disabled).toBe(false);
@@ -854,7 +854,7 @@ describe("/admin", () => {
       expect(card("Summary").textContent).toMatch(/Open.*Visitors can fill it in now\./);
       expect(summary.getByRole("link", { name: /\/join/ }).getAttribute("href")).toBe("/join");
       expect(summary.getByRole("link", { name: "Applications" }).getAttribute("href")).toBe("/admin/applications");
-      expect((within(card("Open or closed")).getByRole("switch", { name: /Open for answers/ }) as HTMLInputElement).checked).toBe(true);
+      expect(within(card("Open or closed")).getByRole("switch", { name: /Open for answers/ }).getAttribute("aria-checked")).toBe("true");
       // The wording box starts from what the page says now: the saved text where there is one, the default elsewhere.
       const wording = within(card("Wording"));
       expect((wording.getByLabelText("Full name") as HTMLInputElement).value).toBe("Your full name");
@@ -992,7 +992,7 @@ describe("/admin", () => {
       fireEvent.click(screen.getByRole("tab", { name: "Settings" }));
       fake.results = [null, [rsvp({ open: false, closed_message: "Full." })]];
       fireEvent.click(within(card("Open or closed")).getByRole("switch", { name: /Open for answers/ }));
-      await waitFor(() => expect(within(card("Open or closed")).getByRole("switch", { name: /Open for answers/ })).toHaveProperty("checked", false));
+      await waitFor(() => expect(within(card("Open or closed")).getByRole("switch", { name: /Open for answers/ }).getAttribute("aria-checked")).toBe("false"));
       // Back on Questions the unsaved edit is still there; saving it must not reopen the form.
       fireEvent.click(screen.getByRole("tab", { name: "Questions" }));
       const editor = within(screen.getByRole("form", { name: "Questions" }));
@@ -1030,14 +1030,16 @@ describe("/admin", () => {
       expect(sent.questions[2].key).toMatch(/^q_[a-z0-9]{6}$/);
     });
 
-    it("your own form: Remove asks before dropping a question with words in it", () => {
+    it("your own form: Remove asks before dropping a question with words in it", async () => {
       renderFormPage("demo0001", { "form-responses": [rsvp()] }, undefined, "questions");
       const editor = within(screen.getByRole("form", { name: "Questions" }));
       confirm.mockReturnValueOnce(false);
       fireEvent.click(editor.getByRole("button", { name: "Remove question 2" }));
+      await waitFor(() => expect(confirm).toHaveBeenCalledTimes(1));
+      await act(async () => {});
       expect(editor.getAllByLabelText("Question")).toHaveLength(2);
       fireEvent.click(editor.getByRole("button", { name: "Remove question 2" }));
-      expect(editor.getAllByLabelText("Question")).toHaveLength(1);
+      await waitFor(() => expect(editor.getAllByLabelText("Question")).toHaveLength(1));
       fireEvent.click(editor.getByRole("button", { name: "Discard changes" }));
       expect(editor.getAllByLabelText("Question")).toHaveLength(2);
     });

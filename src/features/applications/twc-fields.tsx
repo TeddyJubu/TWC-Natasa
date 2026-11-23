@@ -1,6 +1,6 @@
 // The membership form's field vocabulary on the public twc kit (classes in src/app/twc.css).
 import * as React from "react";
-import { cn } from "@/index";
+import { cn, SelectControl } from "@/index";
 import { useCopy } from "@/features/form-copy/use-copy";
 import { FieldErrors, checkErrorKey } from "./form-state";
 import { LIMITS } from "./schema";
@@ -9,7 +9,7 @@ import { LIMITS } from "./schema";
 const Optional = () => <>{" "}<span className="ml-1 text-[13px] font-normal normal-case tracking-normal text-sb-muted">Optional</span></>;
 
 export const Input = (props: React.ComponentProps<"input">) => <input className="twc-input" {...props} />;
-export const Select = (props: React.ComponentProps<"select">) => <select className="twc-input cursor-pointer" {...props} />;
+export const Select = (props: React.ComponentProps<typeof SelectControl>) => <SelectControl className="twc-input cursor-pointer" {...props} />;
 /** Long answers stay well inside the 32 KB `answers` column. */
 export const LongAnswer = (props: React.ComponentProps<"textarea">) => <textarea className="twc-input" maxLength={LIMITS.text} {...props} />;
 

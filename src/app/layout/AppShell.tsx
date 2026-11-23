@@ -2,6 +2,7 @@
 // /account uses AirShell (a top bar and account menu, no sidebar). Public pages use AppNav/AppFooter. See DESIGN.md "Internal tools".
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
+import { Drawer, DrawerBackdrop, DrawerClose, DrawerContent, DrawerTrigger } from "@ui-sdk/react/drawer";
 import { ConstellationLogo, cn, initials } from "@/index";
 import { Icon, type IconName } from "./icons";
 import { useWaiting } from "@/features/admin/waiting";
@@ -9,6 +10,7 @@ import { ADMIN_AREAS, areaOf, sectionItem, type AdminSection, type ShellPage } f
 import { ring, secondaryButton } from "./app-classes";
 import { useSignOut } from "./sign-out";
 import { useButtonSparkles } from "./sparkles";
+import { ConfirmHost } from "./ConfirmHost";
 
 /** The constellation and the collective's name, linking home. */
 function Brand({ className }: { className?: string }) {
@@ -68,51 +70,29 @@ function ShellNav({ page, onSignOut, onNavigate }: { page: ShellPage; onSignOut:
   );
 }
 
-/** Below lg: the brand and a menu button opening the nav in a modal drawer (focus trapped, Escape closes). */
+/** Below lg: the brand and a menu button opening the nav in a modal left drawer (focus trapped, Escape closes). */
 function MobileBar(props: { page: ShellPage; onSignOut: () => void }) {
   const [open, setOpen] = React.useState(false);
-  const dialog = React.useRef<HTMLDialogElement>(null);
-  const button = React.useRef<HTMLButtonElement>(null);
-  const close = () => setOpen(false);
-
-  React.useLayoutEffect(() => {
-    const d = dialog.current;
-    if (!d) return;
-    if (open && !d.open) d.showModal();
-    if (!open && d.open) {
-      d.close();
-      button.current?.focus();
-    }
-  }, [open]);
-
   return (
     <div className="air-panel sticky top-0 z-20 flex items-center justify-between gap-3 rounded-none px-4 py-3 lg:hidden">
       <Brand />
-      <button
-        ref={button} type="button" aria-label="Open menu" aria-expanded={open} aria-controls="app-drawer" onClick={() => setOpen(true)}
-        className={cn("air-icon-btn shrink-0 text-ink", ring)}
-      >
-        <Icon name="menu" className="size-5" />
-      </button>
-      <dialog
-        ref={dialog} id="app-drawer" aria-label="Menu"
-        onClose={close}
-        onKeyDown={(e) => { if (e.key === "Escape") close(); }}
-        onClick={(e) => { if (e.target === e.currentTarget) close(); }}
-        className="m-0 h-dvh max-h-none w-[min(20rem,85vw)] max-w-none bg-app p-0 text-ink backdrop:bg-black/40"
-      >
-        {open && (
+      <Drawer side="left" open={open} onOpenChange={setOpen}>
+        <DrawerTrigger aria-label="Open menu" className={cn("air-icon-btn shrink-0 text-ink", ring)}>
+          <Icon name="menu" className="size-5" />
+        </DrawerTrigger>
+        <DrawerBackdrop className="fixed inset-0 bg-black/40" />
+        <DrawerContent aria-label="Menu" className="h-dvh w-[min(20rem,85vw)] overflow-y-auto bg-app text-ink">
           <div className="flex min-h-full flex-col gap-3 px-4 pt-4 pb-6">
             <div className="flex items-center gap-2">
               <Brand className="flex-1" />
-              <button type="button" aria-label="Close menu" onClick={close} className={cn("air-icon-btn shrink-0 text-ink", ring)}>
+              <DrawerClose aria-label="Close menu" className={cn("air-icon-btn shrink-0 text-ink", ring)}>
                 <Icon name="x" className="size-5" />
-              </button>
+              </DrawerClose>
             </div>
-            <ShellNav {...props} onNavigate={close} />
+            <ShellNav {...props} onNavigate={() => setOpen(false)} />
           </div>
-        )}
-      </dialog>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }
@@ -128,6 +108,7 @@ export function AppShell({ page, children }: { page: ShellPage; children: React.
   // Cards land below the sticky bar when a sidebar link jumps to them: the menu bar on phones, the TopBar from lg.
   return (
     <div className="app-ground air min-h-screen text-ink lg:flex [&_.air-card]:scroll-mt-22 lg:[&_.air-card]:scroll-mt-28">
+      <ConfirmHost />
       <MobileBar page={page} onSignOut={signOut} />
       <aside className="air-panel sticky top-8 my-8 ml-6 hidden h-[calc(100dvh-4rem)] w-64 shrink-0 flex-col gap-1 overflow-y-auto p-3 lg:flex">
         <Brand className="px-2 pt-1" />

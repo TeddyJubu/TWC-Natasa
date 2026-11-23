@@ -1,6 +1,7 @@
 // The internal tools' building blocks (/account, /admin; DESIGN.md "Internal tools"): airmail letters on the onionskin
 // desk, mono labels, navy rules, stamps and tickets (`air-*` in src/app/twc.css, on the `air-*` tokens in theme.css).
 import * as React from "react";
+import { Switch, SwitchThumb } from "@ui-sdk/react/switch";
 import { cn, initials, type MemberProfile } from "@/index";
 import { Icon, type IconName } from "./icons";
 import { linkClass, ring, secondaryButton } from "./app-classes";
@@ -120,19 +121,17 @@ export function Chip({ tone = "muted", className, children }: { tone?: ChipTone;
   );
 }
 
-/** A labelled switch row: a real checkbox with role="switch"; the track is decoration. */
-export function Toggle({ label, description, ...input }: { label: string; description: string } & React.InputHTMLAttributes<HTMLInputElement>) {
+/** A labelled switch row: a ui-sdk Switch, named by the whole label. */
+export function Toggle({ label, description, ...control }: { label: string; description: string } & Omit<React.ComponentProps<typeof Switch>, "children" | "className">) {
   return (
     <label className="flex cursor-pointer items-start gap-6 px-4 py-4.5 sm:px-5.5 has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-60">
       <span className="flex min-w-0 flex-1 flex-col gap-1">
         <span className="text-base font-medium text-ink">{label}</span>
         <span className="text-[13px]/[1.5] text-app-muted">{description}</span>
       </span>
-      <input type="checkbox" role="switch" className="peer sr-only" {...input} />
-      <span
-        aria-hidden
-        className="relative mt-0.5 h-6.5 w-11 shrink-0 rounded-full bg-ink/30 transition-colors duration-150 peer-checked:bg-ink peer-focus-visible:outline-2 peer-focus-visible:outline-offset-3 peer-focus-visible:outline-app-accent after:absolute after:top-0.75 after:left-0.75 after:size-5 after:rounded-full after:bg-app after:transition-transform after:duration-300 after:ease-snap peer-checked:after:translate-x-4.5 motion-reduce:transition-none motion-reduce:after:transition-none"
-      />
+      <Switch {...control} className="relative mt-0.5 h-6.5 w-11 shrink-0 cursor-[inherit] rounded-full bg-ink/30 transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-app-accent data-checked:bg-ink motion-reduce:transition-none">
+        <SwitchThumb className="absolute top-0.75 left-0.75 size-5 rounded-full bg-app transition-transform duration-300 ease-snap data-checked:translate-x-4.5 motion-reduce:transition-none" />
+      </Switch>
     </label>
   );
 }

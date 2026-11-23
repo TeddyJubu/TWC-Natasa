@@ -1,5 +1,5 @@
 import * as React from "react";
-import { cn } from "@/index";
+import { cn, SelectControl } from "@/index";
 import { useQuery } from "@tanstack/react-query";
 import { bookingQuery } from "@/features/events/queries";
 import { useBookHeadshot } from "@/features/events/mutations";
@@ -93,9 +93,9 @@ function Booking({ userId }: { userId: string }) {
       </Field>
       <Field label="Time of day" htmlFor={editing ? "headshot-time" : undefined} icon="sun">
         {editing ? (
-          <select id="headshot-time" value={request.preferred_time} className={fieldClass} onChange={(e) => setRequest({ ...request, preferred_time: e.currentTarget.value })}>
+          <SelectControl id="headshot-time" value={request.preferred_time} className={fieldClass} onValueChange={(preferred_time) => setRequest({ ...request, preferred_time })}>
             <option>Morning</option><option>Afternoon</option><option>Evening</option>
-          </select>
+          </SelectControl>
         ) : request.preferred_time}
       </Field>
       <Field

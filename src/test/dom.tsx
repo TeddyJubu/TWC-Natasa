@@ -3,7 +3,7 @@
 //   vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig()), ...(await import("@/test/dom")).routerStubs }));
 import * as React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { NEIGHBORHOOD_SEED } from "@/features/neighborhoods/queries";
 
 type LinkProps = React.AnchorHTMLAttributes<HTMLAnchorElement> & {
@@ -45,26 +45,20 @@ export function renderWithQueries(ui: React.ReactElement, seed: [readonly unknow
   return { queryClient, ...render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>) };
 }
 
-/**
- * jsdom has no modal dialog: stubs `showModal`/`close` on the prototype so they toggle `open`, move focus
- * into the dialog, and fire `close` like a browser. Returns a restore function for `afterEach`.
- */
-export function stubDialog() {
-  const proto = HTMLDialogElement.prototype;
-  const saved = (["showModal", "close"] as const).map((k) => [k, Object.getOwnPropertyDescriptor(proto, k)] as const);
-  proto.showModal = function (this: HTMLDialogElement) {
-    this.setAttribute("open", "");
-    this.querySelector<HTMLElement>("[autofocus], button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])")?.focus();
-  };
-  proto.close = function (this: HTMLDialogElement) {
-    if (!this.hasAttribute("open")) return;
-    this.removeAttribute("open");
-    this.dispatchEvent(new Event("close"));
-  };
-  return () => {
-    for (const [k, d] of saved) {
-      if (d) Object.defineProperty(proto, k, d);
-      else delete (proto as Partial<HTMLDialogElement>)[k];
-    }
-  };
+const listOf = (trigger: HTMLElement) => document.getElementById(trigger.getAttribute("aria-controls") ?? "");
+
+/** The options of a ui-sdk Select, read by opening its list and closing it again. */
+export function selectOptions(trigger: HTMLElement): HTMLElement[] {
+  fireEvent.click(trigger);
+  const options = [...(listOf(trigger)?.querySelectorAll<HTMLElement>("[role=option]") ?? [])];
+  fireEvent.click(trigger);
+  return options;
+}
+
+/** Chooses by value in a ui-sdk Select the way a person does: opens the list and presses the option. */
+export function chooseValue(trigger: HTMLElement, value: string) {
+  fireEvent.click(trigger);
+  const option = [...(listOf(trigger)?.querySelectorAll<HTMLElement>("[role=option]") ?? [])].find((o) => o.dataset.value === value);
+  if (!option) throw new Error(`No option with value "${value}"`);
+  fireEvent.click(option);
 }

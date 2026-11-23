@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Dialog, DialogClose, DialogContent } from "@ui-sdk/react/dialog";
 import { ConstellationLogo, cn, formatCatalogueNumber, initials } from "@/index";
 import { useSaveProfile } from "@/features/members/mutations";
 import { CARD_COLORS, type CardColor } from "@/features/members/card-colors";
@@ -22,32 +23,21 @@ const nameChars = (name: string) =>
   Math.max(...name.split(/[\s-]+/).map((word) => word.length), Math.ceil(1.3 * Math.sqrt(name.length)));
 
 /**
- * "View public card": her member pass in a native modal <dialog> — landscape on wide screens, portrait below —
+ * "View public card": her member pass in a modal ui-sdk Dialog — landscape on wide screens, portrait below —
  * with the colour swatches under it. A swatch saves on the spot; the pass shows the choice straight away.
  */
 export function PassDialog({ open, onClose, userId, facts }: { open: boolean; onClose: () => void; userId: string; facts: PassFacts }) {
-  const ref = React.useRef<HTMLDialogElement>(null);
   const save = useSaveProfile(userId);
   const color = save.isPending ? save.variables.card_color ?? facts.card_color : facts.card_color;
   const nameId = React.useId();
 
-  React.useLayoutEffect(() => {
-    const dialog = ref.current;
-    if (!dialog) return;
-    if (open && !dialog.open) dialog.showModal();
-    if (!open && dialog.open) dialog.close();
-  }, [open]);
-
   return (
-    <dialog
-      ref={ref} aria-labelledby={nameId} className="pass-dialog"
-      onClose={onClose} onCancel={(e) => { e.preventDefault(); onClose(); }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-    >
+    <Dialog open={open} onOpenChange={(next) => { if (!next) onClose(); }}>
+    <DialogContent aria-labelledby={nameId} className="pass-dialog">
       <div className="pass-dialog-in">
-        <button type="button" onClick={onClose} className={cn(secondaryButton, "pass-close")}>
+        <DialogClose className={cn(secondaryButton, "pass-close")}>
           Close<span className="sr-only"> your public card</span>
-        </button>
+        </DialogClose>
         <MemberPass facts={{ ...facts, card_color: color }} nameId={nameId} />
         <fieldset className="pass-colors">
           <legend>Card colour</legend>
@@ -63,7 +53,8 @@ export function PassDialog({ open, onClose, userId, facts }: { open: boolean; on
           {save.isError && <p role="alert" className="pass-error">{errorMessage(save.error)}</p>}
         </fieldset>
       </div>
-    </dialog>
+    </DialogContent>
+    </Dialog>
   );
 }
 

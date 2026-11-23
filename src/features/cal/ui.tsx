@@ -1,6 +1,8 @@
 // The Cal pages' shared pieces. They use the `sb-*` tokens and `twc-*` classes, which `.air` re-points, so the same
 // component sits right on the public scrapbook pages and the internal airmail ones.
 import * as React from "react";
+import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogTitle } from "@ui-sdk/react/alert-dialog";
+import { Dialog, DialogClose, DialogContent, DialogTitle } from "@ui-sdk/react/dialog";
 import { cn } from "@/index";
 import { buildIcs, formatDay, formatRange, formatTime, googleCalendarUrl, zoneLabel } from "./time";
 import { slugify } from "./types";
@@ -83,33 +85,50 @@ export function Toast({ message }: { message: string }) {
   );
 }
 
-/** A native modal: the browser traps focus, closes on Escape and hands focus back. */
-export function ConfirmDialog({ open, title, children, confirmLabel, cancelLabel = "Keep it", busy, danger, onConfirm, onClose }: {
-  open: boolean; title: string; children?: React.ReactNode; confirmLabel: string; cancelLabel?: string; busy?: boolean; danger?: boolean;
+const CONFIRM_PANEL = "fixed inset-0 m-auto h-fit max-h-[calc(100dvh-32px)] overflow-y-auto w-[min(440px,calc(100vw-32px))] rounded-lg bg-sb-paper p-6 text-sb-ink shadow-xl backdrop:bg-black/50";
+const CONFIRM_TITLE = "font-display text-2xl";
+const CONFIRM_CANCEL = "twc-btn twc-btn--outline twc-btn--sm";
+
+/**
+ * A question before an action, as an alert dialog (focus starts on the safe answer). `form` is for one that collects
+ * fields: a plain Dialog, so focus starts on the first field, and a stray press outside can't lose what was typed.
+ */
+export function ConfirmDialog({ open, title, children, confirmLabel, cancelLabel = "Keep it", busy, danger, form, onConfirm, onClose }: {
+  open: boolean; title: string; children?: React.ReactNode; confirmLabel: string; cancelLabel?: string; busy?: boolean; danger?: boolean; form?: boolean;
   onConfirm: () => void; onClose: () => void;
 }) {
-  const ref = React.useRef<HTMLDialogElement>(null);
-  const titleId = React.useId();
-  React.useEffect(() => {
-    const dialog = ref.current;
-    if (!dialog) return;
-    if (open && !dialog.open) dialog.showModal?.();
-    if (!open && dialog.open) dialog.close?.();
-  }, [open]);
+  const onOpenChange = (next: boolean) => { if (!next) onClose(); };
+  const body = children && <div className="mt-3 flex flex-col gap-3 text-[15px]">{children}</div>;
+  const confirm = (
+    <button type="button" disabled={busy} className={cn("twc-btn twc-btn--sm", danger && "twc-btn--danger")} onClick={onConfirm}>
+      {busy ? "Working…" : confirmLabel}
+    </button>
+  );
+  if (form) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange} closeOnOutsidePress={false}>
+        <DialogContent className={CONFIRM_PANEL}>
+          <DialogTitle className={CONFIRM_TITLE}>{title}</DialogTitle>
+          {body}
+          <div className="mt-6 flex flex-wrap justify-end gap-3">
+            <DialogClose className={CONFIRM_CANCEL}>{cancelLabel}</DialogClose>
+            {confirm}
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
   return (
-    <dialog
-      ref={ref} aria-labelledby={titleId} onClose={onClose}
-      className="m-auto w-[min(440px,calc(100vw-32px))] rounded-lg bg-sb-paper p-6 text-sb-ink shadow-xl backdrop:bg-black/50"
-    >
-      <h2 id={titleId} className="font-display text-2xl">{title}</h2>
-      {children && <div className="mt-3 flex flex-col gap-3 text-[15px]">{children}</div>}
-      <div className="mt-6 flex flex-wrap justify-end gap-3">
-        <button type="button" className="twc-btn twc-btn--outline twc-btn--sm" onClick={onClose}>{cancelLabel}</button>
-        <button type="button" disabled={busy} className={cn("twc-btn twc-btn--sm", danger && "twc-btn--danger")} onClick={onConfirm}>
-          {busy ? "Working…" : confirmLabel}
-        </button>
-      </div>
-    </dialog>
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent className={CONFIRM_PANEL}>
+        <AlertDialogTitle className={CONFIRM_TITLE}>{title}</AlertDialogTitle>
+        {body}
+        <div className="mt-6 flex flex-wrap justify-end gap-3">
+          <AlertDialogClose className={CONFIRM_CANCEL}>{cancelLabel}</AlertDialogClose>
+          {confirm}
+        </div>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
 

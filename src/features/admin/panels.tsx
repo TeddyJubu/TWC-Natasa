@@ -1,8 +1,10 @@
 // The /admin cards (sidebar anchors). Data and rules live in ./queries, ./mutations and ./format; these only render.
 import * as React from "react";
+import { Tabs, TabsList, TabsPanel, TabsTab } from "@ui-sdk/react/tabs";
+import { askConfirm } from "@/app/layout/confirm";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { cn, constellationLogoSrcSet, initials } from "@/index";
+import { cn, constellationLogoSrcSet, initials, SelectControl } from "@/index";
 import { fieldClass, linkClass, primaryButton, ring, secondaryButton } from "@/app/layout/app-classes";
 import { Card, Chip, InlineError, Toggle, type ChipTone } from "@/app/layout/app-ui";
 import { Icon } from "@/app/layout/icons";
@@ -133,7 +135,7 @@ function Decisions<S extends string>({ current, options, subject, pending, onDec
           disabled={pending}
           onClick={() => {
             if (declineTo && o.status === "declined") setDeclining(o.status);
-            else if (window.confirm(decisionConfirm(o.label, o.status, subject))) onDecide(o.status);
+            else void askConfirm(decisionConfirm(o.label, o.status, subject), o.status === "pending" ? "Undo decline" : o.label, o.status === "declined").then((yes) => { if (yes) onDecide(o.status); });
           }}
         >
           {o.label}
@@ -197,9 +199,9 @@ function FilterSelect({ id, label, value, options, onChange }: { id: string; lab
   return (
     <div className="flex flex-col gap-1">
       <label htmlFor={id} className={meta}>{label}</label>
-      <select id={id} value={value} onChange={(e) => onChange(e.currentTarget.value)} className={fieldClass}>
+      <SelectControl id={id} value={value} onValueChange={onChange} className={fieldClass}>
         {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-      </select>
+      </SelectControl>
     </div>
   );
 }
@@ -267,7 +269,7 @@ function Notes({ subject, name, notes }: { subject: { applicationId: string } | 
             <div className="flex flex-wrap items-center gap-2.5">
               <p className={meta}>{n.author_name ?? "An admin"} · {formatDate(n.created_at)}</p>
               <button type="button" className={cn("text-[13px] text-app-muted underline", ring)} disabled={remove.isPending}
-                aria-label={`Delete this note on ${name}`} onClick={() => { if (window.confirm("Delete this note?")) remove.mutate(n.id); }}>
+                aria-label={`Delete this note on ${name}`} onClick={() => { void askConfirm("Delete this note?", "Delete note", true).then((yes) => { if (yes) remove.mutate(n.id); }); }}>
                 Delete
               </button>
             </div>
@@ -330,9 +332,9 @@ function LoggedActions({ subject, name, actions }: {
                 edit.mutate({ id: a.id, kind: editKind, actionDate: editDate, note: editNote }, { onSuccess: () => setEditing(null) });
               }}>
                 <label htmlFor={`${formId}-edit-kind-${a.id}`} className={meta}>Type</label>
-                <select id={`${formId}-edit-kind-${a.id}`} value={editKind} onChange={(e) => setEditKind(e.currentTarget.value as LoggedActionKind)} className={fieldClass}>
+                <SelectControl id={`${formId}-edit-kind-${a.id}`} value={editKind} onValueChange={(next) => setEditKind(next as LoggedActionKind)} className={fieldClass}>
                   {LOGGED_ACTION_KINDS.map((k) => <option key={k} value={k}>{LOGGED_ACTION_LABELS[k]}</option>)}
-                </select>
+                </SelectControl>
                 <label htmlFor={`${formId}-edit-date-${a.id}`} className={meta}>Date</label>
                 <input id={`${formId}-edit-date-${a.id}`} type="date" required value={editDate} onChange={(e) => setEditDate(e.currentTarget.value)} className={fieldClass} />
                 <label htmlFor={`${formId}-edit-note-${a.id}`} className={meta}>Note{editKind === "other" ? " (required)" : ""}</label>
@@ -361,7 +363,7 @@ function LoggedActions({ subject, name, actions }: {
                       </button>
                       <button type="button" className={cn("text-[13px] text-app-muted underline", ring)} disabled={remove.isPending}
                         aria-label={`Remove this ${LOGGED_ACTION_LABELS[a.kind]} for ${name}`}
-                        onClick={() => { if (window.confirm("Remove this logged action?")) remove.mutate(a.id); }}>
+                        onClick={() => { void askConfirm("Remove this logged action?", "Remove", true).then((yes) => { if (yes) remove.mutate(a.id); }); }}>
                         Remove
                       </button>
                     </>
@@ -380,9 +382,9 @@ function LoggedActions({ subject, name, actions }: {
         <form onSubmit={submit} className="flex flex-col gap-2">
           <p className={meta}>Log something done outside the app about {name}</p>
           <label htmlFor={`${formId}-kind`} className={meta}>Type</label>
-          <select id={`${formId}-kind`} value={kind} onChange={(e) => setKind(e.currentTarget.value as LoggedActionKind)} className={fieldClass}>
+          <SelectControl id={`${formId}-kind`} value={kind} onValueChange={(next) => setKind(next as LoggedActionKind)} className={fieldClass}>
             {LOGGED_ACTION_KINDS.map((k) => <option key={k} value={k}>{LOGGED_ACTION_LABELS[k]}</option>)}
-          </select>
+          </SelectControl>
           <label htmlFor={`${formId}-date`} className={meta}>Date</label>
           <input id={`${formId}-date`} type="date" required value={actionDate} onChange={(e) => setActionDate(e.currentTarget.value)} className={fieldClass} />
           <label htmlFor={`${formId}-note`} className={meta}>Note{kind === "other" ? " (required)" : ""}</label>
@@ -710,10 +712,10 @@ function MemberDetails({ member, name, app, actions }: {
       <form onSubmit={submit} className="flex flex-col gap-2 border-t border-app-rule px-3.5 py-3.5">
         <label htmlFor={id} className={meta}>Neighborhood for {name}</label>
         <div className="flex flex-wrap gap-2">
-          <select id={id} value={hood} onChange={(e) => { save.reset(); setHood(e.currentTarget.value); }} className={cn(fieldClass, "min-w-0 flex-1")}>
+          <SelectControl id={id} value={hood} onValueChange={(next) => { save.reset(); setHood(next); }} className={cn(fieldClass, "min-w-0 flex-1")}>
             <option value="">No neighborhood</option>
             {pickerNames(hoodList, member.neighborhood ?? []).map((n) => <option key={n} value={n}>{n}</option>)}
-          </select>
+          </SelectControl>
           <button type="submit" className={secondaryButton} disabled={save.isPending || hood === (member.neighborhood ?? "")}>Save</button>
         </div>
         {save.isSuccess && <p role="status" className={meta}>Saved</p>}
@@ -956,13 +958,13 @@ function OpenSwitch({ idPrefix, name, open, savedMessage, hint, busy, error, onS
 }) {
   const [message, setMessage] = React.useState(savedMessage);
   React.useEffect(() => { setMessage(savedMessage); }, [savedMessage]);
-  const toggle = (next: boolean) => {
-    if (!next && !window.confirm(`Close “${name}”? Visitors will see the closed message instead of the form.`)) return;
+  const toggle = async (next: boolean) => {
+    if (!next && !(await askConfirm(`Close “${name}”? Visitors will see the closed message instead of the form.`, "Close form"))) return;
     onSet(next, message);
   };
   return (
     <>
-      <Toggle label="Open for answers" checked={open} disabled={busy} onChange={(e) => toggle(e.currentTarget.checked)}
+      <Toggle label="Open for answers" checked={open} disabled={busy} onCheckedChange={(on) => { void toggle(on); }}
         description={open ? "Visitors can fill it in now. Switch off to close it." : "Closed. Visitors see the closed message below."} />
       <div className={cn(pad, "flex flex-col gap-3 py-5")}>
         <Field id={`${idPrefix}-closed`} label="Closed message" hint={hint}>
@@ -1066,9 +1068,9 @@ export function FormsListPanel() {
   const [adding, setAdding] = React.useState<boolean | FormSource>(false);
   const remove = useDeleteAdminForm();
   const tile = React.useRef<HTMLButtonElement>(null);
-  const confirmDelete = (f: AdminForm) => {
+  const confirmDelete = async (f: AdminForm) => {
     const answers = f.total === 0 ? "" : ` Its ${f.total === 1 ? "answer goes" : `${f.total} answers go`} with it; download the CSV first if you want to keep them.`;
-    if (window.confirm(`Delete “${f.name}” for good?${answers} Its /f/${f.slug} link will stop working.`)) { remove.mutate(f.id); tile.current?.focus(); }
+    if (await askConfirm(`Delete “${f.name}” for good?${answers} Its /f/${f.slug} link will stop working.`, "Delete form", true)) { remove.mutate(f.id); tile.current?.focus(); }
   };
   const custom = forms.data ?? [];
   const open = (kind: "application" | "review") => (states.data?.find((s) => s.kind === kind)?.open === false ? "closed" : "open");
@@ -1347,27 +1349,16 @@ function WordingForm({ form, current, save }: { form: CopyForm; current: Record<
 
 const TAB_LABEL: Record<FormTab, string> = { answers: "Answers", questions: "Questions", settings: "Settings" };
 
-/** Tabs (WAI-ARIA tabs pattern: arrow keys, Home and End move between them). */
-function FormTabs({ current, onSelect }: { current: FormTab; onSelect: (tab: FormTab) => void }) {
-  const refs = React.useRef<Partial<Record<FormTab, HTMLButtonElement | null>>>({});
-  const onKeyDown = (e: React.KeyboardEvent) => {
-    const i = FORM_TABS.indexOf(current);
-    const next = { ArrowRight: FORM_TABS[(i + 1) % 3], ArrowLeft: FORM_TABS[(i + 2) % 3], Home: FORM_TABS[0], End: FORM_TABS[2] }[e.key];
-    if (!next) return;
-    e.preventDefault();
-    onSelect(next);
-    refs.current[next]?.focus();
-  };
+function FormTabs({ current }: { current: FormTab }) {
   return (
-    <div role="tablist" aria-label="Form" onKeyDown={onKeyDown} className="flex w-fit gap-1 rounded-full bg-app p-1 shadow-[inset_0_0_0_1px_var(--color-app-line)]">
+    <TabsList aria-label="Form" className="flex w-fit gap-1 rounded-full bg-app p-1 shadow-[inset_0_0_0_1px_var(--color-app-line)]">
       {FORM_TABS.map((tab) => (
-        <button key={tab} ref={(el) => { refs.current[tab] = el; }} type="button" role="tab" id={`form-tab-${tab}`} aria-controls={`form-panel-${tab}`}
-          aria-selected={tab === current} tabIndex={tab === current ? 0 : -1} onClick={() => onSelect(tab)}
+        <TabsTab key={tab} value={tab} id={`form-tab-${tab}`}
           className={cn("min-h-10 rounded-full px-4.5 text-[15px] transition-colors duration-150", tab === current ? "bg-ink text-app" : "text-ink hover:bg-app-sunken", ring)}>
           {TAB_LABEL[tab]}
-        </button>
+        </TabsTab>
       ))}
-    </div>
+    </TabsList>
   );
 }
 
@@ -1389,7 +1380,7 @@ function FormWorkspace({ form: f, tab, onTab }: { form: AdminForm; tab: FormTab;
   const status = f.state;
   // Every panel stays mounted (just hidden), so unsaved questions survive a look at the answers.
   const panel = (name: FormTab, children: React.ReactNode) => (
-    <div role="tabpanel" id={`form-panel-${name}`} aria-labelledby={`form-tab-${name}`} hidden={current !== name} className="flex flex-col gap-6">{children}</div>
+    <TabsPanel value={name} keepMounted id={`form-panel-${name}`} className="flex flex-col gap-6">{children}</TabsPanel>
   );
   return (
     <>
@@ -1407,10 +1398,12 @@ function FormWorkspace({ form: f, tab, onTab }: { form: AdminForm; tab: FormTab;
         </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2"><PublicLink href={formPath(f.slug)} /><CopyLink path={formPath(f.slug)} /></div>
       </Ticket>
-      <FormTabs current={current} onSelect={select} />
-      {panel("answers", <AnswersCard form={f} />)}
-      {panel("questions", <QuestionsSheet form={f} />)}
-      {panel("settings", <SettingsCards form={f} />)}
+      <Tabs value={current} onValueChange={(next) => { if (next) select(next as FormTab); }} className="contents">
+        <FormTabs current={current} />
+        {panel("answers", <AnswersCard form={f} />)}
+        {panel("questions", <QuestionsSheet form={f} />)}
+        {panel("settings", <SettingsCards form={f} />)}
+      </Tabs>
     </>
   );
 }
@@ -1535,9 +1528,9 @@ function SettingsCards({ form: f }: { form: AdminForm }) {
                 aria-describedby={`${id("slug")}-hint`} onChange={(e) => setSlug(e.currentTarget.value)} className={fieldClass} />
             </Field>
           </div>
-          <Toggle label="One answer per email" checked={onePer} disabled={save.isPending} onChange={(e) => setOnePer(e.currentTarget.checked)}
+          <Toggle label="One answer per email" checked={onePer} disabled={save.isPending} onCheckedChange={(on) => setOnePer(on)}
             description="A second answer from the same email address is turned away, with a note saying why." />
-          <Toggle label="Email a confirmation" checked={confirm} disabled={save.isPending} onChange={(e) => setConfirm(e.currentTarget.checked)}
+          <Toggle label="Email a confirmation" checked={confirm} disabled={save.isPending} onCheckedChange={(on) => setConfirm(on)}
             description={hasEmail
               ? "Whoever answers gets a short “we got your answers” email naming this form. Their answers are never in it."
               : "Add an email question on the Questions tab first: the confirmation goes to that address."} />

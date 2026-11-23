@@ -2,7 +2,7 @@
 import * as React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { cn } from "@/index";
+import { cn, SelectControl } from "@/index";
 import { fieldClass, linkClass, primaryButton, redButton, secondaryButton } from "@/app/layout/app-classes";
 import { Card, Chip, EmptySlot, InlineError, Toggle, type ChipTone } from "@/app/layout/app-ui";
 import { rsvpCsv, rsvpTotals, STATUS_LABEL, useAdminBusiness } from "./admin-state";
@@ -25,9 +25,9 @@ export function BusinessSwitcher({ value, onChange }: { value?: string; onChange
   return (
     <FormField label="Business" className="max-w-70">
       {(p) => (
-        <select {...p} className={fieldClass} value={value ?? names.data[0]} onChange={(e) => onChange(e.target.value)}>
+        <SelectControl {...p} className={fieldClass} value={value ?? names.data[0]} onValueChange={onChange}>
           {names.data.map((n) => <option key={n} value={n}>{n}</option>)}
-        </select>
+        </SelectControl>
       )}
     </FormField>
   );
@@ -179,7 +179,7 @@ export function EventEditorForm({ event, business }: { event?: AdminCalEvent; bu
         </FormField>
       </div>
       <FormField label="Time zone" hint="The times above are read in this zone." error={errors.timeZone}>
-        {(p) => <select {...p} className={fieldClass} value={d.timeZone} onChange={(e) => set("timeZone", e.target.value)}>{zones.map((z) => <option key={z} value={z}>{z.replace(/_/g, " ")}</option>)}</select>}
+        {(p) => <SelectControl {...p} className={fieldClass} value={d.timeZone} onValueChange={(zone) => set("timeZone", zone)}>{zones.map((z) => <option key={z} value={z}>{z.replace(/_/g, " ")}</option>)}</SelectControl>}
       </FormField>
       {text("location", "Location")}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
@@ -189,8 +189,8 @@ export function EventEditorForm({ event, business }: { event?: AdminCalEvent; bu
         </FormField>
       </div>
       {text("coverImageUrl", "Cover image address", "An https:// image link.")}
-      <Toggle label="Unlisted" description="Left out of lists and search; anyone with the link can still open it." checked={d.hidden} onChange={(e) => set("hidden", e.target.checked)} />
-      <Toggle label="Show who’s coming" description="First names on the public page." checked={d.showAttendees} onChange={(e) => set("showAttendees", e.target.checked)} />
+      <Toggle label="Unlisted" description="Left out of lists and search; anyone with the link can still open it." checked={d.hidden} onCheckedChange={(on) => set("hidden", on)} />
+      <Toggle label="Show who’s coming" description="First names on the public page." checked={d.showAttendees} onCheckedChange={(on) => set("showAttendees", on)} />
       {save.isError && <p role="alert" className="twc-error">{messageOf(save.error)}</p>}
       <button type="submit" className={cn(redButton, "w-fit")} disabled={save.isPending}>{save.isPending ? "Saving…" : event ? "Save changes" : "Create event"}</button>
       {toastNode}
@@ -244,12 +244,12 @@ export function AddRsvpDialog({ event, business }: { event: AdminCalEvent; busin
   return (
     <>
       <button type="button" className={primaryButton} onClick={() => setOpen(true)}>Add an RSVP</button>
-      <ConfirmDialog open={open} title="Add an RSVP" confirmLabel="Add RSVP" cancelLabel="Close" busy={add.isPending} onClose={() => setOpen(false)} onConfirm={submit}>
+      <ConfirmDialog form open={open} title="Add an RSVP" confirmLabel="Add RSVP" cancelLabel="Close" busy={add.isPending} onClose={() => setOpen(false)} onConfirm={submit}>
         <p className="text-sm">An email that already answered is updated.</p>
         <FormField label="Name" required error={errors.name}>{(p) => <input {...p} className={fieldClass} value={v.name} onChange={(e) => setV({ ...v, name: e.target.value })} />}</FormField>
         <FormField label="Email" required error={errors.email}>{(p) => <input {...p} type="email" className={fieldClass} value={v.email} onChange={(e) => setV({ ...v, email: e.target.value })} />}</FormField>
         <FormField label="Answer">
-          {(p) => <select {...p} className={fieldClass} value={v.status} onChange={(e) => setV({ ...v, status: e.target.value as RsvpStatus })}>{RSVP_STATUSES.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}</select>}
+          {(p) => <SelectControl {...p} className={fieldClass} value={v.status} onValueChange={(status) => setV({ ...v, status: status as RsvpStatus })}>{RSVP_STATUSES.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}</SelectControl>}
         </FormField>
         <FormField label="Guests" error={errors.plusOnes}>{(p) => <input {...p} type="number" min={0} max={MAX_PLUS_ONES} className={fieldClass} value={v.plusOnes} onChange={(e) => setV({ ...v, plusOnes: e.target.value })} />}</FormField>
         <FormField label="Note" error={errors.note}>{(p) => <textarea {...p} className={fieldClass} value={v.note} onChange={(e) => setV({ ...v, note: e.target.value })} />}</FormField>
@@ -281,10 +281,10 @@ export function RsvpTable({ event, business }: { event: AdminCalEvent; business?
       <div className="flex flex-wrap items-end justify-between gap-3 px-4 py-3">
         <FormField label="Show" className="max-w-50">
           {(p) => (
-            <select {...p} className={fieldClass} value={filter} onChange={(e) => setFilter(e.target.value as RsvpStatus | "ALL")}>
+            <SelectControl {...p} className={fieldClass} value={filter} onValueChange={(next) => setFilter(next as RsvpStatus | "ALL")}>
               <option value="ALL">Everyone ({rows.length})</option>
               {RSVP_STATUSES.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
-            </select>
+            </SelectControl>
           )}
         </FormField>
         <button type="button" className={secondaryButton} disabled={!shown.length} onClick={download}>Download CSV</button>
@@ -388,7 +388,7 @@ export function EventTypeEditor({ type, business, onDone }: { type?: EditableEve
         <FormField label="Length (minutes)" required error={errors.lengthInMinutes}>{(p) => <input {...p} type="number" min={5} max={720} className={fieldClass} value={v.lengthInMinutes} onChange={(e) => setV({ ...v, lengthInMinutes: e.target.value })} />}</FormField>
         <FormField label="Seats per time" hint="Blank for one-to-one." error={errors.seatsPerSlot}>{(p) => <input {...p} type="number" min={1} className={fieldClass} value={v.seatsPerSlot} onChange={(e) => setV({ ...v, seatsPerSlot: e.target.value })} />}</FormField>
       </div>
-      {v.seatsPerSlot && <Toggle label="Show seats left" description="Visitors see how many seats remain." checked={v.showAvailabilityCount} onChange={(e) => setV({ ...v, showAvailabilityCount: e.target.checked })} />}
+      {v.seatsPerSlot && <Toggle label="Show seats left" description="Visitors see how many seats remain." checked={v.showAvailabilityCount} onCheckedChange={(on) => setV({ ...v, showAvailabilityCount: on })} />}
       {save.isError && <p role="alert" className="twc-error">{messageOf(save.error)}</p>}
       <div className="flex gap-2">
         <button type="submit" className={primaryButton} disabled={save.isPending}>{save.isPending ? "Saving…" : "Save"}</button>

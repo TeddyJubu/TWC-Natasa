@@ -5,6 +5,8 @@ import viteReact from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { publicFnId } from "./src/server/pin-open";
 
+const UI_SDK_COMPONENTS = /src\/design-system\/components\/(select|switch|tabs|member-dialog)\.tsx$/;
+
 // Builds a Node server (dist/server/server.js, from src/server.ts) and the client assets (dist/client);
 // server.mjs serves both (`bun run start`).
 export default defineConfig(({ mode }) => {
@@ -17,5 +19,7 @@ export default defineConfig(({ mode }) => {
     resolve: { tsconfigPaths: true, alias: { "@eve-chat": fileURLToPath(new URL("./src/features/eve/EveChat.tsx", import.meta.url)) } },
     // The form pages' few browser-called functions get fixed ids, so the PIN gate can leave just those open.
     plugins: [tailwindcss(), tanstackStart({ serverFns: { generateFunctionId: publicFnId } }), viteReact()],
+    // Importing anything from the design-system barrel must not load the ui-sdk controls a page doesn't use.
+    build: { rollupOptions: { treeshake: { moduleSideEffects: (id: string) => !UI_SDK_COMPONENTS.test(id) } } },
   };
 });
