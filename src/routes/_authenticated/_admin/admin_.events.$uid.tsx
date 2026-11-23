@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ensureCoverPolicy } from "@/app/cover-pages";
 import { AppPage } from "@/app/layout/AppLayout";
 import { AppShell, TopBar } from "@/app/layout/AppShell";
 import { linkClass } from "@/app/layout/app-classes";
@@ -10,7 +9,6 @@ import { CancelEventDialog, EventEditorForm, PublicLinkCopy, RsvpTable } from "@
 import { adminCalEventQuery } from "@/features/cal/queries";
 
 export const Route = createFileRoute("/_authenticated/_admin/admin_/events/$uid")({
-  beforeLoad: ({ location, preload }) => ensureCoverPolicy(location.href, preload),
   head: () => ({ meta: [{ title: "Event — Admin — The Women’s Collective" }, { name: "robots", content: "noindex" }] }),
   component: EditGathering,
 });

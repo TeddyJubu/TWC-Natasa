@@ -7,7 +7,6 @@ import {
   ActivityPanel, AdminSearch, ApplicationsPanel, BookingsPanel, InboxPanel, MemberReviewsPanel, MembersPanel,
   NeighborhoodsPanel, NewsletterPanel, SpotlightPanel,
 } from "@/features/admin/panels";
-import { ensureCoverPolicy } from "@/app/cover-pages";
 import { AppointmentsPanel, GatheringsPanel } from "@/features/cal/admin-ui";
 
 /** Each admin section's page: its one-line purpose, its card, and a search box for the cards that filter by one. */
@@ -27,9 +26,8 @@ const PAGES: Record<AdminSection, { intro: string; Panel: React.ComponentType<{ 
 
 // `admin_` un-nests it from /admin's page while keeping the `_admin` guard; /admin/forms is a static route, so it wins.
 export const Route = createFileRoute("/_authenticated/_admin/admin_/$section")({
-  beforeLoad: ({ params, location, preload }) => {
+  beforeLoad: ({ params }) => {
     if (!isAdminSection(params.section)) throw notFound();
-    return params.section === "events" ? ensureCoverPolicy(location.href, preload) : undefined;
   },
   head: ({ params }) => ({
     meta: [

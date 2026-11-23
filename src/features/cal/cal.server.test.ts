@@ -1,8 +1,14 @@
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { coverVersion } from "@/server/covers";
+import { openDb } from "@/server/db";
 import {
-  CalError, clearCalCache, createBooking, filterPublic, getPublicBooking, getPublicEvent, getSlots, listPublicEvents, manageBooking,
-  sendRsvp, sitemapEvents, toAdminBooking, toCalError, toPublicEvent, type RawEvent,
+  adminEvent, CalError, clearCalCache, coverSource, createBooking, filterPublic, getPublicBooking, getPublicEvent, getSlots, listPublicEvents,
+  manageBooking, saveAdminEvent, sendRsvp, sitemapEvents, toAdminBooking, toCalError, toPublicEvent, type RawEvent,
 } from "./cal.server";
+import { checkEvent } from "./types";
 
 const future = (days: number) => new Date(Date.now() + days * 86_400_000).toISOString();
 const event = (uid: string, over: Partial<RawEvent> = {}): RawEvent => ({
@@ -111,6 +117,73 @@ describe("public events", () => {
   it("searches accents-insensitively, before paging", async () => {
     answer = eventsApi([event("a", { title: "Café social" }), event("b", { title: "Book club" })]);
     expect((await listPublicEvents({ q: "cafe" })).events.map((e) => e.uid)).toEqual(["a"]);
+  });
+});
+
+describe("event covers", () => {
+  const COVER = "https://images.example/supper.jpg?w=1200";
+  const ADMIN = "00000000-0000-4000-8000-0000000000ad";
+  const adminCtx = () => {
+    vi.stubEnv("DATA_DIR", mkdtempSync(join(tmpdir(), "twc-cal-covers-")));
+    const db = openDb(":memory:");
+    const now = new Date().toISOString();
+    db.prepare(`insert into "user" (id, name, email, emailVerified, createdAt, updatedAt) values (?, 'A', 'a@x.test', 1, ?, ?)`).run(ADMIN, now, now);
+    db.prepare("insert into user_roles (user_id, role) values (?, 'admin')").run(ADMIN);
+    return { db, actor: { id: ADMIN, email: "a@x.test" } };
+  };
+
+  it("adds a same-origin coverSrc and leaves the real coverImageUrl alone", () => {
+    const out = toPublicEvent(event("e1", { coverImageUrl: COVER }));
+    expect(out.coverImageUrl).toBe(COVER);
+    expect(out.coverSrc).toBe(`/media/covers/e1?v=${coverVersion(COVER)}`);
+    expect(out.coverSrc).not.toContain("images.example");
+    expect(toPublicEvent(event("e2", { coverImageUrl: "http://images.example/a.jpg" })).coverSrc).toBeNull();
+    expect(toPublicEvent(event("e3")).coverSrc).toBeNull();
+  });
+
+  it("ignores a coverSrc sent by Cal", () => {
+    const out = toPublicEvent(event("e1", { coverImageUrl: null, coverSrc: "https://evil.example/x.png" }));
+    expect(out.coverSrc).toBeNull();
+  });
+
+  it("every list and detail read carries coverSrc", async () => {
+    answer = eventsApi([event("e1", { coverImageUrl: COVER })]);
+    expect((await listPublicEvents()).events[0].coverSrc).toContain("/media/covers/e1?v=");
+    expect((await getPublicEvent("e1")).coverSrc).toContain("/media/covers/e1?v=");
+  });
+
+  it("looks a cover up by uid only, with the event page's reach", async () => {
+    answer = eventsApi([event("e1", { slug: "supper", coverImageUrl: COVER }), event("hid", { coverImageUrl: COVER, hidden: true }), event("none")]);
+    expect(await coverSource("e1")).toEqual({ url: COVER, unlisted: false });
+    expect(await coverSource("hid")).toEqual({ url: COVER, unlisted: true });
+    expect(await coverSource("none")).toBeNull();
+    expect(await coverSource("supper")).toBeNull(); // a slug is not a key
+    expect(await coverSource("unknown")).toBeNull();
+  });
+
+  it("an admin save sends the original coverImageUrl back to Cal, and never coverSrc", async () => {
+    const ctx = adminCtx();
+    const stored = event("e1", { coverImageUrl: COVER, hidden: false, showAttendees: true });
+    answer = (c) => ok(c.method === "PATCH" ? { ...stored, ...(c.body as object) } : stored);
+    // What the form does: load the admin view, then send it back through the editor's own check.
+    const loaded = await adminEvent(ctx, { uid: "e1" });
+    expect(loaded.coverSrc).toContain("/media/covers/");
+    const checked = checkEvent({ ...loaded, title: "New title" });
+    if (!checked.ok) throw new Error("the loaded event should pass");
+    calls = [];
+    const saved = await saveAdminEvent(ctx, { uid: "e1", event: checked.value });
+    const patch = calls.find((c) => c.method === "PATCH")!;
+    expect((patch.body as Record<string, unknown>).coverImageUrl).toBe(COVER);
+    expect(patch.body).not.toHaveProperty("coverSrc");
+    expect(saved.coverImageUrl).toBe(COVER);
+  });
+
+  it("refuses a coverSrc smuggled into a save", async () => {
+    const ctx = adminCtx();
+    const stored = event("e1", { coverImageUrl: COVER });
+    answer = (c) => ok(c.method === "PATCH" ? { ...stored, ...(c.body as object) } : stored);
+    await saveAdminEvent(ctx, { uid: "e1", event: { ...stored, coverSrc: "/media/covers/other?v=1" } });
+    expect(calls.find((c) => c.method === "PATCH")!.body).not.toHaveProperty("coverSrc");
   });
 });
 

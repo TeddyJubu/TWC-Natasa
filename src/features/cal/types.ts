@@ -5,10 +5,14 @@ export type RsvpStatus = (typeof RSVP_STATUSES)[number];
 export const MAX_PLUS_ONES = 10;
 export const MAX_GUESTS = 10;
 
-/** What any visitor may see of an event: an allowlist, so a new upstream field never reaches the browser by accident. */
+/**
+ * What any visitor may see of an event: an allowlist, so a new upstream field never reaches the browser by accident.
+ * `coverImageUrl` is the address stored in Cal, which the admin form saves back; `coverSrc` is our same-origin copy,
+ * the only one a page may put in an `<img>` (the CSP allows no other).
+ */
 export type CalEvent = {
   uid: string; slug: string; title: string; description: string | null; category: string | null;
-  coverImageUrl: string | null; startTime: string; endTime: string; timeZone: string; location: string | null;
+  coverImageUrl: string | null; coverSrc?: string | null; startTime: string; endTime: string; timeZone: string; location: string | null;
   capacity: number | null; status: "SCHEDULED" | "CANCELLED"; host: { name: string | null; username: string | null };
   goingCount: number; maybeCount: number; spotsLeft: number | null; attendees: string[];
 };

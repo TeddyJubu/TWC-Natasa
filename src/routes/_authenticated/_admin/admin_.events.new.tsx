@@ -1,5 +1,4 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ensureCoverPolicy } from "@/app/cover-pages";
 import { AppPage } from "@/app/layout/AppLayout";
 import { AppShell, TopBar } from "@/app/layout/AppShell";
 import { linkClass } from "@/app/layout/app-classes";
@@ -8,7 +7,6 @@ import { useAdminBusiness } from "@/features/cal/admin-state";
 import { EventEditorForm } from "@/features/cal/admin-ui";
 
 export const Route = createFileRoute("/_authenticated/_admin/admin_/events/new")({
-  beforeLoad: ({ location, preload }) => ensureCoverPolicy(location.href, preload),
   head: () => ({ meta: [{ title: "New event — Admin — The Women’s Collective" }, { name: "robots", content: "noindex" }] }),
   component: NewGathering,
 });

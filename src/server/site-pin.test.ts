@@ -26,7 +26,7 @@ describe("pinGate", () => {
   });
 
   it("answers every page, API call, upload and asset with the PIN page, but not the icons or the health check", async () => {
-    for (const path of ["/", "/account", "/feed?x=1", "/media/avatars/a/b.png", "/robots.txt", "/llms.txt", "/llms-full.txt", "/sitemap.xml",
+    for (const path of ["/", "/account", "/feed?x=1", "/media/avatars/a/b.png", "/media/covers/evt1?v=abc123", "/robots.txt", "/llms.txt", "/llms-full.txt", "/sitemap.xml",
       "/about", "/members", "/directory", "/admin", "/admin/forms", "/joinx", "/fx", "/api/feed", "/api/images", "/_serverFn/abc123", "/_serverFn/open-adminCsvFn"]) {
       const res = (await get(path))!;
       expect(res.status).toBe(401);

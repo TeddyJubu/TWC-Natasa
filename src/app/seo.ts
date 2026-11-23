@@ -36,6 +36,10 @@ export const INDEXED = new Set([
 
 const absolute = (site: string, path: string) => site + (path.startsWith("/") ? path : `/${path}`);
 
+/** A same-origin path as an absolute https URL (share tags need one); undefined on an http or missing site. */
+export const absoluteHttps = (site: string | undefined, path: string | null | undefined) =>
+  site?.startsWith("https://") && path?.startsWith("/") ? absolute(site, path) : undefined;
+
 /** The share card: public/og-image.jpg, a 1200x630 crop of the home hero (hero-rock.webp), at a stable URL. */
 export const OG_IMAGE = {
   src: "/og-image.jpg",

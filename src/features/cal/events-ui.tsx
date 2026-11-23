@@ -90,11 +90,20 @@ export function EventsSearch({ value, onChange }: { value?: string; onChange: (q
   );
 }
 
-/** Only https covers: the page's CSP blocks anything else. A broken link falls back to the date tile. */
-export function CoverImage({ event, className }: { event: Pick<CalEvent, "coverImageUrl">; className?: string }) {
-  const [broken, setBroken] = React.useState(false);
-  if (!event.coverImageUrl?.startsWith("https://") || broken) return null;
-  return <img src={event.coverImageUrl} alt="" loading="lazy" referrerPolicy="no-referrer" className={cn("object-cover", className)} onError={() => setBroken(true)} />;
+/**
+ * The cover from our own origin (`coverSrc`). One that failed shows `fallback`, including a failure before hydration,
+ * when React wasn't there yet to hear the error event.
+ */
+export function CoverImage({ event, className, fallback = null }: { event: Pick<CalEvent, "coverSrc">; className?: string; fallback?: React.ReactNode }) {
+  const src = event.coverSrc;
+  const [failed, setFailed] = React.useState<string | null>(null);
+  if (!src || failed === src) return <>{fallback}</>;
+  return (
+    <img
+      src={src} alt="" loading="lazy" className={cn("object-cover", className)} onError={() => setFailed(src)}
+      ref={(img) => { if (img?.complete && !img.naturalWidth) setFailed(src); }}
+    />
+  );
 }
 
 function DateTile({ event, className }: { event: CalEvent; className?: string }) {
@@ -114,10 +123,9 @@ const eventLink = (event: CalEvent, business?: string) => ({
 });
 
 export function EventCard({ event, business }: { event: CalEvent; business?: string }) {
-  const hasCover = !!event.coverImageUrl?.startsWith("https://");
   return (
     <article className="relative flex h-full flex-col overflow-hidden rounded-md border border-sb-ink/15 bg-sb-paper">
-      {hasCover ? <CoverImage event={event} className="aspect-[16/9] w-full" /> : <DateTile event={event} className="aspect-[16/9] w-full" />}
+      <CoverImage event={event} className="aspect-[16/9] w-full" fallback={<DateTile event={event} className="aspect-[16/9] w-full" />} />
       <div className="flex flex-1 flex-col gap-2.5 p-5">
         <div className="flex flex-wrap items-center gap-2">
           {event.category && <CategoryChip category={event.category} />}

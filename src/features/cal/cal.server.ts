@@ -2,6 +2,7 @@
 // toPublicBooking), so attendee emails, notes and hidden events can't reach a public page by accident.
 import { CalAccounts, clientFromEnv, type CalClient } from "@teddyjubu/cal-agent-tools";
 import type { Ctx } from "@/server/context.server";
+import { coverPath } from "@/server/covers";
 import { requireAdmin, requireMember } from "@/server/guard";
 import { checkSize, clientIp, HttpError, publicError, rateLimit } from "@/server/request";
 import { bad, isObject, str } from "@/server/validate";
@@ -141,17 +142,20 @@ export const clearCalCache = () => cache.clear();
 
 export type RawEvent = CalEvent & { hidden?: boolean; showAttendees?: boolean; [key: string]: unknown };
 
-/** The public view of an event, field by field. Attendees are first names, and only when the owner shows them. */
-export function toPublicEvent(e: RawEvent): CalEvent {
+/**
+ * The public view of an event, field by field. Attendees are first names, and only when the owner shows them.
+ * `coverImageUrl` stays the real address (the admin form saves it back to Cal); pages show `coverSrc`, our own copy.
+ */
+export function toPublicEvent(e: RawEvent, business?: string | null): CalEvent {
   return {
     uid: e.uid, slug: e.slug, title: e.title, description: e.description ?? null, category: e.category ?? null,
-    coverImageUrl: e.coverImageUrl ?? null, startTime: e.startTime, endTime: e.endTime, timeZone: e.timeZone, location: e.location ?? null,
+    coverImageUrl: e.coverImageUrl ?? null, coverSrc: coverPath(e.uid, e.coverImageUrl, business), startTime: e.startTime, endTime: e.endTime, timeZone: e.timeZone, location: e.location ?? null,
     capacity: e.capacity ?? null, status: e.status, host: { name: e.host?.name ?? null, username: e.host?.username ?? null },
     goingCount: e.goingCount ?? 0, maybeCount: e.maybeCount ?? 0, spotsLeft: e.spotsLeft ?? null,
     attendees: e.showAttendees === false ? [] : (e.attendees ?? []).map((name) => String(name).trim().split(/\s+/)[0]).filter(Boolean),
   };
 }
-const toAdminEvent = (e: RawEvent): AdminCalEvent => ({ ...toPublicEvent(e), hidden: e.hidden === true, showAttendees: e.showAttendees !== false });
+const toAdminEvent = (e: RawEvent, business?: string | null): AdminCalEvent => ({ ...toPublicEvent(e, business), hidden: e.hidden === true, showAttendees: e.showAttendees !== false });
 
 /** Every event of a period: the API returns at most 100 at a time. */
 async function period(acc: Account, name: EventTab): Promise<RawEvent[]> {
@@ -206,7 +210,7 @@ export async function listPublicEvents(input: ListInput = {}): Promise<EventList
   const skip = clamp(input.skip, 0, 100_000);
   const take = clamp(input.take, 24, PAGE) || 24;
   return {
-    events: shown.slice(skip, skip + take).map(toPublicEvent),
+    events: shown.slice(skip, skip + take).map((e) => toPublicEvent(e, acc.name)),
     total: shown.length,
     categories: categoriesOf(events.filter((e) => e.hidden !== true)),
     host: host?.name ?? events[0]?.host?.name ?? null,
@@ -218,7 +222,13 @@ export async function getPublicEvent(slugOrUid: string, business?: string): Prom
   const acc = account(business);
   const event = (await allEvents(acc)).find((e) => e.slug === slugOrUid || e.uid === slugOrUid);
   if (!event) throw notFound("That event");
-  return { ...toPublicEvent(event), unlisted: event.hidden === true };
+  return { ...toPublicEvent(event, acc.name), unlisted: event.hidden === true };
+}
+
+/** The cover behind `/media/covers/<uid>`: the same reach as the event page, by uid only. */
+export async function coverSource(uid: string, business?: string): Promise<{ url: string; unlisted: boolean } | null> {
+  const event = (await allEvents(account(business))).find((e) => e.uid === uid);
+  return event?.coverImageUrl ? { url: event.coverImageUrl, unlisted: event.hidden === true } : null;
 }
 
 /** Listed events for the sitemap: never a hidden one. An unreachable calendar simply adds nothing. */
@@ -308,13 +318,14 @@ export async function adminEvents({ db, actor }: Ctx, input: unknown): Promise<A
   const shown = all.filter((e) => (tab === "past") === isPast(e)).sort((a, b) => direction * (Date.parse(a.startTime) - Date.parse(b.startTime)));
   const skip = clamp(isObject(input) ? input.skip : 0, 0, 100_000);
   const take = clamp(isObject(input) ? input.take : 25, 25, PAGE) || 25;
-  return { events: shown.slice(skip, skip + take).map(toAdminEvent), total: shown.length, categories: categoriesOf(all) };
+  return { events: shown.slice(skip, skip + take).map((e) => toAdminEvent(e, acc.name)), total: shown.length, categories: categoriesOf(all) };
 }
 
 export async function adminEvent({ db, actor }: Ctx, input: unknown): Promise<AdminCalEvent> {
   requireAdmin(db, actor);
   const uid = uidOf(isObject(input) ? input.uid : undefined);
-  return toAdminEvent(await call<RawEvent>(account(businessOf(input)), "community-events", { path: `/${encodeURIComponent(uid)}` }));
+  const acc = account(businessOf(input));
+  return toAdminEvent(await call<RawEvent>(acc, "community-events", { path: `/${encodeURIComponent(uid)}` }), acc.name);
 }
 
 export async function saveAdminEvent({ db, actor }: Ctx, input: unknown): Promise<AdminCalEvent> {
@@ -328,7 +339,7 @@ export async function saveAdminEvent({ db, actor }: Ctx, input: unknown): Promis
     : await call<RawEvent>(acc, "community-events", { body });
   invalidate(acc);
   // Create and update answer without counts, so read the full owner view back.
-  return toAdminEvent(await call<RawEvent>(acc, "community-events", { path: `/${encodeURIComponent(saved.uid)}` }));
+  return toAdminEvent(await call<RawEvent>(acc, "community-events", { path: `/${encodeURIComponent(saved.uid)}` }), acc.name);
 }
 
 export async function cancelAdminEvent({ db, actor }: Ctx, input: unknown): Promise<void> {

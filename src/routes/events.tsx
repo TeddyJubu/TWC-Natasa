@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { ensureCoverPolicy } from "@/app/cover-pages";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import { Scallop } from "@/app/layout/twc";
 import { jsonLdScript, parseSiteUrl } from "@/app/seo";
@@ -34,7 +33,6 @@ function paramsFor(search: GatheringsSearch): EventsParams {
 
 export const Route = createFileRoute("/events")({
   validateSearch: (raw: Record<string, unknown>): GatheringsSearch => parseGatheringsSearch(raw),
-  beforeLoad: ({ location, preload }) => ensureCoverPolicy(location.href, preload),
   loaderDeps: ({ search }) => search,
   // The calendar is public, so it is in the server's HTML. If Cal is down the page still renders and says so.
   loader: ({ context, deps }): Promise<EventPage | undefined> =>

@@ -1,8 +1,7 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ensureCoverPolicy } from "@/app/cover-pages";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
-import { canonicalTags } from "@/app/seo";
+import { absoluteHttps, canonicalTags, parseSiteUrl } from "@/app/seo";
 import {
   AttendanceSummary, AttendeeList, EventDateTime, EventDescription, EventHero, EventLocation, EventsSkeleton, HostCard, ShareButton,
 } from "@/features/cal/events-ui";
@@ -18,7 +17,6 @@ const SITE = "The Women’s Collective";
 export const Route = createFileRoute("/events_/$slug")({
   validateSearch: (raw: Record<string, unknown>): Search =>
     typeof raw.business === "string" && raw.business ? { business: raw.business.slice(0, 80) } : {},
-  beforeLoad: ({ location, preload }) => ensureCoverPolicy(location.href, preload),
   loaderDeps: ({ search }) => ({ business: search.business }),
   loader: async ({ context, params, deps }): Promise<CalEventDetail | null> => {
     try {
@@ -34,6 +32,7 @@ export const Route = createFileRoute("/events_/$slug")({
     const when = formatRange(e.startTime, e.endTime, e.timeZone, "en-US");
     const description = `${when}${e.location ? ` · ${e.location}` : ""}${e.description ? `. ${e.description.slice(0, 140)}` : ""}`;
     const seo = e.unlisted ? { meta: [], links: [] } : canonicalTags(import.meta.env.VITE_SITE_URL as string | undefined, `/events/${params.slug}`);
+    const image = absoluteHttps(parseSiteUrl(import.meta.env.VITE_SITE_URL as string | undefined), e.coverSrc);
     return {
       meta: [
         { title },
@@ -41,7 +40,7 @@ export const Route = createFileRoute("/events_/$slug")({
         { property: "og:title", content: title },
         { property: "og:description", content: description },
         { property: "og:type", content: "event" },
-        ...(e.coverImageUrl?.startsWith("https://") ? [{ property: "og:image", content: e.coverImageUrl }] : []),
+        ...(image ? [{ property: "og:image", content: image }] : []),
         { name: "twitter:card", content: "summary_large_image" },
         ...(e.unlisted ? [{ name: "robots", content: "noindex" }] : []),
         ...seo.meta,

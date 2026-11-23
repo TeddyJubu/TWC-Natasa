@@ -14,7 +14,7 @@ The public pages (`/`, `/about`, `/members`, `/members/:slug`, `/events`, `/neig
 ### Gatherings and booking (public, scrapbook)
 `/events`, `/events/<slug>`, `/book`, `/book/<type>` and `/booking/<uid>` use the scrapbook kit; their pieces are in `src/features/cal/` (`events-ui`, `calendar`, `rsvp`, `booking-ui`, `ui`).
 - Filters are `twc-choice` pills with `aria-pressed`; the tab, view, category, month and search live in the URL.
-- A card with no https cover gets a sun date tile, never a stand-in photo. Descriptions are plain text with their line breaks.
+- A card with no https cover, or one that can't be loaded, gets a sun date tile, never a stand-in photo. Descriptions are plain text with their line breaks.
 - The month calendar shows each event on its own local day, starts on the visitor's first weekday, and has one tab stop: arrows, Home/End and PageUp/PageDown move, Tab reaches that day's events. Phones show a count per day that opens the day's list.
 - Every RSVP and booking outcome is announced in a live region. Times always name their zone.
 

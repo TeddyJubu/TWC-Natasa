@@ -11,6 +11,7 @@ export const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
 export type Bucket = "avatars" | "feed" | "neighborhood-logos";
 const TYPES = { png: "image/png", jpg: "image/jpeg", webp: "image/webp" } as const;
 export type ImageExt = keyof typeof TYPES;
+export const imageType = (ext: ImageExt) => TYPES[ext];
 
 const uploadsDir = () => join(dataDir(), "uploads");
 
@@ -100,7 +101,7 @@ export const canSeeFeedFolder = (db: DB, actor: Actor, authorId: string): boolea
 const isPublicAvatarFolder = (db: DB, ownerId: string) =>
   !!db.prepare("select 1 from profiles where id = ? and status = 'approved' and directory_visible = 1 and public_profile = 1").get(ownerId);
 
-const notFound = () => new Response("Not found", { status: 404, headers: { "Content-Type": "text/plain", "Cache-Control": "no-store" } });
+export const notFound = () => new Response("Not found", { status: 404, headers: { "Content-Type": "text/plain", "Cache-Control": "no-store" } });
 
 /**
  * A public member's portrait or logo by catalogue number (`public/<n>/avatar|logo`), so public cards never carry

@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ensureCoverPolicy } from "@/app/cover-pages";
 import { EventsSkeleton, EventsWidget } from "@/features/cal/events-ui";
 import { calEventsQuery } from "@/features/cal/queries";
 import type { EventList } from "@/features/cal/types";
@@ -15,7 +14,6 @@ export const Route = createFileRoute("/embed/events")({
     ...(typeof raw.category === "string" && raw.category ? { category: raw.category.slice(0, 80) } : {}),
     ...(typeof raw.business === "string" && raw.business ? { business: raw.business.slice(0, 80) } : {}),
   }),
-  beforeLoad: ({ location, preload }) => ensureCoverPolicy(location.href, preload),
   loaderDeps: ({ search }) => search,
   loader: ({ context, deps }): Promise<EventList | undefined> =>
     context.queryClient.ensureQueryData(calEventsQuery(params(deps))).catch(() => undefined),
