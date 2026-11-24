@@ -615,7 +615,7 @@ export function MembersPanel({ query = "" }: { query?: string }) {
               <caption className="sr-only">Every member profile</caption>
               <thead>
                 <tr className="border-b border-app-rule">
-                  {["Name", "Status", "Neighborhood", "Listed", "Public", "Catalogue", "Email"].map((h) => <th key={h} scope="col" className={headCell}>{h}</th>)}
+                  {["Name", "Status", "Neighborhood", "Listed", "Catalogue", "Email"].map((h) => <th key={h} scope="col" className={headCell}>{h}</th>)}
                   <th scope="col" className={headCell}><span className="sr-only">Actions</span></th>
                 </tr>
               </thead>
@@ -640,7 +640,6 @@ function ImportedRow({ member }: { member: ImportedMember }) {
       <td className={cell}><Chip>Not signed up yet</Chip></td>
       <td className={cell}>{member.neighborhood ?? "—"}</td>
       <td className={cell}>No</td>
-      <td className={cell}>No</td>
       <td className={cn(cell, "twc-index whitespace-nowrap")}>—</td>
       <td className={cn(cell, "break-all")}>{member.email}</td>
       <td className={cn(cell, meta)}>Approved automatically when they sign up with this email.</td>
@@ -659,7 +658,6 @@ function MemberRow({ member, link, spotlight, notes, actions, app }: {
       <td className={cell}><StatusChip status={member.status} /></td>
       <td className={cell}>{member.neighborhood ?? "—"}</td>
       <td className={cell}>{member.directory_visible ? "Yes" : "No"}</td>
-      <td className={cell}>{member.public_profile ? "Yes" : "No"}</td>
       <td className={cn(cell, "twc-index whitespace-nowrap")}>{member.catalogue_number === null ? "—" : `Nº ${String(member.catalogue_number).padStart(3, "0")}`}</td>
       <td className={cn(cell, "break-all")}>{member.email ?? "—"}</td>
       <td className={cell}>

@@ -39,7 +39,6 @@ export const PERMISSIONS = [
   { name: "directory", legend: "Directory", options: [
     { value: "none", label: "Do not list me." },
     { value: "member_only", label: "Member-only listing." },
-    { value: "public", label: "Public listing." },
   ] },
   { name: "photography", legend: "Photography / video", options: [
     { value: "yes", label: "Yes, I consent to identifiable event photography/video by The Women’s Collective." },
@@ -58,7 +57,10 @@ export const PERMISSIONS = [
 ] as const satisfies readonly { name: string; legend: string; options: readonly Opt[] }[];
 export type PermissionField = (typeof PERMISSIONS)[number]["name"];
 
-/** The 12 public-directory fields (the old intake's PUBLIC_FIELDS). */
+/**
+ * The 12 public-directory fields (the old intake's PUBLIC_FIELDS). No longer asked: the directory is members-only (owner
+ * decision, 2026-11-24); kept only to label older stored reviews.
+ */
 export const PUBLIC_FIELDS: readonly Opt[] = [
   { value: "public_name", label: "Name" },
   { value: "public_business_name", label: "Business name" },
@@ -74,10 +76,12 @@ export const PUBLIC_FIELDS: readonly Opt[] = [
   { value: "public_logo", label: "Business logo" },
 ];
 
+/** Choices older reviews may hold that the form no longer offers, labelled for /admin. */
+const RETIRED: Record<string, string> = { public: "Public listing (no longer offered)", req_public_directory_removal: "Public directory removal" };
+
 export const CORRECTIONS: readonly Opt[] = [
   { value: "req_info_correction", label: "Information correction" },
   { value: "req_newsletter_unsubscribe", label: "Newsletter unsubscribe" },
-  { value: "req_public_directory_removal", label: "Public directory removal" },
   { value: "req_member_only_removal", label: "Member-only directory removal" },
   { value: "req_record_removal", label: "Active member-record removal" },
   { value: "req_other", label: "Other request" },
@@ -85,7 +89,8 @@ export const CORRECTIONS: readonly Opt[] = [
 
 export type ReviewAnswers = Record<InfoField, string> & Partial<Record<PermissionField, string>> & {
   membership: "keep" | "leave" | "contact_me";
-  public_fields: string[];
+  /** Only on reviews sent before 2026-11-24. */
+  public_fields?: string[];
   correction_requests: string[];
   other_note: string;
 };
@@ -122,34 +127,26 @@ export function checkReview(input: Record<string, unknown>): { value: ReviewAnsw
     if (values(p.options).includes(v)) permissions[p.name] = v;
     else errors[p.name] = `Please choose one of the “${p.legend}” options.`;
   }
-  const public_fields = list(input.public_fields);
-  if (public_fields.some((f) => !values(PUBLIC_FIELDS).includes(f))) errors.public_fields = "Please choose fields from the list.";
-  else if (permissions.directory === "public" && public_fields.length === 0) {
-    errors.public_fields = "You chose a public listing — please tick at least one field that may appear.";
-  }
   const correction_requests = list(input.correction_requests);
   if (correction_requests.some((c) => !values(CORRECTIONS).includes(c))) errors.correction_requests = "Please choose requests from the list.";
   const other_note = text(input.other_note);
   if (other_note.length > LIMITS.note) errors.other_note = `Please keep this under ${LIMITS.note} characters.`;
 
   if (Object.keys(errors).length) {
-    const order: ReviewField[] = [...INFO_FIELDS.map((f) => f.name), "membership", "newsletter", "directory", "public_fields", "photography",
+    const order: ReviewField[] = [...INFO_FIELDS.map((f) => f.name), "membership", "newsletter", "directory", "photography",
       "partner_comms", "introductions", "correction_requests", "other_note"];
     return { errors: Object.fromEntries(order.filter((k) => errors[k]).map((k) => [k, errors[k]])) };
   }
   return {
     value: {
-      ...info, membership: membership as ReviewAnswers["membership"], ...permissions,
-      // Public fields only mean something for a public listing.
-      public_fields: permissions.directory === "public" ? public_fields : [],
-      correction_requests, other_note,
+      ...info, membership: membership as ReviewAnswers["membership"], ...permissions, correction_requests, other_note,
     },
   };
 }
 
 /** A stored review as labelled rows for /admin: verbatim labels, option labels instead of codes, blanks left out. */
 export function reviewEntries(answers: Record<string, unknown>): { key: string; label: string; value: string | string[] }[] {
-  const label = (opts: readonly Opt[], v: unknown) => opts.find((o) => o.value === v)?.label ?? String(v);
+  const label = (opts: readonly Opt[], v: unknown) => opts.find((o) => o.value === v)?.label ?? RETIRED[String(v)] ?? String(v);
   const rows: { key: string; label: string; value: string | string[] }[] = [];
   for (const { name, label: l } of INFO_FIELDS) if (text(answers[name])) rows.push({ key: name, label: l, value: text(answers[name]) });
   if (answers.membership) rows.push({ key: "membership", label: "Membership", value: label(MEMBERSHIP.options, answers.membership) });

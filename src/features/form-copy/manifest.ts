@@ -71,7 +71,6 @@ export const COPY_FIELDS: Record<CopyForm, CopyField[]> = {
     ...g("03 — Permissions", [
       "Your permissions, separately", "Each of these is its own decision. Say yes, no, or leave anything blank.",
       "Newsletter", "Directory", "Photography / video", "Partner communications", "Introductions",
-      "If public, which fields may appear?", "Applies only to a public listing",
     ]),
     ...g("04 — Corrections", [
       "Corrections & removal requests", "Tick anything you would like us to do. A person handles each request.",

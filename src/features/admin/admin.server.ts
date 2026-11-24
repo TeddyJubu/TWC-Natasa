@@ -325,11 +325,11 @@ export function adminCsv(c: Ctx, input: unknown): CsvExport {
   }
   const rows = [
     ...adminMembers(c).map((m) => [
-      m.full_name, m.status, yesNo(m.directory_visible), yesNo(m.public_profile), m.catalogue_number, m.email, m.business, m.neighborhood, m.member_since,
+      m.full_name, m.status, yesNo(m.directory_visible), m.catalogue_number, m.email, m.business, m.neighborhood, m.member_since,
     ]),
-    ...adminImportedMembers(c).map((m) => [m.full_name, "not signed up yet", "No", "No", null, m.email, m.business, m.neighborhood, m.member_since]),
+    ...adminImportedMembers(c).map((m) => [m.full_name, "not signed up yet", "No", null, m.email, m.business, m.neighborhood, m.member_since]),
   ];
-  return { filename, csv: toCsv(["Name", "Status", "Listed", "Public", "Catalogue", "Email", "Business", "Neighborhood", "Member since"], rows) };
+  return { filename, csv: toCsv(["Name", "Status", "Listed", "Catalogue", "Email", "Business", "Neighborhood", "Member since"], rows) };
 }
 
 // ---------- Logged actions (migration 0009, CRM-057 / CRM-058): outside-the-app work, not admin_actions ----------

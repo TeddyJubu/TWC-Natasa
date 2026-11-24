@@ -177,7 +177,7 @@ gone anyone could sign in as one and read the members-only directory.
 
 `scripts/seed-demo.ts` fills the preview with exactly 100 made-up members so the directory, member pages, `/account`
 and the newsfeed have something to show: every name ends in " (Demo)", every email is `demo-NNN@demo.twc.invalid`
-(`.invalid` never receives mail), 92 approved (80 public, 8 listed only, 4 unlisted), 5 pending and 3 declined, with
+(`.invalid` never receives mail), 92 approved (88 listed in the members-only directory, 4 unlisted), 5 pending and 3 declined, with
 stock portraits (randomuser.me, women 0–99; ten left on the initials mat), about 160 feed posts over 60 days with
 Picsum (Unsplash) photos, loves, replies, and their applications (newsletter always "no"). The email domain is the
 only marker: the script never updates or deletes anything else, never creates an admin, and never sends mail or calls

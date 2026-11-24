@@ -5,7 +5,7 @@ import { Icon } from "@/app/layout/twc";
 import { Check, Choices, Field, Input, Notice, Section } from "@/features/applications/twc-fields";
 import { useCopy } from "@/features/form-copy/use-copy";
 import { sendReview, type ReviewPrefill, type ReviewSubmission } from "./queries";
-import { CORRECTIONS, INFO_FIELDS, LIMITS, MEMBERSHIP, PERMISSIONS, PUBLIC_FIELDS, checkReview } from "./schema";
+import { CORRECTIONS, INFO_FIELDS, LIMITS, MEMBERSHIP, PERMISSIONS, checkReview } from "./schema";
 
 const INPUT_TYPE: Partial<Record<string, string>> = { email: "email", website_social: "url" };
 const AUTOCOMPLETE: Partial<Record<string, string>> = { full_name: "name", email: "email" };
@@ -17,7 +17,6 @@ export function ReviewForm({ token, prefill, send = sendReview }: {
   const [failure, setFailure] = React.useState<string | null>(null);
   const [busy, setBusy] = React.useState(false);
   const [done, setDone] = React.useState(false);
-  const [directory, setDirectory] = React.useState("");
   const alert = React.useRef<HTMLElement>(null);
   const thanks = React.useRef<HTMLDivElement>(null);
 
@@ -87,13 +86,7 @@ export function ReviewForm({ token, prefill, send = sendReview }: {
         </Section>
         <Section index="03 — Permissions" title="Your permissions, separately" description="Each of these is its own decision. Say yes, no, or leave anything blank.">
           {PERMISSIONS.map((p) => (
-            <React.Fragment key={p.name}>
-              <Choices type="radio" name={p.name} legend={p.legend} options={[...p.options]} optional
-                onValueChange={p.name === "directory" ? (v) => setDirectory(v[0] ?? "") : undefined} />
-              {p.name === "directory" && directory === "public" && (
-                <Choices name="public_fields" legend="If public, which fields may appear?" hint="Applies only to a public listing" options={[...PUBLIC_FIELDS]} required />
-              )}
-            </React.Fragment>
+            <Choices key={p.name} type="radio" name={p.name} legend={p.legend} options={[...p.options]} optional />
           ))}
           <p className="text-[13px] text-sb-muted">Leaving a question unanswered means we will treat it as unanswered — never as a yes.</p>
         </Section>

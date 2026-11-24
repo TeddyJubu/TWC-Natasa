@@ -7,7 +7,7 @@ export const GUIDELINES = [
   "I will not use the community for spam, aggressive sales, or mass messaging.",
   "I will protect other members’ personal and business information.",
   "I understand the community is for genuine relationships, local connection, and collaboration.",
-  "I understand membership and directory publication are subject to review.",
+  "I understand membership is subject to review.",
   "I confirm that this application is accurate and I may represent the business listed.",
 ] as const;
 

@@ -9,7 +9,7 @@ import {
 import { TOPICS } from "@/features/contact/schema";
 import { COLLABORATIONS } from "@/features/contact/partnership";
 import type { CopyForm } from "@/features/form-copy/manifest";
-import { CORRECTIONS, INFO_FIELDS, MEMBERSHIP, PERMISSIONS, PUBLIC_FIELDS } from "@/features/member-links/schema";
+import { CORRECTIONS, INFO_FIELDS, MEMBERSHIP, PERMISSIONS } from "@/features/member-links/schema";
 import { choiceValue } from "./form-draft";
 import type { Choice, Question, QuestionType } from "./schema";
 
@@ -68,7 +68,6 @@ export const BUILT_IN_COPIES: Record<CopyForm, FormTemplate> = {
       ...INFO_FIELDS.map(({ name, label }) => q(name, name === "email" ? "email" : "short", label, name === "full_name" || name === "email")),
       q(MEMBERSHIP.name, "radio", MEMBERSHIP.legend, true, { choices: opts(MEMBERSHIP.options) }),
       ...PERMISSIONS.map((p) => q(p.name, "radio", p.legend, false, { choices: opts(p.options) })),
-      q("public_fields", "checkboxes", "If public, which fields may appear?", false, { help: "Applies only to a public listing", choices: opts(PUBLIC_FIELDS) }),
       q("correction_requests", "checkboxes", "Corrections & removal requests", false, { help: "Tick anything you would like us to do. A person handles each request.", choices: opts(CORRECTIONS) }),
       q("other_note", "paragraph", "Anything we should correct, or details about your request"),
     ],

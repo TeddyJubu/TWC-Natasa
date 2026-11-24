@@ -76,7 +76,7 @@ describe("CSV export", () => {
 
   it("members, and nothing else", () => {
     expect(adminCsv(admin(), { kind: "members" }).csv.split("\r\n")[0]).toBe(
-      "\uFEFF\"Name\",\"Status\",\"Listed\",\"Public\",\"Catalogue\",\"Email\",\"Business\",\"Neighborhood\",\"Member since\"");
+      "\uFEFF\"Name\",\"Status\",\"Listed\",\"Catalogue\",\"Email\",\"Business\",\"Neighborhood\",\"Member since\"");
     expect(() => adminCsv(admin(), { kind: "inbox" })).toThrow(/Invalid export/);
   });
 });
@@ -250,6 +250,6 @@ describe("imported members who haven't signed up (legacy_members, 0004)", () => 
 
   it("are in the members CSV, marked as not signed up", () => {
     expect(adminCsv(admin(), { kind: "members" }).csv).toContain(
-      `"Nell","not signed up yet","No","No","","waiting@x.test","Bakery","Astoria","2024-03-01T00:00:00.000Z"`);
+      `"Nell","not signed up yet","No","","waiting@x.test","Bakery","Astoria","2024-03-01T00:00:00.000Z"`);
   });
 });

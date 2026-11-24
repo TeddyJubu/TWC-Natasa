@@ -65,18 +65,18 @@ describe("/review", () => {
     expect([...document.querySelectorAll<HTMLInputElement>("input[type=radio]")].some((r) => r.checked)).toBe(false);
   });
 
-  it("asks for public fields only for a public listing, then sends the review with the token", async () => {
+  it("offers no public listing (members-only directory), then sends the review with the token", async () => {
     show();
     fireEvent.click(screen.getByLabelText("Yes, keep me connected to the free community of The Women’s Collective."));
-    expect(screen.queryByRole("group", { name: /which fields may appear/ })).toBeNull();
-    fireEvent.click(screen.getByLabelText("Public listing."));
-    fireEvent.click(screen.getByLabelText("Instagram"));
+    expect(screen.queryByLabelText(/Public listing/)).toBeNull();
+    expect(screen.queryByLabelText(/Public directory removal/)).toBeNull();
+    fireEvent.click(screen.getByLabelText("Member-only listing."));
     fireEvent.click(screen.getByLabelText("Information correction"));
     fake.results = [undefined];
     fireEvent.submit(screen.getByRole("button", { name: /Submit my review/ }).closest("form")!);
     await screen.findByText("Thank you — your response is saved.");
     expect(fake.calls).toEqual([["/api/review", expect.objectContaining({
-      token: TOKEN, honeypot: "", full_name: "Rosa Diaz", membership: "keep", directory: "public", public_fields: ["public_instagram"],
+      token: TOKEN, honeypot: "", full_name: "Rosa Diaz", membership: "keep", directory: "member_only",
       correction_requests: ["req_info_correction"],
     })]]);
   });

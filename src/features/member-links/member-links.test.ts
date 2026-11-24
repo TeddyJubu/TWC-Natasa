@@ -164,16 +164,25 @@ describe("checkReview", () => {
     expect(checkReview(answers({ photography: "always" }))).toHaveProperty("errors.photography");
     expect(checkReview(answers({ correction_requests: ["req_everything"] }))).toHaveProperty("errors.correction_requests");
     const ok = checkReview(answers({ newsletter: "no" }));
-    expect("value" in ok && ok.value).toMatchObject({ newsletter: "no", email: "bea@x.test", public_fields: [], correction_requests: [] });
+    expect("value" in ok && ok.value).toMatchObject({ newsletter: "no", email: "bea@x.test", correction_requests: [] });
+    expect("value" in ok && ok.value).not.toHaveProperty("public_fields");
     expect("value" in ok && ok.value).not.toHaveProperty("directory");
   });
 
-  it("a public listing needs at least one field; fields without a public listing are dropped", () => {
-    expect(checkReview(answers({ directory: "public" }))).toEqual({ errors: { public_fields: expect.stringMatching(/tick at least one/) } });
-    const pub = checkReview(answers({ directory: "public", public_fields: ["public_name"] }));
-    expect("value" in pub && pub.value.public_fields).toEqual(["public_name"]);
+  it("refuses a public listing and drops public fields: the directory is members-only (2026-11-24)", () => {
+    expect(checkReview(answers({ directory: "public" }))).toHaveProperty("errors.directory");
+    expect(checkReview(answers({ correction_requests: ["req_public_directory_removal"] }))).toHaveProperty("errors.correction_requests");
     const member = checkReview(answers({ directory: "member_only", public_fields: "public_name" }));
-    expect("value" in member && member.value.public_fields).toEqual([]);
+    expect("value" in member && member.value).not.toHaveProperty("public_fields");
+  });
+
+  it("still labels the retired choices on older reviews", () => {
+    const rows = reviewEntries({ directory: "public", public_fields: ["public_name"], correction_requests: ["req_public_directory_removal"] });
+    expect(rows).toEqual(expect.arrayContaining([
+      expect.objectContaining({ key: "directory", value: "Public listing (no longer offered)" }),
+      expect.objectContaining({ key: "public_fields", value: ["Name"] }),
+      expect.objectContaining({ key: "correction_requests", value: ["Public directory removal"] }),
+    ]));
   });
 
   it("reviewEntries labels codes for /admin", () => {
