@@ -27,14 +27,13 @@ describe("/sitemap.xml", () => {
     expect(xml).toContain("<loc>https://example.com/events/supper-club</loc>");
   });
 
-  it("lists the fixed pages, active neighborhoods and only fully public members", () => {
+  it("lists the fixed pages and active neighborhoods, and no member at all (the directory is members-only)", () => {
     const paths = sitemapPaths(seeded());
     expect(paths.slice(0, INDEXED.size)).toEqual([...INDEXED]);
     expect(paths).toContain("/neighborhoods/astoria");
     expect(paths).not.toContain("/neighborhoods/rego-park");
-    const members = paths.filter((p) => p.startsWith("/members/"));
-    expect(members).toHaveLength(1);
-    expect(members[0]).toMatch(/^\/members\/rosa-diaz-\d+$/);
+    expect(paths.filter((p) => /^\/(members|directory)(\/|$)/.test(p))).toEqual([]);
+    expect(sitemapXml(seeded(), "https://example.com")).not.toMatch(/Rosa|Listed|Pending/i);
   });
 
   it("is absolute URLs on the given origin", () => {
@@ -44,14 +43,8 @@ describe("/sitemap.xml", () => {
     expect(locs.every((l) => l.startsWith("https://new.thewomenscollective.club/"))).toBe(true);
   });
 
-  it("dates only member pages, with her profile's last change, and never the fixed pages or neighborhoods", () => {
-    const db = seeded();
-    db.prepare("update profiles set updated_at = '2026-10-02T09:30:15.123Z' where id = 'a'").run();
-    const xml = sitemapXml(db, "https://example.com");
-    const lines = xml.split("\n").filter((l) => l.includes("<url>"));
-    const dated = lines.filter((l) => l.includes("<lastmod>"));
-    expect(dated).toHaveLength(1);
-    expect(dated[0]).toMatch(/<loc>https:\/\/example\.com\/members\/rosa-diaz-\d+<\/loc><lastmod>2026-10-02T09:30:15Z<\/lastmod>/);
+  it("dates nothing rather than guess a date", () => {
+    expect(sitemapXml(seeded(), "https://example.com")).not.toContain("<lastmod>");
   });
 
   it("is no longer a static file that would shadow the route", () => {

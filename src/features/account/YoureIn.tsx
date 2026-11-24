@@ -62,7 +62,7 @@ export function YoureIn({ userId }: { userId: string }) {
           <p>
             When you’re ready to appear, open{" "}
             <a href="#visibility" className={cn("air-link", ring)}>Visibility</a>
-            {" "}and turn on the member directory — and the public website only if you want anyone to find you.
+            {" "}and turn on the member directory, so other members can find you.
           </p>
         </li>
       </ol>

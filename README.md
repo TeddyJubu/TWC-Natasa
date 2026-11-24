@@ -1,7 +1,7 @@
 # The Women’s Collective
 
 The website and member area for The Women’s Collective: a marketing site, a membership application
-(`/join`), a members directory (`/members`), a member account page (`/account`) and an admin area
+(`/join`), a members-only directory (`/directory`), a member account page (`/account`) and an admin area
 (`/admin`) for reviewing applications, members, neighborhoods and headshot bookings.
 
 **North star:** women entrepreneurs in Queens belong to a community that helps their businesses grow.
@@ -66,7 +66,7 @@ In a sandbox, bun may need writable temp and cache directories, e.g.
 
 | Variable | What it does |
 |---|---|
-| `VITE_SITE_URL` | The site's public origin, e.g. `https://example.com`. When set, every page gets an absolute `og:image` (`public/og-image.jpg`, a 1200×630 crop of the home hero, with its size and alt), and the indexable public pages (`/`, `/members`, `/join`, `/auth`; the list is in `src/app/seo.ts`), each active neighborhood and each public member page get an absolute canonical and `og:url`, and the JSON-LD that needs absolute URLs. Unset or invalid means none of them, never a guessed URL. |
+| `VITE_SITE_URL` | The site's public origin, e.g. `https://example.com`. When set, every page gets an absolute `og:image` (`public/og-image.jpg`, a 1200×630 crop of the home hero, with its size and alt), and the indexable public pages (`/`, `/about`, `/join`, `/auth`; the list is in `src/app/seo.ts`) and each active neighborhood get an absolute canonical and `og:url`, and the JSON-LD that needs absolute URLs. Unset or invalid means none of them, never a guessed URL. |
 | `VITE_GOOGLE_AUTH` | `true` shows "Continue with Google" on `/auth`. Anything else, or unset, hides it. Set the two `GOOGLE_*` server values first. |
 
 **Server (never in a tracked file):** set them in the service's environment or in `.env.local` at the repo root
@@ -170,8 +170,8 @@ While `SITE_PIN` is set in `app.env`, every request — pages, `/api`, `/media`,
 holding a hash of the PIN for 30 days and returns the visitor to the page she asked for (so emailed links still work
 after the PIN). Only the icons, `/healthz` and the forms are open: `/join`, `/review`, `/contact`, `/partnerships`, `/spotlight`, `/f/*`, sign-in, what they post to and the six server functions they call (`src/server/pin-open.ts`). Changing the PIN signs everyone out of the preview; removing
 it (and restarting `twc-natasa.service`) opens the site. The PIN lives only in `app.env`: this repository is public.
-**Before removing it, remove the demo members** (below): they are public on `/members`, the sitemap and
-`/media/public` the moment the PIN is gone.
+**Before removing it, remove the demo members** (below): they share one known password, so the moment the PIN is
+gone anyone could sign in as one and read the members-only directory.
 
 ### Demo data (preview only)
 
@@ -263,7 +263,7 @@ In this order; each step is done (and its check passes) before the next. Steps 1
 8. **Verify with curl.**
    - `curl -sI https://new.thewomenscollective.club/` gives `200`, one each of `content-security-policy`,
      `permissions-policy`, `referrer-policy`, `x-content-type-options`, `strict-transport-security: max-age=31536000`,
-     and no `x-robots-tag`; the same for `/about` and `/members`.
+     and no `x-robots-tag`; the same for `/about`. `/members` redirects to `/directory` with `x-robots-tag: noindex`.
    - `curl -sI https://thewomenscollective.club/` has no `x-robots-tag`.
    - A hashed file from the page (`curl -sI https://new.thewomenscollective.club/assets/<name>.js`) has
      `cache-control: public, max-age=31536000, immutable`.

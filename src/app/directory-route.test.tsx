@@ -1,17 +1,21 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, screen, within } from "@testing-library/react";
 import { renderWithQueries } from "@/test/dom";
 
 vi.mock("@/features/members/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 vi.mock("@/features/auth/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs }));
 
+import { fake } from "@/test/fake-fns";
 import { Route } from "@/routes/_authenticated/directory";
 
 vi.spyOn(Route, "useRouteContext").mockReturnValue({ user: { id: "u1", name: "Rosa", email: "u1@x.test" } } as never);
 const Page = Route.options.component as React.ComponentType;
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  fake.reset();
+});
 
 const member = (i: number, name: string, neighborhood: string) => ({
   id: `m${i}`, name, role: "Owner", business: `Shop ${i}`, neighborhood, specialty: "", bio: "", lookingFor: "", catalogueNumber: i,
@@ -83,14 +87,28 @@ describe("/directory", () => {
     expect(screen.getByRole("button", { name: "All 13" }).getAttribute("aria-pressed")).toBe("true");
   });
 
-  it("tells a declined account the truth and where to ask, with no promise of entry", () => {
+  it("tells a declined account the truth and where to ask, with no promise of entry and no cards", async () => {
     renderWithQueries(<Page />, [
       [["viewer"], { signedIn: true, member: false, admin: false, declined: true }],
       [["profile", "u1"], { profile: { full_name: "Rosa", status: "declined", catalogue_number: null }, avatarUrl: undefined }],
-      [["public-profiles"], MEMBERS.slice(0, 1)],
     ]);
     expect(screen.getByText(/your application wasn’t approved/i)).toBeTruthy();
     expect(screen.queryByText(/welcomed in/i)).toBeNull();
     expect(screen.getByRole("link", { name: /contact us/i }).getAttribute("href")).toBe("/contact");
+    await act(() => new Promise((r) => setTimeout(r, 20)));
+    expect(screen.queryByRole("group", { name: /Member stamps/ })).toBeNull();
+    expect(fake.calls).not.toContainEqual(["directoryFn"]);
+  });
+
+  it("shows a pending account no member at all, only that the directory unlocks once she's welcomed in", async () => {
+    renderWithQueries(<Page />, [
+      [["viewer"], { signedIn: true, member: false, admin: false, declined: false }],
+      [["profile", "u1"], { profile: { full_name: "Rosa", status: "pending", catalogue_number: null }, avatarUrl: undefined }],
+    ]);
+    expect(screen.getByText(/The directory is for members\. It unlocks once you’re welcomed in\./)).toBeTruthy();
+    await act(() => new Promise((r) => setTimeout(r, 20)));
+    expect(screen.queryByRole("group", { name: /Member stamps/ })).toBeNull();
+    expect(screen.queryByRole("searchbox")).toBeNull();
+    expect(fake.calls).not.toContainEqual(["directoryFn"]);
   });
 });

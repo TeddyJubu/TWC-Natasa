@@ -17,7 +17,7 @@ vi.mock("@/index", async (orig) => ({
 }));
 
 import { Route as Home } from "@/routes/index";
-import { Route as Members } from "@/routes/members";
+import { Route as About } from "@/routes/about";
 import { Route as Join } from "@/routes/join";
 import { Route as About } from "@/routes/about";
 import { Route as Faq } from "@/routes/faq";
@@ -32,7 +32,6 @@ vi.spyOn(Account, "useRouteContext").mockReturnValue({ user: { id: "u1" } } as n
 vi.spyOn(Admin, "useRouteContext").mockReturnValue({ user: { id: "u1", email: "rosa@x.test", name: "Rosa Diaz" } } as never);
 // Without a loader run, the seeded queries below stand in for the loaders' data.
 vi.spyOn(Home, "useLoaderData").mockReturnValue(undefined as never);
-vi.spyOn(Members, "useLoaderData").mockReturnValue(undefined as never);
 vi.spyOn(Join, "useLoaderData").mockReturnValue({ kind: "application", open: true, closed: null } as never);
 vi.spyOn(Join, "useSearch").mockReturnValue({} as never);
 afterEach(() => {
@@ -50,7 +49,6 @@ const profile: Profile = {
 };
 const seed: [unknown[], unknown][] = [
   [["viewer"], { signedIn: true, member: true, admin: true }],
-  [["public-profiles"], []],
   [["directory"], []],
   [["applicant"], null],
   [["profile", "u1"], { profile, avatarUrl: undefined }],
@@ -61,7 +59,7 @@ const seed: [unknown[], unknown][] = [
 ];
 
 const live = {
-  "/": Home, "/members": Members, "/join": Join, "/account": Account, "/admin": Admin,
+  "/": Home, "/about": About, "/join": Join, "/account": Account, "/admin": Admin,
 } as const;
 const showcase = { "/colors": Colors, "/typography": Typography, "/components": Components } as const;
 
@@ -156,6 +154,25 @@ describe("AppNav", () => {
     const bar = screen.getByRole("button", { name: "Open menu" }).closest("div.flex.min-h-16")!;
     expect(bar.className).toContain("lg:hidden");
     expect(bar.className).not.toContain("xl:hidden");
+  });
+
+  // The member directory is members-only (owner decision, 2026-11-24).
+  it("never links visitors or pending accounts to the directory or the old /members", () => {
+    for (const viewer of [{ signedIn: false, member: false, admin: false }, { signedIn: true, member: false, admin: false, declined: false }]) {
+      const { unmount } = renderWithQueries(<><AppNav /><AppFooter /></>, [[["viewer"], viewer]]);
+      expect(screen.queryByRole("link", { name: /Members|Directory/ })).toBeNull();
+      expect(screen.getAllByRole("link").map((a) => a.getAttribute("href")).filter((h) => /^\/(members|directory)(\/|$)/.test(h ?? ""))).toEqual([]);
+      unmount();
+    }
+  });
+
+  it("shows approved members and admins a Directory link to /directory", () => {
+    for (const viewer of [{ signedIn: true, member: true, admin: false }, { signedIn: true, member: false, admin: true }]) {
+      const { unmount } = renderWithQueries(<AppNav />, [[["viewer"], viewer]]);
+      expect(screen.getByRole("link", { name: "Directory" }).getAttribute("href")).toBe("/directory");
+      expect(screen.queryByRole("link", { name: "Members" })).toBeNull();
+      unmount();
+    }
   });
 
   it("offers a signed-in visitor their account instead of Sign in and Join us", () => {

@@ -26,7 +26,7 @@ export const Route = createFileRoute("/fellowship")({
 // Only what the live app already promises (/faq, /about, /account). Fees, review times, eligibility and
 // reapplication rules have no settled wording yet, so they are not stated here (SITE-037/038/040).
 const GIVES = [
-  { tone: "twc-stamp--olive", title: "Your card", text: "Show up in the member directory if you want to. You decide who sees it: other members, the public website, or no one yet." },
+  { tone: "twc-stamp--olive", title: "Your card", text: "Show up in the member directory if you want to. You decide who sees it: other members, or no one yet. The directory is for members only." },
   { tone: "twc-stamp--mustard", title: "Events", text: "Approved members save a seat at events from their account, and meet the neighbors we introduce them to." },
   { tone: "twc-stamp--terracotta", title: "Your number", text: "Approval brings your catalogue number: the small, permanent mark of being part of the collective." },
 ];

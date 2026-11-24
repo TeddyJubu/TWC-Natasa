@@ -19,6 +19,7 @@ beforeAll(() => {
   db = openDb(":memory:");
   const now = new Date().toISOString();
   db.prepare(`insert into "user" (id, name, email, emailVerified, createdAt, updatedAt) values (?, 'O', 'o@x.test', 1, ?, ?)`).run(OWNER, now, now);
+  // The old public switch is on: it must publish nothing.
   db.prepare("update profiles set status = 'approved', directory_visible = 1, public_profile = 1 where id = ?").run(OWNER);
   writeMedia("avatars", `${OWNER}/avatar-1.png`, JPG); // a JPEG behind a .png name
   writeMedia("neighborhood-logos", "astoria.webp", WEBP);
@@ -80,52 +81,44 @@ describe("uploads", () => {
 
 describe("serveMedia", () => {
   const get = (path: string) => serveMedia(db, null, path);
+  const own = (path: string, headers?: Headers) => serveMedia(db, { id: OWNER, email: "o@x.test" }, path, headers);
 
   it("serves a visible file with its sniffed type, nosniff and a cache policy", async () => {
-    const res = get(`/media/avatars/${OWNER}/avatar-1.png`);
+    const res = own(`/media/avatars/${OWNER}/avatar-1.png`);
     expect(res.status).toBe(200);
     expect(res.headers.get("Content-Type")).toBe("image/jpeg");
     expect(res.headers.get("X-Content-Type-Options")).toBe("nosniff");
-    expect(res.headers.get("Cache-Control")).toBe("public, max-age=60");
+    expect(res.headers.get("Cache-Control")).toBe("private, max-age=3600");
     expect(new Uint8Array(await res.arrayBuffer())).toEqual(JPG);
     expect(get("/media/neighborhood-logos/astoria.webp").headers.get("Cache-Control")).toBe("public, max-age=60");
   });
 
-  it("serves a public member's portrait and logo by catalogue number, never anyone else's", () => {
+  // The directory is members-only (owner decision, 2026-11-24): the old public switch publishes no file.
+  it("serves a visitor no member's portrait or logo, public switch or not, and has no public bucket", () => {
     db.prepare("update profiles set catalogue_number = 21, avatar_path = ?, business_logo_url = ? where id = ?")
       .run(`${OWNER}/avatar-1.png`, `${OWNER}/avatar-1.png`, OWNER);
-    expect(get("/media/public/21/avatar").status).toBe(200);
-    expect(get("/media/public/21/logo").headers.get("Cache-Control")).toBe("public, max-age=60");
-    for (const path of ["/media/public/22/avatar", "/media/public/21/secret", "/media/public/x/avatar", "/media/public/21/avatar/extra"]) {
-      expect(get(path).status).toBe(404);
-    }
-    db.prepare("update profiles set public_profile = 0 where id = ?").run(OWNER);
-    expect(get("/media/public/21/avatar").status).toBe(404);
-    db.prepare("update profiles set public_profile = 1 where id = ?").run(OWNER);
+    expect(get(`/media/avatars/${OWNER}/avatar-1.png`).status).toBe(404);
+    for (const path of ["/media/public/21/avatar", "/media/public/21/logo", "/media/public/22/avatar"]) expect(get(path).status).toBe(404);
   });
 
-  // SITE-118/167: unpublished / unlisted folders are indistinguishable from missing (404), never a stand-in.
-  it("hides a listed-but-private folder from visitors, and a hidden member's folder from everyone but herself", () => {
-    db.prepare("update profiles set public_profile = 0 where id = ?").run(OWNER);
+  // SITE-118/167: unlisted folders are indistinguishable from missing (404), never a stand-in.
+  it("hides a hidden member's folder from everyone but herself", () => {
+    db.prepare("update profiles set directory_visible = 0 where id = ?").run(OWNER);
     expect(get(`/media/avatars/${OWNER}/avatar-1.png`).status).toBe(404);
-    const owner = serveMedia(db, { id: OWNER, email: "o@x.test" }, `/media/avatars/${OWNER}/avatar-1.png`);
-    expect([owner.status, owner.headers.get("Cache-Control")]).toEqual([200, "private, max-age=3600"]);
-    db.prepare("update profiles set directory_visible = 0, public_profile = 1 where id = ?").run(OWNER);
-    expect(get(`/media/avatars/${OWNER}/avatar-1.png`).status).toBe(404);
-    expect(get("/media/public/21/avatar").status).toBe(404);
-    db.prepare("update profiles set directory_visible = 1, public_profile = 1 where id = ?").run(OWNER);
+    expect(own(`/media/avatars/${OWNER}/avatar-1.png`).status).toBe(200);
+    db.prepare("update profiles set directory_visible = 1 where id = ?").run(OWNER);
   });
 
   it("sends a weak ETag and Last-Modified, and answers a matching revalidation with a 304", () => {
     const path = `/media/avatars/${OWNER}/avatar-1.png`;
-    const first = get(path);
+    const first = own(path);
     const etag = first.headers.get("ETag")!;
     const lastModified = first.headers.get("Last-Modified")!;
     expect(etag).toMatch(/^W\/"[0-9a-f]+-[0-9a-f]+-[0-9a-f]+"$/);
     expect(Number.isFinite(Date.parse(lastModified))).toBe(true);
-    const again = (h: Record<string, string>) => serveMedia(db, null, path, new Headers(h));
+    const again = (h: Record<string, string>) => own(path, new Headers(h));
     const hit = again({ "If-None-Match": `"other", ${etag}` });
-    expect([hit.status, hit.headers.get("ETag"), hit.headers.get("Cache-Control")]).toEqual([304, etag, "public, max-age=60"]);
+    expect([hit.status, hit.headers.get("ETag"), hit.headers.get("Cache-Control")]).toEqual([304, etag, "private, max-age=3600"]);
     expect(hit.body).toBeNull();
     expect(again({ "If-None-Match": etag.slice(2) }).status).toBe(304); // weak comparison
     expect(again({ "If-None-Match": '"stale"' }).status).toBe(200);
@@ -136,12 +129,10 @@ describe("serveMedia", () => {
 
   it("checks visibility before revalidating: a hidden file is a 404 even with its ETag, and a private one stays private", () => {
     const path = `/media/avatars/${OWNER}/avatar-1.png`;
-    const etag = get(path).headers.get("ETag")!;
-    db.prepare("update profiles set public_profile = 0 where id = ?").run(OWNER);
+    const etag = own(path).headers.get("ETag")!;
     expect(serveMedia(db, null, path, new Headers({ "If-None-Match": etag })).status).toBe(404);
-    const owner = serveMedia(db, { id: OWNER, email: "o@x.test" }, path, new Headers({ "If-None-Match": etag }));
+    const owner = own(path, new Headers({ "If-None-Match": etag }));
     expect([owner.status, owner.headers.get("Cache-Control")]).toEqual([304, "private, max-age=3600"]);
-    db.prepare("update profiles set public_profile = 1 where id = ?").run(OWNER);
   });
 
   it("answers a revalidation from the file's stat, without reading its body", () => {
@@ -150,14 +141,14 @@ describe("serveMedia", () => {
     const file = mediaFile("avatars", `${OWNER}/revalidate.png`)!;
     const when = 1_700_000_000; // a whole second, so restoring it keeps the ETag
     utimesSync(file, when, when);
-    const etag = get(path).headers.get("ETag")!;
+    const etag = own(path).headers.get("ETag")!;
     writeFileSync(file, new Uint8Array(statSync(file).size)); // same size and inode, no longer an image
     utimesSync(file, when, when);
-    expect(serveMedia(db, null, path, new Headers({ "If-None-Match": etag })).status).toBe(304);
-    expect(get(path).status).toBe(404); // a full read still sniffs it
+    expect(own(path, new Headers({ "If-None-Match": etag })).status).toBe(304);
+    expect(own(path).status).toBe(404); // a full read still sniffs it
   });
 
-  it("never serves a stored file that isn't an image", () => expect(get(`/media/avatars/${OWNER}/notes.png`).status).toBe(404));
+  it("never serves a stored file that isn't an image", () => expect(own(`/media/avatars/${OWNER}/notes.png`).status).toBe(404));
 
   it.each([
     "/media/avatars/../../secret.txt",

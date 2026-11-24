@@ -28,18 +28,17 @@ export function AppPage({ children, className, trail = true }: { children: React
   );
 }
 
-export type SiteLink = { label: string; to: "/about" | "/members" | "/events" | "/neighborhoods" | "/faq" | "/fellowship" | "/partnerships" | "/contact" | "/join" | "/account" };
+export type SiteLink = { label: string; to: "/about" | "/directory" | "/events" | "/neighborhoods" | "/faq" | "/fellowship" | "/partnerships" | "/contact" | "/join" | "/account" };
 
 const NAV_START: SiteLink[] = [
   { label: "About", to: "/about" },
-  { label: "Members", to: "/members" },
   { label: "Events", to: "/events" },
-];
-const NAV_END: SiteLink[] = [
   { label: "Neighborhoods", to: "/neighborhoods" },
-  { label: "FAQ", to: "/faq" },
 ];
-const MENU: SiteLink[] = [...NAV_START, ...NAV_END, { label: "Contact", to: "/contact" }, { label: "Sign in", to: "/account" }];
+// The member directory is members-only (owner decision, 2026-11-24): its link shows only to approved members and admins.
+const DIRECTORY: SiteLink = { label: "Directory", to: "/directory" };
+const FAQ: SiteLink = { label: "FAQ", to: "/faq" };
+const navEnd = (member: boolean): SiteLink[] => (member ? [DIRECTORY, FAQ] : [FAQ]);
 
 // The menu and its dialog code load on first use, so a public page never pays for them up front.
 const loadSiteMenu = () => import("./SiteMenu");
@@ -47,10 +46,10 @@ const SiteMenu = React.lazy(loadSiteMenu);
 
 const navLink = "twc-link whitespace-nowrap font-display text-[15px] tracking-[0.3px] text-sb-ink";
 
-/** Sticky site header: three links, the logo, two links + Sign in + Join us; a full-screen Dialog menu below lg.
- *  At lg the row is measured at ~845px (Archivo at 15px, the 18px wordmark, 20px link gaps, 16px column gaps) in the
- *  896px `.twc-wrap` leaves at 1024px; the right group is the wider one, so the logo sits up to ~38px left of centre
- *  until ~1100px, then centred. xl widens the gaps and the wordmark into the wrap's 1024px. */
+/** Sticky site header: three links, the logo, FAQ + Sign in + Join us (members: Directory + FAQ + Account); a
+ *  full-screen Dialog menu below lg. The row is narrower than the old Members-link one, which was measured at ~845px
+ *  at lg (then Gilda at 15px; the 18px wordmark, 20px link gaps, 16px column gaps) in the 896px `.twc-wrap` leaves at
+ *  1024px; Archivo now sets it. xl widens the gaps and the wordmark into the wrap's 1024px. */
 export function AppNav({ bare = false }: { bare?: boolean }) {
   // ponytail: pre-launch, the form pages (and sign-in, where /join leads) show only the name, so nobody browses the
   // unpublished site from them. Drop `bare` from the form routes at launch.
@@ -72,7 +71,10 @@ function SiteNav() {
   const [menuOpen, setMenuOpen] = React.useState(false);
   const [menuMounted, setMenuMounted] = React.useState(false);
   // Known only in the browser: the server's HTML and first paint are the signed-out nav, so hydration always matches.
-  const signedIn = useQuery({ ...viewerQuery, staleTime: 60_000 }).data?.signedIn === true;
+  const viewer = useQuery({ ...viewerQuery, staleTime: 60_000 }).data;
+  const signedIn = viewer?.signedIn === true;
+  const member = viewer?.member === true || viewer?.admin === true;
+  const end = navEnd(member);
   const brand = (
     <Link to="/" activeOptions={{ exact: true }} className="group flex items-center gap-2.5 text-sb-ink outline-none focus-visible:text-sb-blue-ink" aria-label="The Women’s Collective home">
       <ConstellationLogo variant="ink" alt="" sizes="(min-width: 80rem) 34px, 28px" className="w-7 transition-[rotate] duration-500 ease-[var(--ease-snap)] group-hover:rotate-[24deg] motion-reduce:transition-none xl:w-[34px]" />
@@ -91,7 +93,7 @@ function SiteNav() {
         </nav>
         {brand}
         <div className="flex items-center justify-end gap-5 xl:gap-9">
-          {NAV_END.map((l) => <Link key={l.to} to={l.to} className={navLink}>{l.label}</Link>)}
+          {end.map((l) => <Link key={l.to} to={l.to} className={navLink}>{l.label}</Link>)}
           {!signedIn && <Link to="/account" className={navLink}>Sign in</Link>}
           {join("")}
         </div>
@@ -114,7 +116,7 @@ function SiteNav() {
 
       {menuMounted && (
         <React.Suspense fallback={null}>
-          <SiteMenu open={menuOpen} onOpenChange={setMenuOpen} links={MENU.filter((l) => !signedIn || l.to !== "/account")} signedIn={signedIn} />
+          <SiteMenu open={menuOpen} onOpenChange={setMenuOpen} links={[...NAV_START, ...end, { label: "Contact", to: "/contact" }, ...(signedIn ? [] : [{ label: "Sign in", to: "/account" } as const])]} signedIn={signedIn} />
         </React.Suspense>
       )}
     </header>
@@ -123,7 +125,6 @@ function SiteNav() {
 
 const FOOTER: SiteLink[] = [
   { label: "About", to: "/about" },
-  { label: "Members", to: "/members" },
   { label: "Events", to: "/events" },
   { label: "Neighborhoods", to: "/neighborhoods" },
   { label: "FAQ", to: "/faq" },

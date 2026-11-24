@@ -26,10 +26,10 @@ afterEach(() => {
 
 const card = (name: string, catalogueNumber: number, extra: Partial<MemberProfile> = {}): MemberProfile => ({
   id: `catalogue-${catalogueNumber}`, name, role: "Founder", business: `${name} Co`, neighborhood: "Astoria", specialty: "Food",
-  bio: "Bakes for the block.", lookingFor: "Café owners", image: "/media/public/12/avatar", imageAlt: `Portrait of ${name}`, catalogueNumber, ...extra,
+  bio: "Bakes for the block.", lookingFor: "Café owners", image: "/media/avatars/u-12/avatar-1.webp", imageAlt: `Portrait of ${name}`, catalogueNumber, ...extra,
 });
 const page = (extra: Partial<MemberPage> = {}): MemberPage =>
-  ({ member: card("Rosa Diaz", 12), neighbors: [], isPublic: true, audience: "visitor", ...extra });
+  ({ member: card("Rosa Diaz", 12), neighbors: [], ...extra });
 const show = (data: MemberPage) => {
   vi.spyOn(Route, "useLoaderData").mockReturnValue(data as never);
   return renderWithQueries(<Page />);
@@ -56,48 +56,27 @@ describe("/members/:slug loader", () => {
 });
 
 describe("/members/:slug head", () => {
-  const robots = (data: MemberPage) => head({ loaderData: data }).meta?.find((m) => m.name === "robots");
-  it("indexes public profiles and never a members-only page", () => {
-    expect(robots(page())).toBeUndefined();
-    expect(robots(page({ isPublic: false, audience: "member" }))?.content).toBe("noindex");
-  });
-
-  it("gives a public page a canonical, og:url, and ProfilePage + breadcrumb data of only her published facts", () => {
+  it("is never for search engines: noindex, no canonical, no share URL and no structured data", () => {
     vi.stubEnv("VITE_SITE_URL", "https://example.com");
     try {
-      const { meta, links, scripts } = head({ loaderData: page({ member: card("Rosa Diaz", 12, { business: "", role: "Baker <b>" }) }) });
-      expect(links).toEqual([{ rel: "canonical", href: "https://example.com/members/rosa-diaz-12" }]);
-      expect(meta?.find((m) => m.property === "og:url")?.content).toBe("https://example.com/members/rosa-diaz-12");
-      expect(scripts).toHaveLength(1);
-      // Database strings can never close the script element.
-      expect(scripts![0].children).not.toContain("<");
-      const graph = JSON.parse(scripts![0].children)["@graph"];
-      expect(graph[0]).toEqual({
-        "@type": "ProfilePage",
-        url: "https://example.com/members/rosa-diaz-12",
-        mainEntity: { "@type": "Person", name: "Rosa Diaz", jobTitle: "Baker <b>", homeLocation: { "@type": "Place", name: "Astoria" } },
-      });
-      expect(graph[1].itemListElement.map((i: { name: string }) => i.name)).toEqual(["Home", "Members", "Rosa Diaz"]);
-    } finally {
-      vi.unstubAllEnvs();
-    }
-  });
-
-  it("gives a members-only page no canonical and no structured data", () => {
-    vi.stubEnv("VITE_SITE_URL", "https://example.com");
-    try {
-      const { meta, links, scripts } = head({ loaderData: page({ isPublic: false, audience: "member" }) });
-      expect(links).toEqual([]);
-      expect(scripts).toEqual([]);
+      const { meta, links, scripts } = head({ loaderData: page() });
+      expect(meta?.find((m) => m.name === "robots")?.content).toBe("noindex");
+      expect(links ?? []).toEqual([]);
+      expect(scripts ?? []).toEqual([]);
       expect(meta?.find((m) => m.property === "og:url")).toBeUndefined();
+      expect(meta?.find((m) => m.title)?.title).toBe("Rosa Diaz — The Women’s Collective");
     } finally {
       vi.unstubAllEnvs();
     }
+  });
+
+  it("is noindex on its 404 too", () => {
+    expect(head({}).meta?.find((m) => m.name === "robots")?.content).toBe("noindex");
   });
 });
 
 describe("/members/:slug page", () => {
-  it("renders a public profile with one h1 and ordered headings", () => {
+  it("renders a member's page with one h1 and ordered headings", () => {
     show(page());
     expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Rosa Diaz");
     expect(screen.getByText("Bakes for the block.")).toBeTruthy();
@@ -105,30 +84,12 @@ describe("/members/:slug page", () => {
     expectNoSkippedHeadings(screen.getByRole("main"));
   });
 
-  it("asks visitors to sign in for an intro", () => {
+  it("offers members an introduction and leads back to the directory", () => {
     show(page());
-    expect(screen.getByRole("link", { name: /sign in to ask for an intro/i }).getAttribute("href")).toBe("/auth");
-    expect(screen.queryByRole("link", { name: /ask for an introduction/i })).toBeNull();
-  });
-
-  it("offers approved members an introduction instead", () => {
-    show(page({ audience: "member" }));
     expect(screen.getByRole("link", { name: /ask for an introduction/i }).getAttribute("href")).toBe("/contact");
-    expect(screen.queryByRole("link", { name: /sign in to ask/i })).toBeNull();
-  });
-
-  it("tells pending members introductions open once they're welcomed in", () => {
-    show(page({ audience: "pending" }));
-    expect(screen.getByText(/introductions open once you’re welcomed in/i)).toBeTruthy();
-    expect(screen.queryByRole("link", { name: /intro/i })).toBeNull();
-  });
-
-  it("tells a declined account introductions are for members, with /contact and no promise", () => {
-    show(page({ audience: "declined" }));
-    expect(screen.getByText(/your application wasn’t approved/i)).toBeTruthy();
-    expect(screen.queryByText(/welcomed in/i)).toBeNull();
-    expect(screen.getByRole("link", { name: /contact us/i }).getAttribute("href")).toBe("/contact");
-    expect(screen.queryByRole("link", { name: /ask for an introduction/i })).toBeNull();
+    expect(within(screen.getByRole("main")).queryByRole("link", { name: /sign in/i })).toBeNull();
+    const crumbs = screen.getByRole("navigation", { name: "Breadcrumb" });
+    expect(within(crumbs).getByRole("link", { name: "Directory" }).getAttribute("href")).toBe("/directory");
   });
 
   it("shows initials, never a stand-in photo, without a portrait", () => {

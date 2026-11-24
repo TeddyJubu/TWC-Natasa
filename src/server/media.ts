@@ -80,14 +80,14 @@ export function removeMediaFolder(bucket: "avatars" | "feed", folder: string): v
 }
 
 /**
- * The old "Avatar read" policy: the owner, admins, approved members while the owner is approved and listed,
- * and everyone once she is also public. Hiding from the directory hides every file in her folder.
+ * The old "Avatar read" policy without its public branch (the directory is members-only, owner decision 2026-11-24):
+ * the owner, admins, and approved members while the owner is approved and listed. Hiding from the directory hides
+ * every file in her folder.
  */
 export function canSeeAvatarFolder(db: DB, actor: Actor, ownerId: string): boolean {
   if (actor?.id === ownerId || isAdmin(db, actor?.id)) return true;
-  const owner = db.prepare("select public_profile from profiles where id = ? and status = 'approved' and directory_visible = 1")
-    .get(ownerId) as { public_profile: number } | undefined;
-  return !!owner && (owner.public_profile === 1 || isMember(db, actor?.id));
+  return isMember(db, actor?.id)
+    && !!db.prepare("select 1 from profiles where id = ? and status = 'approved' and directory_visible = 1").get(ownerId);
 }
 
 /**
@@ -97,28 +97,10 @@ export function canSeeAvatarFolder(db: DB, actor: Actor, ownerId: string): boole
 export const canSeeFeedFolder = (db: DB, actor: Actor, authorId: string): boolean =>
   (isMember(db, actor?.id) || isAdmin(db, actor?.id)) && (isMember(db, authorId) || isAdmin(db, authorId));
 
-/** Public avatars (owner opted in) may be cached by anyone; everything else in that bucket is private. */
-const isPublicAvatarFolder = (db: DB, ownerId: string) =>
-  !!db.prepare("select 1 from profiles where id = ? and status = 'approved' and directory_visible = 1 and public_profile = 1").get(ownerId);
-
 export const notFound = () => new Response("Not found", { status: 404, headers: { "Content-Type": "text/plain", "Cache-Control": "no-store" } });
 
 /**
- * A public member's portrait or logo by catalogue number (`public/<n>/avatar|logo`), so public cards never carry
- * her id. Same rule as the public avatars: approved, listed and public.
- */
-function publicFile(db: DB, rest: string[]): string | null {
-  const [n, kind] = rest;
-  if (rest.length !== 2 || !/^\d{1,9}$/.test(n) || (kind !== "avatar" && kind !== "logo")) return null;
-  const row = db.prepare("select avatar_path, business_logo_url from profiles where catalogue_number = ? and status = 'approved' and directory_visible = 1 and public_profile = 1")
-    .get(Number(n)) as { avatar_path: string | null; business_logo_url: string | null } | undefined;
-  const name = kind === "avatar" ? row?.avatar_path : row?.business_logo_url;
-  return name ? mediaFile("avatars", name) : null;
-}
-
-/**
- * Serves `/media/<bucket>/<name>` and `/media/public/<catalogue number>/<avatar|logo>`. Anything not visible to this
- * actor is a 404 (as if it didn't exist), so the route can't be used to probe for files. `pathname` is the raw URL
+ * Serves `/media/<bucket>/<name>`. Anything not visible to this actor is a 404 (as if it didn't exist), so the route can't be used to probe for files. `pathname` is the raw URL
  * path, not yet decoded. A visible file carries a weak ETag and Last-Modified, and a matching If-None-Match (or, without
  * one, If-Modified-Since) gets a 304; visibility is checked first, so a hidden file is still a 404. Only files anyone may
  * see are `public`; the rest are `private` (the browser's own cache, never a shared one).
@@ -131,17 +113,12 @@ export function serveMedia(db: DB, actor: Actor, pathname: string, requestHeader
     return notFound();
   }
   const [bucket, ...rest] = segments;
-  let file: string | null;
-  let open: boolean;
-  if (bucket === "public") {
-    file = publicFile(db, rest);
-    open = true;
-  } else if (bucket === "avatars" || bucket === "feed" || bucket === "neighborhood-logos") {
-    file = mediaFile(bucket, rest.join("/"));
-    if (file && bucket === "avatars" && !canSeeAvatarFolder(db, actor, rest[0])) file = null;
-    if (file && bucket === "feed" && !canSeeFeedFolder(db, actor, rest[0])) file = null;
-    open = bucket === "neighborhood-logos" || (bucket === "avatars" && isPublicAvatarFolder(db, rest[0]));
-  } else return notFound();
+  if (bucket !== "avatars" && bucket !== "feed" && bucket !== "neighborhood-logos") return notFound();
+  let file = mediaFile(bucket, rest.join("/"));
+  if (file && bucket === "avatars" && !canSeeAvatarFolder(db, actor, rest[0])) file = null;
+  if (file && bucket === "feed" && !canSeeFeedFolder(db, actor, rest[0])) file = null;
+  // Only neighborhood logos are for anyone; every member file is private.
+  const open = bucket === "neighborhood-logos";
   if (!file) return notFound();
   let stat: { size: number; mtimeMs: number; ino: number };
   try {

@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-const routes = ["src/routes/members.tsx", "src/routes/_authenticated/account.tsx"];
+const routes = ["src/routes/neighborhoods_.$slug.tsx", "src/routes/_authenticated/account.tsx"];
 const read = (p: string) => readFileSync(p, "utf8");
 // The account page's sections live in src/features/account/ (Phase 7 split), so its source is the route plus them.
 const pageSource = (p: string) =>

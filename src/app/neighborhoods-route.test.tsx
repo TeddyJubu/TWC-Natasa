@@ -99,16 +99,10 @@ describe("/neighborhoods", () => {
 });
 
 describe("/neighborhoods/:slug loader", () => {
-  it("returns the active neighborhood for its slug, with the public cards for the server's HTML", async () => {
-    const rosa = card("Rosa Diaz", "Astoria");
-    fake.results.push(NEIGHBORHOOD_SEED, [rosa]);
-    expect(await runLoader(SlugRoute, "astoria")).toEqual({ hood: astoria, profiles: [rosa] });
-    expect(fake.calls).toEqual([["neighborhoodsFn"], ["publicProfilesFn"]]);
-  });
-
-  it("still returns the neighborhood when the public cards fail (the client loads them)", async () => {
-    fake.results.push(NEIGHBORHOOD_SEED, new Error("down"));
-    expect(await runLoader(SlugRoute, "astoria")).toEqual({ hood: astoria, profiles: undefined });
+  it("returns the active neighborhood for its slug and no member data for the server's HTML", async () => {
+    fake.results.push(NEIGHBORHOOD_SEED);
+    expect(await runLoader(SlugRoute, "astoria")).toEqual({ hood: astoria });
+    expect(fake.calls).toEqual([["neighborhoodsFn"]]);
   });
 
   it.each([
@@ -159,14 +153,14 @@ describe("/neighborhoods/:slug head", () => {
 
 describe("/neighborhoods/:slug", () => {
   const visitor = [["viewer"], { signedIn: false, member: false, admin: false }] as [unknown[], unknown];
+  const member = [["viewer"], { signedIn: true, member: true, admin: false }] as [unknown[], unknown];
 
-  it("shows only that neighborhood's public profiles, with initials when there is no portrait", async () => {
+  it("shows visitors no member section and loads no member data", async () => {
     withLoaderData(SlugRoute, { hood: astoria });
-    renderWithQueries(<SlugPage />, [visitor, [["public-profiles"], [card("Rosa Diaz", "Astoria", "/rosa.jpg"), card("Camille Durand", "Astoria"), card("Lena Ortiz", "Sunnyside", "/l.jpg")]]]);
+    renderWithQueries(<SlugPage />, [visitor]);
     expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Astoria");
-    expect(screen.getByRole("button", { name: "View Rosa Diaz’s profile" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "View Camille Durand’s profile" }).textContent).toContain("CD");
-    expect(screen.queryByText("Lena Ortiz")).toBeNull();
+    expect(screen.queryByRole("heading", { name: /Women building in/ })).toBeNull();
+    expect(screen.queryByRole("link", { name: /directory/i })).toBeNull();
     expectNoSkippedHeadings();
     await settle();
     // Never the members-only directory, and no gatherings call for a visitor.
@@ -175,43 +169,46 @@ describe("/neighborhoods/:slug", () => {
     expect(screen.getByRole("link", { name: /across the collective/ }).getAttribute("href")).toBe("/events");
   });
 
-  it("renders the loader's public cards without a client fetch (server-rendered)", async () => {
-    withLoaderData(SlugRoute, { hood: astoria, profiles: [card("Rosa Diaz", "Astoria")] });
+  it("shows the server's HTML (viewer unknown) no member section", () => {
+    withLoaderData(SlugRoute, { hood: astoria });
     fake.results = [new Promise(() => {})]; // the viewer never settles
     renderWithQueries(<SlugPage />);
-    expect(screen.getByRole("button", { name: "View Rosa Diaz’s profile" })).toBeTruthy();
-    expect(screen.queryByText(/Loading members/)).toBeNull();
+    expect(screen.queryByRole("heading", { name: /Women building in/ })).toBeNull();
   });
 
-  it("opens a member in the dialog", () => {
+  it("shows members only that neighborhood's listed members, with initials when there is no portrait", () => {
     withLoaderData(SlugRoute, { hood: astoria });
-    renderWithQueries(<SlugPage />, [visitor, [["public-profiles"], [card("Rosa Diaz", "Astoria")]]]);
+    renderWithQueries(<SlugPage />, [member, [["directory"], [card("Rosa Diaz", "Astoria", "/rosa.jpg"), card("Camille Durand", "Astoria"), card("Lena Ortiz", "Sunnyside", "/l.jpg")]], [["events"], []]]);
+    expect(screen.getByRole("button", { name: "View Rosa Diaz’s profile" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "View Camille Durand’s profile" }).textContent).toContain("CD");
+    expect(screen.queryByText("Lena Ortiz")).toBeNull();
+    expect(screen.getByRole("link", { name: /See them in the directory/ }).getAttribute("href")).toBe("/directory");
+    expectNoSkippedHeadings();
+  });
+
+  it("opens a member in the dialog, linked to her full page", () => {
+    withLoaderData(SlugRoute, { hood: astoria });
+    renderWithQueries(<SlugPage />, [member, [["directory"], [{ ...card("Rosa Diaz", "Astoria"), catalogueNumber: 12 }]], [["events"], []]]);
     fireEvent.click(screen.getByRole("button", { name: "View Rosa Diaz’s profile" }));
     expect(screen.getByRole("dialog", { name: /Rosa Diaz/ }).textContent).toContain("Rosa Diaz");
-  });
-
-  it("links the open member to her full page, like /members", () => {
-    withLoaderData(SlugRoute, { hood: astoria });
-    renderWithQueries(<SlugPage />, [visitor, [["public-profiles"], [{ ...card("Rosa Diaz", "Astoria"), catalogueNumber: 12 }]]]);
-    fireEvent.click(screen.getByRole("button", { name: "View Rosa Diaz’s profile" }));
     expect(screen.getByRole("link", { name: /Open full page/ }).getAttribute("href")).toBe("/members/rosa-diaz-12");
   });
 
-  it("has an empty state when no one from the neighborhood is public", () => {
+  it("has an empty state for members when no one from the neighborhood is listed", () => {
     withLoaderData(SlugRoute, { hood: astoria });
-    renderWithQueries(<SlugPage />, [visitor, [["public-profiles"], [card("Lena Ortiz", "Sunnyside")]]]);
-    expect(screen.getByText(/No one from Astoria has shared a public profile yet/)).toBeTruthy();
+    renderWithQueries(<SlugPage />, [member, [["directory"], [card("Lena Ortiz", "Sunnyside")]], [["events"], []]]);
+    expect(screen.getByText(/No one from Astoria is listed in the directory yet/)).toBeTruthy();
   });
 
   it("uses the bundled photo for a seed neighborhood and a color tile for one without a photo", () => {
     withLoaderData(SlugRoute, { hood: astoria });
-    const { unmount } = renderWithQueries(<SlugPage />, [visitor, [["public-profiles"], []]]);
+    const { unmount } = renderWithQueries(<SlugPage />, [visitor]);
     // The hero photo is the page's largest paint: fetched first, never lazy.
     expect(screen.getByAltText("Astoria, Queens").getAttribute("fetchpriority")).toBe("high");
     expect(screen.getByAltText("Astoria, Queens").hasAttribute("loading")).toBe(false);
     unmount();
     withLoaderData(SlugRoute, { hood: woodside });
-    renderWithQueries(<SlugPage />, [visitor, [["public-profiles"], []]]);
+    renderWithQueries(<SlugPage />, [visitor]);
     expect(screen.queryByAltText(/Woodside/)).toBeNull();
     expect(screen.getByRole("region", { name: "Woodside" }).className).toContain("bg-(--hood)");
   });
@@ -219,12 +216,12 @@ describe("/neighborhoods/:slug", () => {
   it("keeps the hero card's small text on paper where the color can't reach 4.5:1 (Sunnyside)", () => {
     const sunnyside = NEIGHBORHOOD_SEED.find((n) => n.slug === "sunnyside")!;
     withLoaderData(SlugRoute, { hood: sunnyside });
-    renderWithQueries(<SlugPage />, [visitor, [["public-profiles"], []]]);
+    renderWithQueries(<SlugPage />, [visitor]);
     const cardOf = (name: string) => screen.getByRole("heading", { level: 1, name }).parentElement!.className;
     expect(cardOf("Sunnyside")).toContain("bg-sb-paper");
     cleanup();
     withLoaderData(SlugRoute, { hood: astoria });
-    renderWithQueries(<SlugPage />, [visitor, [["public-profiles"], []]]);
+    renderWithQueries(<SlugPage />, [visitor]);
     expect(cardOf("Astoria")).toContain("bg-(--hood)");
   });
 
@@ -232,7 +229,7 @@ describe("/neighborhoods/:slug", () => {
     withLoaderData(SlugRoute, { hood: astoria });
     renderWithQueries(<SlugPage />, [
       [["viewer"], { signedIn: true, member: true, admin: false }],
-      [["public-profiles"], []],
+      [["directory"], []],
       [["events"], [
         { id: "e1", title: "Headshot Session Day", description: "", location: "Studio on 31st Street", neighborhood: "Astoria", starts_at: "2026-11-20T23:00:00Z", kind: "event" },
         { id: "e2", title: "Sunnyside supper", description: "", location: "", neighborhood: "Sunnyside", starts_at: "2026-11-21T23:00:00Z", kind: "event" },
@@ -245,7 +242,7 @@ describe("/neighborhoods/:slug", () => {
 
   it("tells members when the neighborhood calendar is empty", () => {
     withLoaderData(SlugRoute, { hood: astoria });
-    renderWithQueries(<SlugPage />, [[["viewer"], { signedIn: true, member: true, admin: false }], [["public-profiles"], []], [["events"], []]]);
+    renderWithQueries(<SlugPage />, [[["viewer"], { signedIn: true, member: true, admin: false }], [["directory"], []], [["events"], []]]);
     expect(screen.getByText(/Nothing on the Astoria calendar yet/)).toBeTruthy();
   });
 });

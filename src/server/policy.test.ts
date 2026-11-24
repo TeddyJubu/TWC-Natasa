@@ -9,7 +9,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { openDb, type DB } from "./db";
 import type { Ctx } from "./context.server";
 import { mediaFile, serveMedia, writeMedia } from "./media";
-import { directory, intros, memberPage, ownProfile, publicProfiles, removeLogo, saveProfile, uploadImage } from "@/features/members/members.server";
+import { directory, intros, memberPage, ownProfile, removeLogo, saveProfile, uploadImage } from "@/features/members/members.server";
 import { viewer } from "@/features/auth/viewer.server";
 import { bookHeadshot } from "@/features/events/events.server";
 import {
@@ -196,8 +196,9 @@ describe("access rules (ported from the RLS checks)", () => {
   });
   it("hidden member's old portraits are hidden", () => expect(sees(B, `${E}/avatar-old.png`)).toBe(false));
 
-  // ---------- Public profiles (0002) ----------
-  // F: approved + listed, turns on her public profile herself. G: pending with the switch on.
+  // ---------- Members-only directory (owner decision, 2026-11-24; was 0002's public profiles) ----------
+  // F: approved + listed, with the old public switch on. G: pending with the switch on. The switch no longer
+  // publishes anything: no member's card, page or portrait reaches anyone who isn't an approved member or admin.
   it("fixture: public member is approved", () => {
     addUser(F, "public@x.test");
     addUser(G, "pendingpublic@x.test");
@@ -208,40 +209,26 @@ describe("access rules (ported from the RLS checks)", () => {
     allFiles.push(`${F}/avatar-1.png`, `${G}/avatar-1.png`);
     expect(status(F)).toBe("approved");
   });
-  it("member can switch on her public profile", () => expect(saveProfile(as(F), { public_profile: true }).public_profile).toBe(true));
+  it("member can still store the old public switch", () => expect(saveProfile(as(F), { public_profile: true }).public_profile).toBe(true));
   it("pending member can set the switch", () =>
     expect(saveProfile(as(G), { directory_visible: true, public_profile: true }).public_profile).toBe(true));
-  it("public_profiles() exposes no id column", () => {
-    const cards = publicProfiles(anon());
-    expect(cards.map((c) => c.id)).toEqual([`catalogue-${get<{ n: number }>("select catalogue_number as n from profiles where id = ?", F).n}`]);
-  });
-  it("public cards carry no uuid anywhere, only an opaque portrait URL", () => {
-    const json = JSON.stringify(publicProfiles(anon()));
-    expect(json).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
-    const n = get<{ n: number }>("select catalogue_number as n from profiles where id = ?", F).n;
-    expect(publicProfiles(anon())[0].image).toBe(`/media/public/${n}/avatar`);
-    expect(serveMedia(db, null, `/media/public/${n}/avatar`).status).toBe(200);
-  });
-  it("anon can call public_profiles()", () => expect(() => publicProfiles(anon())).not.toThrow());
-  it("anon can evaluate the avatar policy helpers", () => expect(serveMedia(db, null, `/media/avatars/${F}/avatar-1.png`).status).toBe(200));
-  it("anon sees only public profiles", () => expect(publicProfiles(anon()).map((c) => c.name)).toEqual(["Pia"]));
-  // Member pages (/members/:slug, by catalogue number): public profiles for anyone, listed ones for insiders only.
-  it("anon reads a public member page, with no uuid in it", () => {
-    const page = memberPage(anon(), cat(F));
-    expect(page?.member.name).toBe("Pia");
-    expect(page?.audience).toBe("visitor");
-    expect(JSON.stringify(page)).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
-  });
-  it("anon and pending members get no page for a listed, non-public member", () => {
+  it("signed out, no request returns a member profile", () => {
+    throwsAccess(() => directory(anon()));
+    throwsAccess(() => intros(anon(), null));
+    expect(memberPage(anon(), cat(F))).toBeNull();
     expect(memberPage(anon(), cat(B))).toBeNull();
-    expect(memberPage(as(G), cat(B))).toBeNull();
+    expect(serveMedia(db, null, `/media/public/${cat(F)}/avatar`).status).toBe(404);
+    expect(serveMedia(db, null, `/media/avatars/${F}/avatar-1.png`).status).toBe(404);
   });
-  it("a declined account is told so, and gains nothing: public pages only", () => {
+  it("pending and declined accounts get no directory and no member page", () => {
+    expect(directory(as(G))).toEqual([]);
+    expect(memberPage(as(G), cat(F))).toBeNull();
     const before = get<{ status: string }>("select status from profiles where id = ?", G).status;
     db.prepare("update profiles set status = 'declined' where id = ?").run(G);
     try {
       expect(viewer(as(G))).toEqual({ signedIn: true, member: false, admin: false, declined: true });
-      expect(memberPage(as(G), cat(F))?.audience).toBe("declined");
+      expect(directory(as(G))).toEqual([]);
+      expect(memberPage(as(G), cat(F))).toBeNull();
       expect(memberPage(as(G), cat(B))).toBeNull();
     } finally {
       db.prepare("update profiles set status = ? where id = ?").run(before, G);
@@ -249,9 +236,13 @@ describe("access rules (ported from the RLS checks)", () => {
     expect(viewer(as(G)).declined).toBe(false);
     expect(viewer(anon()).declined).toBe(false);
   });
-  it("members and admins read a listed, non-public member's page", () => {
-    expect(memberPage(as(F), cat(B))).toMatchObject({ member: { name: "Bea" }, isPublic: false, audience: "member" });
+  // Member pages (/members/:slug, by catalogue number): listed members, for insiders only.
+  it("members and admins read a listed member's page, keyed by catalogue number", () => {
+    expect(memberPage(as(F), cat(B))?.member.name).toBe("Bea");
     expect(memberPage(as(A), cat(B))?.member.name).toBe("Bea");
+    const page = memberPage(as(B), cat(F));
+    expect(page?.member.name).toBe("Pia");
+    expect(page?.member.id).toBe(`catalogue-${cat(F)}`);
   });
   it("nobody gets a page for an unlisted member", () => {
     expect(memberPage(as(B), cat(E))).toBeNull();
@@ -259,28 +250,20 @@ describe("access rules (ported from the RLS checks)", () => {
   });
   it("member page neighbors follow the same rule", () => {
     run("update profiles set neighborhood = 'Astoria' where id in (?, ?)", B, F);
-    expect(memberPage(anon(), cat(F))?.neighbors).toEqual([]);
     expect(memberPage(as(A), cat(F))?.neighbors.map((m) => m.name)).toEqual(["Bea"]);
     run("update profiles set neighborhood = null where id in (?, ?)", B, F);
   });
-  it("anon sees only public portraits", () => expect(allFiles.filter((f) => sees(null, f))).toEqual([`${F}/avatar-1.png`]));
-  it("pending member sees public profiles, not herself", () => expect(publicProfiles(as(G)).map((c) => c.name)).toEqual(["Pia"]));
-  it("hiding from the directory leaves the public site", () => {
+  it("anon sees no portrait at all", () => expect(allFiles.filter((f) => sees(null, f))).toEqual([]));
+  it("hiding from the directory hides her portrait from members", () => {
     saveProfile(as(F), { directory_visible: false });
-    expect(publicProfiles(anon())).toEqual([]);
+    expect(sees(B, `${F}/avatar-1.png`)).toBe(false);
   });
-  it("hiding from the directory hides the public portrait", () => {
-    expect(allFiles.filter((f) => sees(null, f))).toEqual([]);
-    const n = get<{ n: number }>("select catalogue_number as n from profiles where id = ?", F).n;
-    expect(serveMedia(db, null, `/media/public/${n}/avatar`).status).toBe(404);
-  });
-  it("switching off public_profile leaves the public site", () => {
+  it("switching the old public switch off changes nothing for members", () => {
     saveProfile(as(F), { directory_visible: true, public_profile: false });
-    expect(publicProfiles(anon())).toEqual([]);
+    expect(allFiles.filter((f) => sees(null, f))).toEqual([]);
   });
-  it("switching off public_profile hides the portrait", () => expect(allFiles.filter((f) => sees(null, f))).toEqual([]));
-  it("member still sees a listed, non-public portrait", () => expect(sees(B, `${F}/avatar-1.png`)).toBe(true));
-  it("pending member cannot see a listed, non-public portrait", () => expect(sees(G, `${F}/avatar-1.png`)).toBe(false));
+  it("member still sees a listed portrait", () => expect(sees(B, `${F}/avatar-1.png`)).toBe(true));
+  it("pending member cannot see a listed portrait", () => expect(sees(G, `${F}/avatar-1.png`)).toBe(false));
   it("admin still sees a pending applicant's portrait", () => expect(sees(A, `${G}/avatar-1.png`)).toBe(true));
 
   // Applicant signs up with the anonymous application's email: linked only after confirmation.

@@ -110,7 +110,7 @@ describe("security headers", () => {
       const res = responseOf(await run(securityHeadersMiddleware, new Request(`https://example.com${path}`), "router"));
       expect(res.headers.get("X-Robots-Tag"), path).toBe("noindex");
     }
-    for (const path of ["/", "/members", "/members/rosa-diaz-12", "/administer", "/feeds", "/accounts", "/faq"]) {
+    for (const path of ["/", "/membership", "/administer", "/feeds", "/accounts", "/faq"]) {
       expect(isSignedInPage(path), path).toBe(false);
       const res = responseOf(await run(securityHeadersMiddleware, new Request(`https://example.com${path}`), "router"));
       expect(res.headers.get("X-Robots-Tag"), path).toBeNull();
@@ -132,6 +132,13 @@ describe("security headers", () => {
   it("mark a private booking link noindex", async () => {
     const res = responseOf(await run(securityHeadersMiddleware, new Request("https://example.com/booking/abc?seat=s1"), "router"));
     expect(res.headers.get("X-Robots-Tag")).toBe("noindex");
+  });
+
+  it("mark the members-only member pages noindex", async () => {
+    for (const path of ["/members", "/members/rosa-diaz-12", "/Members/rosa-diaz-12"]) {
+      const res = responseOf(await run(securityHeadersMiddleware, new Request(`https://example.com${path}`), "router"));
+      expect(res.headers.get("X-Robots-Tag"), path).toBe("noindex");
+    }
   });
 
   it("keep a header a route already set", () => {

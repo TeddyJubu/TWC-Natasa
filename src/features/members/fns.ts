@@ -10,12 +10,7 @@ export const directoryFn = createServerFn().handler(async () => {
   return serve(m.directory);
 });
 
-export const publicProfilesFn = createServerFn().handler(async () => {
-  const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("./members.server")]);
-  return serve(m.publicProfiles);
-});
-
-/** /members/:slug: a public read (the server decides who sees what); a slug without a catalogue number is null. */
+/** /members/:slug: members and admins only (the server checks); a slug without a catalogue number is null. */
 export const memberPageFn = createServerFn()
   .validator((input: unknown) => ({ slug: typeof input === "object" && input && typeof (input as { slug?: unknown }).slug === "string" ? (input as { slug: string }).slug : "" }))
   .handler(async ({ data }) => {

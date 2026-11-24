@@ -56,17 +56,17 @@ describe("siteSeo", () => {
   ];
 
   it("emits absolute canonical, og:url and og:image with its size, type and alt for a valid site URL", () => {
-    const { meta, links } = siteSeo("https://example.com/", "/members", image);
-    expect(links).toEqual([{ rel: "canonical", href: "https://example.com/members" }]);
-    expect(meta).toEqual([{ property: "og:url", content: "https://example.com/members" }, ...imageMeta("https://example.com/og-image.jpg")]);
+    const { meta, links } = siteSeo("https://example.com/", "/about", image);
+    expect(links).toEqual([{ rel: "canonical", href: "https://example.com/about" }]);
+    expect(meta).toEqual([{ property: "og:url", content: "https://example.com/about" }, ...imageMeta("https://example.com/og-image.jpg")]);
   });
 
   it("gives canonical and og:url only to indexable public pages", () => {
-    for (const path of ["/", "/members", "/join", "/auth"]) {
+    for (const path of ["/", "/about", "/join", "/auth"]) {
       expect(siteSeo("https://example.com", path, image).links, path).toHaveLength(1);
     }
     // noindex, members-only, one-off and preview pages: no self-referential canonical (og:image stays).
-    for (const path of ["/colors", "/typography", "/components", "/admin", "/account", "/reset-password"]) {
+    for (const path of ["/colors", "/typography", "/components", "/admin", "/account", "/directory", "/members", "/members/rosa-diaz-12", "/reset-password"]) {
       const { meta, links } = siteSeo("https://example.com", path, image);
       expect(links, path).toEqual([]);
       expect(meta, path).toEqual(imageMeta("https://example.com/og-image.jpg"));
@@ -78,8 +78,8 @@ describe("siteSeo", () => {
   });
 
   it("emits nothing when the site URL is missing or invalid", () => {
-    expect(siteSeo(undefined, "/members", image)).toEqual({ meta: [], links: [] });
-    expect(siteSeo("example.com", "/members", image)).toEqual({ meta: [], links: [] });
+    expect(siteSeo(undefined, "/about", image)).toEqual({ meta: [], links: [] });
+    expect(siteSeo("example.com", "/about", image)).toEqual({ meta: [], links: [] });
   });
 
   it("omits canonical and og:url without a current path", () => {

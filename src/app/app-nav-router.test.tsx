@@ -28,7 +28,7 @@ function makeRouter() {
   });
   const page = (path: string, text: string) =>
     createRoute({ getParentRoute: () => rootRoute, path, component: () => <p>{text}</p> });
-  const routeTree = rootRoute.addChildren([page("/", "Home page"), page("/members", "Members page"), page("/join", "Join page")]);
+  const routeTree = rootRoute.addChildren([page("/", "Home page"), page("/events", "Events page"), page("/join", "Join page")]);
   return createRouter({ routeTree, history: createMemoryHistory({ initialEntries: ["/"] }) });
 }
 
@@ -61,21 +61,21 @@ async function renderApp() {
 describe("AppNav and AppFooter under a real router", () => {
   it("an internal nav link changes the router location client-side", async () => {
     const router = await renderApp();
-    const link = within(screen.getByRole("navigation", { name: "Main" })).getByRole("link", { name: "Members" });
-    expect(link.getAttribute("href")).toBe("/members");
+    const link = within(screen.getByRole("navigation", { name: "Main" })).getByRole("link", { name: "Events" });
+    expect(link.getAttribute("href")).toBe("/events");
     // The click is handled by the router, not by the browser.
     expect(await click(link)).toBe(true);
-    await waitFor(() => expect(router.state.location.pathname).toBe("/members"));
-    expect(await screen.findByText("Members page")).toBeTruthy();
+    await waitFor(() => expect(router.state.location.pathname).toBe("/events"));
+    expect(await screen.findByText("Events page")).toBeTruthy();
   });
 
   it("the active page's nav link carries aria-current, the home logo only on /", async () => {
     const router = await renderApp();
     const home = () => screen.getAllByRole("link", { name: "The Women’s Collective home" })[0];
     expect(home().getAttribute("aria-current")).toBe("page");
-    await router.navigate({ to: "/members" });
-    await screen.findByText("Members page");
-    expect(within(screen.getByRole("navigation", { name: "Main" })).getByRole("link", { name: "Members" }).getAttribute("aria-current")).toBe("page");
+    await router.navigate({ to: "/events" });
+    await screen.findByText("Events page");
+    expect(within(screen.getByRole("navigation", { name: "Main" })).getByRole("link", { name: "Events" }).getAttribute("aria-current")).toBe("page");
     expect(home().getAttribute("aria-current")).toBeNull();
   });
 

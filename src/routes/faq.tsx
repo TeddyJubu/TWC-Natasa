@@ -23,7 +23,7 @@ const FAQ_GROUPS: Group[] = [
     id: "profile",
     title: "Your profile",
     items: [
-      { q: "Who can see my profile?", a: "You decide. After you’re approved, turn on “Show me in the member directory” and other members can see your card. Turn on “Show my profile on the public website” as well and anyone can see it on our homepage and member page. Until you turn those on, only you and the admins can see your card." },
+      { q: "Who can see my profile?", a: "Only members. After you’re approved, turn on “Show me in the member directory” and other members can see your card. The directory is for members only, so your card is never on the public website. Until you turn it on, only you and the admins can see your card." },
       { q: "When do I get my catalogue number?", a: "It’s assigned once you’re approved." },
       { q: "Can I change my card later?", a: "Any time, from your account page. Short and warm beats long and formal." },
     ],
@@ -32,7 +32,7 @@ const FAQ_GROUPS: Group[] = [
     id: "headshots",
     title: "Headshots",
     items: [
-      { q: "Do I need an official headshot?", a: "Only if you’re approved for the public member directory. Directory portraits come from a session with the collective’s official photographer, so every card feels consistent. Personal or previously taken headshots cannot be used." },
+      { q: "Do I need an official headshot?", a: "Only if you’re approved for the member directory. Directory portraits come from a session with the collective’s official photographer, so every card feels consistent. Personal or previously taken headshots cannot be used." },
     ],
   },
   {

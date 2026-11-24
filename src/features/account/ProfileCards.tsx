@@ -1,13 +1,11 @@
 import * as React from "react";
-import { Link } from "@tanstack/react-router";
 import { ConstellationLogo, cn, formatCatalogueNumber, SelectControl } from "@/index";
 import type { Neighborhood } from "@/features/neighborhoods/queries";
 import { pickerNames } from "@/features/neighborhoods/options";
 import type { Profile } from "@/features/members/queries";
-import { memberSlug } from "@/features/members/map";
 import { useRemoveLogo, useUploadLogo } from "@/features/members/mutations";
 import { fieldClass, ring } from "@/app/layout/app-classes";
-import { Icon, type IconName } from "@/app/layout/icons";
+import type { IconName } from "@/app/layout/icons";
 import { Toggle } from "@/app/layout/app-ui";
 import { EditButton, Field, Letter } from "@/app/layout/app-ui";
 import { PROFILE_FORM, errorMessage, fieldId, monthYear, type ProfileEditor } from "./helpers";
@@ -204,8 +202,9 @@ export function MembershipCard({ profile, children }: { profile: Profile; childr
 }
 
 /**
- * Directory and public-website switches; they mark the page unsaved like any other field. The subtitle says in one
- * plain sentence who can see her card with the switches as they stand, and a saved, live public page gets its link.
+ * The directory switch; it marks the page unsaved like any other field. The subtitle says in one plain sentence who
+ * can see her card with the switch as it stands. No public-website switch: the directory is members-only (owner
+ * decision, 2026-11-24), so the stored `public_profile` flag publishes nothing and is no longer offered.
  */
 export function VisibilityCard({ editor, profile }: { editor: ProfileEditor; profile: Profile }) {
   const { card, set } = editor;
@@ -216,14 +215,9 @@ export function VisibilityCard({ editor, profile }: { editor: ProfileEditor; pro
     ? "Only you and the collective’s admins can see your card."
     : !approved
       ? "Your card stays private until you’re welcomed in. Choices you make now are saved and take effect that day."
-      : listed && card.public_profile
-        ? "Anyone can see your card: members, and visitors to the public website."
-        : listed
-          ? "Only members of the collective can see your card."
-          : "Only you and the collective’s admins can see your card.";
-  const slug = approved && profile.directory_visible && profile.public_profile && profile.catalogue_number !== null
-    ? memberSlug({ name: profile.full_name, catalogueNumber: profile.catalogue_number })
-    : undefined;
+      : listed
+        ? "Only members of the collective can see your card."
+        : "Only you and the collective’s admins can see your card.";
   return (
     <Letter id="visibility" span={7} no={5} title="Visibility" subtitle={audience}>
       <div className="air-opts air-rule">
@@ -233,26 +227,9 @@ export function VisibilityCard({ editor, profile }: { editor: ProfileEditor; pro
           ? "The directory is for members, so your card isn’t listed."
           : approved ? "Signed-in members can find you and your card." : "Signed-in members can find you once you’re approved — if this is on then."}
         checked={listed}
-        // Switching the directory off also switches the public card off, so re-listing never republishes silently.
-        onCheckedChange={(on) => set(on ? { directory_visible: true } : { directory_visible: false, public_profile: false })}
-      />
-      <Toggle
-        label="Show my profile on the public website"
-        description={declined
-          ? "The public website shows members only, so your card isn’t published."
-          : `Anyone on the internet can see your name, portrait, work, neighborhood, bio and links, on our homepage and your public page.${listed ? "" : " Turn on the member directory first."}${approved ? "" : " Takes effect after approval, if this is still on."}`}
-        checked={listed && card.public_profile} disabled={!listed}
-        onCheckedChange={(on) => set({ public_profile: on })}
+        onCheckedChange={(on) => set({ directory_visible: on })}
       />
       </div>
-      {slug && (
-        <p className="air-mrow">
-          <span className="air-lbl">Your public page</span>
-          <Link to="/members/$slug" params={{ slug }} className={cn("air-link inline-flex items-center gap-1.5", ring)}>
-            /members/{slug}<Icon name="external-link" className="size-3.5" />
-          </Link>
-        </p>
-      )}
     </Letter>
   );
 }

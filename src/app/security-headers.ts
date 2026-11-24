@@ -68,8 +68,8 @@ export function withSecurityHeaders(response: Response): Response {
 const SIGNED_IN_PAGES = /^\/(account|directory|feed|admin)(\/|$)/i;
 export const isSignedInPage = (pathname: string) => SIGNED_IN_PAGES.test(pathname);
 
-// A manage link holds a private booking id: never indexed.
-const PRIVATE_PAGES = /^\/booking(\/|$)/i;
+// A manage link holds a private booking id, and member pages are members-only (owner decision, 2026-11-24): never indexed.
+const PRIVATE_PAGES = /^\/(booking|members)(\/|$)/i;
 
 /** A fresh base64 nonce: 128 random bits. */
 export function createNonce(): string {

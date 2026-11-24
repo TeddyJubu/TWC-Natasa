@@ -1,9 +1,9 @@
 // Server-only: profiles, the directory and member images. The access rules are the old RLS policies
-// (0001 members-only directory, 0002 public profiles, 0000/0001 self-only profile edits + protect_profile_fields).
+// (0001 members-only directory, 0000/0001 self-only profile edits + protect_profile_fields).
 import type { MemberProfile } from "@/index";
 import type { Ctx } from "@/server/context.server";
 import { tx } from "@/server/db";
-import { AccessError, isAdmin, isDeclined, isMember, requireSession } from "@/server/guard";
+import { AccessError, isAdmin, isMember, requireSession } from "@/server/guard";
 import { checkImage, mediaUrl, removeMedia, writeMedia } from "@/server/media";
 import { bad, isObject, str } from "@/server/validate";
 import { checkSize, fileBytes, readForm, respond } from "@/server/request";
@@ -35,7 +35,6 @@ const card = (row: ProfileRow, withLogo = false): MemberProfile =>
   toMemberProfile(row, { image: avatar(row.avatar_path), logo: withLogo ? avatar(row.business_logo_url) : undefined });
 
 const LISTED = "status = 'approved' and directory_visible = 1";
-const PUBLIC = `${LISTED} and public_profile = 1`;
 
 /** Approved, listed members, for approved members and admins only (public_directory()); others get an empty list. */
 export function directory({ db, actor }: Ctx): MemberProfile[] {
@@ -45,47 +44,25 @@ export function directory({ db, actor }: Ctx): MemberProfile[] {
   return rows.map((row) => card(row, true));
 }
 
-/**
- * Opted-in public cards (public_profiles(), §2.10): approved + listed + public, for anyone. No id leaves the
- * server: cards are keyed by catalogue number, and the portrait is /media/public/<catalogue number>/avatar.
- */
-export function publicProfiles({ db }: Ctx): MemberProfile[] {
-  const rows = db.prepare(`select * from profiles where ${PUBLIC} order by catalogue_number`).all() as ProfileRow[];
-  return rows.map(publicCard);
-}
-
-const publicCard = (row: ProfileRow): MemberProfile => ({
-  ...toMemberProfile(row, { image: row.avatar_path ? `/media/public/${row.catalogue_number}/avatar` : undefined }),
-  id: `catalogue-${row.catalogue_number}`,
-});
-
-/** Who is reading a member page: decides the call to action, never what the server returns beyond `scope`. */
-export type Audience = "visitor" | "pending" | "declined" | "member";
-export type MemberPage = { member: MemberProfile; neighbors: MemberProfile[]; isPublic: boolean; audience: Audience };
+/** A member page: always members-only (owner decision, 2026-11-24), so there is no audience left to tell apart. */
+export type MemberPage = { member: MemberProfile; neighbors: MemberProfile[] };
 const NEIGHBORS = 4;
 
 /**
- * /members/:slug, looked up by catalogue number. Anyone (signed out, pending) sees only public profiles, as
- * public_profiles() returns them; approved members and admins also see listed (directory-visible) members, as
- * directory() returns them. Anything else is null (the route's 404). Up to four neighbors from her neighborhood,
- * under the same rule. Cards carry no uuid id; insiders' image URLs are the ones the directory already gives them.
+ * /members/:slug, looked up by catalogue number: approved members and admins see listed (directory-visible) members,
+ * as directory() returns them; everyone else (signed out, pending, declined) gets null, the route's 404. Up to four
+ * neighbors from her neighborhood, under the same rule. Cards carry no uuid id, only the catalogue number.
  */
 export function memberPage({ db, actor }: Ctx, catalogueNumber: number): MemberPage | null {
-  const insider = !!actor && (isMember(db, actor.id) || isAdmin(db, actor.id));
-  const scope = insider ? LISTED : PUBLIC;
-  const row = db.prepare(`select * from profiles where ${scope} and catalogue_number = ?`).get(catalogueNumber) as ProfileRow | undefined;
+  if (!actor || (!isMember(db, actor.id) && !isAdmin(db, actor.id))) return null;
+  const row = db.prepare(`select * from profiles where ${LISTED} and catalogue_number = ?`).get(catalogueNumber) as ProfileRow | undefined;
   if (!row) return null;
-  const show = (r: ProfileRow) => (insider ? { ...card(r, true), id: `catalogue-${r.catalogue_number}` } : publicCard(r));
+  const show = (r: ProfileRow) => ({ ...card(r, true), id: `catalogue-${r.catalogue_number}` });
   const neighbors = row.neighborhood
-    ? db.prepare(`select * from profiles where ${scope} and neighborhood = ? and id <> ? order by catalogue_number limit ${NEIGHBORS}`)
+    ? db.prepare(`select * from profiles where ${LISTED} and neighborhood = ? and id <> ? order by catalogue_number limit ${NEIGHBORS}`)
       .all(row.neighborhood, row.id) as ProfileRow[]
     : [];
-  return {
-    member: show(row),
-    neighbors: neighbors.map(show),
-    isPublic: row.public_profile === 1,
-    audience: insider ? "member" : !actor ? "visitor" : isDeclined(db, actor.id) ? "declined" : "pending",
-  };
+  return { member: show(row), neighbors: neighbors.map(show) };
 }
 
 /**

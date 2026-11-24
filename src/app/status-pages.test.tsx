@@ -20,12 +20,12 @@ afterEach(() => {
 });
 
 describe("NotFound", () => {
-  it("renders one h1, a link home and quick links to Members, Join and Sign in", () => {
+  it("renders one h1, a link home and quick links to Events, Join and Sign in", () => {
     renderWithQueries(<NotFound />);
     expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("We couldn’t find that page.");
     expect(screen.getByRole("link", { name: /back to home/i }).getAttribute("href")).toBe("/");
     const quick = within(screen.getByRole("navigation", { name: "Try instead" })).getAllByRole("link");
-    expect(quick.map((a) => [a.textContent, a.getAttribute("href")])).toEqual([["Members", "/members"], ["Join", "/join"], ["Sign in", "/account"]]);
+    expect(quick.map((a) => [a.textContent, a.getAttribute("href")])).toEqual([["Events", "/events"], ["Join", "/join"], ["Sign in", "/account"]]);
   });
 });
 

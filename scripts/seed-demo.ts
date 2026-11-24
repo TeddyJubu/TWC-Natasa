@@ -1,7 +1,8 @@
 /**
  * The private preview's demo community: exactly 100 made-up members ("… (Demo)", demo-NNN@demo.twc.invalid) with
  * stock portraits, newsfeed posts, photos, loves, replies and applications (src/server/demo-seed.ts). Demo members
- * are public on /members, so remove them before SITE_PIN is lifted (README "Demo data"). Runs on Node:
+ * share one known password (anyone could sign in and read the members-only directory), so remove them before
+ * SITE_PIN is lifted (README "Demo data"). Runs on Node:
  *
  *   node --experimental-strip-types scripts/seed-demo.ts [--db <twc.db>] [--cache <dir>] [--password <pw>]
  *        [--dry-run] [--remove | --reseed | --check] [--confirm] [--offline]

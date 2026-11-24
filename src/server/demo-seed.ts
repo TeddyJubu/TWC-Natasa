@@ -3,8 +3,9 @@
 // newsfeed posts with photos, loves, replies and applications. The email domain is the only marker and the only key
 // removal uses, so a real row is never read for writing, updated or deleted: every write is an insert of a new demo
 // id, or an update/delete filtered to demo ids. It never creates an admin role, admin actions, newsletter subscribers,
-// inbox messages or legacy members, and never sends mail or calls Beehiiv. Demo members are public (/members, the
-// sitemap, /media/public), so they must be removed before SITE_PIN is lifted (AGENTS.md, README "Demo data").
+// inbox messages or legacy members, and never sends mail or calls Beehiiv. Demo members share one known password, so
+// anyone could sign in as one and read the members-only directory: they must be removed before SITE_PIN is lifted
+// (AGENTS.md, README "Demo data").
 // Relative `.ts` imports only, so the script runs it under plain Node.
 import { randomUUID } from "node:crypto";
 import { existsSync, readFileSync, rmSync } from "node:fs";

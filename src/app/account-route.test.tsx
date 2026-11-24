@@ -259,68 +259,42 @@ describe("/account", () => {
     });
   });
 
-  describe("public profile switch", () => {
-    const publicSwitch = () => screen.getByRole("switch", { name: /show my profile on the public website/i }) as HTMLButtonElement;
+  // The directory is members-only (owner decision, 2026-11-24): there is no public-website switch any more.
+  describe("visibility", () => {
     const directorySwitch = () => screen.getByRole("switch", { name: /^show me in the member directory/i }) as HTMLButtonElement;
+    const visibility = () => screen.getByRole("region", { name: "Visibility" });
 
-    it("says plainly that anyone on the internet can see the card", () => {
-      renderAccount();
-      expect(publicSwitch().closest("label")?.textContent).toMatch(/anyone on the internet/i);
+    it("offers only the member directory switch, and no public page or link", () => {
+      renderAccount({ directory_visible: true, public_profile: true });
+      expect(within(visibility()).getAllByRole("switch")).toEqual([directorySwitch()]);
+      expect(screen.queryByText(/public website/i)).toBeNull();
+      expect(within(visibility()).queryByRole("link")).toBeNull();
     });
 
-    it("says in one sentence who can see her card, and links her public page once it is live", () => {
-      const visibility = () => screen.getByRole("region", { name: "Visibility" });
+    it("says in one sentence who can see her card", () => {
       renderAccount({ directory_visible: false });
       expect(within(visibility()).getByText("Only you and the collective’s admins can see your card.")).toBeTruthy();
       fireEvent.click(directorySwitch());
       expect(within(visibility()).getByText("Only members of the collective can see your card.")).toBeTruthy();
-      fireEvent.click(publicSwitch());
-      expect(within(visibility()).getByText(/^Anyone can see your card/)).toBeTruthy();
-      // Unsaved, so nothing is live yet: no link.
-      expect(within(visibility()).queryByRole("link")).toBeNull();
       cleanup();
       renderAccount({ directory_visible: true, public_profile: true });
-      expect(within(visibility()).getByRole("link", { name: "/members/rosa-diaz-27" })).toBeTruthy();
+      expect(within(visibility()).getByText("Only members of the collective can see your card.")).toBeTruthy();
       cleanup();
       renderAccount({ status: "pending", catalogue_number: null, member_since: null });
       expect(within(visibility()).getByText(/stays private until you’re welcomed in/)).toBeTruthy();
       expect(within(visibility()).getByText(/choices you make now are saved/i)).toBeTruthy();
     });
 
-    it("is disabled until the directory switch is on", () => {
+    it("saves only the directory switch", async () => {
       renderAccount({ directory_visible: false });
-      expect(publicSwitch().disabled).toBe(true);
       fireEvent.click(directorySwitch());
-      expect(publicSwitch().disabled).toBe(false);
-    });
-
-    it("is saved with the profile", async () => {
-      renderAccount({ directory_visible: true });
-      fireEvent.click(publicSwitch());
-      fake.results = [{ ...base, directory_visible: true, public_profile: true }];
+      fake.results = [{ ...base, directory_visible: true }];
       fireEvent.click(save());
-      // Only what changed is sent: the directory was already on.
-      await waitFor(() => expect(fake.calls[0]).toEqual(["saveProfileFn", { public_profile: true }]));
-    });
-
-    it("switching the directory off un-publishes on save, and re-listing doesn't republish", async () => {
-      renderAccount({ directory_visible: true, public_profile: true });
-      expect(publicSwitch().getAttribute("aria-checked")).toBe("true");
-      fireEvent.click(directorySwitch());
-      expect(publicSwitch().getAttribute("aria-checked")).toBe("false");
-      fireEvent.click(directorySwitch());
-      expect(publicSwitch().getAttribute("aria-checked")).toBe("false");
-      fireEvent.click(directorySwitch());
-      fake.results = [{ ...base }];
-      fireEvent.click(save());
-      await waitFor(() =>
-        expect(fake.calls).toContainEqual(["saveProfileFn", expect.objectContaining({ directory_visible: false, public_profile: false })]),
-      );
+      await waitFor(() => expect(fake.calls[0]).toEqual(["saveProfileFn", { directory_visible: true }]));
     });
 
     it("tells pending members a saved choice takes effect after approval", () => {
       renderAccount({ status: "pending", directory_visible: true });
-      expect(publicSwitch().closest("label")?.textContent).toMatch(/takes effect after approval/i);
       expect(directorySwitch().closest("label")?.textContent).toMatch(/if this is on then/i);
     });
   });
@@ -340,8 +314,8 @@ describe("/account", () => {
 
   it.each([
     { directory_visible: true, public_profile: false },
-    { directory_visible: false, public_profile: true },
-  ])("hides You’re in once the card is listed or public ($directory_visible/$public_profile)", (visibility) => {
+    { directory_visible: true, public_profile: true },
+  ])("hides You’re in once the card is listed ($directory_visible/$public_profile)", (visibility) => {
     localStorage.removeItem("twc-youre-in:v1:u1");
     renderAccount(visibility);
     expect(screen.queryByRole("region", { name: "You’re in" })).toBeNull();

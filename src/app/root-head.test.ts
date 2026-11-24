@@ -29,7 +29,7 @@ describe("root head", () => {
 
   it("emits no canonical, og:url or og:image when VITE_SITE_URL is unset", () => {
     vi.stubEnv("VITE_SITE_URL", "");
-    const { meta, links } = head(["/", "/members"]);
+    const { meta, links } = head(["/", "/about"]);
     expect(links.find((l) => l.rel === "canonical")).toBeUndefined();
     expect(metaContent(meta, "og:url")).toBeUndefined();
     expect(metaContent(meta, "og:image")).toBeUndefined();
@@ -37,7 +37,7 @@ describe("root head", () => {
 
   it("emits nothing when VITE_SITE_URL is invalid", () => {
     vi.stubEnv("VITE_SITE_URL", "thewomenscollective.nyc");
-    const { meta, links } = head(["/", "/members"]);
+    const { meta, links } = head(["/", "/about"]);
     expect(links.find((l) => l.rel === "canonical")).toBeUndefined();
     expect(metaContent(meta, "og:url")).toBeUndefined();
     expect(metaContent(meta, "og:image")).toBeUndefined();
@@ -45,9 +45,9 @@ describe("root head", () => {
 
   it("emits absolute canonical, og:url and og:image for the current path when VITE_SITE_URL is set", () => {
     vi.stubEnv("VITE_SITE_URL", "https://example.com/");
-    const { meta, links } = head(["/", "/members"]);
-    expect(links.find((l) => l.rel === "canonical")?.href).toBe("https://example.com/members");
-    expect(metaContent(meta, "og:url")).toBe("https://example.com/members");
+    const { meta, links } = head(["/", "/about"]);
+    expect(links.find((l) => l.rel === "canonical")?.href).toBe("https://example.com/about");
+    expect(metaContent(meta, "og:url")).toBe("https://example.com/about");
     const image = metaContent(meta, "og:image");
     expect(image).toBe("https://example.com/og-image.jpg");
     expect(metaContent(meta, "og:image:width")).toBe("1200");

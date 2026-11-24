@@ -28,10 +28,10 @@ export function currentPathname(matches: readonly HeadMatch[]): string | undefin
 }
 
 // ponytail: allow-list, so a new public page only lacks a canonical until it's added here — never gets a
-// wrong one. noindex (showcase, /admin), members-only (/account), one-off and preview pages stay out.
-// /sitemap.xml (src/server/sitemap.ts) lists these plus active neighborhoods and public member pages.
+// wrong one. noindex (showcase, /admin), members-only (/account, /directory, /members/*), one-off and preview pages
+// stay out. /sitemap.xml (src/server/sitemap.ts) lists these plus active neighborhoods and public event pages.
 export const INDEXED = new Set([
-  "/", "/about", "/members", "/events", "/neighborhoods", "/faq", "/fellowship", "/partnerships", "/contact", "/join", "/auth",
+  "/", "/about", "/events", "/neighborhoods", "/faq", "/fellowship", "/partnerships", "/contact", "/join", "/auth",
 ]);
 
 const absolute = (site: string, path: string) => site + (path.startsWith("/") ? path : `/${path}`);

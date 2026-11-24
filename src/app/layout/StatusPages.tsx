@@ -6,7 +6,7 @@ import { AppFooter, AppNav, AppPage } from "./AppLayout";
 import { Icon, Scallop } from "./twc";
 
 const QUICK = [
-  { label: "Members", to: "/members" },
+  { label: "Events", to: "/events" },
   { label: "Join", to: "/join" },
   { label: "Sign in", to: "/account" },
 ] as const;

@@ -5,14 +5,14 @@ import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import { Scallop } from "@/app/layout/twc";
 import { memberPageFn } from "@/features/members/fns";
 import { memberSlug } from "@/features/members/queries";
-import { breadcrumbLd, canonicalTags, jsonLdScript, parseSiteUrl } from "@/app/seo";
 import { useNeighborhoods } from "@/features/neighborhoods/queries";
 import { toneFor } from "@/features/neighborhoods/tone";
 
 /**
- * /members/:slug ("rosa-diaz-12"). The server decides who sees what (memberPage): a public profile for anyone,
- * a listed member's page for approved members and admins only, and null (404) for everything else. Signing in
- * or out re-runs the loader (the root invalidates the router), so the page follows the session.
+ * /members/:slug ("rosa-diaz-12"): members-only (owner decision, 2026-11-24). The server decides (memberPage): a
+ * listed member's page for approved members and admins, and null (404) for everyone else, so a visitor's HTML never
+ * carries a member. Signing in or out re-runs the loader (the root invalidates the router), so the page follows the
+ * session. Never for search engines: always noindex, no canonical and no structured data.
  */
 export const Route = createFileRoute("/members_/$slug")({
   loader: async ({ params }) => {
@@ -24,46 +24,16 @@ export const Route = createFileRoute("/members_/$slug")({
     return page;
   },
   head: ({ loaderData }) => {
-    if (!loaderData) return {};
-    const { member, isPublic } = loaderData;
+    if (!loaderData) return { meta: [{ name: "robots", content: "noindex" }] };
+    const { member } = loaderData;
     const title = `${member.name} — The Women’s Collective`;
     const description = [member.role && member.business ? `${member.role} at ${member.business}` : member.role || member.business, member.neighborhood]
       .filter(Boolean).join(", ") || "A member of The Women’s Collective.";
-    // Only a public page gets a canonical and structured data; a members-only one stays noindex without them.
-    const raw = import.meta.env.VITE_SITE_URL as string | undefined;
-    const site = parseSiteUrl(raw);
-    const path = `/members/${memberSlug(member)}`;
-    const canonical = isPublic ? canonicalTags(raw, path) : { meta: [], links: [] };
-    // Only facts she published on her card; a missing one is left out, never filled in.
-    const person = {
-      "@type": "Person",
-      name: member.name,
-      ...(member.role ? { jobTitle: member.role } : {}),
-      ...(member.business ? { worksFor: { "@type": "Organization", name: member.business } } : {}),
-      ...(member.neighborhood ? { homeLocation: { "@type": "Place", name: member.neighborhood } } : {}),
-    };
-    const scripts = isPublic && site
-      ? [jsonLdScript({
-          "@context": "https://schema.org",
-          "@graph": [
-            { "@type": "ProfilePage", url: site + path, mainEntity: person },
-            breadcrumbLd(site, [["Home", "/"], ["Members", "/members"], [member.name, path]]),
-          ],
-        })]
-      : [];
     return {
-      links: canonical.links,
-      scripts,
       meta: [
         { title },
         { name: "description", content: description },
-        { property: "og:title", content: title },
-        { property: "og:description", content: description },
-        { property: "og:type", content: "profile" },
-        { name: "twitter:card", content: "summary_large_image" },
-        // A members-only page (listed, not public) is never for search engines.
-        ...(isPublic ? [] : [{ name: "robots", content: "noindex" }]),
-        ...canonical.meta,
+        { name: "robots", content: "noindex" },
       ],
     };
   },
@@ -73,7 +43,7 @@ export const Route = createFileRoute("/members_/$slug")({
 const safeHref = (url?: string) => (url && /^https?:\/\/\S+$/i.test(url.trim()) ? url.trim() : undefined);
 
 function MemberPage() {
-  const { member, neighbors, audience } = Route.useLoaderData();
+  const { member, neighbors } = Route.useLoaderData();
   const { data: hoodList = [] } = useNeighborhoods();
   const tone = toneFor(member.neighborhood, hoodList);
   const hood = hoodList.find((n) => n.name === member.neighborhood);
@@ -86,7 +56,7 @@ function MemberPage() {
       <main id="main" tabIndex={-1} className="outline-none">
         <nav aria-label="Breadcrumb" className="twc-wrap pt-7 font-fragment text-xs uppercase leading-4 tracking-[1px] text-sb-muted">
           <ol className="flex flex-wrap gap-1.5">
-            <li><Link to="/members" className="twc-link text-sb-blue-ink">Members</Link></li>
+            <li><Link to="/directory" className="twc-link text-sb-blue-ink">Directory</Link></li>
             <li aria-current="page"><span aria-hidden>/ </span>{member.name}</li>
           </ol>
         </nav>
@@ -157,18 +127,7 @@ function MemberPage() {
               <h2 className="twc-h3">Want an introduction?</h2>
               <p className="max-w-[560px] text-[17px]">Members can ask us to connect them with {first} directly. We’ll make the intro by email.</p>
             </div>
-            {audience === "member" ? (
-              <Link to="/contact" className="twc-btn">Ask for an introduction <span className="twc-arrow" aria-hidden>→</span></Link>
-            ) : audience === "pending" ? (
-              <p className="max-w-[320px] text-[17px]">Introductions open once you’re welcomed in.</p>
-            ) : audience === "declined" ? (
-              <div className="flex max-w-[320px] flex-col items-start gap-3 text-[17px]">
-                <p>Introductions are for members, and your application wasn’t approved.</p>
-                <Link to="/contact" className="twc-btn">Contact us <span className="twc-arrow" aria-hidden>→</span></Link>
-              </div>
-            ) : (
-              <Link to="/auth" className="twc-btn">Sign in to ask for an intro <span className="twc-arrow" aria-hidden>→</span></Link>
-            )}
+            <Link to="/contact" className="twc-btn">Ask for an introduction <span className="twc-arrow" aria-hidden>→</span></Link>
           </div>
         </section>
         <Scallop from="#edd22e" to="#fcfcfa" />

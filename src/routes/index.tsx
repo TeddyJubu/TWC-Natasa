@@ -1,8 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
 import { useState, type CSSProperties } from "react";
-import { ConstellationLogo, cn, type MemberProfile } from "@/index";
-import { loadPublicProfiles, publicProfilesQuery } from "@/features/members/queries";
+import { ConstellationLogo, cn } from "@/index";
 import { NEIGHBORHOOD_SEED, useNeighborhoods, type Neighborhood } from "@/features/neighborhoods/queries";
 import heroRock from "@/assets/photography/home/hero-rock.webp";
 import queensPolaroid from "@/assets/photography/home/queens-polaroid.webp";
@@ -19,8 +17,6 @@ import caveatUrl from "@/assets/fonts/home/caveat-400.woff2?url";
 import { jsonLdScript, organizationLd, parseSiteUrl } from "@/app/seo";
 
 export const Route = createFileRoute("/")({
-  // The portrait row's public cards, so the server renders it.
-  loader: ({ context }) => loadPublicProfiles(context.queryClient),
   head: () => {
     // Absolute URLs only: without a valid VITE_SITE_URL there is no structured data at all.
     const site = parseSiteUrl(import.meta.env.VITE_SITE_URL as string | undefined);
@@ -138,7 +134,6 @@ function HomePage() {
         <NorthBrooklyn />
         <Ribbons />
         <WhoYoullMeet />
-        <MeetTheMembers />
         <Bricklayer />
         <Scallop from="#f3f0e8" to="#edd22e" />
         <Constellation />
@@ -345,45 +340,6 @@ function WhoYoullMeet() {
   );
 }
 
-// Board rhythm for up to five polaroids: alternating tilt, staggered drop on the single desktop row.
-const TILTS = ["-rotate-5", "rotate-3 lg:mt-7", "-rotate-2 lg:mt-11", "rotate-4 lg:mt-7", "-rotate-4"];
-
-function MeetTheMembers() {
-  // Only members who opted in (§2.10), and only those with a portrait: never a stand-in, never demo people.
-  // Loading, empty or failed: the row is left out and the heading and directory link stand alone.
-  const portraits = (useQuery({ ...publicProfilesQuery, initialData: Route.useLoaderData() }).data ?? [])
-    .filter((m): m is MemberProfile & { image: string } => !!m.image)
-    .slice(0, TILTS.length);
-  return (
-    <section aria-labelledby="members-title" className={cn(wrap, "flex flex-col items-center gap-8 pb-[72px] text-center lg:pb-28")}>
-      <div className="flex flex-col items-center gap-2.5">
-        <p className={cn(script, "text-sb-blue-ink")}>meet the members</p>
-        <h2 id="members-title" className={cn(h2, "motion-scroll-reveal")}>Women doing remarkable work nearby.</h2>
-        <p className="max-w-[560px] font-sans text-[17px] leading-[1.6] text-sb-muted">Discover the people, practices, and ideas taking shape across North Brooklyn and Queens.</p>
-      </div>
-      {portraits.length > 0 && (
-        <ul className="flex flex-wrap justify-center gap-x-6 gap-y-7 px-2 pb-6 pt-3">
-          {portraits.map((m, i) => (
-            <li key={m.id} className="w-[146px] min-[400px]:w-[160px] sm:w-[180px] lg:w-[190px]">
-              <Polaroid
-                src={m.image}
-                alt={m.imageAlt ?? `Portrait of ${m.name}`}
-                caption={[m.name.split(" ")[0], m.neighborhood].filter(Boolean).join(", ")}
-                className={cn("gap-1.5 bg-sb-paper p-2.5 pb-3 lg:p-3 lg:pb-4", lift, TILTS[i])}
-                photoClass="aspect-[4/5]"
-                captionClass="text-center text-[22px] text-sb-blue-ink lg:text-[24px]"
-              />
-            </li>
-          ))}
-        </ul>
-      )}
-      <Link to="/members" className={inkPill}>
-        View the member directory <Icon name="arrow" className="sb-arrow size-3.5" />
-      </Link>
-    </section>
-  );
-}
-
 function Brick({ title, text, tone }: (typeof BRICKS)[number]) {
   return (
     <article className={cn("sb-stamp motion-scroll-reveal flex min-h-[230px] flex-col justify-between gap-8 p-7 lg:min-h-[300px] xl:p-9", tone)}>
@@ -437,9 +393,6 @@ function Constellation() {
           <p className="motion-scroll-reveal max-w-[440px] font-sans text-[17px] leading-[1.6]">
             Each neighborhood has its own identity and color. The central star is the point where those neighborhoods and connections meet.
           </p>
-          <Link to="/members" className={cn(pill, "mt-1 px-[22px] py-3 text-[13px] ring-[1.5px] ring-sb-ink ring-inset hover:bg-sb-ink hover:text-sb-sun")}>
-            Meet the members <Icon name="arrow" className="sb-arrow size-3.5" />
-          </Link>
         </div>
 
         <div className="flex flex-col items-center gap-3 lg:gap-5">

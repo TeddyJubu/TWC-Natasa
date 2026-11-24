@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { MutationObserver, QueryClient, QueryObserver } from "@tanstack/react-query";
+import { MutationObserver, QueryClient } from "@tanstack/react-query";
 import { fake } from "@/test/fake-fns";
 
 vi.mock("@/features/members/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
@@ -11,7 +11,7 @@ vi.mock("@/app/resize-image", async (orig) => {
   return { ...real, resizeImage: (file: File, options: { maxEdge: number }) => (resize.fn ?? real.resizeImage)(file, options) };
 });
 
-import { directoryQuery, introsQuery, profileQuery, publicProfilesQuery, viewerQuery } from "./queries";
+import { directoryQuery, introsQuery, profileQuery, viewerQuery } from "./queries";
 import { removeLogo, saveProfile, saveProfileMutation, uploadAvatar, uploadAvatarMutation, uploadLogo } from "./mutations";
 
 const run = (q: { queryFn?: unknown }) => (q.queryFn as (c: unknown) => Promise<unknown>)({});
@@ -52,22 +52,10 @@ describe("viewerQuery", () => {
   });
 });
 
-describe("publicProfilesQuery", () => {
-  it("uses its own key, separate from the members-only directory", async () => {
-    expect(publicProfilesQuery.queryKey).toEqual(["public-profiles"]);
-    fake.results = [[{ ...card, id: "catalogue-3" }]];
-    expect(await run(publicProfilesQuery)).toEqual([{ ...card, id: "catalogue-3" }]);
-    expect(fake.calls).toEqual([["publicProfilesFn"]]);
-  });
-
-  it("stays fresh after the loader, so the page's query does not fetch again", async () => {
-    const qc = new QueryClient();
-    fake.results = [[card], [card]];
-    await qc.ensureQueryData(publicProfilesQuery);
-    const unsubscribe = new QueryObserver(qc, publicProfilesQuery).subscribe(() => {});
-    await new Promise((r) => setTimeout(r, 10));
-    unsubscribe();
-    expect(fake.calls).toEqual([["publicProfilesFn"]]);
+describe("member fns", () => {
+  it("offer no public profile list any more: the directory is members-only", async () => {
+    expect(Object.keys(await import("./queries"))).not.toContain("publicProfilesQuery");
+    expect(Object.keys(await import("./fns"))).not.toContain("publicProfilesFn");
   });
 });
 

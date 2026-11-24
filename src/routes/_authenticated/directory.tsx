@@ -12,7 +12,7 @@ import { AirShell } from "@/features/account/AirShell";
 import { matchesSearch } from "@/features/admin/format";
 import { useNeighborhoods } from "@/features/neighborhoods/queries";
 import { pickerNames } from "@/features/neighborhoods/options";
-import { directoryQuery, memberSlug, profileQuery, publicProfilesQuery, viewerQuery } from "@/features/members/queries";
+import { directoryQuery, memberSlug, profileQuery, viewerQuery } from "@/features/members/queries";
 
 export const Route = createFileRoute("/_authenticated/directory")({
   head: () => ({
@@ -34,11 +34,11 @@ function DirectoryPage() {
   const { user } = Route.useRouteContext();
   const own = useQuery(profileQuery(user.id)).data;
   const viewer = useQuery(viewerQuery);
-  // Admins read the directory like approved members; everyone else signed in sees the opted-in public cards.
+  // Admins read the directory like approved members. It is members-only (owner decision, 2026-11-24): anyone else
+  // signed in (pending, declined) gets a note and no cards — the server gives them none either.
   const member = viewer.data?.member === true || viewer.data?.admin === true;
-  const directory = useQuery({ ...directoryQuery, enabled: member });
-  const publicCards = useQuery({ ...publicProfilesQuery, enabled: viewer.isSuccess && !member });
-  const list = member ? directory : publicCards;
+  const outsider = viewer.isSuccess && !member;
+  const list = useQuery({ ...directoryQuery, enabled: member });
   const all = list.data ?? [];
   const { data: hoodList = [] } = useNeighborhoods();
 
@@ -79,7 +79,7 @@ function DirectoryPage() {
               <p className="air-lbl">Member directory · Sheet Nº {page + 1} of {pages}</p>
               <h1>Members</h1>
             </div>
-            <div>
+            {!outsider && <div>
               <p className="air-dir-lede">
                 <b>{all.length || "No"} {all.length === 1 ? "member" : "members"} across North Brooklyn and Queens</b>, printed one stamp at a time. Tear one out to meet her.
               </p>
@@ -88,20 +88,19 @@ function DirectoryPage() {
                 <div><dt>Neighborhoods</dt><dd>{hoods.length}</dd></div>
                 <div><dt>Printed</dt><dd>{printed}</dd></div>
               </dl>
-            </div>
+            </div>}
           </section>
 
-          {viewer.isSuccess && !member && (
+          {outsider ? (
             viewer.data.declined ? (
               <div className="twc-notice mt-8 text-sm">
-                <p>Showing members who share their profile publicly. The full directory is for members, and your application wasn’t approved.</p>
+                <p>The directory is for members, and your application wasn’t approved.</p>
                 <Link to="/contact" className={cn("air-link self-start", ring)}>Have a question? Contact us</Link>
               </div>
             ) : (
-              <p className="twc-notice mt-8 text-sm">Showing members who share their profile publicly. Your directory unlocks once you’re welcomed in.</p>
+              <p className="twc-notice mt-8 text-sm">The directory is for members. It unlocks once you’re welcomed in.</p>
             )
-          )}
-
+          ) : <>
           <div className="air-dir-bar">
             <div role="group" aria-label="Filter by neighborhood" className="flex flex-wrap gap-2">
               {["All", ...hoods].map((name) => (
@@ -158,6 +157,7 @@ function DirectoryPage() {
               </div>
             </div>
           )}
+          </>}
         </main>
       </AirShell>
     </AppPage>
