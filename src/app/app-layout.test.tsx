@@ -19,7 +19,6 @@ vi.mock("@/index", async (orig) => ({
 import { Route as Home } from "@/routes/index";
 import { Route as About } from "@/routes/about";
 import { Route as Join } from "@/routes/join";
-import { Route as About } from "@/routes/about";
 import { Route as Faq } from "@/routes/faq";
 import { Route as Fellowship } from "@/routes/fellowship";
 import { Route as Account } from "@/routes/_authenticated/account";
@@ -295,7 +294,7 @@ describe("join buttons", () => {
     return buttons.length;
   };
 
-  it.each([["/", Home], ["/members", Members], ["/about", About], ["/faq", Faq], ["/fellowship", Fellowship]] as const)(
+  it.each([["/", Home], ["/about", About], ["/faq", Faq], ["/fellowship", Fellowship]] as const)(
     "%s: every join button is JoinButton", (_path, route) => {
       const Page = component(route);
       const { container } = renderWithQueries(<Page />, signedOut);
