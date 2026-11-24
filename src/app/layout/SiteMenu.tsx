@@ -12,7 +12,7 @@ export default function SiteMenu({ open, onOpenChange, links, signedIn }: {
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent aria-label="Site menu" className="sb-menu bg-sb-lilac text-sb-ink">
+        <DialogContent aria-label="Site menu" className="sb-menu bg-sb-paper text-sb-ink">
           <div className="flex h-full flex-col overflow-y-auto px-5 py-4">
             <div className="flex items-center justify-between">
               <span className="font-script text-3xl">find your people</span>

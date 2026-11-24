@@ -221,10 +221,11 @@ describe("public scrapbook palette (--color-sb-* in styles.css)", () => {
     expect(contrast(blend("#ffffff", sb.olive, 0.9), sb.olive)).toBeLessThan(AA);
   });
 
-  it("the mobile menu's ordinals are decorative and their ink blend clears AA on lilac", () => {
+  it("the mobile menu is white, and its decorative ordinals' ink blend clears AA there", () => {
+    expect(menu).toMatch(/className="sb-menu bg-sb-paper text-sb-ink"/);
     const ordinal = menu.match(/<span aria-hidden="true" className="[^"]*text-sb-ink\/(\d+)">0\{i \+ 1\}<\/span>/);
     expect(ordinal).not.toBeNull();
     const alpha = Number(ordinal![1]) / 100;
-    expect(contrast(blend(sb.ink, sb.lilac, alpha), sb.lilac)).toBeGreaterThanOrEqual(AA);
+    expect(contrast(blend(sb.ink, sb.paper, alpha), sb.paper)).toBeGreaterThanOrEqual(AA);
   });
 });
