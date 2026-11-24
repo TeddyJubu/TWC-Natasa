@@ -11,6 +11,15 @@
         ],
         "createdAt": "2026-11-22T19:13:07.634Z",
         "reason": "agent triage: the three hits are full-width top airmail chevron stripes (.air::before, .air-savebar::before, .air-map-pop::before, inset 0 0 auto), not a bar down one side; they predate this branch"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "deploy/apex-coming-soon/index.html"
+        ],
+        "createdAt": "2026-11-24T12:20:19.699Z",
+        "reason": "Claude verified: .tile has padding clamp(.9rem,1.4vw,1.25rem); rendered screenshots at 1366px and 390px show ~18-20px inset on every side"
       }
     ]
   }
