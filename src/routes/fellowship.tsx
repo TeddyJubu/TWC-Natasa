@@ -3,7 +3,7 @@ import membersGathering from "@/assets/photography/site/members-gathering.webp";
 import { membersGatheringSizes, membersGatheringSrcSet } from "@/app/responsive-images";
 import gatheringSupper from "@/assets/photography/site/gathering-supper.webp";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
-import { Icon, Scallop, TwcRibbon } from "@/app/layout/twc";
+import { Icon, JoinButton, Scallop, TwcRibbon } from "@/app/layout/twc";
 import { useNeighborhoods } from "@/features/neighborhoods/queries";
 
 const TITLE = "The Fellowship — The Women’s Collective";
@@ -126,7 +126,7 @@ function FellowshipPage() {
               <div className="twc-ticket__meta"><span>Admit one</span><span>North Brooklyn &amp; Queens</span></div>
               <p className="text-base leading-[1.6] text-sb-paper/85">Tell us about your work and who you hope to meet. Prefer to see us first? Come to something.</p>
               <div className="flex flex-col gap-3">
-                <Link to="/join" className="twc-btn twc-btn--paper">Start your application <Icon name="arrow" className="twc-arrow" /></Link>
+                <JoinButton />
                 <Link to="/events" className="twc-btn twc-btn--outline !text-sb-paper">Come to something first <Icon name="arrow" className="twc-arrow" /></Link>
               </div>
             </div>

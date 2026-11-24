@@ -71,7 +71,7 @@ describe("/about", () => {
     expect(studio.getAttribute("rel")).toContain("noreferrer");
     expect(studio.textContent).toContain("(opens in a new tab)");
     expect(href(/Explore the neighborhoods/)).toBe("/neighborhoods");
-    expect(href(/Start your application/)).toBe("/join");
+    expect(href(/^Join us/)).toBe("/join");
   });
 
   it("draws the neighborhood dots from the data, skipping inactive ones", () => {
@@ -122,7 +122,7 @@ describe("/faq", () => {
     show(Faq);
     expect(href("get in touch")).toBe("/contact");
     expect(href(/Contact us/)).toBe("/contact");
-    expect(href(/Start your application/)).toBe("/join");
+    expect(href(/^Join us/)).toBe("/join");
   });
 
   it("publishes FAQPage JSON-LD that matches the rendered questions", () => {

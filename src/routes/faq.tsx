@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
-import { Icon } from "@/app/layout/twc";
+import { Icon, JoinButton } from "@/app/layout/twc";
 
 type Answer = { q: string; a: string; link?: { text: string; to: "/contact"; after: string } };
 type Group = { id: string; title: string; items: Answer[] };
@@ -144,7 +144,7 @@ function FaqPage() {
               <p className="text-base leading-[1.6] text-sb-paper/85">A real person reads every note.</p>
               <div className="flex flex-wrap gap-2.5">
                 <Link to="/contact" className="twc-btn twc-btn--sun">Contact us <Icon name="arrow" className="twc-arrow" /></Link>
-                <Link to="/join" className="twc-btn twc-btn--paper">Start your application <Icon name="arrow" className="twc-arrow" /></Link>
+                <JoinButton />
               </div>
             </div>
           </div>

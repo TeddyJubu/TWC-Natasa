@@ -3,7 +3,7 @@ import { Link, createFileRoute, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { MemberDialog, cn, initials, memberDialogActionClass, type MemberProfile } from "@/index";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
-import { Icon } from "@/app/layout/twc";
+import { Icon, JoinButton } from "@/app/layout/twc";
 import { loadPublicProfiles, memberSlug, publicProfilesQuery, viewerQuery } from "@/features/members/queries";
 import { eventsQuery } from "@/features/events/queries";
 import { eventWhen } from "@/features/events/format";
@@ -57,7 +57,6 @@ function NeighborhoodPage() {
   const openSlug = open ? memberSlug(open) : undefined;
   const colored = hasColor(hood.color);
   const style = colored ? ({ "--hood": hood.color } as React.CSSProperties) : undefined;
-  const area = areaOfPlace(hood.name);
   return (
     <AppPage>
       <AppNav />
@@ -74,7 +73,7 @@ function NeighborhoodPage() {
               <h2 className="font-display text-[clamp(1.75rem,4vw,2.25rem)] leading-[1.15]">Live or work in {hood.name}?</h2>
               <p className="text-[17px] text-sb-muted">There is room in this constellation. Introduce yourself and meet the neighbors already here.</p>
             </div>
-            <Link to="/join" search={area ? { area: area.id } : {}} className="twc-btn">Start your application <span className="twc-arrow" aria-hidden>→</span></Link>
+            <JoinButton />
           </div>
         </div>
         {/* Public cards carry only what the member chose to publish. */}

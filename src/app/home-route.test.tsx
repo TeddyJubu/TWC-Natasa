@@ -112,11 +112,11 @@ describe("/ (home) structure", () => {
     expect(meta.find((m) => m.name === "robots")).toBeUndefined();
   });
 
-  it("the mission block sits in #mission and invites people to /join", () => {
+  it("the mission block sits in #mission and its Join us button goes to /join", () => {
     renderWithQueries(<Page />, [[["public-profiles"], []]]);
     const mission = screen.getByRole("heading", { name: "Our mission", level: 3 }).closest("#mission")!;
     expect(mission).not.toBeNull();
-    expect(within(mission as HTMLElement).getByRole("link", { name: /Introduce yourself/ }).getAttribute("href")).toBe("/join");
+    expect(within(mission as HTMLElement).getByRole("link", { name: /^Join us/ }).getAttribute("href")).toBe("/join");
   });
 
   it("North Brooklyn follows the hero: labelled map, four neighbors, link to /neighborhoods", () => {

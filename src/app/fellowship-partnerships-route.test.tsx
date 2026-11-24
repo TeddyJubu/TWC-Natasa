@@ -71,7 +71,7 @@ describe.each([
 describe("/fellowship", () => {
   it("links to the application, the questions, and the contact page", () => {
     show(Fellowship);
-    expect(href("Start your application")).toBe("/join");
+    expect(href(/^Join us/)).toBe("/join");
     expect(href("Come to something first")).toBe("/events");
     expect(href("Read the questions")).toBe("/faq");
     expect(href("Write to us")).toBe("/contact");

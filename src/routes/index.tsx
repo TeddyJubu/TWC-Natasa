@@ -14,7 +14,7 @@ import nightSky from "@/assets/photography/home/night-sky.webp";
 import gathering from "@/assets/photography/event.jpg";
 import { eventPolaroidSizes, eventSizes, eventSrcSet, heroRockSizes, heroRockSrcSet } from "@/app/responsive-images";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
-import { Icon, Scallop } from "@/app/layout/twc";
+import { Icon, JoinButton, Scallop } from "@/app/layout/twc";
 import caveatUrl from "@/assets/fonts/home/caveat-400.woff2?url";
 import { jsonLdScript, organizationLd, parseSiteUrl } from "@/app/seo";
 
@@ -196,9 +196,7 @@ function Hero() {
           For women building businesses, careers, creative work, and real relationships close to home.
         </p>
         <div className="flex flex-col lg:contents">
-          <Link to="/join" className={cn(inkPill, "sb-rise shrink-0 self-start")} style={delay(HERO_BEATS.cta)}>
-            Start your application
-          </Link>
+          <JoinButton className="sb-rise shrink-0 self-start" style={delay(HERO_BEATS.cta)} />
           <p aria-hidden className="sb-write mr-4 mt-1 -rotate-6 self-end whitespace-nowrap font-script text-[28px] leading-[27px] text-sb-blue lg:mr-6 lg:mt-0 lg:self-auto lg:text-4xl lg:leading-[34px]" style={delay(HERO_BEATS.note)}>
             &amp; help someone<br />else shine ↓
           </p>
@@ -340,9 +338,7 @@ function WhoYoullMeet() {
           <p className="motion-scroll-reveal max-w-[620px] font-geist text-[17px] leading-[1.6] text-sb-muted">
             When women know who is around them, they can recommend each other, collaborate, show up for each other’s events, and create opportunities that would be harder to build alone.
           </p>
-          <Link to="/join" className={cn(inkPill, "mt-2")}>
-            Introduce yourself <Icon name="arrow" className="sb-arrow size-3.5" />
-          </Link>
+          <JoinButton className="mt-2" />
         </div>
       </div>
     </section>
@@ -552,9 +548,7 @@ function Membership() {
               </div>
               <p className="font-geist text-[17px] leading-[27px] text-sb-paper/85">The application helps us learn about you, your work, and how you would like to participate in the community.</p>
             </div>
-            <Link to="/join" className={cn(pill, "w-fit gap-2.5 bg-sb-paper px-[26px] py-4 text-sm text-sb-blue-ink focus-visible:ring-sb-paper focus-visible:ring-offset-transparent max-[359px]:px-5 max-[359px]:text-[13px]")}>
-              Start your application <Icon name="arrow" className="sb-arrow size-4" />
-            </Link>
+            <JoinButton className="w-fit" />
           </div>
         </div>
       </div>

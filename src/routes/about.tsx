@@ -4,7 +4,7 @@ import { aboutGatheringSizes, aboutGatheringSrcSet } from "@/app/responsive-imag
 import aboutCoffee from "@/assets/photography/site/about-coffee.webp";
 import natasaFounder from "@/assets/photography/home/natasa-founder.webp";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
-import { Icon, Scallop, TwcRibbon } from "@/app/layout/twc";
+import { Icon, JoinButton, Scallop, TwcRibbon } from "@/app/layout/twc";
 import { useNeighborhoods } from "@/features/neighborhoods/queries";
 
 const TITLE = "About — The Women’s Collective";
@@ -156,7 +156,7 @@ function AboutPage() {
             <div className="twc-ticket__stub">
               <div className="twc-ticket__meta"><span>Admit one</span><span>Nº 0001 — New York</span></div>
               <p className="text-base leading-[1.6] text-sb-paper/85">The application helps us learn about you, your work, and how you would like to participate in the community.</p>
-              <Link to="/join" className="twc-btn twc-btn--paper">Start your application <Icon name="arrow" className="twc-arrow" /></Link>
+              <JoinButton />
             </div>
           </div>
         </section>

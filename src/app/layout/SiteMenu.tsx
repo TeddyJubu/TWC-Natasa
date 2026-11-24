@@ -1,7 +1,9 @@
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
 import { Dialog, DialogClose, DialogContent } from "@ui-sdk/react/dialog";
-import { Icon } from "./twc";
+import { Icon, JOIN_CLASS, JoinButton } from "./twc";
+
+const menuCta = { "--d": "460ms" } as React.CSSProperties;
 import type { SiteLink } from "./AppLayout";
 
 /** The full-screen menu below lg. Loaded on first open (see AppLayout). */
@@ -31,9 +33,11 @@ export default function SiteMenu({ open, onOpenChange, links, signedIn }: {
                 </Link>
               ))}
             </nav>
-            <Link to={signedIn ? "/account" : "/join"} onClick={() => onOpenChange(false)} className="twc-btn sb-menu-item mt-8 w-full" style={{ "--d": "460ms" } as React.CSSProperties}>
-              {signedIn ? "Your account" : "Start your application"} <Icon name="arrow" className="twc-arrow" />
-            </Link>
+            {signedIn ? (
+              <Link to="/account" onClick={() => onOpenChange(false)} className={`${JOIN_CLASS} sb-menu-item mt-8 w-full`} style={menuCta}>
+                Your account <Icon name="arrow" className="twc-arrow" />
+              </Link>
+            ) : <JoinButton onClick={() => onOpenChange(false)} className="sb-menu-item mt-8 w-full" style={menuCta} />}
           </div>
         </DialogContent>
     </Dialog>

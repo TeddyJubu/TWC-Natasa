@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { ConstellationLogo, ImageTrail, cn } from "@/index";
 import { viewerQuery } from "@/features/members/queries";
-import { Icon } from "./twc";
+import { Icon, JOIN_CLASS, JoinButton } from "./twc";
 
 /**
  * Live page wrapper. Its first child is a "Skip to content" link to `#main`: every page puts its content
@@ -79,9 +79,10 @@ function SiteNav() {
       <span className="whitespace-nowrap font-display text-[15px] max-[359px]:sr-only sm:text-base lg:text-[18px] xl:text-[22px]">The Women’s Collective</span>
     </Link>
   );
-  const join = (size: string) => (
-    <Link to={signedIn ? "/account" : "/join"} className={cn("twc-btn twc-btn--blue twc-btn--sm", size)}>{signedIn ? "Account" : "Join us"}</Link>
-  );
+  const join = (size: string) => signedIn
+    ? <Link to="/account" className={cn(JOIN_CLASS, "twc-btn--sm", size)}>Account</Link>
+    // The header's compact pill: no arrow and one line, so the lg row (~845px of 896) and a 360px phone bar still fit.
+    : <JoinButton className={cn("twc-btn--sm whitespace-nowrap [&_.twc-arrow]:hidden", size)} />;
   return (
     <header className="sticky top-0 z-40 bg-sb-paper/85 backdrop-blur-md">
       <div className="twc-wrap hidden min-h-[88px] grid-cols-[1fr_auto_1fr] items-center gap-4 lg:grid xl:gap-6">

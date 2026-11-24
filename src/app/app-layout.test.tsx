@@ -1,9 +1,11 @@
 // @vitest-environment jsdom
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { readFileSync, readdirSync } from "node:fs";
+import { join, resolve } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
+import SiteMenu from "@/app/layout/SiteMenu";
+import { JOIN_CLASS } from "@/app/layout/twc";
 import type { Profile } from "@/features/members/queries";
 import { renderWithQueries } from "@/test/dom";
 
@@ -17,6 +19,9 @@ vi.mock("@/index", async (orig) => ({
 import { Route as Home } from "@/routes/index";
 import { Route as Members } from "@/routes/members";
 import { Route as Join } from "@/routes/join";
+import { Route as About } from "@/routes/about";
+import { Route as Faq } from "@/routes/faq";
+import { Route as Fellowship } from "@/routes/fellowship";
 import { Route as Account } from "@/routes/_authenticated/account";
 import { Route as Admin } from "@/routes/_authenticated/_admin/admin";
 import { Route as Colors } from "@/routes/colors";
@@ -253,5 +258,47 @@ describe("robots.txt", () => {
       "*", "Googlebot", "Bingbot", "GPTBot", "OAI-SearchBot", "ChatGPT-User", "ClaudeBot", "Claude-User", "Claude-SearchBot",
       "PerplexityBot", "Perplexity-User", "Google-Extended", "Applebot-Extended",
     ]);
+  });
+});
+
+// The owner's rule (2026-11-24): every join button is the same blue pill, says "Join us" and goes to plain /join.
+describe("join buttons", () => {
+  const signedOut: [unknown[], unknown][] = [[["viewer"], { signedIn: false, member: false, admin: false }], [["public-profiles"], []], [["events"], []]];
+  const joinish = /\bjoin\b|\bappl(y|ication)\b|introduce yourself/i;
+  const check = (container: HTMLElement) => {
+    const buttons = [...container.querySelectorAll<HTMLAnchorElement>("a.twc-btn, a.sb-pill")]
+      .filter((a) => (a.getAttribute("href") ?? "").startsWith("/join") || joinish.test(a.textContent ?? ""));
+    for (const a of buttons) {
+      expect(a.getAttribute("href")).toBe("/join");
+      expect(a.className.split(" ")).toEqual(expect.arrayContaining(JOIN_CLASS.split(" ")));
+      expect(a.textContent?.trim()).toBe("Join us");
+    }
+    // No join link anywhere on a public page carries an area or another path.
+    for (const a of container.querySelectorAll("a[href^='/join']")) expect(a.getAttribute("href")).toBe("/join");
+    return buttons.length;
+  };
+
+  it.each([["/", Home], ["/members", Members], ["/about", About], ["/faq", Faq], ["/fellowship", Fellowship]] as const)(
+    "%s: every join button is JoinButton", (_path, route) => {
+      const Page = component(route);
+      const { container } = renderWithQueries(<Page />, signedOut);
+      expect(check(container)).toBeGreaterThan(1); // the nav's two (desktop row and phone bar) plus the page's own
+    });
+
+  it("the phone menu's call to action is JoinButton", () => {
+    renderWithQueries(<SiteMenu open onOpenChange={() => {}} links={[]} signedIn={false} />, []);
+    expect(check(document.body)).toBe(1);
+  });
+
+  // Pages the DOM test can't render cheaply (loaders, params) are held by their source: a join pill is JoinButton.
+  it("no source draws its own join pill or sends a CTA to /join with an area", () => {
+    const files = (dir: string): string[] => readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+      e.isDirectory() ? (e.name === "_authenticated" ? [] : files(join(dir, e.name))) : e.name.endsWith(".tsx") && !e.name.includes(".test.") ? [join(dir, e.name)] : []);
+    const root = process.cwd();
+    for (const f of [...files(resolve(root, "src/routes")), ...files(resolve(root, "src/app/layout"))]) {
+      const src = readFileSync(f, "utf8");
+      expect.soft(src, f).not.toMatch(/<Link[^>]*to="\/join"[^>]*className=[^>]*(twc-btn|Pill|pill)/);
+      expect.soft(src, f).not.toMatch(/to="\/join"[^>]*search=/);
+    }
   });
 });

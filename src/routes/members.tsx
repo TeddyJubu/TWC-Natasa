@@ -3,7 +3,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { MemberCard, MemberDialog, type MemberProfile, memberDialogActionClass } from "@/index";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
-import { Scallop } from "@/app/layout/twc";
+import { JoinButton, Scallop } from "@/app/layout/twc";
 import { useNeighborhoods } from "@/features/neighborhoods/queries";
 import { pickerNames } from "@/features/neighborhoods/options";
 import { toneFor } from "@/features/neighborhoods/tone";
@@ -168,7 +168,7 @@ function MembersPage() {
             <p className="twc-eyebrow-script text-sb-ink">add your light</p>
             <h2 className="twc-h3">Your work belongs in the conversation.</h2>
             <p className="max-w-[520px] text-[17px]">Tell us about your work, the people you hope to meet, and how you want to contribute.</p>
-            <Link to="/join" className="twc-btn mt-2">Start your application <span className="twc-arrow" aria-hidden>→</span></Link>
+            <JoinButton className="mt-2" />
           </div>
         </section>
         <Scallop from="#edd22e" to="#fcfcfa" />

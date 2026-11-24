@@ -1,5 +1,6 @@
 // Small shared pieces of the public scrapbook kit (classes in src/app/twc.css). App-only.
 import * as React from "react";
+import { Link } from "@tanstack/react-router";
 import { cn } from "@/index";
 
 const ICONS = {
@@ -30,6 +31,18 @@ export function Icon({ name, className }: { name: IconName; className?: string }
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" aria-hidden className={cn("size-4 shrink-0", className)}>
       {ICONS[name]}
     </svg>
+  );
+}
+
+export const JOIN_HREF = "/join";
+export const JOIN_CLASS = "twc-btn twc-btn--blue";
+/** The one join call to action (owner's request, 2026-11-24): every join button on the site is this — the same blue
+ *  pill, the same words and plain `/join` (no `?area=`; the form asks). `className` is for layout and size only. */
+export function JoinButton({ className, style, onClick }: { className?: string; style?: React.CSSProperties; onClick?: () => void }) {
+  return (
+    <Link to={JOIN_HREF} onClick={onClick} style={style} className={cn(JOIN_CLASS, className)}>
+      Join us <Icon name="arrow" className="twc-arrow" />
+    </Link>
   );
 }
 
