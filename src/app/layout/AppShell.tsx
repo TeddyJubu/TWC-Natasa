@@ -98,8 +98,8 @@ function MobileBar(props: { page: ShellPage; onSignOut: () => void }) {
 }
 
 /**
- * Sidebar + page column for an internal page, on the sage ground (Geist throughout: `app-ground` points the display,
- * script and editorial faces at it). `children` is the page's one `<main id="main" tabIndex={-1}>`, starting with its
+ * Sidebar + page column for an internal page, on the white ground (Archivo throughout: `app-ground` points the
+ * script face at it). `children` is the page's one `<main id="main" tabIndex={-1}>`, starting with its
  * `TopBar` (the admin pages) or its own header (/account's cover). Sign out lives here; a failed sign-out shows above the page.
  */
 export function AppShell({ page, children }: { page: ShellPage; children: React.ReactNode }) {

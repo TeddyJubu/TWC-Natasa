@@ -140,7 +140,7 @@ describe("root route", () => {
 
 // The legal pages are gone until they're written for real (docs/LEGAL-PAGES-REQUIRED.md): nothing may link them.
 describe("AppNav", () => {
-  // Measured in Gilda Display at lg: links 15px + 0.3px tracking, the 18px wordmark, 20px link gaps and 16px column
+  // Measured in Archivo at lg: links 15px + 0.3px tracking, the 18px wordmark, 20px link gaps and 16px column
   // gaps make ~845px, inside the 896px `.twc-wrap` leaves at 1024px. So the row starts at lg, Sign in included.
   it("shows the desktop row, Sign in included, from lg (tight gaps there) and the menu button below it", () => {
     renderWithQueries(<AppNav />, [[["viewer"], { signedIn: false, member: false, admin: false }]]);

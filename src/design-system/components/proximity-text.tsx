@@ -2,8 +2,8 @@ import { useEffect, useRef } from "react";
 
 /**
  * ProximityText — letters swell and lift as the pointer approaches.
- * Inspired by React Bits "Variable Proximity", adapted for Gilda Display
- * (a single-weight serif) by animating scale instead of font weight.
+ * Inspired by React Bits "Variable Proximity", animating scale
+ * rather than font weight, so the line never reflows.
  * Disabled for touch and reduced-motion preferences.
  */
 export function ProximityText({ text, radius = 140, className }: { text: string; radius?: number; className?: string }) {

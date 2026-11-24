@@ -145,7 +145,7 @@ function AuthPage() {
               <TabsList aria-label="Sign in or create an account" className="flex gap-1 rounded-full p-1 shadow-[inset_0_0_0_1px_rgb(31_31_28/0.25)]">
                 {TABS.map(([m, label]) => (
                   <TabsTab key={m} value={m} id={`tab-${m}`} aria-controls="auth-panel"
-                    className={cn("min-h-10 flex-1 cursor-pointer rounded-full font-display text-[13px] uppercase leading-5 tracking-[1.6px] max-[400px]:text-[12px] max-[400px]:tracking-[0.8px] outline-none transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sb-blue-ink motion-reduce:transition-none",
+                    className={cn("min-h-10 flex-1 cursor-pointer rounded-full font-sans font-semibold text-[13px] uppercase leading-5 tracking-[0.08em] max-[400px]:text-[12px] max-[400px]:tracking-[0.8px] outline-none transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sb-blue-ink motion-reduce:transition-none",
                       mode === m ? "bg-sb-ink text-sb-paper" : "text-sb-ink hover:bg-sb-ink/5")}>
                     {label}
                   </TabsTab>

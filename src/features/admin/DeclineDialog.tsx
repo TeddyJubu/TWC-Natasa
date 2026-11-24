@@ -14,7 +14,7 @@ export function DeclineDialog({ subject, name, email, onDecline, onClose }: {
 }) {
   return (
     <AlertDialog open onOpenChange={(next) => { if (!next) onClose(); }}>
-      <AlertDialogContent className="fixed inset-0 m-auto h-fit max-h-[calc(100dvh-32px)] w-[min(560px,calc(100vw-32px))] overflow-y-auto rounded-air-card bg-air-paper p-6 text-left font-geist text-air-navy shadow-air-menu backdrop:bg-black/50">
+      <AlertDialogContent className="fixed inset-0 m-auto h-fit max-h-[calc(100dvh-32px)] w-[min(560px,calc(100vw-32px))] overflow-y-auto rounded-air-card bg-air-paper p-6 text-left font-sans text-air-navy shadow-air-menu backdrop:bg-black/50">
         <AlertDialogTitle className="font-display text-2xl break-words">Decline {subject}?</AlertDialogTitle>
         <AlertDialogDescription className="mt-2 text-[15px]/[1.5] text-air-muted">
           The email below goes out only if you choose to send it. Once sent, it can’t be taken back.

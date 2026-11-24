@@ -56,7 +56,7 @@ function AccountPage() {
     return (
       <main id="main" tabIndex={-1} className="app-ground grid min-h-screen place-items-center p-6 text-ink outline-none">
         <div className="flex max-w-md flex-col items-center gap-5 text-center">
-          <p className="font-geist text-2xl font-medium">{profileState.isError ? "We Couldn’t Load Your Profile" : "Profile Not Found"}</p>
+          <p className="font-sans text-2xl font-medium">{profileState.isError ? "We Couldn’t Load Your Profile" : "Profile Not Found"}</p>
           <p role="alert" className="text-sm text-ink-muted">
             {profileState.isError
               ? errorMessage(profileState.error)

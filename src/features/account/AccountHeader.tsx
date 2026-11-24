@@ -146,7 +146,7 @@ function Postmark({ hood, date }: { hood: string | null; date: Date | null }) {
           <text fontFamily="var(--font-plex)" fontSize="7.6" fontWeight="600" letterSpacing="1.7">
             <textPath href="#air-ring">{ring}</textPath>
           </text>
-          <text x="270" y="59" textAnchor="middle" fontFamily="var(--font-gilda)" fontSize="16" fontWeight="400">{part({ day: "numeric" })} {part({ month: "short" })}</text>
+          <text x="270" y="59" textAnchor="middle" fontFamily="var(--font-display)" fontSize="16" fontWeight="400">{part({ day: "numeric" })} {part({ month: "short" })}</text>
           <text x="270" y="73" textAnchor="middle" fontFamily="var(--font-plex)" fontSize="9" fontWeight="600" letterSpacing="1.6">{part({ year: "numeric" })}</text>
         </g>
       )}

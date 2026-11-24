@@ -19,7 +19,7 @@ export interface MemberDialogProps {
 
 /** The outline pill the polaroid dialog's actions share; exported so callers' links in `children` can match. */
 export const memberDialogActionClass =
-  "inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-[22px] py-3 font-display text-[13px] uppercase leading-5 tracking-[1.6px] text-ink no-underline shadow-[inset_0_0_0_1.5px_currentColor] transition-[translate] duration-base ease-gentle hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-sky-strong motion-reduce:transition-none";
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-[22px] py-3 font-sans font-semibold text-[13px] uppercase leading-5 tracking-[0.08em] text-ink no-underline shadow-[inset_0_0_0_1.5px_currentColor] transition-[translate] duration-base ease-gentle hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-sky-strong motion-reduce:transition-none";
 
 /**
  * Use MemberDialog to open a catalogue card into the member's full profile.

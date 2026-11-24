@@ -1,5 +1,5 @@
-// The internal tools' building blocks (/account, /admin; DESIGN.md "Internal tools"): airmail letters on the onionskin
-// desk, mono labels, navy rules, stamps and tickets (`air-*` in src/app/twc.css, on the `air-*` tokens in theme.css).
+// The internal tools' building blocks (/account, /admin; DESIGN.md "Internal tools"): airmail letters on the white
+// desk, mono labels, black rules, stamps and tickets (`air-*` in src/app/twc.css, on the `air-*` tokens in theme.css).
 import * as React from "react";
 import { Switch, SwitchThumb } from "@ui-sdk/react/switch";
 import { cn, initials, type MemberProfile } from "@/index";
@@ -7,7 +7,7 @@ import { Icon, type IconName } from "./icons";
 import { linkClass, ring, secondaryButton } from "./app-classes";
 
 /**
- * A letter on the desk: "Nº 01" in red mono, a Gilda Display title, a navy rule under the head (`rule`), then the body.
+ * A letter on the desk: "Nº 01" in red mono, an Archivo heavy condensed title, a black rule under the head (`rule`), then the body.
  * Without `no` it numbers itself in page order. `id` makes it a nav anchor; `span` is its width in /account's bento.
  */
 export function Letter({ id, no, title, subtitle, action, span, rule, className, children }: {
@@ -171,7 +171,7 @@ function stampCaption(m: MemberProfile): string {
 
 /**
  * A member as a postage stamp (`air-slot` in a perforated `air-sheet`): number in red mono, value in cents, portrait or
- * initials on navy (never a stand-in photo), name in Geist capitals, a caption, "twc." on its side. A real button named
+ * initials on navy (never a stand-in photo), name in Archivo capitals, a caption, "twc." on its side. A real button named
  * by `label`. With `pressed` it is a toggle that lifts off the sheet when on, leaving a dashed spot (/directory);
  * without, it just opens something (/account's introductions).
  */

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// T25 + T29: subset WOFF2 fonts with TTF fallback and a display-face preload; homepage photo loading.
+// T25 + T29: self-hosted Archivo WOFF2 and its preload; homepage photo loading.
 import { readFileSync, statSync } from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, screen } from "@testing-library/react";
@@ -20,28 +20,31 @@ const theme = readFileSync(`${cwd}/src/design-system/styles/theme.css`, "utf8");
 describe("fonts", () => {
   const faces = [...theme.matchAll(/@font-face\s*\{([^}]*)\}/g)].map((m) => m[1]);
 
-  it.each(["gilda-display-400", "inter-400", "inter-500"])("%s: subset WOFF2 first, TTF as the format() fallback", (name) => {
-    const face = faces.find((f) => f.includes(`${name}.`));
-    expect(face).toBeDefined();
-    const src = face!.match(/src:\s*([^;]+);/)![1];
-    expect(src).toMatch(new RegExp(`^url\\("\\.\\./assets/fonts/${name}\\.woff2"\\) format\\("woff2"\\),\\s*url\\("\\.\\./assets/fonts/${name}\\.ttf"\\) format\\("truetype"\\)$`));
-    const woff2 = statSync(`${cwd}/src/design-system/assets/fonts/${name}.woff2`).size;
-    const ttf = statSync(`${cwd}/src/design-system/assets/fonts/${name}.ttf`).size;
-    expect(woff2).toBeLessThan(ttf / 2);
+  it.each(["archivo-latin-wdth-normal", "archivo-latin-ext-wdth-normal", "archivo-latin-wdth-italic"])(
+    "%s: self-hosted Archivo with both variable axes (wght and wdth)",
+    (name) => {
+      const face = faces.find((f) => f.includes(`${name}.`));
+      expect(face).toBeDefined();
+      expect(face).toMatch(/font-family: "Archivo";/);
+      expect(face!.match(/src:\s*([^;]+);/)![1]).toBe(`url("../assets/fonts/${name}.woff2") format("woff2")`);
+      expect(face).toMatch(/font-weight: 100 900;/);
+      expect(face).toMatch(/font-stretch: 62% 125%;/);
+      expect(statSync(`${cwd}/src/design-system/assets/fonts/${name}.woff2`).size).toBeGreaterThan(0);
+    },
+  );
+
+  it("Archivo is the only text face: no retired serif or sans face is declared anywhere", () => {
+    const css = theme + readFileSync(`${cwd}/src/styles.css`, "utf8");
+    for (const gone of ["Gilda Display", "Instrument Serif", "Geist", "Inter"]) expect(css).not.toContain(`"${gone}"`);
+    expect(theme).toMatch(/--font-display: "Archivo"/);
+    expect(theme).toMatch(/--font-sans: "Archivo"/);
   });
 
-  it("the root preloads the display face (the same URL the @font-face resolves)", () => {
-    expect(displayFontUrl).toMatch(/gilda-display-400.*\.woff2$/);
-    const { links } = (Root.options.head as (ctx: unknown) => { links: Record<string, string>[] })({ matches: [{ pathname: "/" }] });
-    expect(links).toContainEqual({ rel: "preload", href: displayFontUrl, as: "font", type: "font/woff2", crossOrigin: "anonymous" });
-  });
-
-  it("the root preloads Geist, the body face, at the URL styles.css's @font-face resolves", () => {
-    const css = readFileSync(`${cwd}/src/styles.css`, "utf8");
-    expect(css).toMatch(/@font-face \{ font-family: "Geist"; src: url\("\.\/assets\/fonts\/home\/geist-variable\.woff2"\)/);
+  it("the root preloads the Latin Archivo file (the same URL the @font-face resolves), and no other face", () => {
+    expect(displayFontUrl).toMatch(/archivo-latin-wdth-normal.*\.woff2$/);
     const { links } = (Root.options.head as (ctx: unknown) => { links: Record<string, string>[] })({ matches: [{ pathname: "/" }] });
     const fonts = links.filter((l) => l.rel === "preload" && l.as === "font");
-    expect(fonts).toContainEqual({ rel: "preload", href: expect.stringMatching(/geist-variable.*\.woff2$/), as: "font", type: "font/woff2", crossOrigin: "anonymous" });
+    expect(fonts).toEqual([{ rel: "preload", href: displayFontUrl, as: "font", type: "font/woff2", crossOrigin: "anonymous" }]);
   });
 });
 

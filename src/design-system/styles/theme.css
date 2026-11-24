@@ -1,51 +1,53 @@
 /* The Women’s Collective theme — import once after `@import "tailwindcss";` */
-/* Fonts: subset WOFF2 (T25); the full TTFs remain the format() fallback. Regenerate with fonttools + brotli:
-   pyftsubset <font>.ttf --flavor=woff2 --layout-features='*' --output-file=<font>.woff2 --unicodes="U+0000-024F,U+0259,
-   U+02B0-02FF,U+0300-036F,U+1E00-1EFF,U+2000-206F,U+20A0-20CF,U+2100-215F,U+2190-21FF,U+2212,U+2713,U+2715,U+2726,U+FEFF,U+FFFD"
-   A glyph missing from the WOFF2 does not fall back to the TTF, so add any new symbol the UI renders to the list. */
+/* Font: Archivo variable (SIL OFL 1.1, Omnibus-Type), self-hosted from @fontsource-variable/archivo 5.3.0. One family,
+   both axes: wght 100–900 and wdth 62–125%. Headings set it heavy and condensed (800, font-stretch 75%), text runs at
+   normal width. Latin and Latin Extended (names like Nataša) as separate files, fetched only when a page uses them. */
 @custom-variant dark (&:where(.dark, .dark *));
 
 @font-face {
-  font-family: "Gilda Display";
-  src: url("../assets/fonts/gilda-display-400.woff2") format("woff2"),
-    url("../assets/fonts/gilda-display-400.ttf") format("truetype");
+  font-family: "Archivo";
+  src: url("../assets/fonts/archivo-latin-wdth-normal.woff2") format("woff2");
   font-style: normal;
-  font-weight: 400;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
   font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 @font-face {
-  font-family: "Inter";
-  src: url("../assets/fonts/inter-400.woff2") format("woff2"),
-    url("../assets/fonts/inter-400.ttf") format("truetype");
+  font-family: "Archivo";
+  src: url("../assets/fonts/archivo-latin-ext-wdth-normal.woff2") format("woff2");
   font-style: normal;
-  font-weight: 400;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
   font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
 @font-face {
-  font-family: "Inter";
-  src: url("../assets/fonts/inter-500.woff2") format("woff2"),
-    url("../assets/fonts/inter-500.ttf") format("truetype");
-  font-style: normal;
-  font-weight: 500;
+  font-family: "Archivo";
+  src: url("../assets/fonts/archivo-latin-wdth-italic.woff2") format("woff2");
+  font-style: italic;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
   font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 :root {
-  --bl-canvas: #fcfcfa;
+  --bl-canvas: #ffffff;
   --bl-surface: #f2f4f7;
   --bl-surface-strong: #e6e9ee;
-  --bl-ink: #1f1f1c;
+  --bl-ink: #111111;
   --bl-ink-muted: #525252;
   --bl-ink-faint: #92928d; /* was #b9b9b4 (1.9:1); 3:1 on canvas for large statement text (T26) */
-  --bl-line: rgb(31 31 28 / 0.1);
+  --bl-line: rgb(17 17 17 / 0.12);
   --bl-sky: #1f8ad6;
   --bl-sky-strong: #1b7abd; /* button fills: white text at 4.6:1 (sky is 3.7:1) */
   --bl-sky-ink: #ffffff;
   --bl-sun: #edd22e;
-  --bl-sun-ink: #1f1f1c;
-  --bl-paper: #f3f0e8;
+  --bl-sun-ink: #111111;
+  --bl-paper: #f4f4f4;
   --bl-mint: #c6f3df;
   --bl-lilac: #d8cdf8;
   --bl-signal: #ff5a1f;
@@ -59,15 +61,15 @@
   --bl-elmhurst: #12d9bd;
   --bl-forest-hills: #5fd35f;
   --bl-rego-park: #ff4438;
-  /* App palette: the internal-page app shell only (/account, /admin; DESIGN.md "Internal pages"), in the scrapbook's paper and cream. */
-  --bl-app: #fcfcfa; /* paper: the rows inside the glass panels, nav lists, pills */
-  --bl-app-sunken: #f2f6f3; /* pale sage: hovers, sub-panels, date tiles */
-  --bl-app-ground: #dce8e2; /* sage: the page background's cool top (a gradient, with ground-warm) */
-  --bl-app-ground-warm: #ebe9e3; /* the page background's warm foot */
+  /* App palette: the internal-page app shell only (/account, /admin; DESIGN.md "Internal pages"): white grounds, black ink. */
+  --bl-app: #ffffff; /* white: the rows inside the glass panels, nav lists, pills */
+  --bl-app-sunken: #f4f4f4; /* light grey: hovers, sub-panels, date tiles */
+  --bl-app-ground: #ffffff; /* the page background: white */
+  --bl-app-ground-warm: #ffffff; /* the page background: white, like ground */
   --bl-app-line: #dbdbd9; /* ink at 15% on paper: outlines and dividers */
   --bl-app-rule: #dbdbd9; /* row dividers: the boards use one line weight */
-  --bl-app-muted: #5f5f5a; /* labels and secondary text: 5.1:1 on the sage ground */
-  --bl-app-accent: #145f99; /* blue ink: inline links, focus outline; 5.3:1 on the sage ground */
+  --bl-app-muted: #595959; /* labels and secondary text */
+  --bl-app-accent: #145f99; /* blue ink: inline links, focus outline; on white */
   --bl-app-pending: #edd22e; /* sun: "under review", "pending", "requested" chips */
   --bl-app-ok: #c6f3df; /* mint: "approved", "active", "confirmed" chips */
   --bl-app-gel: #3d8fff; /* gel pill (an open form): the glowing blue at its heart */
@@ -76,27 +78,27 @@
   --bl-app-gel-green: #2fc27a; /* green gel pill (an always-on form): the glowing green at its heart */
   --bl-app-gel-green-soft: #d2f6e2; /* green gel pill: the pale green at its rim */
   --bl-app-gel-green-ink: #07311d; /* green gel pill: its label */
-  /* Airmail: the internal tools' design system (/account, /admin; DESIGN.md "Internal tools"), onionskin paper and
+  /* Airmail: the internal tools' design system (/account, /admin; DESIGN.md "Internal tools"), white paper, black ink and
      airmail stripes. Light in both modes. Utilities: `bg-air-*`, `border-air-*`, `rounded-air-*`, `shadow-air-*`. */
-  --bl-air-sky: #dfe6ee; /* the onionskin desk behind the letters; hovers */
-  --bl-air-paper: #fbfaf6; /* letters, the envelope, the sidebar, the save bar */
-  --bl-air-navy: #1c2c5e; /* ink: text, rules, switches, the navy stamp, the current nav item */
+  --bl-air-sky: #f2f2f2; /* hovers, avatar mats, sub-panels (the desk itself is white) */
+  --bl-air-paper: #ffffff; /* letters, the envelope, the sidebar, the save bar */
+  --bl-air-navy: #111111; /* ink (black): text, rules, switches, the navy stamp, the current nav item */
   --bl-air-red: #d23b2e; /* airmail red: card numbers, rubber stamps, the page's one primary button (white at 4.7:1) */
-  --bl-air-muted: #545e80; /* labels and secondary text: 6:1 on paper, 5:1 on the sky */
-  --bl-air-rule: rgb(28 44 94 / 0.14); /* hairlines: menus, letter lines */
-  --bl-air-line: rgb(28 44 94 / 0.3); /* row dividers, form cells, dashed slots, outlines */
-  --bl-air-tint: rgb(28 44 94 / 0.035); /* a navy wash: wide cells, notes, notices */
+  --bl-air-muted: #595959; /* labels and secondary text: 7:1 on white */
+  --bl-air-rule: rgb(17 17 17 / 0.14); /* hairlines: menus, letter lines */
+  --bl-air-line: rgb(17 17 17 / 0.3); /* row dividers, form cells, dashed slots, outlines */
+  --bl-air-tint: rgb(17 17 17 / 0.035); /* a navy wash: wide cells, notes, notices */
   --bl-air-radius-card: 14px; /* letters, the sidebar, the top bar */
   --bl-air-radius-cell: 10px; /* customs forms, notices, the map, fields */
   --bl-air-radius-menu: 18px; /* dropdown menus */
   /* Grounded: paper resting on the desk, a dark tight line under a faint one (not a lift). Menus and the open pass still float. */
-  --bl-air-shadow-ground: 0 1px 1px rgb(28 44 94 / 0.32), 0 2px 3px rgb(28 44 94 / 0.12);
+  --bl-air-shadow-ground: 0 1px 1px rgb(17 17 17 / 0.32), 0 2px 3px rgb(17 17 17 / 0.12);
   --bl-air-shadow-card: inset 0 1px 0 rgb(255 255 255 / 0.9), var(--bl-air-shadow-ground);
   /* The same shadow as a filter, for stamp-edged paper (a mask clips box-shadow); -hover rises a pixel. */
-  --bl-air-ground: drop-shadow(0 1px 0.5px rgb(28 44 94 / 0.32)) drop-shadow(0 2px 3px rgb(28 44 94 / 0.12));
-  --bl-air-ground-hover: drop-shadow(0 2px 1px rgb(28 44 94 / 0.3)) drop-shadow(0 4px 6px rgb(28 44 94 / 0.14));
-  --bl-air-shadow-menu: inset 0 0 0 1px var(--bl-air-rule), 0 22px 34px -20px rgb(28 44 94 / 0.55), 0 2px 4px rgb(28 44 94 / 0.08);
-  --bl-air-shadow-lift: 0 10px 18px -12px rgb(28 44 94 / 0.6); /* the current nav item, a navy pill */
+  --bl-air-ground: drop-shadow(0 1px 0.5px rgb(17 17 17 / 0.32)) drop-shadow(0 2px 3px rgb(17 17 17 / 0.12));
+  --bl-air-ground-hover: drop-shadow(0 2px 1px rgb(17 17 17 / 0.3)) drop-shadow(0 4px 6px rgb(17 17 17 / 0.14));
+  --bl-air-shadow-menu: inset 0 0 0 1px var(--bl-air-rule), 0 22px 34px -20px rgb(17 17 17 / 0.55), 0 2px 4px rgb(17 17 17 / 0.08);
+  --bl-air-shadow-lift: 0 10px 18px -12px rgb(17 17 17 / 0.6); /* the current nav item, a navy pill */
 }
 
 /* Night: black sections and dark mode. Tokens invert so components need no tone props. */
@@ -182,8 +184,8 @@
   --shadow-air-lift: var(--bl-air-shadow-lift);
   --color-ring: var(--bl-sky);
 
-  --font-display: "Gilda Display", Georgia, serif;
-  --font-sans: "Inter", system-ui, sans-serif;
+  --font-display: "Archivo", system-ui, sans-serif;
+  --font-sans: "Archivo", system-ui, sans-serif;
 
   --radius-control: 0.75rem;
   --radius-card: 1.25rem;
@@ -203,6 +205,10 @@
 @layer base {
   html { background: var(--bl-canvas); color: var(--bl-ink); }
   body { overflow-x: hidden; font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+  /* Headings: Archivo heavy and condensed; a size, weight or tracking utility still wins. No faux bold of a face that
+     lacks the weight (Caveat, the mono labels). */
+  html { font-synthesis-weight: none; }
+  h1, h2, h3 { font-weight: 800; font-stretch: 75%; letter-spacing: -0.01em; }
   /* A modal dialog (e.g. MemberDialog) scrolls on its own; the page behind it stays put. */
   html:has(dialog[open]:modal) { overflow: hidden; }
 }
@@ -292,7 +298,7 @@
   opacity: 0;
   will-change: transform, opacity;
   /* A warm glow for the glitter, plus a hairline of ink so pale stars still read on paper. */
-  filter: drop-shadow(0 0 0.18rem rgb(237 210 46 / 0.6)) drop-shadow(0 1px 1px rgb(31 31 28 / 0.2));
+  filter: drop-shadow(0 0 0.18rem rgb(237 210 46 / 0.6)) drop-shadow(0 1px 1px rgb(17 17 17 / 0.2));
 }
 .image-trail[data-size="small"] .image-trail-item { width: 3rem; height: 3rem; }
 
@@ -328,6 +334,6 @@
 
 /* Force light tokens inside a night block (e.g. light cards on a black section) */
 .tone-light {
-  --bl-canvas: #fcfcfa; --bl-surface: #f2f4f7; --bl-surface-strong: #e6e9ee;
-  --bl-ink: #1f1f1c; --bl-ink-muted: #525252; --bl-ink-faint: #92928d; --bl-line: rgb(31 31 28 / 0.1);
+  --bl-canvas: #ffffff; --bl-surface: #f2f4f7; --bl-surface-strong: #e6e9ee;
+  --bl-ink: #111111; --bl-ink-muted: #525252; --bl-ink-faint: #92928d; --bl-line: rgb(17 17 17 / 0.12);
 }

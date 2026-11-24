@@ -205,8 +205,8 @@ describe("public scrapbook palette (--color-sb-* in styles.css)", () => {
     expect(twc).toMatch(/\.twc-input::placeholder \{ color: var\(--color-sb-muted\); \}/);
   });
 
-  it("an open FAQ's number is ink, since muted misses AA on mint", () => {
-    expect(contrast(sb.muted, sb.mint)).toBeLessThan(AA);
+  it("an open FAQ's number is ink, which clears AA on mint (and stays so if muted is ever lightened)", () => {
+    expect(contrast(sb.ink, sb.mint)).toBeGreaterThanOrEqual(AA);
     expect(twc).toMatch(/\.twc-faq\[open\] \.twc-index \{ color: var\(--color-sb-ink\); \}/);
   });
 

@@ -7,7 +7,7 @@ export const Route = createFileRoute("/typography")({
     meta: [
       { title: "Typography — The Women’s Collective Design System" },
       { name: "robots", content: "noindex" },
-      { name: "description", content: "Gilda Display, Inter, and The Women’s Collective type scale." },
+      { name: "description", content: "Archivo and The Women’s Collective type scale." },
       { property: "og:title", content: "Typography — The Women’s Collective Design System" },
       { property: "og:description", content: "Elegant serif display with a clean sans for body." },
       { property: "og:type", content: "website" },
@@ -32,8 +32,8 @@ function Typography() {
       <div className="flex flex-col gap-14">
         <SectionHeader badge="Foundations" title="Typography" />
         <div className="grid gap-5 md:grid-cols-2">
-          <div className="motion-float rounded-card bg-surface p-8"><p className="font-display text-6xl">Gilda Display</p><Text tone="muted" className="mt-3">font-display · 400 · headings, numbers, wordmark</Text></div>
-          <div className="motion-float rounded-card bg-surface p-8"><p className="font-sans text-5xl">Inter</p><Text tone="muted" className="mt-3">font-sans · 400, 500 · body, buttons, badges</Text></div>
+          <div className="motion-float rounded-card bg-surface p-8"><p className="font-display text-6xl font-extrabold font-stretch-condensed">Archivo</p><Text tone="muted" className="mt-3">font-display · 800, condensed (75%) · headings, numbers, wordmark</Text></div>
+          <div className="motion-float rounded-card bg-surface p-8"><p className="font-sans text-5xl">Archivo</p><Text tone="muted" className="mt-3">font-sans · 400–600, normal width · body, buttons, badges</Text></div>
         </div>
         <div>
           <Row label='<Heading size="display">'><Heading as="h3" size="display">Find Your People</Heading></Row>

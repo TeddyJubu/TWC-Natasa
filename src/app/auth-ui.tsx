@@ -8,7 +8,7 @@ export const authCard = "box-border flex w-full min-w-0 flex-col gap-[18px] roun
 export const authH = "font-display text-[40px] leading-[1.08] tracking-[-0.5px] text-balance max-[720px]:text-[34px]";
 export const authScript = "twc-eyebrow-script -mb-2.5 text-4xl";
 /** Small underlined link (also used on buttons that look like links). */
-export const slink = "cursor-pointer font-geist text-sm font-medium text-sb-blue-ink underline decoration-1 underline-offset-[3px] hover:text-sb-ink focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sb-blue-ink";
+export const slink = "cursor-pointer font-sans text-sm font-medium text-sb-blue-ink underline decoration-1 underline-offset-[3px] hover:text-sb-ink focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sb-blue-ink";
 /** A form-level failure: danger text in a danger ring. */
 export const authAlert = "twc-error rounded-md px-4 py-3.5 text-[15px] shadow-[inset_0_0_0_1.5px_var(--color-sb-danger)]";
 

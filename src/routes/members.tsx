@@ -75,12 +75,12 @@ function MembersPage() {
                       : "Showing members who share their profile publicly. Your directory unlocks once you’re welcomed in."}
                 </span>
                 {audience === "visitor" && (
-                  <Link to="/auth" className="twc-link font-display text-[13px] uppercase leading-5 tracking-[1.6px] text-sb-blue-ink">
+                  <Link to="/auth" className="twc-link font-sans font-semibold text-[13px] uppercase leading-5 tracking-[0.08em] text-sb-blue-ink">
                     Sign in to see the full directory <span aria-hidden>→</span>
                   </Link>
                 )}
                 {audience === "declined" && (
-                  <Link to="/contact" className="twc-link font-display text-[13px] uppercase leading-5 tracking-[1.6px] text-sb-blue-ink">
+                  <Link to="/contact" className="twc-link font-sans font-semibold text-[13px] uppercase leading-5 tracking-[0.08em] text-sb-blue-ink">
                     Have a question? Contact us <span aria-hidden>→</span>
                   </Link>
                 )}

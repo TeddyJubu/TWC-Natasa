@@ -1,4 +1,4 @@
-import displayFont from "../assets/fonts/gilda-display-400.woff2";
+import displayFont from "../assets/fonts/archivo-latin-wdth-normal.woff2";
 
-/** URL of the display face's WOFF2, identical to the one `theme.css` loads, for `<link rel="preload">`. */
+/** URL of the Archivo (Latin) WOFF2, the one face of every page, identical to the one `theme.css` loads, for `<link rel="preload">`. */
 export const displayFontUrl: string = displayFont;

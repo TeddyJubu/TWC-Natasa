@@ -103,7 +103,7 @@ function AboutPage() {
             <div className="grid grid-cols-[repeat(auto-fit,minmax(min(260px,100%),1fr))] gap-10">
               {VALUES.map((v) => (
                 <div key={v.title} className="flex flex-col gap-3 border-t border-sb-ink/25 pt-5">
-                  <h3 className="font-editorial text-[44px] italic leading-[1.06] tracking-[-0.5px]">{v.title}</h3>
+                  <h3 className="font-display text-[44px] italic leading-[1.06] tracking-[-0.5px]">{v.title}</h3>
                   <p>{v.text}</p>
                 </div>
               ))}

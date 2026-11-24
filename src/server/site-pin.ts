@@ -65,18 +65,18 @@ function page(next: string, error: string | null, status: number): Response {
 <link rel="icon" href="/favicon.ico" sizes="48x48"><link rel="icon" href="/favicon.png" type="image/png" sizes="192x192"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <style>
 *{box-sizing:border-box;margin:0}
-body{min-height:100vh;display:grid;place-items:center;padding:24px 16px;background:#e5ebf1;color:#1c2c5e;font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
-body::before{content:"";position:fixed;inset:0 0 auto;height:8px;background:repeating-linear-gradient(-45deg,#d23b2e 0 14px,#fbfaf6 14px 22px,#1c2c5e 22px 36px,#fbfaf6 36px 44px)}
-main{width:min(380px,100%);padding:32px 28px;border-radius:14px;background:#fbfaf6;box-shadow:0 24px 40px -28px rgb(28 44 94/.6),0 1px 2px rgb(28 44 94/.12);text-align:center}
+body{min-height:100vh;display:grid;place-items:center;padding:24px 16px;background:#fff;color:#111;font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+body::before{content:"";position:fixed;inset:0 0 auto;height:8px;background:repeating-linear-gradient(-45deg,#d23b2e 0 14px,#fff 14px 22px,#111 22px 36px,#fff 36px 44px)}
+main{width:min(380px,100%);padding:32px 28px;border:1px solid #111;border-radius:14px;background:#fff;box-shadow:0 24px 40px -28px rgb(17 17 17/.6),0 1px 2px rgb(17 17 17/.12);text-align:center}
 img{width:64px;height:64px;border-radius:14px}
-h1{margin-top:16px;font:400 28px/1.1 Georgia,"Times New Roman",serif;letter-spacing:-.01em}
-p{margin-top:8px;font-size:14.5px;color:#4a5578}
+h1{margin-top:16px;font:800 28px/1.1 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.02em}
+p{margin-top:8px;font-size:14.5px;color:#595959}
 form{display:grid;gap:10px;margin-top:22px}
-label{font:500 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:#4a5578;text-align:left}
-input{width:100%;min-height:46px;padding:0 14px;border:0;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 1px rgb(28 44 94/.3);font:inherit;color:inherit}
-input:focus{outline:2px solid #1c2c5e;outline-offset:2px}
+label{font:500 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:#595959;text-align:left}
+input{width:100%;min-height:46px;padding:0 14px;border:0;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 1px rgb(17 17 17/.3);font:inherit;color:inherit}
+input:focus{outline:2px solid #111;outline-offset:2px}
 button{min-height:46px;border:0;border-radius:999px;background:#d23b2e;color:#fff;font:600 15px/1 inherit;cursor:pointer}
-button:focus-visible{outline:2px solid #1c2c5e;outline-offset:2px}
+button:focus-visible{outline:2px solid #111;outline-offset:2px}
 .err{margin-top:14px;color:#b3261e;font-weight:600}
 </style>
 </head>

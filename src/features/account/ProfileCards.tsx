@@ -183,7 +183,7 @@ export function MembershipCard({ profile, children }: { profile: Profile; childr
           <dt className="air-lbl">Catalogue number</dt>
           {approved && profile.catalogue_number !== null
             ? <dd>No. {formatCatalogueNumber(profile.catalogue_number)}</dd>
-            : <dd className="font-geist text-[15px] font-semibold tracking-normal text-app-muted">{declined ? "—" : "Assigned once you’re approved"}</dd>}
+            : <dd className="font-sans text-[15px] font-semibold tracking-normal text-app-muted">{declined ? "—" : "Assigned once you’re approved"}</dd>}
         </div>
         <div className="air-mrow">
           <dt className="air-lbl">Status</dt>

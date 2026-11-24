@@ -48,7 +48,7 @@ const SiteMenu = React.lazy(loadSiteMenu);
 const navLink = "twc-link whitespace-nowrap font-display text-[15px] tracking-[0.3px] text-sb-ink";
 
 /** Sticky site header: three links, the logo, two links + Sign in + Join us; a full-screen Dialog menu below lg.
- *  At lg the row is measured at ~845px (Gilda at 15px, the 18px wordmark, 20px link gaps, 16px column gaps) in the
+ *  At lg the row is measured at ~845px (Archivo at 15px, the 18px wordmark, 20px link gaps, 16px column gaps) in the
  *  896px `.twc-wrap` leaves at 1024px; the right group is the wider one, so the logo sits up to ~38px left of centre
  *  until ~1100px, then centred. xl widens the gaps and the wordmark into the wrap's 1024px. */
 export function AppNav({ bare = false }: { bare?: boolean }) {

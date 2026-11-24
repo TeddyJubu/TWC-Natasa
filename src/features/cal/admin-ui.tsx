@@ -67,7 +67,7 @@ export function AdminEventsTable({ events, caption }: { events: AdminCalEvent[];
             return (
               <tr key={e.uid} className="border-b border-app-rule align-middle last:border-0">
                 <th scope="row" className="min-w-52 px-4 py-3 font-normal">
-                  <Link to="/admin/events/$uid" params={{ uid: e.uid }} className="font-gilda text-lg text-ink underline-offset-2 hover:underline">{e.title}</Link>
+                  <Link to="/admin/events/$uid" params={{ uid: e.uid }} className="font-display text-lg text-ink underline-offset-2 hover:underline">{e.title}</Link>
                   {e.hidden && <span className="ml-2 align-middle"><Chip>Unlisted</Chip></span>}
                   {e.category && <span className="block text-sm text-app-muted">{e.category}</span>}
                 </th>
@@ -339,7 +339,7 @@ export function AdminBookingsTable({ business }: { business?: string }) {
               <tbody>
                 {bookings.data.bookings.map((b) => (
                   <tr key={b.uid} className="border-b border-app-rule align-top last:border-0">
-                    <th scope="row" className="px-4 py-3 font-normal"><span className="font-gilda text-lg">{b.title}</span>{b.location && <span className="block text-sm break-words text-app-muted">{b.location}</span>}</th>
+                    <th scope="row" className="px-4 py-3 font-normal"><span className="font-display text-lg">{b.title}</span>{b.location && <span className="block text-sm break-words text-app-muted">{b.location}</span>}</th>
                     <td className="px-4 py-3 text-sm">{formatRange(b.start, b.end, b.attendees[0]?.timeZone || "America/New_York", "en-US")}</td>
                     <td className="px-4 py-3 text-sm">
                       {b.attendees.map((a) => <span key={a.email} className="block">{a.name} · <a className={linkClass} href={`mailto:${encodeURIComponent(a.email)}`}>{a.email}</a>{a.notes ? <span className="block text-app-muted">{a.notes}</span> : null}</span>)}
@@ -410,7 +410,7 @@ function EventTypesCard({ business }: { business?: string }) {
           <ul>
             {types.data.map((t) => (
               <li key={t.id} className="flex flex-wrap items-center justify-between gap-3 border-b border-app-rule px-4 py-3 last:border-0">
-                <span className="min-w-0"><span className="font-gilda text-lg">{t.title}</span> <span className="text-sm text-app-muted">/book/{t.slug} · {t.lengthInMinutes} min{t.seatsPerSlot ? ` · ${t.seatsPerSlot} seats` : ""}</span></span>
+                <span className="min-w-0"><span className="font-display text-lg">{t.title}</span> <span className="text-sm text-app-muted">/book/{t.slug} · {t.lengthInMinutes} min{t.seatsPerSlot ? ` · ${t.seatsPerSlot} seats` : ""}</span></span>
                 <span className="flex items-center gap-2">{t.fields.some((f) => f.type === "number" && f.required) && <Chip tone="no">Required number field can’t be booked</Chip>}{t.hidden && <Chip>Hidden</Chip>}<button type="button" className={secondaryButton} aria-label={`Edit ${t.title}`} onClick={() => setEditing(t)}>Edit</button></span>
               </li>
             ))}

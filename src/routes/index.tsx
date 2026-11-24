@@ -87,12 +87,12 @@ const h2 = "font-display text-[clamp(2.25rem,3.75vw,3.375rem)] leading-[1.09] te
 const script = "font-script text-[32px] leading-[1.1] lg:text-[44px]";
 const lift = "shadow-[0_1px_2px_rgb(31_31_28/0.1),0_16px_34px_-12px_rgb(31_31_28/0.3)]";
 const liftNight = "shadow-[0_14px_30px_rgb(0_0_0/0.4)]";
-const tape = "absolute h-7 w-[110px] bg-sb-cream/85 shadow-[0_1px_2px_rgb(31_31_28/0.12)]";
+const tape = "absolute h-7 w-[110px] bg-sb-cream/85 shadow-[0_1px_2px_rgb(17_17_17/0.12)]";
 
 const delay = (ms: number) => ({ "--d": `${ms}ms` }) as CSSProperties;
-const pill = "sb-pill inline-flex items-center gap-2 whitespace-nowrap rounded-full font-display uppercase tracking-[1.6px] outline-none focus-visible:ring-2 focus-visible:ring-sb-blue focus-visible:ring-offset-2";
+const pill = "sb-pill inline-flex items-center gap-2 whitespace-nowrap rounded-full font-sans font-semibold uppercase tracking-[0.08em] outline-none focus-visible:ring-2 focus-visible:ring-sb-blue focus-visible:ring-offset-2";
 const inkPill = cn(pill, "bg-sb-ink px-6 py-3.5 text-[13px] text-sb-paper hover:bg-black lg:text-sm");
-const moreLink = "group inline-flex w-fit items-center gap-2.5 font-display text-sm uppercase tracking-[1.6px] text-sb-blue-ink outline-none focus-visible:underline";
+const moreLink = "group inline-flex w-fit items-center gap-2.5 font-sans text-sm font-semibold uppercase tracking-[0.08em] text-sb-blue-ink outline-none focus-visible:underline";
 
 /* ── small pieces ─────────────────────────────────────────────────────── */
 
@@ -102,7 +102,7 @@ function Ribbon({ items, className, reverse }: { items: string[]; className: str
     <div className="flex shrink-0 items-center gap-[18px] pr-[18px] lg:gap-[26px] lg:pr-[26px]">
       {items.map((item, i) => (
         <span key={i} className="flex items-center gap-[18px] lg:gap-[26px]">
-          <span className="whitespace-nowrap font-display text-lg uppercase tracking-[1.4px] lg:text-2xl">{item}</span>
+          <span className="whitespace-nowrap font-display text-xl font-extrabold font-stretch-condensed uppercase tracking-[0.02em] lg:text-[28px]">{item}</span>
           <Icon name="sparkle" className="size-4 lg:size-[18px]" />
         </span>
       ))}
@@ -173,7 +173,7 @@ function Hero() {
           />
           {/* Lightens the sky behind the headline's lower half, so the ink reads. */}
           <div aria-hidden className="absolute inset-x-0 top-0 h-2/5 bg-linear-to-b from-sb-paper/50 to-transparent" />
-          <p className="sb-rise absolute bottom-3 left-3 flex items-center gap-2 whitespace-nowrap rounded-full bg-sb-paper/90 px-[18px] py-2.5 font-display text-[13px] uppercase tracking-[1.6px] backdrop-blur-sm max-[359px]:px-3 max-[359px]:text-[11px] lg:bottom-7 lg:left-8" style={delay(HERO_BEATS.chip)}>
+          <p className="sb-rise absolute bottom-3 left-3 flex items-center gap-2 whitespace-nowrap rounded-full bg-sb-paper/90 px-[18px] py-2.5 font-sans text-[13px] font-semibold uppercase tracking-[0.08em] backdrop-blur-sm max-[359px]:px-3 max-[359px]:text-[11px] lg:bottom-7 lg:left-8" style={delay(HERO_BEATS.chip)}>
             <Icon name="pin" className="size-3.5" />
             North Brooklyn &amp; Queens
           </p>
@@ -254,14 +254,14 @@ function NorthBrooklyn() {
           <h2 id="brooklyn-title" className={cn(h2, "motion-scroll-reveal")}>
             We’re in North Brooklyn too.
           </h2>
-          <p className="motion-scroll-reveal max-w-[440px] font-geist text-[17px] leading-[1.6]">
+          <p className="motion-scroll-reveal max-w-[440px] font-sans text-[17px] leading-[1.6]">
             Greenpoint, Williamsburg, East Williamsburg and Bushwick sit across Newtown Creek from Long Island City.
           </p>
           <ul className="grid max-w-[480px] grid-cols-2 gap-1.5">
             {NORTH_BROOKLYN.map((n) => (
-              <li key={n.name} className={cn("sb-stamp sb-paper flex min-h-[112px] flex-col justify-between gap-3 p-5", n.tone)}>
+              <li key={n.name} className={cn("sb-stamp flex min-h-[112px] flex-col justify-between gap-3 p-5", n.tone)}>
                 <Icon name="sparkle" className="size-4 opacity-60" />
-                <span className="font-editorial text-[26px] leading-[1.09] tracking-[0.3px]">{n.name}</span>
+                <span className="font-display text-[26px] font-extrabold font-stretch-condensed leading-[1.05]">{n.name}</span>
               </li>
             ))}
           </ul>
@@ -306,7 +306,7 @@ function WhoYoullMeet() {
       <h2 id="meet-title" className="motion-scroll-reveal font-script text-[clamp(3.625rem,8.4vw,7.5rem)] leading-none text-sb-blue text-balance">
         who you’ll meet here
       </h2>
-      <ul className="flex flex-col items-center font-editorial text-[clamp(1.875rem,4.7vw,4.25rem)] italic leading-[1.08] tracking-[-0.5px]">
+      <ul className="flex flex-col items-center font-display text-[clamp(1.875rem,4.7vw,4.25rem)] font-extrabold font-stretch-condensed leading-[1.04] tracking-[-0.01em]">
         {ROLES.map((line, i) => (
           <li key={i} className="motion-scroll-reveal">
             {line.map((r) => (
@@ -325,7 +325,7 @@ function WhoYoullMeet() {
         a generous, engaged community across North Brooklyn and Queens
       </p>
 
-      <div className="sb-paper mt-12 grid w-full max-w-[1120px] items-center gap-x-14 gap-y-10 rounded-[22px] bg-sb-cream px-6 pb-10 pt-12 text-left lg:mt-20 lg:grid-cols-[280px_1fr] lg:p-14 xl:gap-x-20 xl:px-20">
+      <div className="mt-12 grid w-full max-w-[1120px] items-center gap-x-14 gap-y-10 rounded-[22px] bg-sb-cream px-6 pb-10 pt-12 text-left lg:mt-20 lg:grid-cols-[280px_1fr] lg:p-14 xl:gap-x-20 xl:px-20">
         <div className="relative mx-auto w-[210px] lg:w-full">
           <span aria-hidden className={cn(tape, "-top-3.5 left-1/2 z-10 -ml-[55px] -rotate-3 bg-sb-paper/85")} />
           <img src={deskFlatlay} alt="" loading="lazy" className={cn("aspect-[230/176] w-full -rotate-4 rounded-[14px] object-cover", lift)} />
@@ -335,7 +335,7 @@ function WhoYoullMeet() {
           <p className="motion-scroll-reveal font-display text-[clamp(1.5rem,2.5vw,2.125rem)] leading-[1.25] text-balance">
             The Women’s Collective brings women across North Brooklyn and Queens together to meet, share knowledge, support one another’s work, and build real relationships close to home.
           </p>
-          <p className="motion-scroll-reveal max-w-[620px] font-geist text-[17px] leading-[1.6] text-sb-muted">
+          <p className="motion-scroll-reveal max-w-[620px] font-sans text-[17px] leading-[1.6] text-sb-muted">
             When women know who is around them, they can recommend each other, collaborate, show up for each other’s events, and create opportunities that would be harder to build alone.
           </p>
           <JoinButton className="mt-2" />
@@ -359,7 +359,7 @@ function MeetTheMembers() {
       <div className="flex flex-col items-center gap-2.5">
         <p className={cn(script, "text-sb-blue-ink")}>meet the members</p>
         <h2 id="members-title" className={cn(h2, "motion-scroll-reveal")}>Women doing remarkable work nearby.</h2>
-        <p className="max-w-[560px] font-geist text-[17px] leading-[1.6] text-sb-muted">Discover the people, practices, and ideas taking shape across North Brooklyn and Queens.</p>
+        <p className="max-w-[560px] font-sans text-[17px] leading-[1.6] text-sb-muted">Discover the people, practices, and ideas taking shape across North Brooklyn and Queens.</p>
       </div>
       {portraits.length > 0 && (
         <ul className="flex flex-wrap justify-center gap-x-6 gap-y-7 px-2 pb-6 pt-3">
@@ -386,11 +386,11 @@ function MeetTheMembers() {
 
 function Brick({ title, text, tone }: (typeof BRICKS)[number]) {
   return (
-    <article className={cn("sb-stamp sb-paper motion-scroll-reveal flex min-h-[230px] flex-col justify-between gap-8 p-7 lg:min-h-[300px] xl:p-9", tone)}>
+    <article className={cn("sb-stamp motion-scroll-reveal flex min-h-[230px] flex-col justify-between gap-8 p-7 lg:min-h-[300px] xl:p-9", tone)}>
       <Icon name="sparkle" className="size-5 opacity-60" />
       <div className="flex flex-col gap-2.5">
-        <h3 className="font-editorial text-[32px] leading-[1.09] tracking-[0.3px] xl:text-[38px]">{title}</h3>
-        <p className="max-w-[36ch] font-geist text-base leading-6">{text}</p>
+        <h3 className="font-display text-[32px] leading-[1.09] tracking-[0.3px] xl:text-[38px]">{title}</h3>
+        <p className="max-w-[36ch] font-sans text-base leading-6">{text}</p>
       </div>
     </article>
   );
@@ -402,9 +402,9 @@ function Bricklayer() {
     // Rows use min-heights, never fixed ones, so copy can't spill out of a brick at in-between widths.
     <section id="take-part" aria-labelledby="bricks-title" className="scroll-mt-20 bg-sb-cream">
       <div className="mx-auto grid max-w-[1440px] gap-2 p-2 md:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr]">
-        <div className="sb-stamp sb-paper flex flex-col justify-between gap-12 bg-sb-olive px-7 pb-8 pt-9 text-white md:col-span-2 lg:col-span-1 lg:row-span-2 lg:px-10 lg:py-12">
-          <h2 id="bricks-title" className="font-editorial text-[clamp(2.25rem,3.3vw,3.125rem)] leading-[1.06] tracking-[0.3px] text-balance">Connections that move work forward.</h2>
-          <p className="max-w-[34ch] font-geist text-[17px] leading-[26px] text-white">Not networking for networking’s sake. This is a place to build genuine relationships and support women-owned work.</p>
+        <div className="sb-stamp flex flex-col justify-between gap-12 bg-sb-olive px-7 pb-8 pt-9 text-white md:col-span-2 lg:col-span-1 lg:row-span-2 lg:px-10 lg:py-12">
+          <h2 id="bricks-title" className="font-display text-[clamp(2.25rem,3.3vw,3.125rem)] leading-[1.06] tracking-[0.3px] text-balance">Connections that move work forward.</h2>
+          <p className="max-w-[34ch] font-sans text-[17px] leading-[26px] text-white">Not networking for networking’s sake. This is a place to build genuine relationships and support women-owned work.</p>
         </div>
         <Brick {...share} />
         <div className="sb-stamp group h-[230px] overflow-hidden md:h-auto">
@@ -434,7 +434,7 @@ function Constellation() {
           <h2 id="constellation-title" className={cn(h2, "motion-scroll-reveal")}>
             Every connection makes the whole community stronger
           </h2>
-          <p className="motion-scroll-reveal max-w-[440px] font-geist text-[17px] leading-[1.6]">
+          <p className="motion-scroll-reveal max-w-[440px] font-sans text-[17px] leading-[1.6]">
             Each neighborhood has its own identity and color. The central star is the point where those neighborhoods and connections meet.
           </p>
           <Link to="/members" className={cn(pill, "mt-1 px-[22px] py-3 text-[13px] ring-[1.5px] ring-sb-ink ring-inset hover:bg-sb-ink hover:text-sb-sun")}>
@@ -494,7 +494,7 @@ function Founder() {
             <h2 id="founder-title" className="motion-scroll-reveal whitespace-nowrap font-display text-[clamp(3.125rem,5.8vw,5.25rem)] leading-none">Meet Nataša</h2>
             <span aria-hidden className="mb-[0.4em] inline-block rotate-6 font-script text-[32px] leading-none text-sb-sun transition-[rotate,scale] duration-300 hover:-rotate-6 hover:scale-110 lg:text-[52px]">(hi!)</span>
           </div>
-          <p className="motion-scroll-reveal max-w-[560px] font-geist text-[17px] leading-7 text-sb-paper/75">
+          <p className="motion-scroll-reveal max-w-[560px] font-sans text-[17px] leading-7 text-sb-paper/75">
             Nataša Tuohy is a New York–based architectural and interior designer whose work brings European sensibility together with New York pragmatism. Educated at the University of Florence, she founded her Greenpoint studio around thoughtful spaces, trusted collaboration, and enduring relationships.
           </p>
           <a href="https://natasatuohy.com/about/" target="_blank" rel="noreferrer" className={cn(pill, "mt-1 w-fit bg-sb-sun px-6 py-3.5 text-sm text-sb-ink hover:bg-[#f5dc3c] focus-visible:ring-offset-sb-night")}>
@@ -520,7 +520,7 @@ function Membership() {
   return (
     <section aria-labelledby="apply-title" className={cn(wrap, band)}>
       <div className="relative">
-        <div aria-hidden className="absolute -top-3.5 left-5 z-10 h-7 w-[100px] -rotate-5 bg-[#F3ECE4]/80 lg:-top-4 lg:left-8 lg:h-[34px] lg:w-[132px]" />
+        <div aria-hidden className="absolute -top-3.5 left-5 z-10 h-7 w-[100px] -rotate-5 bg-white/80 lg:-top-4 lg:left-8 lg:h-[34px] lg:w-[132px]" />
         <div className="group relative flex flex-col overflow-hidden rounded-md text-sb-paper lg:flex-row">
           <img src={nightSky} alt="" loading="lazy" className="absolute inset-0 size-full -scale-x-100 object-cover transition-[scale] duration-[2s] ease-[var(--ease-gentle)] group-hover:-scale-x-105 group-hover:scale-y-105" />
           <div aria-hidden className="absolute inset-0 bg-linear-to-b from-[#0A0F2E33] to-[#0A0F2EB8] lg:bg-linear-to-r" />
@@ -546,7 +546,7 @@ function Membership() {
                 <span className="tracking-[2px]">ADMIT ONE</span>
                 <span className="tracking-[1px] text-sb-paper/65">Nº 0001 — NEW YORK</span>
               </div>
-              <p className="font-geist text-[17px] leading-[27px] text-sb-paper/85">The application helps us learn about you, your work, and how you would like to participate in the community.</p>
+              <p className="font-sans text-[17px] leading-[27px] text-sb-paper/85">The application helps us learn about you, your work, and how you would like to participate in the community.</p>
             </div>
             <JoinButton className="w-fit" />
           </div>
@@ -563,7 +563,7 @@ function Faq() {
         <span className={cn(script, "text-sb-blue")}>come as you are</span>
         <h2 id="faq-title" className="font-display text-[42px] leading-[1.03] tracking-[-1px] lg:text-[64px]">Questions, answered.</h2>
         <div className="flex flex-col gap-[18px] pt-3.5">
-          <p className="font-geist text-[17px] leading-[1.6] text-sb-muted">Still wondering about something? Send us a note — a real person reads every one.</p>
+          <p className="font-sans text-[17px] leading-[1.6] text-sb-muted">Still wondering about something? Send us a note — a real person reads every one.</p>
           <Link to="/contact" className={moreLink}>
             <span className="sb-link">Ask us anything</span> <Icon name="arrow" className="size-4 transition-[translate] duration-300 group-hover:translate-x-[3px]" />
           </Link>
@@ -574,7 +574,7 @@ function Faq() {
         {FAQ.map((item, i) => (
           <details key={item.q} name="faq" open={i === 0} className="sb-faq group rounded-md border-b border-sb-ink/15 transition-[background-color,border-color] duration-500 open:border-transparent open:bg-sb-mint">
             <summary className="flex cursor-pointer items-center gap-4 rounded-md px-4 py-5 outline-none focus-visible:ring-2 focus-visible:ring-sb-blue lg:px-8 lg:py-[26px]">
-              <span className="flex-1 font-display text-[19px] leading-[23px] transition-[translate] duration-300 group-hover:translate-x-1 lg:text-[26px] lg:leading-tight">{item.q}</span>
+              <span className="flex-1 font-display text-[19px] font-bold font-stretch-semi-condensed leading-[23px] transition-[translate] duration-300 group-hover:translate-x-1 lg:text-[26px] lg:leading-tight">{item.q}</span>
               <span className="sb-toggle grid size-9 shrink-0 place-items-center rounded-full bg-sb-paper ring-1 ring-sb-ink/25 group-open:bg-sb-ink group-open:text-sb-paper group-open:ring-0 lg:size-11">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" aria-hidden className="size-[18px]">
                   <path d="M5 12h14" />
@@ -582,7 +582,7 @@ function Faq() {
                 </svg>
               </span>
             </summary>
-            <p className="max-w-[62ch] px-4 pb-7 font-geist text-[15px] leading-6 lg:px-8 lg:pb-9 lg:text-[17px] lg:leading-[27px]">{item.a}</p>
+            <p className="max-w-[62ch] px-4 pb-7 font-sans text-[15px] leading-6 lg:px-8 lg:pb-9 lg:text-[17px] lg:leading-[27px]">{item.a}</p>
           </details>
         ))}
         <Link to="/faq" className={cn(moreLink, "mt-6 lg:ml-8")}>

@@ -11,37 +11,32 @@
 #main [tabindex="-1"]:focus { outline: none; }
 
 /* ── Scrapbook homepage (app-only; not part of the design-system attach) ── */
-/* Self-hosted (CSP is font-src 'self'); latin subset, SIL OFL. */
+/* Self-hosted (CSP is font-src 'self'); latin subset, SIL OFL. Text faces are Archivo (design-system theme.css); these are
+   the accents: Caveat for hand-lettered lines, Fragment Mono for indexes and ticket meta. */
 @font-face { font-family: "Caveat"; src: url("./assets/fonts/home/caveat-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
-@font-face { font-family: "Instrument Serif"; src: url("./assets/fonts/home/instrument-serif-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
-@font-face { font-family: "Instrument Serif"; src: url("./assets/fonts/home/instrument-serif-italic.woff2") format("woff2"); font-weight: 400; font-style: italic; font-display: swap; }
-@font-face { font-family: "Geist"; src: url("./assets/fonts/home/geist-variable.woff2") format("woff2"); font-weight: 400 600; font-display: swap; }
 @font-face { font-family: "Fragment Mono"; src: url("./assets/fonts/home/fragment-mono-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
-/* Airmail (/account): IBM Plex Mono for its stamps and labels (Gilda Display and Geist come from the shared faces). Latin subset. */
+/* Airmail (/account): IBM Plex Mono for its stamps and labels (Archivo comes from the shared theme). Latin subset. */
 @font-face { font-family: "IBM Plex Mono"; src: url("./assets/fonts/airmail/ibm-plex-mono-latin-500-normal.woff2") format("woff2"); font-weight: 500; font-display: swap; }
 @font-face { font-family: "IBM Plex Mono"; src: url("./assets/fonts/airmail/ibm-plex-mono-latin-600-normal.woff2") format("woff2"); font-weight: 600; font-display: swap; }
 @font-face { font-family: "IBM Plex Mono"; src: url("./assets/fonts/airmail/ibm-plex-mono-latin-700-normal.woff2") format("woff2"); font-weight: 700; font-display: swap; }
 @theme {
   --font-script: "Caveat", cursive;
-  --font-editorial: "Instrument Serif", Georgia, serif;
-  --font-geist: "Geist", system-ui, sans-serif;
   --font-fragment: "Fragment Mono", ui-monospace, monospace;
-  --font-gilda: "Gilda Display", Georgia, serif;
   --font-plex: "IBM Plex Mono", ui-monospace, monospace;
-  --color-sb-ink: #1f1f1c;
-  --color-sb-paper: #fcfcfa;
+  --color-sb-ink: #111111;
+  --color-sb-paper: #ffffff;
   --color-sb-blue: #1f8ad6;
   --color-sb-mint: #c6f3df;
   --color-sb-lilac: #d8cdf8;
   --color-sb-sun: #edd22e;
   --color-sb-night: #0b0b0a;
-  --color-sb-muted: #6b6b66;
-  --color-sb-cream: #f3f0e8;
+  --color-sb-muted: #595959;
+  --color-sb-cream: #f4f4f4;
   --color-sb-blue-ink: #1670b0;
   --color-sb-olive: #737a4e;
   --color-sb-mustard: #d9ae5c;
   --color-sb-rose: #e6b5c1;
-  --color-sb-shell: #faf6ee;
+  --color-sb-shell: #f4f4f4;
   --color-sb-terracotta: #b85a45;
   --color-sb-danger: #c2412d;
 }
@@ -68,10 +63,6 @@ html:has(.sb-home) { scroll-behavior: smooth; }
     -webkit-mask-box-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cpath d='M6 0C10.5 0 10.5 6 15 6S19.5 0 24 0A6 6 0 0 1 30 6C30 10.5 24 10.5 24 15S30 19.5 30 24A6 6 0 0 1 24 30C19.5 30 19.5 24 15 24S10.5 30 6 30A6 6 0 0 1 0 24C0 19.5 6 19.5 6 15S0 10.5 0 6A6 6 0 0 1 6 0Z'/%3E%3C/svg%3E") 6 / 6px round;
   }
 }
-/* Paper grain over the brick's own background-color (data: URI is CSP-safe). */
-.sb-paper {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9 0.12' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
 
 /* Underline that draws in from the left */
 .sb-link {
@@ -87,7 +78,7 @@ html:has(.sb-home) { scroll-behavior: smooth; }
   transition: translate var(--duration-base) var(--ease-snap), scale var(--duration-fast) var(--ease-snap),
     box-shadow var(--duration-base) var(--ease-snap), background-color var(--duration-base);
 }
-.sb-pill:hover { translate: 0 -2px; box-shadow: 0 12px 26px -14px rgb(31 31 28 / 0.55); }
+.sb-pill:hover { translate: 0 -2px; box-shadow: 0 12px 26px -14px rgb(17 17 17 / 0.55); }
 .sb-pill:active { translate: 0 0; scale: 0.97; }
 .sb-pill .sb-arrow { transition: translate var(--duration-base) var(--ease-snap); }
 .sb-pill:hover .sb-arrow { translate: 3px 0; }
@@ -150,7 +141,7 @@ html:has(.sb-home) { scroll-behavior: smooth; }
 /* Scroll-linked motion: progressive (no support = static, fully visible) */
 @media (prefers-reduced-motion: no-preference) {
   @supports (animation-timeline: scroll()) {
-    @keyframes sb-nav-solid { to { background-color: rgb(252 252 250 / 0.86); backdrop-filter: blur(14px); box-shadow: 0 1px 0 rgb(31 31 28 / 0.08); } }
+    @keyframes sb-nav-solid { to { background-color: rgb(255 255 255 / 0.9); backdrop-filter: blur(14px); box-shadow: 0 1px 0 rgb(17 17 17 / 0.08); } }
     @keyframes sb-parallax { from { translate: 0 var(--p-from, -5%); } to { translate: 0 var(--p-to, 5%); } }
     .sb-nav { animation: sb-nav-solid linear both; animation-timeline: scroll(); animation-range: 0 140px; }
     .sb-parallax { animation: sb-parallax linear both; animation-timeline: view(); }

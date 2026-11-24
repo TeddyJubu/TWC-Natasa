@@ -178,7 +178,7 @@ function MemberPage() {
             <div className="flex flex-wrap items-end justify-between gap-4">
               <h2 className="twc-h3 min-w-0 md:text-[44px]">More neighbors from {member.neighborhood}</h2>
               {hood && (
-                <Link to="/neighborhoods/$slug" params={{ slug: hood.slug }} className="twc-link font-display text-[13px] uppercase leading-5 tracking-[1.6px] text-sb-blue-ink">
+                <Link to="/neighborhoods/$slug" params={{ slug: hood.slug }} className="twc-link font-sans font-semibold text-[13px] uppercase leading-5 tracking-[0.08em] text-sb-blue-ink">
                   See all of {hood.name} <span aria-hidden>→</span>
                 </Link>
               )}

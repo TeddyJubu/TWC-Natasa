@@ -110,7 +110,7 @@ export const CurvedGallery = React.forwardRef<HTMLDivElement, CurvedGalleryProps
               items={images.map((image) => ({ image: image.src, text: image.alt }))}
               bend={bend}
               borderRadius={0.06}
-              font={'400 30px "Gilda Display"'}
+              font={'800 30px "Archivo"'}
               scrollSpeed={scrollSpeed}
               scrollEase={scrollEase}
             />

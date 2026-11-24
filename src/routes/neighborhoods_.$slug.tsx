@@ -62,7 +62,7 @@ function NeighborhoodPage() {
       <AppNav />
       <main id="main" tabIndex={-1} className="outline-none" style={style}>
         <div className="twc-wrap flex flex-col gap-14 pb-[104px] pt-10">
-          <Link to="/neighborhoods" className="twc-link inline-flex items-center gap-2 self-start font-display text-[13px] uppercase tracking-[1.6px]">
+          <Link to="/neighborhoods" className="twc-link inline-flex items-center gap-2 self-start font-sans font-semibold text-[13px] uppercase tracking-[0.08em]">
             <Icon name="arrowLeft" />All neighborhoods
           </Link>
           <Hero hood={hood} />
@@ -144,7 +144,7 @@ function Members({ hood, initial, onOpen }: { hood: Neighborhood; initial?: Memb
     <section aria-labelledby="hood-members" className="flex flex-col gap-7">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <h2 id="hood-members" className="twc-h3 min-w-0 text-[clamp(2rem,5vw,2.5rem)]">Women building in {hood.name}</h2>
-        <Link to="/members" className="twc-link font-display text-[13px] uppercase leading-5 tracking-[1.6px] text-sb-blue-ink">See them in the directory <span aria-hidden>→</span></Link>
+        <Link to="/members" className="twc-link font-sans font-semibold text-[13px] uppercase leading-5 tracking-[0.08em] text-sb-blue-ink">See them in the directory <span aria-hidden>→</span></Link>
       </div>
       {profiles.isPending ? (
         <p role="status" className="text-sm text-sb-muted">Loading members…</p>

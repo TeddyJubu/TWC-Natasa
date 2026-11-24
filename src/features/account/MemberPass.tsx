@@ -102,7 +102,7 @@ function MemberPass({ facts: f, nameId }: { facts: PassFacts; nameId: string }) 
               {[34, 48, 62, 76].map((y) => <path key={y} d={`M110 ${y} q12.5 -8 25 0 t25 0 t25 0 t25 0 t25 0 t25 0`} />)}
             </g>
           </g>
-          <g fill="currentColor" fontFamily="var(--font-geist)" fontWeight="600">
+          <g fill="currentColor" fontFamily="var(--font-sans)" fontWeight="600">
             <text fontSize="7.5" letterSpacing="1.6"><textPath href={`#${nameId}-ring`}>{ringText}</textPath></text>
             {since && <text x="55" y="54" textAnchor="middle" fontSize="13" letterSpacing="1">{date(since, { day: "numeric" })} {date(since, { month: "short" })}</text>}
             {since && <text x="55" y="67" textAnchor="middle" fontSize="9" letterSpacing="1.5">{date(since, { year: "numeric" })}</text>}
