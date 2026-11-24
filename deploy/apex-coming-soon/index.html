@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Women’s Collective</title>
+<meta name="description" content="A fellowship of founders, freelancers, and creatives. The full website is coming soon. Membership applications are open now.">
+<link rel="canonical" href="https://thewomenscollective.club/">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="The Women’s Collective">
+<meta property="og:description" content="A fellowship of founders, freelancers, and creatives. Membership applications are open now.">
+<meta property="og:url" content="https://thewomenscollective.club/">
+<meta property="og:image" content="https://thewomenscollective.club/assets/brand/dotted-star-og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The Women’s Collective">
+<meta name="twitter:image" content="https://thewomenscollective.club/assets/brand/dotted-star-og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#FFFFFF">
+
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/dotted-star-favicon.png">
+<link rel="apple-touch-icon" href="/assets/brand/dotted-star-touch.png">
+<link rel="preload" href="archivo-latin-wdth-normal.woff2" as="font" type="font/woff2" crossorigin>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "The Women's Collective",
+  "url": "https://thewomenscollective.club/",
+  "description": "A fellowship of founders, freelancers, and creatives."
+}
+</script>
+
+<style>
+/* Archivo variable (SIL OFL 1.1, archivo-OFL.txt), self-hosted: wght 100–900, wdth 62–125. */
+@font-face{
+  font-family:"Archivo";
+  font-style:normal;
+  font-display:swap;
+  font-weight:100 900;
+  font-stretch:62% 125%;
+  src:url(archivo-latin-wdth-normal.woff2) format("woff2-variations"), url(archivo-latin-wdth-normal.woff2) format("woff2");
+}
+
+:root{
+  --bg:#FFFFFF;
+  --ink:#111111;
+  --ink-soft:#4A4A4A;   /* 8.9:1 on white */
+  --tile-ink:#000000;   /* black on every tile colour: lowest is red, 4.79:1 */
+  --f:"Archivo", "Helvetica Neue", Arial, sans-serif;
+  --wrap:1240px;
+  --gutter:clamp(1rem, 4vw, 3rem);
+}
+
+*,*::before,*::after{ box-sizing:border-box; }
+html{ -webkit-text-size-adjust:100%; }
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--f);
+  font-weight:400;
+  font-stretch:100%;
+  font-size:1.0625rem;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+img,svg{ display:block; }
+a{ color:inherit; }
+
+:focus-visible{ outline:3px solid var(--ink); outline-offset:3px; }
+
+.skip{
+  position:absolute; left:1rem; top:-4rem; z-index:20;
+  padding:.75rem 1rem; background:var(--ink); color:var(--bg);
+  font-weight:600; text-decoration:none;
+}
+.skip:focus{ top:1rem; }
+.sr-only{
+  position:absolute; width:1px; height:1px; margin:-1px; padding:0;
+  overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;
+}
+
+.wrap{ width:100%; max-width:var(--wrap); margin:0 auto; padding:0 var(--gutter); }
+
+/* Headlines: heavy and condensed. */
+.display{
+  font-weight:800;
+  font-stretch:75%;
+  text-transform:uppercase;
+  letter-spacing:-.01em;
+  line-height:.88;
+  margin:0;
+}
+
+/* ---------------------------------------------------------------- HERO */
+.hero{ padding:clamp(2.5rem, 7vw, 5.5rem) 0 clamp(3rem, 7vw, 5rem); }
+.logo{ width:clamp(64px, 8vw, 96px); height:auto; }
+.eyebrow{
+  margin:clamp(1.5rem, 3vw, 2.25rem) 0 1rem;
+  font-weight:700; font-stretch:75%;
+  font-size:.875rem; letter-spacing:.14em; text-transform:uppercase;
+}
+.hero h1{ font-size:clamp(3.25rem, 12vw, 9.5rem); max-width:12ch; }
+.lede{
+  margin:clamp(1.25rem, 3vw, 2rem) 0 0;
+  max-width:34ch;
+  font-size:clamp(1.125rem, 1.6vw, 1.375rem);
+  font-weight:500;
+  line-height:1.4;
+}
+.btn{
+  display:inline-flex; align-items:center; gap:.75rem;
+  margin-top:clamp(1.5rem, 3vw, 2.25rem);
+  padding:1.05rem 1.5rem;
+  background:var(--ink); color:var(--bg);
+  font-weight:700; font-stretch:87.5%;
+  font-size:1.0625rem; letter-spacing:.02em; text-transform:uppercase;
+  text-decoration:none;
+  border:2px solid var(--ink);
+  transition:background-color .2s ease, color .2s ease;
+}
+.btn:hover{ background:var(--bg); color:var(--ink); }
+.arrow{ width:1.1em; height:1.1em; flex:none; }
+.btn .arrow{ transition:transform .2s ease; }
+.btn:hover .arrow{ transform:translateX(3px); }
+
+/* ---------------------------------------------------------------- CONSTELLATIONS */
+.constellations{ padding:0 0 clamp(3.5rem, 8vw, 6rem); }
+.constellations-head{
+  display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between;
+  gap:.75rem 2rem;
+  border-top:2px solid var(--ink);
+  padding-top:1.25rem;
+  margin-bottom:clamp(1.25rem, 3vw, 2rem);
+}
+.constellations h2{ font-size:clamp(2.25rem, 5vw, 3.75rem); }
+.constellations-head p{ margin:0; max-width:36ch; color:var(--ink-soft); }
+
+.tiles{
+  list-style:none; margin:0; padding:0;
+  display:grid; gap:clamp(.75rem, 1.4vw, 1.125rem);
+  grid-template-columns:repeat(5, minmax(0, 1fr));
+}
+@media (max-width:1000px){ .tiles{ grid-template-columns:repeat(3, minmax(0, 1fr)); } }
+@media (max-width:640px){ .tiles{ grid-template-columns:1fr; } }
+
+.tile{
+  position:relative;
+  aspect-ratio:1 / 1;
+  display:flex; flex-direction:column; justify-content:space-between;
+  padding:clamp(.9rem, 1.4vw, 1.25rem);
+  background:var(--c);
+  color:var(--tile-ink);
+  text-decoration:none;
+  font-weight:800; font-stretch:75%; text-transform:uppercase;
+  line-height:.9;
+}
+/* ponytail: one column of full-width squares is ~1800px of scroll on a phone; 3:2 keeps the tile shape readable. */
+@media (max-width:640px){ .tile{ aspect-ratio:3 / 2; } }
+.tile-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:.5rem; }
+.tile-no{ font-size:clamp(1.25rem, 1.8vw, 1.5rem); }
+.tile-code{ font-size:clamp(4rem, 7.5vw, 6.5rem); letter-spacing:-.02em; }
+.tile-name{ font-size:clamp(1.35rem, 2vw, 1.75rem); letter-spacing:.005em; }
+.tile-foot{ display:flex; flex-direction:column; gap:.6rem; }
+.tile-cta, .tile-tag{
+  align-self:flex-start;
+  display:inline-flex; align-items:center; gap:.4rem;
+  font-weight:700; font-stretch:87.5%; font-size:.8125rem; letter-spacing:.08em;
+  line-height:1; padding:.45rem .6rem;
+}
+.tile-cta{ background:var(--tile-ink); color:var(--c); }
+.tile-tag{ border:1.5px solid var(--tile-ink); }
+
+/* Only North Brooklyn opens. The others keep full-contrast black text on a paler fill
+   (the colour mixed 55% with white) instead of lowered opacity, which would drop the text below AA. */
+.tile--nb{ --c:#5FD36E; }
+.tile--wq{ --c:#CEBBEE; } /* #A584E0 */
+.tile--sb{ --c:#9DCCEB; } /* #4DA3DB */
+.tile--up{ --c:#F7E7AE; } /* #F1D46C */
+.tile--dt{ --c:#EF908B; } /* #E2362C */
+
+a.tile{ box-shadow:0 0 0 2px var(--tile-ink); transition:transform .2s ease, box-shadow .2s ease; }
+a.tile:hover{ transform:translate(-4px, -4px); box-shadow:0 0 0 2px var(--tile-ink), 6px 6px 0 2px var(--tile-ink); }
+a.tile:hover .arrow{ transform:translateX(3px); }
+a.tile .arrow{ width:1em; height:1em; transition:transform .2s ease; }
+a.tile:focus-visible{ outline-offset:5px; }
+.tile--off{ cursor:default; }
+
+/* ---------------------------------------------------------------- FOOTER */
+.foot{ border-top:2px solid var(--ink); padding:1.25rem 0 2rem; font-size:.9375rem; }
+.foot p{ margin:0; }
+
+/* ---------------------------------------------------------------- STAR TRAIL */
+.trail{ position:fixed; inset:0; z-index:10; pointer-events:none; overflow:hidden; }
+.trail svg{ position:absolute; left:0; top:0; width:32px; height:32px; opacity:0; will-change:transform, opacity; }
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{ transition:none !important; }
+  a.tile:hover{ transform:none; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<main id="main" tabindex="-1">
+  <section class="hero" aria-labelledby="title">
+    <div class="wrap">
+      <img class="logo"
+           src="the-womens-collective-ink-256.webp"
+           srcset="the-womens-collective-ink-128.webp 128w, the-womens-collective-ink-256.webp 256w"
+           sizes="96px"
+           width="256" height="269" alt="">
+      <p class="eyebrow">Coming soon</p>
+      <h1 id="title" class="display">The Women’s Collective</h1>
+      <p class="lede">The full website is coming soon. Membership applications are open now.</p>
+      <a class="btn" href="https://join.thewomenscollective.club/join">
+        <span>Join The Women’s Collective</span>
+        <svg class="arrow" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"/></svg>
+      </a>
+    </div>
+  </section>
+
+  <section class="constellations" aria-labelledby="constellations-title">
+    <div class="wrap">
+      <div class="constellations-head">
+        <h2 id="constellations-title" class="display">Choose your constellation</h2>
+        <p>North Brooklyn is open for applications. The other constellations are coming soon.</p>
+      </div>
+
+      <ol class="tiles" role="list">
+        <li>
+          <a class="tile tile--nb" href="https://join.thewomenscollective.club/join?area=north-brooklyn">
+            <span class="tile-top"><span class="tile-no" aria-hidden="true">N&ordm;1</span></span>
+            <span class="tile-code" aria-hidden="true">NB</span>
+            <span class="tile-foot">
+              <span class="tile-name"><span class="sr-only">Constellation 1: </span>North Brooklyn</span>
+              <span class="tile-cta"><span>Apply now</span><svg class="arrow" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square"/></svg></span>
+            </span>
+          </a>
+        </li>
+        <li class="tile tile--wq tile--off">
+          <span class="tile-top"><span class="tile-no" aria-hidden="true">N&ordm;2</span></span>
+          <span class="tile-code" aria-hidden="true">WQ</span>
+          <span class="tile-foot">
+            <span class="tile-name"><span class="sr-only">Constellation 2: </span>Western Queens</span>
+            <span class="tile-tag">Coming soon<span class="sr-only">, not open yet</span></span>
+          </span>
+        </li>
+        <li class="tile tile--sb tile--off">
+          <span class="tile-top"><span class="tile-no" aria-hidden="true">N&ordm;3</span></span>
+          <span class="tile-code" aria-hidden="true">SB</span>
+          <span class="tile-foot">
+            <span class="tile-name"><span class="sr-only">Constellation 3: </span>Brownstone Brooklyn</span>
+            <span class="tile-tag">Coming soon<span class="sr-only">, not open yet</span></span>
+          </span>
+        </li>
+        <li class="tile tile--up tile--off">
+          <span class="tile-top"><span class="tile-no" aria-hidden="true">N&ordm;4</span></span>
+          <span class="tile-code" aria-hidden="true">UP</span>
+          <span class="tile-foot">
+            <span class="tile-name"><span class="sr-only">Constellation 4: </span>Uptown Manhattan</span>
+            <span class="tile-tag">Coming soon<span class="sr-only">, not open yet</span></span>
+          </span>
+        </li>
+        <li class="tile tile--dt tile--off">
+          <span class="tile-top"><span class="tile-no" aria-hidden="true">N&ordm;5</span></span>
+          <span class="tile-code" aria-hidden="true">DT</span>
+          <span class="tile-foot">
+            <span class="tile-name"><span class="sr-only">Constellation 5: </span>Downtown Manhattan</span>
+            <span class="tile-tag">Coming soon<span class="sr-only">, not open yet</span></span>
+          </span>
+        </li>
+      </ol>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap"><p>&copy; The Women’s Collective</p></div>
+</footer>
+
+<script>
+/* Star trail: sparkles in the five constellation colours follow a mouse or pen.
+   Off for touch, for pointers that can't hover, and under prefers-reduced-motion.
+   Same glitter as the app's ImageTrail: a deterministic spread, not random. */
+(function () {
+  var fine = window.matchMedia("(hover: hover) and (pointer: fine)");
+  var still = window.matchMedia("(prefers-reduced-motion: reduce)");
+  if (!fine.matches || !("animate" in document.documentElement)) return;
+
+  var NS = "http://www.w3.org/2000/svg";
+  var COLORS = ["#5FD36E", "#A584E0", "#4DA3DB", "#F1D46C", "#E2362C"];
+  var COUNT = 24;
+  var layer = document.createElement("div");
+  layer.className = "trail";
+  layer.setAttribute("aria-hidden", "true");
+  var stars = [];
+  for (var i = 0; i < COUNT; i++) {
+    var svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("viewBox", "0 0 96 96");
+    var path = document.createElementNS(NS, "path");
+    path.setAttribute("d", "M48 4C52 30 66 44 92 48 66 52 52 66 48 92 44 66 30 52 4 48 30 44 44 30 48 4Z");
+    path.setAttribute("fill", COLORS[i % COLORS.length]);
+    svg.appendChild(path);
+    layer.appendChild(svg);
+    stars.push(svg);
+  }
+  document.body.appendChild(layer);
+
+  var n = 0, px = -100, py = -100, last = null, frame = 0;
+
+  function paint() {
+    frame = 0;
+    var e = last;
+    if (!e || e.pointerType === "touch" || still.matches) return;
+    if (Math.hypot(e.clientX - px, e.clientY - py) < 11) return;
+    px = e.clientX; py = e.clientY;
+
+    var star = stars[n % COUNT];
+    n += 1;
+    var rot = (n * 47) % 90;
+    var s = 0.5 + ((n * 37) % 70) / 100;
+    var x = e.clientX + ((n * 29) % 32) - 16;
+    var y = e.clientY + ((n * 17) % 32) - 16;
+    function at(k, turn) {
+      return "translate3d(" + x + "px," + y + "px,0) translate(-50%,-50%) scale(" + k + ") rotate(" + (rot + turn) + "deg)";
+    }
+    star.getAnimations().forEach(function (a) { a.cancel(); });
+    star.animate([
+      { opacity: 0, transform: at(0, -45) },
+      { opacity: 1, transform: at(s, 0), offset: 0.18 },
+      { opacity: 0.3, transform: at(s * 0.65, 20), offset: 0.42 },
+      { opacity: 1, transform: at(s * 0.95, 40), offset: 0.62 },
+      { opacity: 0.25, transform: at(s * 0.5, 60), offset: 0.82 },
+      { opacity: 0, transform: at(0, 90) }
+    ], { duration: 900, easing: "ease-out", fill: "both" });
+  }
+
+  window.addEventListener("pointermove", function (e) {
+    last = e;
+    if (!frame) frame = requestAnimationFrame(paint);
+  }, { passive: true });
+})();
+</script>
+</body>
+</html>
