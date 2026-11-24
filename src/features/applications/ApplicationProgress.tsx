@@ -1,19 +1,17 @@
 import * as React from "react";
 import { cn } from "@/index";
 
-const STEPS = ["About", "Work", "Community", "WhatsApp", "Spotlight", "Directory", "Headshot", "Events", "Contact", "Guidelines", "Finish"];
+const STEPS = ["About", "Work", "Community", "Events", "Contact", "Guidelines", "Finish"];
 
 /** The section number printed at the start of a `Section`'s index, e.g. 3 for "03 — Community connections". */
 const stepOf = (el: Element | null) => Number.parseInt(el?.closest<HTMLElement>("[data-step]")?.dataset.step ?? "", 10) || null;
 
 /**
  * Follows the section at about a third of the way down the screen, and the focused field for keyboard and screen-reader
- * users. It shows the printed section numbers, so step 07 is passed over while the headshot section is hidden.
+ * users, by the printed section numbers.
  */
-export function ApplicationProgress({ form, sectionsKey, errorCount, onShowErrors }: {
+export function ApplicationProgress({ form, errorCount, onShowErrors }: {
   form: React.RefObject<HTMLFormElement | null>;
-  /** Changes when a section appears or leaves, so the new set is observed. */
-  sectionsKey: string;
   errorCount: number;
   onShowErrors: () => void;
 }) {
@@ -36,7 +34,7 @@ export function ApplicationProgress({ form, sectionsKey, errorCount, onShowError
       root.removeEventListener("focusin", onFocus);
       observer?.disconnect();
     };
-  }, [form, sectionsKey]);
+  }, [form]);
 
   const label = `Step ${step} of ${STEPS.length}: ${STEPS[step - 1]}`;
   return (
@@ -57,7 +55,7 @@ export function ApplicationProgress({ form, sectionsKey, errorCount, onShowError
           </a>
         )}
       </div>
-      <ol aria-label="Application sections" className="mt-2 grid grid-cols-11 gap-1">
+      <ol aria-label="Application sections" className="mt-2 grid grid-cols-7 gap-1">
         {STEPS.map((name, i) => (
           <li
             key={name}

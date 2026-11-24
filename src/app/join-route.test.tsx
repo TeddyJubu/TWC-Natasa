@@ -279,24 +279,21 @@ describe("/join draft", () => {
   it("survives a reload, follow-ups included, but never the signature, date, newsletter or a consent", async () => {
     renderSignedOut();
     fillMinimum();
-    fireEvent.click(byLabel("Yes — apply"));
-    type(/directory biography/i, "Rosa bakes.");
-    check("I authorize publication of the selected information on The Women’s Collective website.");
+    fireEvent.click(within(screen.getByRole("group", { name: /sponsor or community partner/i })).getByRole("radio", { name: "Yes" }));
+    type(/describe your interest/i, "Hosting a bread class.");
     fireEvent.click(within(screen.getByRole("group", { name: /receive news/i })).getByRole("radio", { name: "Yes" }));
     expect(Object.keys(saved()!.values)).not.toEqual(expect.arrayContaining(["signature"]));
-    for (const name of ["signature", "date", "newsletter", "newsletter-consent", "guidelines", "final-confirmation", "directory-consent", "fax-number", "area"]) {
+    for (const name of ["signature", "date", "newsletter", "newsletter-consent", "guidelines", "final-confirmation", "fax-number", "area"]) {
       expect(saved()!.values[name]).toBeUndefined();
     }
     cleanup();
 
     renderSignedOut();
-    // By name: the restored directory section has its own "Full name" choice.
     await waitFor(() => expect(document.querySelector<HTMLInputElement>('input[name="full-name"]')!.value).toBe("Rosa Diaz"));
-    expect(field(/directory biography/i).value).toBe("Rosa bakes.");
+    expect(field(/describe your interest/i).value).toBe("Hosting a bread class.");
     expect((byLabel("Food and hospitality") as HTMLInputElement).checked).toBe(true);
     expect(field(/electronic signature/i).value).toBe("");
     expect((byLabel(/by submitting, i confirm/i) as HTMLInputElement).checked).toBe(false);
-    expect((byLabel("I authorize publication of the selected information on The Women’s Collective website.") as HTMLInputElement).checked).toBe(false);
     expect(screen.queryByLabelText(/I consent to receive collective email/)).toBeNull();
     expect(screen.getByText(/Your saved answers are back/)).toBeTruthy();
   }, 20_000); // Fills and re-renders the whole form twice.

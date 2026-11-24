@@ -24,9 +24,6 @@ const minimum: Entries = {
   "community-goals": ["Referrals", "Clients"],
   "ideal-referral": "Cafés that need a wholesale baker.",
   "member-support": ["Give referrals"],
-  whatsapp: "no",
-  spotlight: "no",
-  directory: "no",
   partner: "no",
   newsletter: "yes",
   "newsletter-consent": "on",
@@ -77,9 +74,6 @@ describe("parseApplication", () => {
         communityGoals: ["Referrals", "Clients"],
         idealReferral: "Cafés that need a wholesale baker.",
         memberSupport: ["Give referrals"],
-        whatsapp: { join: false },
-        spotlight: { choice: "no" },
-        directory: { choice: "no" },
         partner: { choice: "no" },
         newsletter: { subscribe: true, emailConsent: true },
         communityGuidelines: true,
@@ -103,31 +97,14 @@ describe("parseApplication", () => {
     expect(answers.events).toEqual(["Attend events", "Volunteer"]);
   });
 
-  it("reads consent checkboxes as booleans in the sections that ask for them", () => {
+  it("stores nothing for the retired WhatsApp, spotlight, directory and headshot questions, even if an old page sends them", () => {
     const { answers } = parseApplication(formData({
-      whatsapp: "yes", "whatsapp-number": "718-555-0101", "whatsapp-visibility": "on", "whatsapp-conduct": "on",
-      spotlight: "yes", "spotlight-focus": "My sourdough", "spotlight-consent": "on",
-      directory: "yes", "public-fields": ["Full name", "Website"], "directory-bio": "Rosa bakes.", services: "Bread",
-      "directory-consent": "on", "headshot-contact": "Email",
-      "headshot-official-only": "on", "headshot-photo-consent": "on", "headshot-placement": "on",
+      whatsapp: "yes", "whatsapp-number": "718-555-0101", spotlight: "yes", "spotlight-focus": "My sourdough",
+      directory: "yes", "directory-bio": "Rosa bakes.", services: "Bread", "headshot-contact": "Email",
     }));
-    expect(answers.whatsapp).toEqual({ join: true, number: "718-555-0101", numberVisible: true, keepRespectful: true });
-    expect(answers.spotlight).toEqual({ choice: "yes", focus: "My sourdough", publicationConsent: true });
-    expect(answers.directory).toEqual({
-      choice: "yes", publicFields: ["Full name", "Website"], bio: "Rosa bakes.", services: "Bread", publicationConsent: true,
-      headshot: { contact: "Email", officialOnly: true, photoConsent: true, placementNotGuaranteed: true },
-    });
+    for (const key of ["whatsapp", "spotlight", "directory"]) expect(answers).not.toHaveProperty(key);
     expect(answers.newsletter).toEqual({ subscribe: true, emailConsent: true });
     expect(parseApplication(formData({ newsletter: "no" }, ["newsletter-consent"])).answers.newsletter).toEqual({ subscribe: false });
-  });
-
-  it("requires photo permission for the directory, but no payment agreement", () => {
-    const directory = {
-      directory: "yes", "directory-bio": "Rosa bakes.", services: "Bread", "directory-consent": "on",
-      "headshot-official-only": "on", "headshot-photo-consent": "on", "headshot-placement": "on",
-    };
-    expect(() => parseApplication(formData(directory))).not.toThrow();
-    expect(() => parseApplication(formData(directory, ["headshot-photo-consent"]))).toThrow(/authorize photography/);
   });
 
   it("stores the chosen neighborhood as both the column and the answer", () => {

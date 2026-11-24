@@ -39,35 +39,16 @@ export const COPY_FIELDS: Record<CopyForm, CopyField[]> = {
       "Are you open to one-to-one meetings or coffee chats?", "How do you prefer members to contact you?",
       "Shout out a local business, organization, or resource you love",
     ]),
-    ...g("04 — WhatsApp community", [
-      "Join the conversation.", "Your number will be visible to other group members.",
-      "Would you like to join the WhatsApp community?", "WhatsApp phone number",
-    ]),
-    ...g("05 — Member spotlight", [
-      "Let your work shine.", "Spotlights are optional and published only with permission.",
-      "Would you like to be considered for a member spotlight?", "What would you most like us to highlight?",
-    ]),
-    ...g("06 — Public member directory", [
-      "Shape your listing.",
-      "Directory participation is optional and subject to review and approval. If you are approved, we will ask for your business logo then.",
-      "Would you like to apply for the public member directory?", "Which information may be displayed publicly?",
-      "Public directory email", "Public directory phone", "Directory biography", "Write 50–100 words in the third person.",
-      "Services or specialties", "List up to five.",
-    ]),
-    ...g("07 — Official headshot", [
-      "A consistent collective portrait.", "Required only for approved public directory members.",
-      "How should we contact you to schedule your headshot?",
-    ]),
-    ...g("08 — Events and partnerships", [
+    ...g("04 — Events and partnerships", [
       "Take part your way.", "Attend, contribute, host, or collaborate.", "How would you like to participate in events?",
       "Would you like to become a sponsor or community partner?", "Describe your interest",
     ]),
-    ...g("09 — Communication", [
+    ...g("05 — Communication", [
       "Stay in the loop.", "Choose what reaches your inbox.",
       "Receive news, event invitations, opportunities, and updates?", "May we contact you directly about your application?",
     ]),
-    ...g("10 — Community guidelines", ["Keep it generous.", "Confirm each commitment before submitting."]),
-    ...g("11 — Final confirmation", [
+    ...g("06 — Community guidelines", ["Keep it generous.", "Confirm each commitment before submitting."]),
+    ...g("07 — Final confirmation", [
       "Make it official.", "One final review, then send.", "How did you hear about us?", "Name of the member who referred you",
     ]),
     ...g("Button and thank-you", [

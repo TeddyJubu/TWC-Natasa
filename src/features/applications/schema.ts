@@ -34,7 +34,6 @@ export const connectionOptions = ["I live here", "I work here", "I own a busines
 export const industryOptions = ["Arts and culture", "Beauty and wellness", "Coaching and consulting", "Design and interiors", "Education", "Finance and legal", "Food and hospitality", "Health and fitness", "Marketing and media", "Mental health and healing", "Nonprofit and community work", "Parenting and family services", "Real estate", "Retail and products", "Technology", "Travel", "Writing and publishing", "Other"];
 export const communityOptions = ["Professional connections", "Friendship and community", "Referrals", "Collaborators", "Clients", "Mentorship", "Education", "Local events", "Speaking opportunities", "Vendor opportunities", "Community resources", "Business visibility"];
 export const supportOptions = ["Give referrals", "Make introductions", "Share knowledge", "Mentor", "Collaborate", "Host an event", "Sponsor an event", "Offer a member benefit", "Volunteer", "Other"];
-export const directoryOptions = ["Full name", "Professional title", "Business name", "Business description", "Neighborhood", "Website", "Instagram", "LinkedIn", "Public email", "Public business phone", "Business logo"];
 export const eventOptions = ["Attend events", "Speak or teach", "Host an event", "Offer a venue", "Sponsor an event", "Provide products or services", "Volunteer"];
 export const heardOptions = ["A current member", "An event", "Social media", "Newsletter", "Search", "Word of mouth", "Other"];
 
@@ -77,9 +76,11 @@ export interface ApplicationAnswers {
   coffee?: string;
   contactPreference?: string[];
   localShoutout?: string;
-  whatsapp: { join: false } | { join: true; number: string; numberVisible: true; keepRespectful: true };
-  spotlight: { choice: "no" | "Please contact me first" } | { choice: "yes"; focus: string; publicationConsent: true };
-  directory:
+  // The WhatsApp community, spotlight, directory and headshot questions are no longer asked (owner decision, 2026-11-24).
+  // Applications sent before then keep these answers as stored, and admins still read them.
+  whatsapp?: { join: false } | { join: true; number: string; numberVisible: true; keepRespectful: true };
+  spotlight?: { choice: "no" | "Please contact me first" } | { choice: "yes"; focus: string; publicationConsent: true };
+  directory?:
     | { choice: "no" | "info" }
     | {
         choice: "yes";
@@ -94,7 +95,7 @@ export interface ApplicationAnswers {
           officialOnly: true;
           photoConsent: true;
           placementNotGuaranteed: true;
-          /** Only on applications sent before 2026-11-23: no longer asked, kept as stored. */
+          /** Only on applications sent before 2026-11-23. */
           paidSession?: true;
           extraFees?: true;
         };
@@ -174,43 +175,6 @@ export function parseApplication(form: FormData): ApplicationInput {
 
   const industry = r.requiredList("industry", "Industry");
 
-  const whatsapp: ApplicationAnswers["whatsapp"] = r.text("whatsapp") === "yes"
-    ? {
-        join: true,
-        number: r.required("whatsapp-number", "WhatsApp phone number"),
-        numberVisible: r.consent("whatsapp-visibility", "I understand my phone number will be visible to group members."),
-        keepRespectful: r.consent("whatsapp-conduct", "I will keep the space respectful and free from spam or harassment."),
-      }
-    : { join: false };
-
-  const spotlightChoice = r.text("spotlight");
-  const spotlight: ApplicationAnswers["spotlight"] = spotlightChoice === "yes"
-    ? {
-        choice: "yes",
-        focus: r.required("spotlight-focus", "What would you most like us to highlight?"),
-        publicationConsent: r.consent("spotlight-consent", "I authorize a member spotlight."),
-      }
-    : { choice: spotlightChoice === "Please contact me first" ? spotlightChoice : "no" };
-
-  const directoryChoice = r.text("directory");
-  const directory: ApplicationAnswers["directory"] = directoryChoice === "yes"
-    ? compact({
-        choice: "yes" as const,
-        publicFields: r.list("public-fields"),
-        email: r.text("directory-email"),
-        phone: r.text("directory-phone"),
-        bio: r.required("directory-bio", "Directory biography"),
-        services: r.required("services", "Services or specialties"),
-        publicationConsent: r.consent("directory-consent", "I authorize publication of the selected information."),
-        headshot: compact({
-          contact: r.text("headshot-contact"),
-          officialOnly: r.consent("headshot-official-only", "I understand I cannot provide my own headshot."),
-          photoConsent: r.consent("headshot-photo-consent", "I authorize photography and publication of the selected image."),
-          placementNotGuaranteed: r.consent("headshot-placement", "I understand completing a session does not guarantee permanent directory placement."),
-        }),
-      })
-    : { choice: directoryChoice === "info" ? "info" : "no" };
-
   const partnerChoice = r.text("partner");
   const partner: ApplicationAnswers["partner"] = partnerChoice === "yes" || partnerChoice === "maybe"
     ? { choice: partnerChoice, interest: r.required("partner-interest", "Describe your interest") }
@@ -249,9 +213,6 @@ export function parseApplication(form: FormData): ApplicationInput {
     coffee: r.text("coffee"),
     contactPreference: r.list("contact-preference"),
     localShoutout: r.text("local-shoutout"),
-    whatsapp,
-    spotlight,
-    directory,
     events: r.list("events"),
     partner,
     newsletter,

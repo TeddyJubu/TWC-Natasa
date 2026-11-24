@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Icon } from "@/app/layout/twc";
 import { useCopy } from "@/features/form-copy/use-copy";
-import { GUIDELINES, LIMITS, communityOptions, connectionOptions, directoryOptions, eventOptions, heardOptions, industryOptions, parseApplication, supportOptions, type ApplicationInput, type Area } from "./schema";
+import { GUIDELINES, LIMITS, communityOptions, connectionOptions, eventOptions, heardOptions, industryOptions, parseApplication, supportOptions, type ApplicationInput, type Area } from "./schema";
 import { ApplicationProgress } from "./ApplicationProgress";
 import { FieldErrors, applyDraft, canStoreDrafts, clearDrafts, collectDraft, collectErrors, readDraft, saveDraft, type DraftValues, type FieldError } from "./form-state";
 import { Check, Choices, Field, Input, LongAnswer, Notice, Section, Select } from "./twc-fields";
@@ -171,9 +171,6 @@ const DRAFT_NOTE: Record<DraftState, string> = {
 function ApplicationFields({ area, initial, busy, failure, errors, attempt, cleared, drafts, onSubmit, onEdit, onClear }: FieldsProps) {
   const t = useCopy();
   const [industry, setIndustry] = React.useState<string[]>([]);
-  const [whatsApp, setWhatsApp] = React.useState("no");
-  const [spotlight, setSpotlight] = React.useState("no");
-  const [directory, setDirectory] = React.useState("no");
   const [newsletter, setNewsletter] = React.useState("");
   const [partner, setPartner] = React.useState("no");
   const [draftState, setDraftState] = React.useState<DraftState>(cleared ? "cleared" : "ready");
@@ -190,9 +187,6 @@ function ApplicationFields({ area, initial, busy, failure, errors, attempt, clea
     if (!values) return;
     savedDraft.current = values;
     setIndustry(values.industry ?? []);
-    setWhatsApp(values.whatsapp?.[0] ?? "no");
-    setSpotlight(values.spotlight?.[0] ?? "no");
-    setDirectory(values.directory?.[0] ?? "no");
     setPartner(values.partner?.[0] ?? "no");
     setRestored(values);
   }, [drafts]);
@@ -258,7 +252,7 @@ function ApplicationFields({ area, initial, busy, failure, errors, attempt, clea
       <div aria-hidden="true" className="absolute -left-[9999px] h-px w-px overflow-hidden">
         <label>Leave this field empty<input name={HONEYPOT} type="text" tabIndex={-1} autoComplete="off" /></label>
       </div>
-      <ApplicationProgress form={form} sectionsKey={directory} errorCount={errors.length} onShowErrors={() => summary.current?.focus()} />
+      <ApplicationProgress form={form} errorCount={errors.length} onShowErrors={() => summary.current?.focus()} />
       {drafts && (
         <div className="mb-10 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] leading-relaxed text-sb-muted">
           <p role="status" className="max-w-[56ch]">{DRAFT_NOTE[draftState]}</p>
@@ -314,83 +308,31 @@ function ApplicationFields({ area, initial, busy, failure, errors, attempt, clea
           <Field id="local-shoutout" label="Shout out a local business, organization, or resource you love" optional><LongAnswer name="local-shoutout" /></Field>
         </Section>
 
-        <Section index="04 — WhatsApp community" title="Join the conversation." description="Your number will be visible to other group members.">
-          <Choices type="radio" name="whatsapp" legend="Would you like to join the WhatsApp community?" defaultValue="no" onValueChange={([value]) => setWhatsApp(value)} options={yesNo} />
-          {whatsApp === "yes" && (
-            <div className={`${followUp} bg-sb-mint`}>
-              <Field id="whatsapp-number" label="WhatsApp phone number"><Input name="whatsapp-number" type="tel" required /></Field>
-              <Check name="whatsapp-visibility" label="I understand my phone number will be visible to group members." required />
-              <Check name="whatsapp-conduct" label="I will keep the space respectful and free from spam or harassment." required />
-            </div>
-          )}
-        </Section>
-
-        <Section index="05 — Member spotlight" title="Let your work shine." description="Spotlights are optional and published only with permission.">
-          <Choices type="radio" name="spotlight" legend="Would you like to be considered for a member spotlight?" defaultValue="no" onValueChange={([value]) => setSpotlight(value)} options={[...yesNo, "Please contact me first"]} />
-          {spotlight === "yes" && (
-            <div className={followUp}>
-              <Field id="spotlight-focus" label="What would you most like us to highlight?"><LongAnswer name="spotlight-focus" required /></Field>
-              <Check name="spotlight-consent" label="I authorize The Women’s Collective to edit and publish my submitted biography, business information, links, logo, and approved photographs for a member spotlight." required />
-            </div>
-          )}
-        </Section>
-
-        <Section index="06 — Public member directory" title="Shape your listing." description="Directory participation is optional and subject to review and approval. If you are approved, we will ask for your business logo then.">
-          <Choices type="radio" name="directory" legend="Would you like to apply for the public member directory?" defaultValue="no" onValueChange={([value]) => setDirectory(value)} options={[{ value: "yes", label: "Yes — apply" }, { value: "no", label: "No — keep my information private" }, { value: "info", label: "Send me more information first" }]} />
-          {directory === "yes" && (
-            <div className={followUp}>
-              <Choices name="public-fields" legend="Which information may be displayed publicly?" optional options={directoryOptions} />
-              <div className="grid gap-[22px] sm:grid-cols-2">
-                <Field id="directory-email" label="Public directory email" optional><Input name="directory-email" type="email" /></Field>
-                <Field id="directory-phone" label="Public directory phone" optional><Input name="directory-phone" type="tel" /></Field>
-              </div>
-              <Field id="directory-bio" label="Directory biography" hint="Write 50–100 words in the third person."><LongAnswer name="directory-bio" required /></Field>
-              <Field id="services" label="Services or specialties" hint="List up to five."><Input name="services" required /></Field>
-              <Check name="directory-consent" label="I authorize publication of the selected information on The Women’s Collective website." required />
-            </div>
-          )}
-        </Section>
-
-        {directory === "yes" && (
-          <Section index="07 — Official headshot" title="A consistent collective portrait." description="Required only for approved public directory members.">
-            <Notice tone="mint" eyebrow="Good to know" title="An official session is required">
-              <p>Approved directory applicants attend a professional headshot session with the collective’s official photographer. Personal or previously taken headshots cannot be used. Dates, location, and booking details are shared before scheduling.</p>
-              <p>A profile is not published until the application is approved and the session is booked and completed.</p>
-            </Notice>
-            <Choices type="radio" name="headshot-contact" legend="How should we contact you to schedule your headshot?" optional options={["Email", "Phone", "Text", "WhatsApp"]} />
-            <div className="flex flex-col gap-4">
-              <Check name="headshot-official-only" label="I understand I cannot provide my own headshot and my profile will wait until the session with the official photographer is completed." required />
-              <Check name="headshot-photo-consent" label="I authorize photography and the cropping, resizing, light retouching, and publication of the selected image across collective channels." required />
-              <Check name="headshot-placement" label="I understand completing a session does not guarantee permanent directory placement, which remains subject to approval and community guidelines." required />
-            </div>
-          </Section>
-        )}
-
-        <Section index="08 — Events and partnerships" title="Take part your way." description="Attend, contribute, host, or collaborate.">
+        <Section index="04 — Events and partnerships" title="Take part your way." description="Attend, contribute, host, or collaborate.">
           <Choices name="events" legend="How would you like to participate in events?" optional options={eventOptions} />
           <Choices type="radio" name="partner" legend="Would you like to become a sponsor or community partner?" defaultValue="no" onValueChange={([value]) => setPartner(value)} options={[yesNo[0], { value: "maybe", label: "Maybe" }, yesNo[1]]} />
           {partner !== "no" && <div className={followUp}><Field id="partner-interest" label="Describe your interest"><LongAnswer name="partner-interest" required /></Field></div>}
         </Section>
 
-        <Section index="09 — Communication" title="Stay in the loop." description="Choose what reaches your inbox.">
+        <Section index="05 — Communication" title="Stay in the loop." description="Choose what reaches your inbox.">
           <Choices type="radio" name="newsletter" legend="Receive news, event invitations, opportunities, and updates?" optional onValueChange={([value]) => setNewsletter(value)} options={yesNo} />
           {newsletter === "yes" && <Check name="newsletter-consent" label="I consent to receive collective email and understand I can unsubscribe at any time." required />}
           <Choices type="radio" name="application-contact" legend="May we contact you directly about your application?" optional options={["Email", "Phone", "Text", "WhatsApp", "Any of these"]} />
         </Section>
 
-        <Section index="10 — Community guidelines" title="Keep it generous." description="Confirm each commitment before submitting.">
+        <Section index="06 — Community guidelines" title="Keep it generous." description="Confirm each commitment before submitting.">
           {/* Every guideline is its own required commitment. */}
           <fieldset className="min-w-0">
             <legend className="twc-label mb-4">Community guidelines</legend>
             <div className="flex flex-col gap-4">{GUIDELINES.map((guideline) => <Check key={guideline} name="guidelines" value={guideline} label={guideline} required />)}</div>
           </fieldset>
           <Notice title="Privacy and membership">
-            <p>We use submitted information to review applications, communicate with applicants, manage community programs and events, schedule official headshot sessions, and—with permission—create directory listings and spotlights.</p>
+            <p>We use submitted information to review applications, communicate with applicants, and manage community programs and events.</p>
             <p>Private information is not intentionally published. Information you choose to share in member groups or at events may be visible to other participants. The collective may moderate spaces and decline or remove participation when needed to protect the community.</p>
           </Notice>
         </Section>
 
-        <Section index="11 — Final confirmation" title="Make it official." description="One final review, then send.">
+        <Section index="07 — Final confirmation" title="Make it official." description="One final review, then send.">
           <div className="grid gap-[22px] sm:grid-cols-2">
             <Field id="heard" label="How did you hear about us?" optional><Select name="heard" defaultValue=""><option value="">Choose one</option>{heardOptions.map((item) => <option key={item}>{item}</option>)}</Select></Field>
             <Field id="referrer" label="Name of the member who referred you" optional><Input name="referrer" /></Field>

@@ -4,7 +4,7 @@
 // become plain optional ones (custom forms have no conditions). built-in-copies.test.ts checks every label against
 // the page source, so a wording change on a page shows up here.
 import {
-  communityOptions, connectionOptions, directoryOptions, eventOptions, heardOptions, industryOptions, supportOptions,
+  communityOptions, connectionOptions, eventOptions, heardOptions, industryOptions, supportOptions,
 } from "@/features/applications/schema";
 import { TOPICS } from "@/features/contact/schema";
 import { COLLABORATIONS } from "@/features/contact/partnership";
@@ -24,7 +24,6 @@ const opts = (list: readonly { value: string; label: string }[]): Choice[] => li
 const q = (key: string, type: QuestionType, label: string, required = false, extra: { help?: string; choices?: Choice[] } = {}): Question =>
   ({ key, type, label, required, ...extra });
 const ALL = "Select all that apply.";
-const yesNo = pick(["Yes", "No"]);
 
 export const BUILT_IN_COPIES: Record<CopyForm, FormTemplate> = {
   application: {
@@ -54,18 +53,6 @@ export const BUILT_IN_COPIES: Record<CopyForm, FormTemplate> = {
       q("coffee", "radio", "Are you open to one-to-one meetings or coffee chats?", false, { choices: pick(["Yes — in person", "Yes — virtually", "Yes — either", "Not at this time"]) }),
       q("contact_preference", "checkboxes", "How do you prefer members to contact you?", false, { choices: pick(["Email", "Phone", "Text", "WhatsApp", "Instagram", "LinkedIn"]) }),
       q("local_shoutout", "paragraph", "Shout out a local business, organization, or resource you love"),
-      q("whatsapp", "radio", "Would you like to join the WhatsApp community?", false, { choices: yesNo }),
-      q("whatsapp_number", "phone", "WhatsApp phone number"),
-      q("spotlight", "radio", "Would you like to be considered for a member spotlight?", false, { choices: pick(["Yes", "No", "Please contact me first"]) }),
-      q("spotlight_focus", "paragraph", "What would you most like us to highlight?"),
-      q("directory", "radio", "Would you like to apply for the public member directory?", false,
-        { choices: opts([{ value: "yes", label: "Yes — apply" }, { value: "no", label: "No — keep my information private" }, { value: "info", label: "Send me more information first" }]) }),
-      q("public_fields", "checkboxes", "Which information may be displayed publicly?", false, { choices: pick(directoryOptions) }),
-      q("directory_email", "email", "Public directory email"),
-      q("directory_phone", "phone", "Public directory phone"),
-      q("directory_bio", "paragraph", "Directory biography", false, { help: "Write 50–100 words in the third person." }),
-      q("services", "short", "Services or specialties", false, { help: "List up to five." }),
-      q("headshot_contact", "radio", "How should we contact you to schedule your headshot?", false, { choices: pick(["Email", "Phone", "Text", "WhatsApp"]) }),
       q("events", "checkboxes", "How would you like to participate in events?", false, { choices: pick(eventOptions) }),
       q("partner", "radio", "Would you like to become a sponsor or community partner?", false, { choices: pick(["Yes", "Maybe", "No"]) }),
       q("partner_interest", "paragraph", "Describe your interest"),
