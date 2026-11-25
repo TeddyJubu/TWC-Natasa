@@ -1,0 +1,90 @@
+/* TWC Design System: tokens extracted verbatim from the design canvas export
+   ("The Women's Collective.zip", index.html, 2026-11-26). Reference only: nothing imports this file.
+   Theme switch on <html>: none = 01 Programme (default), data-var="news" = 02 Newspaper,
+   data-var="notion" = 03 Notion, data-var="notion" data-tone="dark" = 04 Notion dark. */
+
+/* ---- Base: "Paper theme" (every variation starts here) ---- */
+:root{
+  --paper:#f6f1e7;--ink:#151414;--mute:#5c5751;--white:#fff;
+  --tomato:#ea5a2c;--sky:#4fa6de;--blush:#f6cad5;--butter:#faf3bf;--lime:#d5f57b;--cobalt:#1f2bd8;
+  --khaki:#c3bfa5;--slate:#86809a;--wine:#93313a;--sage:#3f8d72;--lilac:#e2c8e8;--grey:#dedcd8;--stone:#e9e3d7;
+  --band-lime:#63d873;--band-purple:#a685e2;--band-red:#e8332c;--band-butter:#f8de6e;--band-grey:#cbc7c6;--card-ground:#acacae;
+  --stone-rule:#cfc7b7;--stone-shelf:#dcd4c4;--hairline:#d9d9d9;
+  --map-water:#8ec6ea;--map-peach:#f4b08f;--map-park:#63b39a;
+  --ground:var(--paper);--text:var(--ink);--text-mute:var(--mute);--surface:var(--white);
+  --font-serif:"Instrument Serif",Georgia,serif;--font-sans:"Archivo",ui-sans-serif,system-ui,sans-serif;--font-mono:"IBM Plex Mono",ui-monospace,monospace;
+  --space-8:8px;--space-10:10px;--space-16:16px;--space-18:18px;--space-22:22px;--space-24:24px;--space-28:28px;--space-30:30px;--space-40:40px;--space-60:60px;--space-90:90px;--space-120:120px;
+  --radius-flag:4px;--radius-image:28px;--radius-card:34px;--radius-pill:999px;
+  --shadow-band:0 -6px 14px rgba(0,0,0,.08);--shadow-event:0 -4px 12px rgba(0,0,0,.07);--shadow-map:6px 6px 0 #151414;--shadow-arch:inset 0 0 0 10px rgba(255,255,255,.35),0 0 0 1px #cfc7b7;
+  --border-hairline:1px;--border-control:1.5px;--border-shelf:14px;
+  --tilt-odd:-0.45deg;--tilt-even:0.35deg;--tilt-map:-1.4deg;
+  --gut:var(--space-40);
+  color-scheme:light;
+}
+:root{--ev-green:#4fcf6a;--ev-mint:#bfe8c6;--ev-sea:#8fdcae;--ev-peri:#d3dcf8;--ev-sky:#cfe6f7;--ev-violet:#8b7fd9}
+
+/* ---- Motion (transitions.dev recipes) ---- */
+:root{
+  --tw-ease:cubic-bezier(0.22,1,0.36,1);
+  --toast-open:350ms;--toast-close:250ms;--toast-distance:16px;--toast-blur:2px;--toast-scale:.97;
+  --page-dur:250ms;--page-distance:8px;--page-blur:3px;
+  --stagger-dur:500ms;--stagger-distance:12px;--stagger-stagger:40ms;--stagger-blur:3px;
+  --tabs-dur:250ms;
+  --like-color:var(--tomato);--like-fill:150ms;--like-pop:350ms;--like-pop-ease:cubic-bezier(0.34,1.96,0.64,1);--like-particle-dur:600ms;--like-particle-size:2.5px;
+  --shake-distance:6px;--shake-overshoot:4px;--shake-dur-a:80ms;--shake-dur-b:60ms;--revert-hold:3000ms;--revert-dur:280ms;
+  --digit-dur:500ms;--digit-distance:8px;--digit-stagger:70ms;--digit-blur:2px;--digit-ease:cubic-bezier(0.34,1.45,0.64,1);
+  --learn-shift:3px;--learn-dur:350ms;
+}
+
+/* ---- 01 Programme (default; overrides the paper ground with cool grey-blue) ---- */
+html:not([data-var]){
+  --paper:#f1f4f8;--stone:#e7ecf2;--stone-rule:#c8d0da;--stone-shelf:#dce3ea;--grey:#e1e5ea;--mute:#525a66;
+  --shadow-arch:inset 0 0 0 10px rgba(255,255,255,.35),0 0 0 1px #c2cbd6}
+
+/* ---- 02 Newspaper (black and white, EB Garamond, square corners, no tilts) ---- */
+html[data-var="news"]{
+  --paper:#f4f4f2;--ink:#111111;--mute:#555555;--white:#ffffff;
+  --tomato:#dcdcda;--sky:#e8e8e6;--blush:#eeeeec;--butter:#f1f1ef;--lime:#e2e2e0;--cobalt:#111111;
+  --khaki:#d3d3d1;--slate:#c4c4c2;--wine:#2a2a2a;--sage:#363636;--lilac:#e6e6e4;--grey:#dfdfdd;--stone:#ebebe9;
+  --band-lime:#d7d7d5;--band-purple:#dadad8;--band-red:#d2d2d0;--band-butter:#e4e4e2;--band-grey:#cececc;--card-ground:#d8d8d6;
+  --stone-rule:#c6c6c4;--stone-shelf:#d6d6d4;--hairline:#cfcfcd;
+  --ground:var(--paper);--text:var(--ink);--text-mute:var(--mute);--surface:#ececea;
+  --font-sans:"EB Garamond",Garamond,Georgia,serif;--font-serif:"EB Garamond",Garamond,Georgia,serif;
+  --radius-pill:0;--radius-card:0;--radius-image:0;--radius-flag:0;
+  --shadow-band:none;--shadow-event:none;--shadow-map:none;--shadow-arch:none;
+  --tilt-odd:0deg;--tilt-even:0deg;--tilt-map:0deg;
+  --like-color:var(--ink);
+}
+html[data-var="news"]{--ev-green:#dcdcda;--ev-mint:#eeeeec;--ev-sea:#e2e2e0;--ev-peri:#f1f1ef;--ev-sky:#e8e8e6;--ev-violet:#c4c4c2}
+
+/* ---- 03 Notion (system sans, 4px corners, pastel fills, 900px column) ---- */
+html[data-var="notion"]{
+  --paper:#ffffff;--ink:#37352F;--mute:#787774;--white:#ffffff;
+  --tomato:#FBECDD;--sky:#E7F3F8;--blush:#FAF1F5;--butter:#FBF3DB;--lime:#EDF3EC;--cobalt:#E7F3F8;
+  --khaki:#F4EEEE;--slate:#F1F1EF;--wine:#FDEBEC;--sage:#EDF3EC;--lilac:#F6F3F9;--grey:#F1F1EF;--stone:#F7F7F5;
+  --band-lime:#EDF3EC;--band-purple:#F6F3F9;--band-red:#FDEBEC;--band-butter:#FBF3DB;--band-grey:#F1F1EF;--card-ground:#ffffff;
+  --stone-rule:rgba(55,53,47,.09);--stone-shelf:transparent;--hairline:rgba(55,53,47,.09);
+  --ground:#ffffff;--text:#37352F;--text-mute:#787774;--surface:#ffffff;
+  --font-sans:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI Variable Display","Segoe UI",Helvetica,"Apple Color Emoji",Arial,sans-serif,"Segoe UI Emoji","Segoe UI Symbol";
+  --font-serif:var(--font-sans);
+  --font-mono:SFMono-Regular,Menlo,Consolas,"PT Mono","Liberation Mono",Courier,monospace;
+  --radius-card:4px;--radius-image:4px;--radius-flag:3px;--radius-pill:4px;
+  --shadow-band:none;--shadow-event:none;--shadow-map:none;--shadow-arch:none;
+  --tilt-odd:0deg;--tilt-even:0deg;--tilt-map:0deg;
+  --n-border:rgba(55,53,47,.09);--n-border2:rgba(55,53,47,.16);--n-hover:rgba(55,53,47,.08);--n-side:#F7F7F5;--n-blue:#2383E2;--n-card:rgba(15,15,15,.1) 0 0 0 1px,rgba(15,15,15,.1) 0 2px 4px;
+  --gut:max(24px,calc((100% - 900px) / 2));
+}
+html[data-var="notion"] body{font:16px/1.5 var(--font-sans);font-variation-settings:normal;color:var(--ink);background:#fff}
+
+/* ---- 04 Notion dark (glass panels over the milky-way photo) ---- */
+html[data-var="notion"][data-tone="dark"]{
+  color-scheme:dark;
+  --paper:#191919;--ink:#E3E2DE;--mute:#9B9A97;--white:#252525;
+  --tomato:#5C3B23;--sky:#143A4E;--blush:#4E2C3C;--butter:#564328;--lime:#243D30;--cobalt:#143A4E;
+  --khaki:#4A3228;--slate:#2F2F2F;--wine:#522E2A;--sage:#243D30;--lilac:#3C2D49;--grey:#2F2F2F;--stone:#202020;
+  --band-lime:#243D30;--band-purple:#3C2D49;--band-red:#5C2B2B;--band-butter:#564328;--band-grey:#2F2F2F;--card-ground:transparent;
+  --stone-rule:rgba(255,255,255,.094);--hairline:rgba(255,255,255,.094);
+  --ground:#191919;--text:#E3E2DE;--text-mute:#9B9A97;--surface:#202020;
+  --n-border:rgba(255,255,255,.094);--n-border2:rgba(255,255,255,.13);--n-hover:rgba(255,255,255,.055);
+  --n-side:rgba(32,32,32,.78);--n-card:rgba(255,255,255,.094) 0 0 0 1px,rgba(0,0,0,.3) 0 2px 6px;--n-panel:rgba(37,37,37,.86);
+}
