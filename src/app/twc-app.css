@@ -4,7 +4,7 @@
    text, the leader nav, hard-shadow dialogs) on Archivo, white #fff and #111 ink. The `air-*` class and token names are
    historical (the airmail look they once drew is gone); `.air` sits on every internal page root next to `app-ground`
    and re-points the shell's tokens at the kit, so shared controls follow. Light only. Shared section pieces
-   (`twc-phd`, `twc-c-*`, `twc-calgrid`, `twc-toast`) are in twc-sections.css. */
+   (`twc-phd`, `twc-c-*`, `twc-toast`) are in twc-sections.css. */
 @layer components {
 /* ---- Base ---- */
 .app-ground { background: var(--color-app-ground); accent-color: var(--color-ink); scrollbar-color: color-mix(in srgb, var(--color-ink) 25%, transparent) transparent; }
@@ -58,7 +58,6 @@
 /* Colour fields keep ink text, so muted copy and links on one turn ink too (muted and cobalt miss AA on some). */
 .air [class*="twc-c-"]:not(.twc-c-ink), .air [class*="pass--"] { --bl-app-muted: var(--bl-air-navy); --color-app-muted: var(--bl-air-navy); --bl-air-muted: var(--bl-air-navy); --bl-app-accent: var(--bl-air-navy); --color-app-accent: var(--bl-air-navy); }
 .air-wrap { max-width: 1200px; margin-inline: auto; padding: 0 16px 40px; }
-.air-mono { font-family: var(--font-plex); text-transform: uppercase; }
 .air-lbl { display: block; margin-bottom: 6px; font: 500 10.5px/1.25 var(--font-plex); letter-spacing: 0.1em; text-transform: uppercase; color: var(--bl-air-muted); }
 .air-link { border-radius: 2px; color: var(--color-app-accent); font-size: 13.5px; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; }
 .air-link:hover { text-decoration-thickness: 2px; }
@@ -186,7 +185,6 @@
 .air-t-body .air-meta { display: flex; align-items: flex-start; gap: 6px; font-size: 13px; font-weight: 500; line-height: 1.45; color: var(--bl-air-navy); }
 .air-t-body .air-meta svg { width: 14px; height: 14px; margin-top: 2px; }
 .air-t-row { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; margin-top: 12px; }
-.air-grounded { position: relative; }
 
 /* Empty and locked states: the canvas's dashed lock (.dir-lock), as a box */
 .air-empty { display: flex; align-items: center; gap: 16px; padding: 18px; border: 1.5px dashed var(--bl-air-navy); }
@@ -303,7 +301,7 @@
 .air-dir-pass.is-empty h2 { font-size: 30px; }
 .air-dir-pass .air-lbl, .air-dir-pass .air-empty-stamp { color: var(--color-sb-ink); }
 .air-dir-pass .air-empty-stamp { background: var(--bl-air-paper); }
-.air-dir-pass dl, .air-dir-pass .air-dir-facts { border-top: 1px solid var(--color-sb-ink); }
+.air-dir-pass dl { border-top: 1px solid var(--color-sb-ink); }
 .air-dir-hint { display: flex; gap: 10px; margin-top: 16px; font-size: 13px; line-height: 1.5; color: var(--bl-air-muted); }
 .air-dir-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--bl-air-line); font-size: 13px; font-weight: 500; color: var(--bl-air-muted); }
 .air-dir-foot .air-icon-btn:disabled { opacity: 0.35; cursor: default; }

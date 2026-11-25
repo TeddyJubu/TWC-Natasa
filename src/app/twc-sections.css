@@ -13,8 +13,6 @@
 .twc-shead { display: grid; grid-template-columns: 1fr auto; gap: var(--twc-space-24); align-items: end; margin-bottom: var(--twc-space-40); }
 .twc-phd { border-top: var(--twc-border-hairline) solid var(--color-sb-ink); padding: var(--twc-space-60) var(--twc-gut) var(--twc-space-40); display: grid; grid-template-columns: 1fr auto; gap: var(--twc-space-24); align-items: end; }
 .twc-meta { font-size: 14px; line-height: 1.3; margin: 0; }
-.twc-giant { margin: 18px 0 0; font: 900 clamp(5rem, 15.5vw, 15rem)/0.78 var(--font-display); letter-spacing: -0.055em; }
-.twc-cond { font-family: var(--font-display); font-weight: 800; font-stretch: 62%; text-transform: uppercase; letter-spacing: -0.01em; }
 @media (max-width: 1100px) { .twc-shead, .twc-phd { grid-template-columns: 1fr; } }
 
 /* ---- Constellation band (canvas .twc-band): a coloured tab — number, name, status — that opens onto a white sheet.
@@ -95,17 +93,6 @@
 .twc-card--dark { background: var(--color-sb-ink); color: var(--color-sb-paper); }
 @media (max-width: 1100px) { .twc-cards { grid-template-columns: 1fr; } .twc-cards > * { margin-top: 0 !important; } }
 
-/* ---- Arches on a stone shelf (canvas .twc-arches): tiers or pathways, never prices until they are decided ---- */
-.twc-arches { padding: var(--twc-space-60) var(--twc-gut) 0; background: var(--color-sb-cream); border-top: var(--twc-border-hairline) solid var(--color-sb-stone-rule); color: var(--color-sb-ink); }
-.twc-arch-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 46px; padding: 0 20px; border-bottom: var(--twc-border-shelf) solid var(--color-sb-stone-shelf); }
-.twc-arch { position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; min-height: 560px; padding: 190px 30px 40px; text-align: center; border-radius: var(--twc-radius-pill) var(--twc-radius-pill) 0 0; box-shadow: var(--twc-shadow-arch); color: var(--color-sb-ink); }
-.twc-arch__title { position: absolute; top: 92px; left: 0; right: 0; margin: 0; font: italic 800 condensed 52px/1 var(--font-display); letter-spacing: -0.01em; }
-.twc-arch__badge { position: absolute; top: 44px; left: 50%; translate: -50% 0; white-space: nowrap; font: 500 11px var(--font-plex); letter-spacing: 0.08em; text-transform: uppercase; }
-.twc-arch ul { display: grid; gap: var(--twc-space-8); margin: 26px 0 30px; padding: 0; list-style: none; font-size: 14px; line-height: 1.35; }
-.twc-arch .twc-btn { margin-top: auto; }
-@media (max-width: 1100px) { .twc-arch-row { grid-template-columns: 1fr 1fr; gap: 24px; padding: 0; } }
-@media (max-width: 600px) { .twc-arch-row { grid-template-columns: 1fr; } }
-
 /* ---- Panel pair (canvas .twc-duo / .twc-panel) ---- */
 .twc-duo { display: grid; grid-template-columns: 1fr 1fr; }
 .twc-panel { display: flex; flex-direction: column; gap: var(--twc-space-18); min-height: 380px; padding: 70px var(--twc-gut) var(--twc-space-60); color: var(--color-sb-ink); }
@@ -116,29 +103,11 @@
 @media (max-width: 1100px) { .twc-duo { grid-template-columns: 1fr; } }
 @media (max-width: 600px) { .twc-panel__info { grid-template-columns: 1fr; } }
 
-/* ---- Numbered list on hairlines (canvas .twc-qlist) ---- */
-.twc-qlist { margin: 18px 0 0; padding: 0; list-style: none; border-top: var(--twc-border-hairline) solid var(--color-sb-ink); }
-.twc-qlist li { display: grid; grid-template-columns: 28px 1fr; gap: var(--twc-space-8); padding: 10px 0; border-bottom: var(--twc-border-hairline) solid var(--color-sb-hairline); font-size: 14px; }
-.twc-qlist li > span { padding-top: 2px; font: 500 11px var(--font-plex); color: var(--color-sb-muted); }
-.twc-qlist li em { display: block; font: italic 500 18px/1.2 var(--font-sans); color: var(--color-sb-ink); }
-
 /* ---- Framed map (canvas .twc-map) and a hard-shadow photo ---- */
 .twc-map { margin: 0; padding: 8px; background: var(--color-sb-paper); border: var(--twc-border-control) solid var(--color-sb-ink); rotate: var(--twc-tilt-map); box-shadow: var(--twc-shadow-hard); }
 .twc-map svg, .twc-map img { display: block; width: 100%; height: auto; }
 .twc-map figcaption { padding: 8px 4px 2px; font: 500 11px/1.5 var(--font-plex); color: var(--color-sb-muted); }
 .twc-hardphoto { display: block; border: 6px solid var(--color-sb-paper); box-shadow: var(--twc-shadow-hard); object-fit: cover; }
-
-/* ---- Month calendar (canvas .cal): 1px ink gaps, event-kind chips ---- */
-.twc-calgrid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 1px; background: var(--color-sb-ink); border: 1px solid var(--color-sb-ink); }
-.twc-calgrid__dow { padding: 8px; background: var(--color-sb-paper); font: 500 10px var(--font-plex); letter-spacing: 0.08em; text-transform: uppercase; }
-.twc-calgrid__day { display: flex; flex-direction: column; gap: 4px; min-width: 0; min-height: 100px; padding: 6px; background: var(--color-sb-paper); }
-.twc-calgrid__day--blank { background: var(--color-sb-cream); }
-.twc-calgrid__num { font: 800 condensed 22px/1 var(--font-display); }
-.twc-e { overflow: hidden; padding: 3px 6px; color: var(--color-sb-ink); font-size: 11px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; background: var(--color-sb-ev-sky); }
-.twc-e--green { background: var(--color-sb-ev-green); } .twc-e--mint { background: var(--color-sb-ev-mint); }
-.twc-e--sea { background: var(--color-sb-ev-sea); } .twc-e--peri { background: var(--color-sb-ev-peri); }
-.twc-e--violet { background: var(--color-sb-ev-violet); }
-@media (max-width: 600px) { .twc-calgrid__day { min-height: 64px; } }
 
 /* ---- Filter pills row and the sliding underline nav are plain .twc-choice / aria-current; this is just the row ---- */
 .twc-filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: var(--twc-space-24); }
@@ -147,12 +116,7 @@
 .twc-toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); z-index: 60; padding: 11px 22px; border-radius: var(--twc-radius-pill); background: var(--color-sb-ink); color: var(--color-sb-paper); font-size: 14px; font-weight: 600; translate: -50% var(--toast-y, 16px); opacity: 0; transition: opacity var(--twc-toast-close) var(--twc-ease), translate var(--twc-toast-close) var(--twc-ease); }
 .twc-toast[data-open] { --toast-y: 0; opacity: 1; transition-duration: var(--twc-toast-open); }
 
-/* ---- Page enter and staggered rise (canvas tw-page / tw-rise) ---- */
-@keyframes twc-rise { from { opacity: 0; translate: 0 12px; filter: blur(3px); } to { opacity: 1; translate: 0; filter: none; } }
-.twc-rise { animation: twc-rise var(--twc-stagger-dur) var(--twc-ease) backwards; animation-delay: calc(var(--twc-stagger-step) * var(--i, 0)); }
-
 @media (prefers-reduced-motion: reduce) {
   .twc-cband::details-content, .twc-toast { transition: none; }
-  .twc-rise { animation: none; }
 }
 }

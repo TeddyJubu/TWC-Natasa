@@ -43,7 +43,6 @@
 .twc-btn--outline { background: transparent; color: var(--color-sb-ink); border-color: currentColor; }
 .twc-btn--outline:hover { background: var(--color-sb-ink); color: var(--color-sb-paper); border-color: var(--color-sb-ink); }
 .twc-btn--blue { background: var(--color-sb-cobalt); border-color: var(--color-sb-cobalt); color: var(--color-sb-paper); }
-.twc-btn--sun { background: var(--color-sb-butter); color: var(--color-sb-ink); }
 .twc-btn--paper { background: var(--color-sb-paper); border-color: var(--color-sb-paper); color: var(--color-sb-ink); }
 .twc-btn--danger { background: var(--color-sb-wine); border-color: var(--color-sb-wine); color: var(--color-sb-paper); }
 .twc-btn--sm { padding: 7px 14px; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; }
