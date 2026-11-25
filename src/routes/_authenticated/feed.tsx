@@ -140,7 +140,7 @@ function FeedPass({ own, name, mine }: { own: ProfileData | null | undefined; na
   const caption = [p?.specialty || p?.role_title, p?.neighborhood].filter(Boolean).join(" · ");
   return (
     <section aria-label="Your member pass" className={cn("air-feed-pass", `pass--${p?.card_color ?? "mustard"}`)}>
-      <p className="air-feed-pass-top"><b>Member pass</b>{n != null && <span>Nº {no4(n)}</span>}</p>
+      <p className="air-feed-pass-top"><b>Member card</b>{n != null && <span>No. {no4(n)}</span>}</p>
       <div className="air-feed-pass-who">
         <MiniStamp name={name} image={own?.avatarUrl} size="xl" />
         <div className="min-w-0"><p className="air-feed-pass-name">{name}</p>{caption && <p className="air-feed-pass-cap">{caption}</p>}</div>
@@ -152,7 +152,6 @@ function FeedPass({ own, name, mine }: { own: ProfileData | null | undefined; na
           <div><dt>Loves</dt><dd>{mine.loves}</dd></div>
         </dl>
       )}
-      {n != null && <div aria-hidden className="air-feed-pass-code"><div className="air-dir-bars" /><span>WC-{no4(n)}</span></div>}
     </section>
   );
 }

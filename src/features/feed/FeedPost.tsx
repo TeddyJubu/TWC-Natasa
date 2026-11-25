@@ -1,5 +1,5 @@
-// One post on the feed (DESIGN.md "Newsfeed"): a paper letter with the author's mini stamp, the kind as a chip, her words
-// and photos (the first postmarked), who loved it, and the replies. Everything shown is something a member wrote.
+// One post on the feed (DESIGN.md "Newsfeed"): the canvas's .post under a hairline ink rule — the author's round avatar,
+// the kind as a badge, her words and photos, who loved it, and the replies. Everything shown is something a member wrote.
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
 import { askConfirm } from "@/app/layout/confirm";
@@ -10,18 +10,17 @@ import { Icon } from "@/app/layout/icons";
 import { errorMessage } from "@/features/account/helpers";
 import { KINDS, MAX_REPLY } from "./kinds";
 import { lovedLine, postedAgo, postedAt } from "./format";
-import { areaOfPlace } from "@/features/applications/schema";
 import { useDeletePost, useDeleteReply, useLove, useReply } from "./mutations";
 import type { FeedAuthor, FeedPost as Post, FeedReply } from "./queries";
 
 /** Replies shown before "Show all". */
 const FOLDED = 2;
 
-/** A member's portrait (or initials on navy, never a stand-in photo) as a tiny perforated stamp. Decorative: her name is beside it. */
+/** A member's round avatar (the canvas's .av): her portrait, or initials on lime, never a stand-in photo. Decorative: her name is beside it. */
 export function MiniStamp({ name, image, size }: { name: string; image?: string; size?: "s" | "l" | "xl" }) {
   return (
     <span aria-hidden className={cn("air-ms", size && `air-ms--${size}`)}>
-      <span><i>{image ? <img src={image} alt="" loading="lazy" /> : initials(name)}</i></span>
+      {image ? <img src={image} alt="" loading="lazy" /> : <i>{initials(name)}</i>}
     </span>
   );
 }
@@ -45,6 +44,13 @@ export function FeedPost({ post }: { post: Post }) {
   // While a love is on its way, show it as sent; the server's answer replaces it.
   const loved = love.isPending ? love.variables ?? post.loved : post.loved;
   const loves = post.loves + (loved === post.loved ? 0 : loved ? 1 : -1);
+  // A love pops the heart and throws a few dots for a moment (CSS; none under reduced motion).
+  const [pop, setPop] = React.useState(0);
+  React.useEffect(() => {
+    if (!pop) return;
+    const t = setTimeout(() => setPop(0), 600);
+    return () => clearTimeout(t);
+  }, [pop]);
 
   function startReply() {
     setReplying(true);
@@ -82,9 +88,10 @@ export function FeedPost({ post }: { post: Post }) {
       {post.photos.length > 0 && <Photos post={post} />}
       {loves > 0 && <p className="air-entry-loved">{lovedLine(loves, loved, post.lovedBy)}</p>}
       <footer className="air-entry-act">
-        <button type="button" aria-pressed={loved} onClick={() => love.mutate(!loved)} disabled={love.isPending}
-          aria-label={`Love (${loves})`} className={cn("air-act", ring)}>
+        <button type="button" aria-pressed={loved} onClick={() => { if (!loved) setPop(Date.now()); love.mutate(!loved); }} disabled={love.isPending}
+          aria-label={`Love (${loves})`} className={cn("air-act", pop > 0 && "is-popping", ring)}>
           <Icon name="heart" />{loves}
+          {pop > 0 && <span aria-hidden key={pop} className="air-like-dots">{[0, 1, 2, 3, 4, 5].map((i) => <i key={i} />)}</span>}
         </button>
         <button type="button" onClick={startReply} aria-label={`Reply (${post.replies.length})`} className={cn("air-act", ring)}>
           <Icon name="message-circle" />{post.replies.length}
@@ -96,7 +103,7 @@ export function FeedPost({ post }: { post: Post }) {
   );
 }
 
-/** One photo full width, two side by side, three or four in a grid. Each opens full size; the first carries a postmark. */
+/** One photo full width, two side by side, three or four in a grid. Each opens full size. */
 function Photos({ post }: { post: Post }) {
   const n = post.photos.length;
   return (
@@ -107,30 +114,7 @@ function Photos({ post }: { post: Post }) {
           <span className="sr-only"> (opens full size in a new tab)</span>
         </a>
       ))}
-      <Postmark where={post.author.neighborhood} iso={post.createdAt} />
     </div>
-  );
-}
-
-/** A cancellation on the first photo: where she posts from and the day (decorative; both are in the header). */
-function Postmark({ where, iso }: { where: string; iso: string }) {
-  const id = React.useId();
-  const d = new Date(iso);
-  const opts = { timeZone: "America/New_York" } as const;
-  const date = `${d.toLocaleDateString("en-US", { day: "numeric", ...opts })} ${d.toLocaleDateString("en-US", { month: "short", ...opts }).toUpperCase()}`;
-  return (
-    <svg aria-hidden viewBox="0 0 220 112" fill="none" stroke="currentColor" className="air-entry-pm">
-      <defs><path id={id} d="M16 56a40 40 0 1 1 80 0a40 40 0 1 1-80 0" /></defs>
-      <circle cx="56" cy="56" r="52" strokeWidth="2" /><circle cx="56" cy="56" r="30" strokeWidth="1.5" />
-      <text fontSize="10" fontWeight="600" letterSpacing="2.2" fill="currentColor" stroke="none">
-        <textPath href={`#${id}`}>{`${[where || "New York", areaOfPlace(where)?.borough, "TWC"].filter(Boolean).join(" · ").toUpperCase()} ·`}</textPath>
-      </text>
-      <text x="56" y="57" textAnchor="middle" fontSize="14" fontWeight="700" fill="currentColor" stroke="none">{date}</text>
-      <text x="56" y="70" textAnchor="middle" fontSize="9.5" fontWeight="600" letterSpacing="1.5" fill="currentColor" stroke="none">
-        {d.toLocaleDateString("en-US", { year: "numeric", ...opts })}
-      </text>
-      <path d="M112 34q10-8 20 0t20 0t20 0t20 0M112 50q10-8 20 0t20 0t20 0t20 0M112 66q10-8 20 0t20 0t20 0t20 0M112 82q10-8 20 0t20 0t20 0t20 0" strokeWidth="2.4" />
-    </svg>
   );
 }
 

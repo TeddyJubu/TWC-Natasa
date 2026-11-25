@@ -27,7 +27,7 @@ const seed: [unknown[], unknown][] = [
   [["profile", "u1"], { profile: { full_name: "Rosa", status: "approved", catalogue_number: 1 }, avatarUrl: undefined }],
   [["directory"], MEMBERS],
 ];
-const sheet = () => screen.getByRole("group", { name: /Member stamps/ });
+const sheet = () => screen.getByRole("group", { name: /Members, page/ });
 
 describe("/directory", () => {
   it("stays out of search", () => {
@@ -35,25 +35,25 @@ describe("/directory", () => {
     expect(meta).toContainEqual({ name: "robots", content: "noindex" });
   });
 
-  it("prints twelve stamps a sheet under one h1", () => {
+  it("shows twelve members a page under one h1", () => {
     renderWithQueries(<Page />, seed);
     expect(screen.getAllByRole("heading", { level: 1 }).map((h) => h.textContent)).toEqual(["Members"]);
     expect(within(sheet()).getAllByRole("button")).toHaveLength(12);
-    fireEvent.click(screen.getByRole("button", { name: "Next sheet" }));
+    fireEvent.click(screen.getByRole("button", { name: "Next page" }));
     expect(within(sheet()).getAllByRole("button")).toHaveLength(1);
-    expect(screen.getByText("Sheet 2 of 2")).toBeTruthy();
+    expect(screen.getByText("Page 2 of 2")).toBeTruthy();
   });
 
-  it("tears a stamp out onto the pass, and puts it back", () => {
+  it("shows a chosen member beside the list, and puts her away", () => {
     renderWithQueries(<Page />, seed);
-    const stamp = screen.getByRole("button", { name: /^Lucía Ferreira/ });
-    fireEvent.click(stamp);
-    expect(stamp.getAttribute("aria-pressed")).toBe("true");
-    const pass = screen.getByRole("complementary", { name: "Torn-out member" });
+    const card = screen.getByRole("button", { name: /^Lucía Ferreira/ });
+    fireEvent.click(card);
+    expect(card.getAttribute("aria-pressed")).toBe("true");
+    const pass = screen.getByRole("complementary", { name: "Chosen member" });
     expect(within(pass).getByRole("heading", { name: "Lucía Ferreira" })).toBeTruthy();
     expect(within(pass).getByRole("link", { name: /Open her page/ }).getAttribute("href")).toBe("/members/lucia-ferreira-3");
-    fireEvent.click(stamp);
-    expect(within(pass).getByRole("heading", { name: "Nothing torn out" })).toBeTruthy();
+    fireEvent.click(card);
+    expect(within(pass).getByRole("heading", { name: "No one chosen yet" })).toBeTruthy();
   });
 
   it("links her website only when it is an http(s) URL", () => {
@@ -81,7 +81,7 @@ describe("/directory", () => {
     renderWithQueries(<Page />, seed);
     fireEvent.click(screen.getByRole("button", { name: "Woodside 1" }));
     fireEvent.change(screen.getByRole("searchbox", { name: "Search members" }), { target: { value: "nobody-here" } });
-    expect(screen.getByText("No stamps match.")).toBeTruthy();
+    expect(screen.getByText("No one matches.")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Show everyone" }));
     expect((screen.getByRole("searchbox", { name: "Search members" }) as HTMLInputElement).value).toBe("");
     expect(screen.getByRole("button", { name: "All 13" }).getAttribute("aria-pressed")).toBe("true");
@@ -96,7 +96,7 @@ describe("/directory", () => {
     expect(screen.queryByText(/welcomed in/i)).toBeNull();
     expect(screen.getByRole("link", { name: /contact us/i }).getAttribute("href")).toBe("/contact");
     await act(() => new Promise((r) => setTimeout(r, 20)));
-    expect(screen.queryByRole("group", { name: /Member stamps/ })).toBeNull();
+    expect(screen.queryByRole("group", { name: /Members, page/ })).toBeNull();
     expect(fake.calls).not.toContainEqual(["directoryFn"]);
   });
 
@@ -107,7 +107,7 @@ describe("/directory", () => {
     ]);
     expect(screen.getByText(/The directory is for members\. It unlocks once you’re welcomed in\./)).toBeTruthy();
     await act(() => new Promise((r) => setTimeout(r, 20)));
-    expect(screen.queryByRole("group", { name: /Member stamps/ })).toBeNull();
+    expect(screen.queryByRole("group", { name: /Members, page/ })).toBeNull();
     expect(screen.queryByRole("searchbox")).toBeNull();
     expect(fake.calls).not.toContainEqual(["directoryFn"]);
   });

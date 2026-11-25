@@ -2,7 +2,7 @@
 // each with an optional description, and Post (the page's one red button).
 import * as React from "react";
 import { cn } from "@/index";
-import { fieldClass, redButton, ring } from "@/app/layout/app-classes";
+import { fieldClass, mainButton, ring } from "@/app/layout/app-classes";
 import { Icon } from "@/app/layout/icons";
 import { errorMessage } from "@/features/account/helpers";
 import { AVATAR_TYPES } from "@/features/members/mutations";
@@ -113,7 +113,7 @@ export function Composer({ name, image, hood }: { name: string; image?: string; 
             <input type="file" multiple accept={AVATAR_TYPES.join(",")} onChange={pick} disabled={photos.length >= MAX_PHOTOS} className="sr-only" />
             <Icon name="image" className="size-4.5" /><span className="sr-only">Add photos (up to {MAX_PHOTOS})</span>
           </label>
-          <button type="submit" disabled={empty || preparing > 0 || create.isPending} className={redButton}>
+          <button type="submit" disabled={empty || preparing > 0 || create.isPending} className={mainButton}>
             {create.isPending ? "Posting…" : "Post"}<Icon name="arrow-right" />
           </button>
         </div>
