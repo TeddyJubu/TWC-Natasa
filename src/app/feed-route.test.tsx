@@ -71,7 +71,7 @@ describe("/feed", () => {
     expect(screen.getByText("14 new this week")).toBeTruthy();
     const pass = screen.getByRole("region", { name: "Your member pass" });
     expect(pass.className).toContain("pass--rose");
-    expect(within(pass).getByText("Nº 0011")).toBeTruthy();
+    expect(within(pass).getByText("No. 0011")).toBeTruthy();
   });
 
   it("shows each post's kind, words, photo, author link and who loved it", () => {

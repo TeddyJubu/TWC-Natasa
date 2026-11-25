@@ -157,7 +157,7 @@ function ProfileEditorPage({ userId, profile, avatar, logoUrl, hoodList, applied
       <div className="air-grid">
         <WhereCard editor={editor} userId={userId} hood={profile.neighborhood || null} approved={approved} avatar={avatar} hoodList={hoodList} />
         <PublicCard editor={editor} userId={userId} logoPath={profile.business_logo_url} logoUrl={logoUrl} hoodList={hoodList} />
-        <WordsCard editor={editor} catalogueNumber={approved ? profile.catalogue_number : null} />
+        <WordsCard editor={editor} />
         <MembershipCard profile={profile}><DeleteAccount /></MembershipCard>
         <VisibilityCard editor={editor} profile={profile} />
         <HeadshotBooking userId={userId} approved={approved} applied={applied} declined={profile.status === "declined"} />

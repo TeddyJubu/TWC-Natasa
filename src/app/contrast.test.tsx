@@ -108,25 +108,32 @@ describe("mobile menu button", () => {
   });
 });
 
-describe("internal tools (airmail palette: /account, /admin)", () => {
-  // [text, background]: every pair the airmail pages use. White is the primary button's label and the tickets' stubs.
+describe("internal tools (the canvas kit: /account, /directory, /feed, /admin)", () => {
+  // [text, background]: every pair the signed-in pages use. Inside `.air` errors are wine (`air-red`, which `.air`
+  // points `danger` at) and links and focus are cobalt (`app-accent`); white is the label on the ink and wine pills.
+  // Ink on the colour fields (lime, blush, lilac, butter, stone, mint) is the public palette's test below: `.air`
+  // turns muted text and links on a field to ink.
   const t: Record<string, string> = { ...light, white: "#ffffff" };
   const pairs: [string, string][] = [
-    ["air-navy", "air-paper"], ["air-navy", "air-sky"], ["air-muted", "air-paper"], ["air-muted", "air-sky"],
-    ["air-red", "air-paper"], ["white", "air-red"], ["air-paper", "air-navy"], ["white", "air-navy"], ["white", "air-muted"],
-    ["danger", "air-paper"], ["air-navy", "white"], ["air-muted", "white"],
+    ["air-navy", "air-paper"], ["air-navy", "air-sky"], ["air-navy", "air-tint"],
+    ["air-muted", "air-paper"], ["air-muted", "air-sky"], ["air-muted", "air-tint"],
+    ["air-red", "air-paper"], ["air-red", "air-sky"], ["air-red", "air-tint"], ["white", "air-red"],
+    ["air-paper", "air-navy"], ["white", "air-navy"], ["air-navy", "white"], ["air-muted", "white"],
+    ["app-accent", "air-paper"], ["app-accent", "air-tint"],
+    // A chip waiting on someone, a settled one, and a form's open / always-on pill.
+    ["air-navy", "app-pending"], ["air-navy", "app-ok"], ["app-gel-ink", "app-gel"], ["app-gel-green-ink", "app-gel-green"],
   ];
   it.each(pairs)("%s on %s clears AA", (fg, bg) => {
     expect(contrast(t[fg as keyof typeof t], t[bg as keyof typeof t])).toBeGreaterThanOrEqual(AA);
   });
 
-  // Notices and wide cells are a navy wash (`air-tint`, navy at 3.5%) over the paper.
-  it.each(["air-navy", "air-muted", "danger"])("%s on the tint clears AA", (fg) => {
-    expect(contrast(t[fg], blend(t["air-navy"], t["air-paper"], 0.035))).toBeGreaterThanOrEqual(AA);
+  it("`.air` points danger at wine, so errors clear AA on the stone notices too", () => {
+    const css = readFileSync(`${process.cwd()}/src/app/twc-app.css`, "utf8");
+    expect(css).toMatch(/\.air \{[^}]*--bl-danger: var\(--bl-air-red\)/);
   });
 });
 
-describe("internal-page app shell (scrapbook app palette)", () => {
+describe("internal-page app shell (app palette)", () => {
   // [text, background, alpha of a tinted background over `app`]: every text pair the app shell (/account, /admin) uses.
   // app = paper cards/sidebar/top bar, app-sunken = cream background, sub-panels, date tiles and notices.
   const pairs: [string, string, number?][] = [
@@ -157,7 +164,8 @@ describe("internal-page app shell (scrapbook app palette)", () => {
     const read = (f: string) => readFileSync(`${process.cwd()}/${f}`, "utf8");
     const dir = (d: string) => readdirSync(`${process.cwd()}/${d}`).filter((f) => /\.tsx?$/.test(f)).map((f) => `${d}/${f}`);
     const src = [
-      ...dir("src/features/account"), "src/features/admin/panels.tsx",
+      ...dir("src/features/account"), ...dir("src/features/feed"), "src/features/admin/panels.tsx", "src/features/forms/FormEditor.tsx",
+      "src/features/cal/admin-ui.tsx", "src/routes/_authenticated/directory.tsx", "src/routes/_authenticated/feed.tsx",
       "src/app/layout/AppShell.tsx", "src/app/layout/app-ui.tsx", "src/app/layout/app-classes.ts",
       "src/routes/_authenticated/account.tsx", "src/routes/_authenticated/_admin/admin.tsx",
     ].map(read).join("\n");

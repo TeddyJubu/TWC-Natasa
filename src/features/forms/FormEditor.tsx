@@ -1,4 +1,4 @@
-// The sheet on a custom form's Questions tab: the form as visitors see it, on paper, with every word edited in place —
+// The sheet on a custom form's Questions tab: the form as visitors see it, in an ink frame, with every word edited in place —
 // title, intro, questions (choices as the pills visitors tap) and the thank-you. Keys and choice values are made in
 // form-draft.ts and never shown; the link, open/closed and the closed message live on the Settings tab, so saving the
 // sheet can never undo them. Writes go through saveAdminForm → saveForm / checkQuestions.
@@ -27,7 +27,7 @@ const CHOICE_NOTE: Partial<Record<QuestionType, string>> = {
 /** Words edited in place: no box until you point at them (a dashed rule) or type in them (the focus ring). */
 const ghost = cn("w-full resize-none rounded-sm border-b border-dashed border-transparent bg-transparent text-ink [field-sizing:content] placeholder:text-app-muted/85 hover:border-app-muted/60 focus:border-transparent disabled:opacity-60", ring);
 const iconButton = cn("grid size-9 shrink-0 place-items-center rounded-full text-app-muted transition-colors duration-150 hover:bg-ink/10 hover:text-ink disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-transparent disabled:hover:text-app-muted", ring);
-const pill = "inline-flex min-h-11 items-center rounded-full bg-app font-display text-[15px]/[1.3] text-ink shadow-[inset_0_0_0_1px_var(--color-app-line)]";
+const pill = "inline-flex min-h-11 items-center rounded-full bg-app text-[15px]/[1.3] font-medium text-ink shadow-[inset_0_0_0_1.5px_var(--color-ink)]";
 
 /** Rows for a textarea where `field-sizing` isn't supported: wrapped lines at about `perLine` characters. */
 const rowsFor = (text: string, perLine: number) => text.split("\n").reduce((n, line) => n + Math.max(1, Math.ceil(line.length / perLine)), 0);
@@ -110,7 +110,7 @@ export function QuestionsEditor({ idPrefix, initial, busy, error, saved, onSave 
     <form onSubmit={submit} onKeyDown={noEnterSubmit} aria-label="Questions" className="mx-auto flex w-full max-w-185 flex-col">
       <p className="mb-2 px-1 font-script text-[26px]/[1.2] text-app-accent">psst — <span className="pointer-coarse:hidden">click</span><span className="hidden pointer-coarse:inline">tap</span> any words to change them</p>
 
-      <div className="flex flex-col gap-7 rounded-md bg-app px-5 py-8 shadow-[0_10px_28px_color-mix(in_srgb,var(--color-ink)_12%,transparent)] sm:px-12 sm:py-12">
+      <div className="flex flex-col gap-7 bg-app px-5 py-8 shadow-[inset_0_0_0_1.5px_var(--color-ink)] sm:px-12 sm:py-12">
         <div className="flex flex-col gap-3">
           <textarea aria-label="Form name" required maxLength={80} rows={rowsFor(values.name, 26)} value={values.name} disabled={busy} placeholder="Name your form"
             onKeyDown={noNewline} onChange={(e) => set({ name: oneLine(e.currentTarget.value) })}
@@ -161,7 +161,7 @@ export function QuestionsEditor({ idPrefix, initial, busy, error, saved, onSave 
                                 </span>
                               ))}
                               <button type="button" disabled={busy || q.choices.length >= 40} onClick={() => addChoice(q)}
-                                className={cn("inline-flex min-h-11 items-center gap-1.5 rounded-full border border-dashed border-app-muted/60 px-4 font-display text-[15px]/[1.3] text-app-muted transition-colors duration-150 hover:border-ink hover:text-ink disabled:opacity-50", ring)}>
+                                className={cn("inline-flex min-h-11 items-center gap-1.5 rounded-full border-[1.5px] border-dashed border-app-muted/60 px-4 text-[15px]/[1.3] font-medium text-app-muted transition-colors duration-150 hover:border-ink hover:text-ink disabled:opacity-50", ring)}>
                                 <Icon name="plus" className="size-3.5" />Add choice
                               </button>
                             </div>
@@ -176,7 +176,7 @@ export function QuestionsEditor({ idPrefix, initial, busy, error, saved, onSave 
                         <div className="flex items-center gap-2 text-[13px] text-app-muted">
                           <label htmlFor={id(`${q.uid}-type`)}>Answer type</label>
                           <SelectControl id={id(`${q.uid}-type`)} value={q.type} disabled={busy} onValueChange={(next) => setType(q, next as QuestionType)}
-                            className={cn("min-h-9 cursor-pointer rounded-full bg-app py-1 pr-2 pl-3 text-[13px] text-ink shadow-[inset_0_0_0_1px_var(--color-app-line)] disabled:opacity-60", ring)}>
+                            className={cn("min-h-9 cursor-pointer rounded-full bg-app py-1 pr-2 pl-3 text-[13px] text-ink shadow-[inset_0_0_0_1.5px_var(--color-ink)] disabled:opacity-60", ring)}>
                             {TYPE_GROUPS.map(([group, types]) => (
                               <optgroup key={group} label={group}>{types.map(([t, label]) => <option key={t} value={t}>{label}</option>)}</optgroup>
                             ))}
@@ -193,7 +193,7 @@ export function QuestionsEditor({ idPrefix, initial, busy, error, saved, onSave 
         </ol>
 
         <button type="button" disabled={busy || qs.length >= 80} onClick={add}
-          className={cn("flex min-h-14 w-full items-center justify-center gap-2 rounded-md border border-dashed border-app-muted/60 text-[15px] font-medium text-ink transition-colors duration-150 hover:border-ink hover:bg-app-sunken disabled:opacity-50", ring)}>
+          className={cn("flex min-h-14 w-full items-center justify-center gap-2 border-[1.5px] border-dashed border-ink text-[15px] font-medium text-ink transition-colors duration-150 hover:border-ink hover:bg-app-sunken disabled:opacity-50", ring)}>
           <Icon name="plus" className="size-4" />Add question
         </button>
 
@@ -205,7 +205,7 @@ export function QuestionsEditor({ idPrefix, initial, busy, error, saved, onSave 
         </div>
       </div>
 
-      <div className="sticky bottom-0 z-10 mt-5 flex flex-wrap items-center justify-between gap-3 rounded-md bg-app p-2.5 shadow-[inset_0_0_0_1px_var(--color-app-line)] sm:p-3.5">
+      <div className="sticky bottom-0 z-10 mt-5 flex flex-wrap items-center justify-between gap-3 bg-app p-2.5 shadow-[0_0_0_1.5px_var(--color-ink),6px_6px_0_var(--color-ink)] sm:p-3.5">
         {error
           ? <p role="alert" className="px-1.5 text-sm text-danger">{error}</p>
           : <p role="status" className="px-1.5 text-sm text-app-muted">{dirty ? "Unsaved changes" : saved ? "Saved. Visitors see this version now." : "No unsaved changes"}</p>}

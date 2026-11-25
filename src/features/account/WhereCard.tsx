@@ -50,22 +50,9 @@ export function WhereCard({ editor, userId, hood, approved, avatar, hoodList }: 
       <div className={cn("air-where", !place && "air-where--nomap")}>
         {place && (
           <NeighborhoodMap center={place.center} label={hood}>
-            <svg aria-hidden viewBox="0 0 220 104" className="air-map-mark">
-              <defs><path id="air-mring" d="M21 52 a31 31 0 1 1 62 0 a31 31 0 1 1 -62 0" /></defs>
-              <g fill="none" stroke="var(--bl-air-red)">
-                <circle cx="52" cy="52" r="46" strokeWidth="2.2" /><circle cx="52" cy="52" r="39" strokeWidth="1" />
-                <g strokeWidth="2.2" strokeLinecap="round">
-                  {[31, 45, 59, 73].map((y) => <path key={y} d={`M104 ${y} q11 -7 22 0 t22 0 t22 0 t22 0 t22 0`} />)}
-                </g>
-              </g>
-              <text fontFamily="var(--font-plex)" fontSize="6.8" fontWeight="600" letterSpacing="1.45" fill="var(--bl-air-red)">
-                <textPath href="#air-mring">{hood.toUpperCase()} · {borough ? `${borough.toUpperCase()} · ` : ""}NEW YORK ·</textPath>
-              </text>
-              <text x="52" y="57" textAnchor="middle" fontFamily="var(--font-display)" fontSize="13.5" fontWeight="400" fill="var(--bl-air-red)">{place.zip}</text>
-            </svg>
             <div className="air-map-pin">
               <div className="air-map-pop">
-                {approved && card.catalogue_number !== null && <span className="air-lbl text-air-red">Member No. {formatCatalogueNumber(card.catalogue_number)}</span>}
+                {approved && card.catalogue_number !== null && <span className="air-lbl">Member No. {formatCatalogueNumber(card.catalogue_number)}</span>}
                 <b>{card.full_name}</b>
                 {work && <small>{work}</small>}
               </div>

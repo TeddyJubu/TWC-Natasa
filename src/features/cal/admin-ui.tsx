@@ -1,9 +1,9 @@
-// The admin side of Cal, on the airmail kit. Every call is checked again by requireAdmin in cal.server.ts.
+// The admin side of Cal, on the internal kit (twc-app.css). Every call is checked again by requireAdmin in cal.server.ts.
 import * as React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { cn, SelectControl } from "@/index";
-import { fieldClass, linkClass, primaryButton, redButton, secondaryButton } from "@/app/layout/app-classes";
+import { fieldClass, linkClass, primaryButton, mainButton, secondaryButton } from "@/app/layout/app-classes";
 import { Card, Chip, EmptySlot, InlineError, Toggle, type ChipTone } from "@/app/layout/app-ui";
 import { rsvpCsv, rsvpTotals, STATUS_LABEL, useAdminBusiness } from "./admin-state";
 import { addCalRsvpFn, cancelCalEventFn, saveCalEventFn, saveCalEventTypeFn } from "./fns";
@@ -192,7 +192,7 @@ export function EventEditorForm({ event, business }: { event?: AdminCalEvent; bu
       <Toggle label="Unlisted" description="Left out of lists and search; anyone with the link can still open it." checked={d.hidden} onCheckedChange={(on) => set("hidden", on)} />
       <Toggle label="Show who’s coming" description="First names on the public page." checked={d.showAttendees} onCheckedChange={(on) => set("showAttendees", on)} />
       {save.isError && <p role="alert" className="twc-error">{messageOf(save.error)}</p>}
-      <button type="submit" className={cn(redButton, "w-fit")} disabled={save.isPending}>{save.isPending ? "Saving…" : event ? "Save changes" : "Create event"}</button>
+      <button type="submit" className={cn(mainButton, "w-fit")} disabled={save.isPending}>{save.isPending ? "Saving…" : event ? "Save changes" : "Create event"}</button>
       {toastNode}
     </form>
   );

@@ -4,7 +4,7 @@ import { introsQuery } from "@/features/members/queries";
 import { EmptySlot, InlineError, Letter, Stamp } from "@/app/layout/app-ui";
 import { Locked } from "./shared";
 
-/** Introductions to other members as a strip of stamps (the directory's); each opens the page's MemberDialog. */
+/** Introductions to other members as a strip of the directory’s cards; each opens the page's MemberDialog. */
 export function IntroductionsSection({
   userId, approved, applied, declined, neighborhood: n, onOpen,
 }: {
@@ -28,7 +28,7 @@ export function IntroductionsSection({
           {introsState.isSuccess && intros.length === 0 ? (
             <EmptySlot><p>No introductions yet. As more neighbors join the directory, they’ll appear here.</p></EmptySlot>
           ) : intros.length > 0 && (
-            // The sheet has no ground of its own, so one introduction is one stamp, never a lone card in an empty panel.
+            // The strip has no ground of its own, so one introduction is one card, never a lone card in an empty panel.
             <div className="air-sheet air-sheet--strip">
               {intros.map((m) => <Stamp key={m.id} member={m} label={`View ${m.name}’s profile`} onClick={() => onOpen(m)} />)}
             </div>

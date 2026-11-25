@@ -1,4 +1,4 @@
-// Account-only pieces; the shared airmail kit is src/app/layout/app-ui.tsx (DESIGN.md "Internal tools").
+// Account-only pieces; the shared kit is src/app/layout/app-ui.tsx (DESIGN.md "Internal tools").
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/index";
 import { ring } from "@/app/layout/app-classes";

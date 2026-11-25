@@ -1,5 +1,6 @@
-// The internal tools' building blocks (/account, /admin; DESIGN.md "Internal tools"): airmail letters on the white
-// desk, mono labels, black rules, stamps and tickets (`air-*` in src/app/twc.css, on the `air-*` tokens in theme.css).
+// The signed-in pages' building blocks (/account, /directory, /feed, /admin; DESIGN.md "Internal tools"): the canvas's
+// working views — sections under a hairline ink rule, mono labels, outline pills, people with a portrait square
+// (`air-*` in src/app/twc-app.css, on the `air-*` tokens in theme.css).
 import * as React from "react";
 import { Switch, SwitchThumb } from "@ui-sdk/react/switch";
 import { cn, initials, type MemberProfile } from "@/index";
@@ -7,7 +8,7 @@ import { Icon, type IconName } from "./icons";
 import { linkClass, ring, secondaryButton } from "./app-classes";
 
 /**
- * A letter on the desk: "Nº 01" in red mono, an Archivo heavy condensed title, a black rule under the head (`rule`), then the body.
+ * A section under a hairline ink rule: "01" in muted mono, an Archivo heavy condensed title, a second rule under the head (`rule`), then the body.
  * Without `no` it numbers itself in page order. `id` makes it a nav anchor; `span` is its width in /account's bento.
  */
 export function Letter({ id, no, title, subtitle, action, span, rule, className, children }: {
@@ -19,7 +20,7 @@ export function Letter({ id, no, title, subtitle, action, span, rule, className,
     <section id={id} aria-labelledby={headingId} className={cn("air-card", span && `air-span-${span}`, className)}>
       <header className={cn("air-ch", rule && "mb-0 pb-5")}>
         <div className="min-w-0">
-          <p className="air-no" aria-hidden={no === undefined || undefined}>{no !== undefined && `Nº ${String(no).padStart(2, "0")}`}</p>
+          <p className="air-no" aria-hidden={no === undefined || undefined}>{no !== undefined && String(no).padStart(2, "0")}</p>
           <h2 id={headingId}>{title}</h2>
           {subtitle && <p className="air-sub">{subtitle}</p>}
         </div>
@@ -31,7 +32,7 @@ export function Letter({ id, no, title, subtitle, action, span, rule, className,
   );
 }
 
-/** A letter whose children (or a list's items) are rows on ruled lines: the admin cards. */
+/** A section whose children (or a list's items) are rows on hairlines: the admin cards. */
 export function Card({ children, ...letter }: Omit<React.ComponentProps<typeof Letter>, "rule">) {
   return <Letter {...letter} rule><div className="air-rows">{children}</div></Letter>;
 }
@@ -76,7 +77,7 @@ export function Row({ label, htmlFor, icon, empty, add, top, children }: {
 }
 
 /**
- * One cell of a customs-form card: a mono label over the value. `htmlFor` makes the label a real <label> (edit
+ * One cell of a label/value grid (the public card): a mono label over the value. `htmlFor` makes the label a real <label> (edit
  * mode); `empty` greys the value; `add` puts a trailing "Add" whose name includes the field.
  */
 export function Field({ label, htmlFor, icon, empty, add, className, children }: {
@@ -96,26 +97,27 @@ export function Field({ label, htmlFor, icon, empty, add, className, children }:
   );
 }
 
-/** Chip tones. Outlined is still open; filled navy is settled; red is a no. */
+/**
+ * Chip tones, as the canvas's badges (.dbadge): waiting on someone is butter, settled is ink, a no is wine, anything
+ * else is a plain outline. Every fill keeps ink text (wine and ink carry white).
+ */
 export type ChipTone = "pending" | "ok" | "gel" | "gel-green" | "no" | "muted";
-// TODO(human): decide how a status reads at a glance across /admin. The entries below are a working default.
-// Rework `pending`, `ok`, `no` and `muted` (keep the gel lines); use only air-*/app-*/ink/danger tokens.
 const TONE: Record<ChipTone, string> = {
-  pending: "text-ink shadow-[inset_0_0_0_1.5px_currentColor]",
+  pending: "bg-app-pending text-ink shadow-[inset_0_0_0_1px_var(--color-ink)]",
   ok: "bg-air-navy text-air-paper",
   gel: "twc-gel",
   "gel-green": "twc-gel twc-gel--green",
-  no: "text-danger shadow-[inset_0_0_0_1.5px_currentColor]",
-  muted: "text-app-muted shadow-[inset_0_0_0_1px_var(--color-air-line)]",
+  no: "bg-air-red text-white",
+  muted: "bg-air-paper text-ink shadow-[inset_0_0_0_1px_var(--color-ink)]",
 };
 
-/** A small status chip in mono capitals, like a stamp. The gel tones keep the forms' glossy pill. */
+/** A small status badge in tracked capitals. The gel tones are a form's open/always-on pill. */
 export function Chip({ tone = "muted", className, children }: { tone?: ChipTone; className?: string; children: React.ReactNode }) {
   const gel = tone === "gel" || tone === "gel-green";
   return (
     <span className={cn(
       "inline-flex min-h-6 shrink-0 items-center gap-1.5 rounded-full px-2.5 whitespace-nowrap",
-      gel ? "twc-chip py-1 text-xs/[18px]" : "font-plex text-[10px]/none font-semibold tracking-[0.14em] uppercase",
+      gel ? "twc-chip py-1 text-xs/[18px]" : "text-[10.5px]/none font-medium tracking-[0.08em] uppercase",
       TONE[tone], className,
     )}>{children}</span>
   );
@@ -145,7 +147,7 @@ export function InlineError({ message, onRetry }: { message: string; onRetry: ()
   );
 }
 
-/** A dashed slot with a blank stamp: empty lists and locked cards. */
+/** A dashed box with an icon: empty lists and locked cards (the canvas's dashed lock). */
 export function EmptySlot({ icon = "users", children }: { icon?: IconName; children: React.ReactNode }) {
   return (
     <div className="air-empty">
@@ -155,7 +157,7 @@ export function EmptySlot({ icon = "users", children }: { icon?: IconName; child
   );
 }
 
-/** A ticket's stub (decorative: the body says the date in words). */
+/** A dated row's date block (decorative: the body says the date in words). `red` marks a confirmed date (lime). */
 export function TicketDate({ when, tone = "navy" }: { when: { month: string; day: string; weekday: string }; tone?: "navy" | "red" | "muted" }) {
   return (
     <div aria-hidden className={cn("air-t-date", tone !== "navy" && `air-t-date--${tone}`)}>
@@ -164,30 +166,26 @@ export function TicketDate({ when, tone = "navy" }: { when: { month: string; day
   );
 }
 
-/** The small line under a stamp's name ("Ceramics · Sunnyside"): her craft, else her role, then where; only what is set. */
+/** The small line under a person's name ("Ceramics · Sunnyside"): her craft, else her role, then where; only what is set. */
 function stampCaption(m: MemberProfile): string {
   return [m.specialty || m.role, m.neighborhood].filter(Boolean).join(" · ");
 }
 
 /**
- * A member as a postage stamp (`air-slot` in a perforated `air-sheet`): number in red mono, value in cents, portrait or
- * initials on navy (never a stand-in photo), name in Archivo capitals, a caption, "twc." on its side. A real button named
- * by `label`. With `pressed` it is a toggle that lifts off the sheet when on, leaving a dashed spot (/directory);
- * without, it just opens something (/account's introductions).
+ * A member as the canvas's directory card (`air-slot`): a 4:5 portrait or her initials on lime (never a stand-in photo)
+ * with her number on a badge, then her name and a caption. A real button named by `label`. With `pressed` it is a
+ * toggle, framed in ink while she is the one shown beside the list (/directory); without, it just opens something
+ * (/account's introductions, the feed's neighbors).
  */
 export function Stamp({ member: m, label, pressed, onClick }: { member: MemberProfile; label: string; pressed?: boolean; onClick: () => void }) {
   const n = m.catalogueNumber;
   return (
     <button type="button" aria-pressed={pressed} aria-label={label} onClick={onClick} className={cn("air-slot", ring, pressed && "is-out")}>
-      {pressed !== undefined && <span aria-hidden className="air-slot-ghost">Torn out · tap to return</span>}
-      <span aria-hidden className="air-slot-stamp">
-        <span className="air-slot-top">{n !== undefined && <><b>nº {String(n).padStart(2, "0")}</b><i>{n}¢</i></>}</span>
-        <span className="air-slot-ph">{m.image ? <img src={m.image} alt="" loading="lazy" /> : <span>{initials(m.name)}</span>}</span>
-        <span className="air-slot-foot">
-          <span className="min-w-0"><strong>{m.name}</strong><small>{stampCaption(m)}</small></span>
-          <em>twc.</em>
-        </span>
+      <span aria-hidden className="air-slot-ph">
+        {m.image ? <img src={m.image} alt="" loading="lazy" /> : <span>{initials(m.name)}</span>}
+        {n !== undefined && <span className="air-slot-top"><b>nº {String(n).padStart(2, "0")}</b></span>}
       </span>
+      <span aria-hidden className="air-slot-foot"><strong>{m.name}</strong><small>{stampCaption(m)}</small></span>
     </button>
   );
 }

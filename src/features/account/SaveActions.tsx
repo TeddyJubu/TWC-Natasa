@@ -1,10 +1,10 @@
 import type * as React from "react";
 import { cn } from "@/index";
-import { redButton, ring } from "@/app/layout/app-classes";
+import { mainButton, ring } from "@/app/layout/app-classes";
 import { Icon } from "@/app/layout/icons";
 
 /**
- * /account's save bar: paper with an airmail edge at the foot of the page column that is only there when there is something to
+ * /account's save bar: white with the canvas’s hard shadow at the foot of the page column that is only there when there is something to
  * say — unsaved changes (Discard, Preview, Save), a save in flight, a failed save, or "saved" for a moment after
  * one. Otherwise it is inert and out of sight (`app-savebar`), so a page with nothing to save shows no Save button.
  * Save submits `formId`, so every profile input (joined with `form=`) is validated natively. The status sits
@@ -34,7 +34,7 @@ export function SaveActions({ formId, dirty, pending, saved, error, onSubmit, on
               <button type="button" onClick={onPreview} className={cn("air-btn air-btn--line", ring)}>
                 <Icon name="eye" /><span>Preview<span className="sr-only sm:not-sr-only"> card</span></span>
               </button>
-              <button type="submit" disabled={pending} className={redButton}>
+              <button type="submit" disabled={pending} className={mainButton}>
                 {pending ? "Saving…" : <>Save changes <Icon name="arrow-right" /></>}
               </button>
             </>

@@ -1,12 +1,12 @@
-// The signed-in member directory (DESIGN.md "Member directory"): a sheet of stamps on the airmail desk. Tapping a stamp
-// tears it out onto the pass beside the sheet; tapping it again, or its empty spot, puts it back.
+// The signed-in member directory (DESIGN.md "Member directory"): the canvas's people grid. Choosing a member shows her
+// card in the colour panel beside the grid; choosing her again puts it away.
 import * as React from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { cn, safeHref, type MemberProfile } from "@/index";
 import { AppPage } from "@/app/layout/AppLayout";
 import { EmptySlot, InlineError, Stamp } from "@/app/layout/app-ui";
-import { fieldClass, redButton, ring, secondaryButton } from "@/app/layout/app-classes";
+import { fieldClass, mainButton, ring, secondaryButton } from "@/app/layout/app-classes";
 import { Icon } from "@/app/layout/icons";
 import { AirShell } from "@/features/account/AirShell";
 import { matchesSearch } from "@/features/admin/format";
@@ -18,14 +18,14 @@ export const Route = createFileRoute("/_authenticated/directory")({
   head: () => ({
     meta: [
       { title: "Members — The Women’s Collective" },
-      { name: "description", content: "The member directory: a sheet of stamps, one for every member across North Brooklyn and Queens." },
+      { name: "description", content: "The member directory: one card for every member across North Brooklyn and Queens." },
       { name: "robots", content: "noindex" },
     ],
   }),
   component: DirectoryPage,
 });
 
-/** Stamps on one sheet: four across, three down. */
+/** Members on one page: four across, three down. */
 const SHEET_SIZE = 12;
 const no4 = (n?: number) => (n === undefined ? "" : String(n).padStart(4, "0"));
 const printed = new Date().toLocaleDateString("en-US", { month: "short", year: "numeric", timeZone: "America/New_York" });
@@ -76,17 +76,17 @@ function DirectoryPage() {
         <main id="main" tabIndex={-1} className="outline-none">
           <section className="air-dir-intro">
             <div>
-              <p className="air-lbl">Member directory · Sheet Nº {page + 1} of {pages}</p>
+              <p className="air-lbl">Member directory · Page {page + 1} of {pages}</p>
               <h1>Members</h1>
             </div>
             {!outsider && <div>
               <p className="air-dir-lede">
-                <b>{all.length || "No"} {all.length === 1 ? "member" : "members"} across North Brooklyn and Queens</b>, printed one stamp at a time. Tear one out to meet her.
+                <b>{all.length || "No"} {all.length === 1 ? "member" : "members"} across North Brooklyn and Queens</b>. Choose one to meet her.
               </p>
               <dl className="air-dir-stats">
                 <div><dt>Members</dt><dd>{all.length}</dd></div>
                 <div><dt>Neighborhoods</dt><dd>{hoods.length}</dd></div>
-                <div><dt>Printed</dt><dd>{printed}</dd></div>
+                <div><dt>As of</dt><dd>{printed}</dd></div>
               </dl>
             </div>}
           </section>
@@ -123,19 +123,19 @@ function DirectoryPage() {
             <div className="air-dir-split">
               <div>
                 <Pass ref={passRef} member={out} />
-                <p className="air-dir-hint"><Icon name="arrow-up" className="mt-0.5 size-4 rotate-[-45deg]" />Tap a stamp to tear it out. Tap it again, or its empty spot, to put it back.</p>
+                <p className="air-dir-hint"><Icon name="arrow-up" className="mt-0.5 size-4 rotate-[-45deg]" />Choose a member to see her card here. Choose her again to put it away.</p>
               </div>
               <div className="min-w-0">
                 {sheet.length === 0 ? (
                   <EmptySlot>
-                    <p className="air-empty-title">{all.length === 0 ? "No one is listed yet." : "No stamps match."}</p>
+                    <p className="air-empty-title">{all.length === 0 ? "No one is listed yet." : "No one matches."}</p>
                     <p>{all.length === 0 ? "Members choose whether they appear here. Check back soon." : "Try another neighborhood or search."}</p>
                     {all.length > 0 && (
                       <button type="button" onClick={() => filter(() => { setHood("All"); setQuery(""); })} className={cn(secondaryButton, "mt-3")}>Show everyone</button>
                     )}
                   </EmptySlot>
                 ) : (
-                  <div role="group" aria-label={`Member stamps, sheet ${page + 1}`} className="air-sheet">
+                  <div role="group" aria-label={`Members, page ${page + 1}`} className="air-sheet">
                     {sheet.map((m) => (
                       <Stamp key={m.id} member={m} pressed={m.id === outId} onClick={() => tear(m)}
                         label={[m.name, m.role, m.neighborhood && `in ${m.neighborhood}`].filter(Boolean).join(", ")} />
@@ -146,12 +146,12 @@ function DirectoryPage() {
                   <p>
                     {/* Announced, so a search or filter says what it found (the sheet itself changes silently). */}
                     <span aria-live="polite">{shown.length < all.length ? `${shown.length} of ${all.length} match` : `Showing ${sheet.length} of ${all.length}`}</span>
-                    {" "}· Sheet printed {printed}
+                    {" "}· As of {printed}
                   </p>
                   <div className="flex items-center gap-3.5 font-semibold text-ink">
-                    <button type="button" disabled={page === 0} onClick={() => setPage(page - 1)} aria-label="Previous sheet" className={cn("air-icon-btn", ring)}><Icon name="arrow-left" className="size-4" /></button>
-                    <span aria-live="polite">Sheet {page + 1} of {pages}</span>
-                    <button type="button" disabled={page >= pages - 1} onClick={() => setPage(page + 1)} aria-label="Next sheet" className={cn("air-icon-btn", ring)}><Icon name="arrow-right" className="size-4" /></button>
+                    <button type="button" disabled={page === 0} onClick={() => setPage(page - 1)} aria-label="Previous page" className={cn("air-icon-btn", ring)}><Icon name="arrow-left" className="size-4" /></button>
+                    <span aria-live="polite">Page {page + 1} of {pages}</span>
+                    <button type="button" disabled={page >= pages - 1} onClick={() => setPage(page + 1)} aria-label="Next page" className={cn("air-icon-btn", ring)}><Icon name="arrow-right" className="size-4" /></button>
                   </div>
                 </div>
               </div>
@@ -164,43 +164,39 @@ function DirectoryPage() {
   );
 }
 
-/** The torn-out member's pass: only the facts she published, never a placeholder. */
+/** The chosen member's card (a lime colour field): only the facts she published, never a placeholder. */
 function Pass({ member: m, ref }: { member: MemberProfile | null; ref: React.Ref<HTMLElement> }) {
   const slug = m ? memberSlug(m) : undefined;
   // Websites are free text: only an http(s) URL becomes a link (never javascript: and the like).
   const website = m?.website ? safeHref(m.website) : undefined;
   return (
-    <aside ref={ref} aria-live="polite" aria-label="Torn-out member" className={cn("air-dir-pass", !m && "is-empty")}>
+    <aside ref={ref} aria-live="polite" aria-label="Chosen member" className={cn("air-dir-pass", !m && "is-empty")}>
       {!m ? (
-        <div className="px-6 py-9 text-center">
+        <div className="py-3 text-center">
           <div aria-hidden className="air-empty-stamp mx-auto mb-5"><span><Icon name="users" /></span></div>
-          <h2>Nothing torn out</h2>
-          <p className="mt-2.5 text-sm text-app-muted">Tap any stamp on the sheet to tear it out and meet her.</p>
+          <h2>No one chosen yet</h2>
+          <p className="mt-2.5 text-sm text-app-muted">Choose anyone in the directory to meet her.</p>
         </div>
       ) : (
         <>
-          <div className="air-dir-pass-head">
-            <p className="flex items-center justify-between air-lbl mb-0"><b className="text-air-red">Torn out</b>{m.catalogueNumber !== undefined && <span>Nº {no4(m.catalogueNumber)}</span>}</p>
+          <div>
+            <p className="flex items-center justify-between air-lbl mb-0"><span>Member</span>{m.catalogueNumber !== undefined && <span>No. {no4(m.catalogueNumber)}</span>}</p>
             <h2>{m.name}</h2>
             {(m.role || m.business) && <p className="mt-2 text-[13px] font-medium text-app-muted">{[m.role, m.business].filter(Boolean).join(", ")}</p>}
           </div>
-          <div aria-hidden className="air-dir-perf" />
-          <div className="px-6 pt-5 pb-6">
+          <div className="pt-5">
             {(m.neighborhood || m.specialty) && (
-              <dl className="grid grid-cols-2 gap-4">
+              <dl className="grid grid-cols-2 gap-4 pt-3">
                 {m.neighborhood && <div><dt className="air-lbl">Neighborhood</dt><dd className="text-[13px] font-bold">{m.neighborhood}</dd></div>}
                 {m.specialty && <div><dt className="air-lbl">Craft</dt><dd className="text-[13px] font-bold">{m.specialty}</dd></div>}
               </dl>
             )}
             {m.bio && <div className="mt-5"><span className="air-lbl">In her words</span><p className="text-sm/[1.5]">{m.bio}</p></div>}
-            {m.lookingFor && <div className="mt-4"><span className="air-lbl">Looking to meet</span><p className="border-b-[1.5px] border-air-rule pb-2 text-[13px]/[1.45] font-semibold">{m.lookingFor}</p></div>}
+            {m.lookingFor && <div className="mt-4"><span className="air-lbl">Looking to meet</span><p className="text-[13px]/[1.45] font-semibold">{m.lookingFor}</p></div>}
             <div className="mt-5 flex flex-col gap-2">
-              {slug && <Link to="/members/$slug" params={{ slug }} className={cn(redButton, "w-full")}>Open her page<Icon name="arrow-right" /></Link>}
-              {website && <a href={website} target="_blank" rel="noopener noreferrer" className={cn(secondaryButton, "w-full")}>Visit her website<Icon name="external-link" /><span className="sr-only"> (opens in a new tab)</span></a>}
+              {slug && <Link to="/members/$slug" params={{ slug }} className={cn(mainButton, "w-full")}>Open her page<Icon name="arrow-right" /></Link>}
+              {website && <a href={website} target="_blank" rel="noopener noreferrer" className={cn(secondaryButton, "w-full bg-air-paper")}>Visit her website<Icon name="external-link" /><span className="sr-only"> (opens in a new tab)</span></a>}
             </div>
-            {m.catalogueNumber !== undefined && (
-              <div aria-hidden className="mt-5 flex items-end gap-3"><div className="air-dir-bars" /><span className="font-plex text-[11px] tracking-[0.1em]">WC-{no4(m.catalogueNumber)}</span></div>
-            )}
           </div>
         </>
       )}
