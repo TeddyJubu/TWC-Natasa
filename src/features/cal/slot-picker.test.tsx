@@ -49,7 +49,7 @@ describe("booking forms", () => {
     slotsFn.mockReset();
     slotsFn.mockResolvedValue({ [today]: [slot(`${today}T23:00:00.000Z`)] });
     const type: PublicEventType = {
-      id: 1, slug: "t", title: "T", description: null, lengthInMinutes: 30, price: 0, currency: "usd", seatsPerSlot: null, guestsAllowed: false, fields: [],
+      id: 1, slug: "t", title: "T", description: null, lengthInMinutes: 30, seatsPerSlot: null, guestsAllowed: false, fields: [],
     };
     renderWithQueries(<BookingFlow type={type} />);
     await waitFor(() => expect(document.querySelector(".grid-cols-7 button:not([disabled])")).toBeTruthy());
@@ -62,7 +62,7 @@ describe("booking forms", () => {
 
   it("keeps a typed comma, so a second email can follow it", () => {
     const type: PublicEventType = {
-      id: 1, slug: "t", title: "T", description: null, lengthInMinutes: 30, price: 0, currency: "usd", seatsPerSlot: null, guestsAllowed: false,
+      id: 1, slug: "t", title: "T", description: null, lengthInMinutes: 30, seatsPerSlot: null, guestsAllowed: false,
       fields: [{ slug: "cc", type: "multiemail", label: "Also notify", required: false, placeholder: null, options: [] }],
     };
     renderWithQueries(<BookingForm type={type} start="2026-12-01T15:00:00.000Z" timeZone="UTC" onBooked={() => undefined} onSlotTaken={() => undefined} />);

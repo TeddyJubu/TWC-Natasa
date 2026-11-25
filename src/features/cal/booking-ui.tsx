@@ -10,11 +10,8 @@ import { AddToCalendar, ConfirmDialog, ErrorBanner, FormField, StatusBadge, useV
 
 const utc = (day: string) => Date.parse(`${day}T12:00:00Z`);
 const messageOf = (error: unknown) => (error as Error | null)?.message || "Something went wrong. Please try again.";
-const money = (amount: number, currency: string, locale: string) =>
-  new Intl.NumberFormat(locale, { style: "currency", currency: currency.toUpperCase() }).format(amount / 100);
 
 export function EventTypeCard({ type, business }: { type: PublicEventType; business?: string }) {
-  const locale = useVisitorLocale();
   return (
     <article className="twc-evcard">
       <div className="twc-evcard__body">
@@ -27,7 +24,6 @@ export function EventTypeCard({ type, business }: { type: PublicEventType; busin
       {type.description && <p className="whitespace-pre-line text-sb-muted">{type.description}</p>}
       <p className="mt-auto flex flex-wrap gap-2 pt-2">
         <span className="twc-chip twc-chip--ring">{type.lengthInMinutes} min</span>
-        {type.price > 0 && <span className="twc-chip twc-chip--ring">{money(type.price, type.currency, locale)}</span>}
         {type.seatsPerSlot !== null && <span className="twc-chip twc-chip--ring">Group · {type.seatsPerSlot} seats</span>}
       </p>
       </div>

@@ -35,7 +35,7 @@ export type BookingField = {
 };
 export type PublicEventType = {
   id: number; slug: string; title: string; description: string | null; lengthInMinutes: number;
-  price: number; currency: string; seatsPerSlot: number | null; guestsAllowed: boolean; fields: BookingField[];
+  seatsPerSlot: number | null; guestsAllowed: boolean; fields: BookingField[];
 };
 export type EditableEventType = PublicEventType & { hidden: boolean; showAttendeeInfo: boolean; showAvailabilityCount: boolean };
 export type CalSlot = { start: string; seatsBooked: number | null; seatsRemaining: number | null; seatsTotal: number | null };

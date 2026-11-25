@@ -408,7 +408,7 @@ export function toAdminBooking(b: RawBooking): AdminBooking {
 
 type RawField = { slug?: string; type?: string; label?: string; required?: boolean; placeholder?: string; hidden?: boolean; isDefault?: boolean; options?: unknown[] };
 type RawEventType = {
-  id: number; slug: string; title: string; description?: string | null; lengthInMinutes: number; price?: number; currency?: string; hidden?: boolean;
+  id: number; slug: string; title: string; description?: string | null; lengthInMinutes: number; hidden?: boolean;
   disableGuests?: boolean; bookingFields?: RawField[];
   seats?: { disabled?: boolean; seatsPerTimeSlot?: number; showAttendeeInfo?: boolean; showAvailabilityCount?: boolean };
 };
@@ -422,11 +422,12 @@ const fieldsOf = (t: RawEventType): BookingField[] =>
     placeholder: f.placeholder ?? null, options: (f.options ?? []).map(optionValue).filter(Boolean),
   }));
 
+/** Built field by field: no price or currency leaves (headshot cost is undecided, so no page may name one). */
 export function toPublicEventType(t: RawEventType): PublicEventType {
   const seatsPerSlot = seatsOf(t);
   return {
     id: t.id, slug: t.slug, title: t.title, description: t.description ?? null, lengthInMinutes: t.lengthInMinutes,
-    price: t.price ?? 0, currency: t.currency ?? "usd", seatsPerSlot,
+    seatsPerSlot,
     guestsAllowed: t.disableGuests !== true && seatsPerSlot === null, fields: fieldsOf(t),
   };
 }

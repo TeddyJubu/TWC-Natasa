@@ -6,7 +6,7 @@ import { coverVersion } from "@/server/covers";
 import { openDb } from "@/server/db";
 import {
   adminEvent, CalError, clearCalCache, coverSource, createBooking, filterPublic, getPublicBooking, getPublicEvent, getSlots, listPublicEvents,
-  manageBooking, saveAdminEvent, sendRsvp, sitemapEvents, toAdminBooking, toCalError, toPublicEvent, type RawEvent,
+  manageBooking, saveAdminEvent, sendRsvp, sitemapEvents, toAdminBooking, toCalError, toPublicEvent, toPublicEventType, type RawEvent,
 } from "./cal.server";
 import { checkEvent } from "./types";
 
@@ -316,5 +316,15 @@ describe("slots and booking", () => {
   it("won't book a hidden type", async () => {
     answer = api;
     await expect(createBooking({ ...form, eventTypeId: 8, responses: {} })).rejects.toMatchObject({ status: 404 });
+  });
+});
+
+describe("toPublicEventType", () => {
+  it("never carries a price or currency out (headshot cost is undecided, so no page may name one)", () => {
+    const raw = { id: 7, slug: "headshot", title: "Headshot session", lengthInMinutes: 30, price: 15000, currency: "usd" };
+    const type = toPublicEventType(raw as Parameters<typeof toPublicEventType>[0]);
+    expect(type).not.toHaveProperty("price");
+    expect(type).not.toHaveProperty("currency");
+    expect(JSON.stringify(type)).not.toMatch(/15000|usd/);
   });
 });
