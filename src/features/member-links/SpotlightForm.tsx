@@ -52,11 +52,11 @@ export function SpotlightForm({ token, prefill, send = sendSpotlight }: {
 
   if (done) {
     return (
-      <div ref={thanks} tabIndex={-1} role="status" className="flex flex-col items-center gap-4 rounded-[6px] bg-sb-lime px-6 py-16 text-center outline-none sm:px-8">
-        <span className="twc-ticket__meta">Answers received</span>
+      <div ref={thanks} tabIndex={-1} role="status" className="twc-fdone twc-c-lime">
+        <p className="twc-fmono">Answers received</p>
         <h2 className="twc-h3">Thank you.</h2>
-        <p className="max-w-[520px] text-[17px]">Your answers are with The Women’s Collective. We’ll be in touch before anything is published.</p>
-        <ul className="max-w-[520px] list-disc pl-5 text-left text-[15px] text-sb-muted">
+        <p className="text-[17px]">Your answers are with The Women’s Collective. We’ll be in touch before anything is published.</p>
+        <ul className="list-disc pl-5 text-[15px]">
           <li>Nothing is published automatically.</li>
           <li>This link is now closed and cannot be used again.</li>
         </ul>
@@ -66,7 +66,7 @@ export function SpotlightForm({ token, prefill, send = sendSpotlight }: {
 
   const pending = { "aria-disabled": busy || undefined, className: "aria-disabled:cursor-progress" };
   return (
-    <form className="relative rounded-[6px] bg-sb-paper p-5 shadow-[inset_0_0_0_1px_rgb(31_31_28/0.15)] sm:p-12" onSubmit={submit} aria-busy={busy}>
+    <form className="twc-form" onSubmit={submit} aria-busy={busy}>
       <div className="flex flex-col gap-12">
         <Section index="01 — About you" title="About you" description="Prefilled from our private records. Correct anything that has changed.">
           <div className="grid gap-[22px] sm:grid-cols-2">

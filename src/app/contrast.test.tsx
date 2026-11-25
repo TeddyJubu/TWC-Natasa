@@ -243,4 +243,24 @@ describe("public scrapbook palette (--color-sb-* in styles.css)", () => {
     const alpha = Number(ordinal![1]) / 100;
     expect(contrast(blend(sb.ink, sb.paper, alpha), sb.paper)).toBeGreaterThanOrEqual(AA);
   });
+
+  // The form pages (sub-project 3) set ink text on every colour field, and muted words only on paper or stone.
+  it("every colour field on the form pages and sign-in is one whose ink pair is checked above", () => {
+    const files = [
+      "src/routes/join.tsx", "src/routes/review.tsx", "src/routes/spotlight.tsx", "src/routes/contact.tsx", "src/routes/partnerships.tsx",
+      "src/routes/f.$slug.tsx", "src/routes/auth.tsx", "src/routes/reset-password.tsx", "src/routes/verified.tsx", "src/app/auth-ui.tsx",
+      "src/features/applications/ApplicationForm.tsx", "src/features/applications/AreaChoice.tsx",
+      "src/features/member-links/ReviewForm.tsx", "src/features/member-links/SpotlightForm.tsx",
+      "src/features/contact/ContactForm.tsx", "src/features/contact/PartnershipForm.tsx", "src/features/forms/CustomForm.tsx",
+    ];
+    const used = new Set(files.flatMap((f) => [...readFileSync(`${process.cwd()}/${f}`, "utf8").matchAll(/twc-c-([\w-]+)/g)].map((m) => m[1])));
+    expect(used.size).toBeGreaterThan(0);
+    // stone is sb-cream, checked with ink and muted above.
+    expect([...used].filter((c) => c !== "stone" && !fields.includes(c))).toEqual([]);
+    const forms = readFileSync(`${process.cwd()}/src/app/twc-forms.css`, "utf8");
+    expect(forms).toMatch(/\.twc-fieldc \{[^}]*color: var\(--color-sb-ink\);/);
+    expect(forms).toMatch(/\.twc-fieldc \.twc-inlink \{ color: var\(--color-sb-ink\); \}/);
+    expect(forms).toMatch(/\.twc-farea \{[^}]*color: var\(--color-sb-ink\);/);
+    expect(forms).toMatch(/\.twc-fdone \{[^}]*color: var\(--color-sb-ink\);/);
+  });
 });

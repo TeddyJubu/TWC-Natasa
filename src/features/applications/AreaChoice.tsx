@@ -1,24 +1,26 @@
 import { Link } from "@tanstack/react-router";
 import { AREAS, type Area } from "./schema";
 
+/** Each area's colour field: its constellation band colour from the canvas (North Brooklyn lime, Queens purple). */
+const FIELD: Record<string, string> = { "north-brooklyn": "twc-c-band-lime", queens: "twc-c-band-purple" };
+
 /** What plain /join shows first: one link per area, so it works before the page's script has loaded. */
 export function AreaChoice() {
   return (
     <section aria-labelledby="area-title" className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
         <h2 id="area-title" className="twc-h3">Which area is yours?</h2>
-        <p className="max-w-[60ch] text-[17px] leading-[1.6] text-sb-muted">Choose where you live, work or run your business. The application is the same for both.</p>
+        <p className="twc-lede">Choose where you live, work or run your business. The application is the same for both.</p>
       </div>
-      <ul className="grid gap-4 sm:grid-cols-2">
-        {AREAS.map((a) => (
+      <ul className="grid sm:grid-cols-2">
+        {AREAS.map((a, i) => (
           <li key={a.id} className="flex">
-            <Link
-              to="/join"
-              search={{ area: a.id }}
-              className="flex w-full flex-col gap-2 rounded-[6px] bg-sb-cream p-6 text-sb-ink transition-[translate] duration-300 ease-[var(--ease-snap)] hover:-translate-y-1 hover:text-sb-ink focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-sb-blue-ink motion-reduce:transform-none"
-            >
-              <span className="font-display text-[34px] leading-[1.1]">{a.name} <span className="twc-arrow" aria-hidden>→</span></span>
-              <span className="text-[15px] leading-[1.5] text-sb-muted">{a.neighborhoods.join(", ")} and nearby</span>
+            <Link to="/join" search={{ area: a.id }} className={`twc-farea w-full ${FIELD[a.id] ?? "twc-c-stone"}`}>
+              <span aria-hidden className="twc-fmono">{String(i + 1).padStart(2, "0")}</span>
+              <span className="flex flex-col gap-3">
+                <span className="twc-farea__name">{a.name} <span className="twc-arrow" aria-hidden>→</span></span>
+                <span className="text-[15px] leading-[1.5]">{a.neighborhoods.join(", ")} and nearby</span>
+              </span>
             </Link>
           </li>
         ))}

@@ -41,16 +41,20 @@ function SpotlightPage() {
   return (
     <AppPage>
       <AppNav bare />
-      <main id="main" tabIndex={-1} className="twc-wrap flex max-w-[960px] flex-col gap-8 pb-[104px] pt-14 outline-none">
-        <div className="flex flex-col gap-4">
-          <span className="twc-eyebrow">Weekly Spotlight</span>
-          <h1 className="twc-h2">Your member Spotlight</h1>
-          <p className="max-w-[640px] text-[17px] leading-[1.65] text-sb-muted">
-            Hello {prefill.firstName} — thank you for being part of The Women’s Collective. Tell us your story in your own words — we’ll check
-            with you before anything is published.
-          </p>
+      <main id="main" tabIndex={-1} className="outline-none">
+        <div className="twc-phd">
+          <div className="twc-fhead">
+            <span className="twc-eyebrow">Weekly Spotlight</span>
+            <h1 className="twc-display">Your member Spotlight</h1>
+            <p className="twc-lede">
+              Hello {prefill.firstName} — thank you for being part of The Women’s Collective. Tell us your story in your own words — we’ll check
+              with you before anything is published.
+            </p>
+          </div>
         </div>
-        <SpotlightForm token={token} prefill={prefill} />
+        <div className="twc-fbody">
+          <SpotlightForm token={token} prefill={prefill} />
+        </div>
       </main>
       <AppFooter bare />
     </AppPage>

@@ -42,10 +42,10 @@ export function PartnershipForm({ send = sendPartnership }: { send?: (input: Par
 
   if (sentTo) {
     return (
-      <div role="status" className="flex flex-col items-center gap-3 rounded-md bg-sb-lime px-6 py-12 text-center sm:px-8">
-        <span className="twc-ticket__meta"><span>{t("Inquiry received")}</span></span>
+      <div role="status" className="twc-fdone twc-c-lime">
+        <p className="twc-fmono">{t("Inquiry received")}</p>
         <h3 ref={thanks} tabIndex={-1} className="twc-h3 text-[32px] outline-none sm:text-[40px]">{t("Thanks for writing.")}</h3>
-        <p className="max-w-[420px] text-[17px] [overflow-wrap:anywhere]">We’ll be in touch at {sentTo}.</p>
+        <p className="text-[17px] [overflow-wrap:anywhere]">We’ll be in touch at {sentTo}.</p>
       </div>
     );
   }
@@ -56,7 +56,7 @@ export function PartnershipForm({ send = sendPartnership }: { send?: (input: Par
 
   return (
     <form ref={form} onSubmit={submit} noValidate aria-label="Partnership inquiry"
-      className="relative flex flex-col gap-6 rounded-md bg-sb-paper p-5 shadow-[0_10px_28px_rgba(31,31,28,0.12)] sm:p-10">
+      className="twc-form twc-form--panel flex flex-col gap-6">
       {/* Honeypot: off-screen, out of the tab order and hidden from screen readers; people leave it empty. */}
       <div aria-hidden className="pointer-events-none absolute -left-[9999px] size-px overflow-hidden">
         <label htmlFor="p-honeypot">Leave this field empty</label>

@@ -40,13 +40,17 @@ function FormPage() {
   return (
     <AppPage>
       <AppNav bare />
-      <main id="main" tabIndex={-1} className="twc-wrap flex max-w-[960px] flex-col gap-8 pb-[104px] pt-14 outline-none">
-        <div className="flex flex-col gap-4">
-          <span className="twc-eyebrow">The Women’s Collective</span>
-          <h1 className="twc-h2">{form.name}</h1>
-          {paragraphs(form.intro).map((p, i) => <p key={i} className="max-w-[640px] text-[17px] leading-[1.65] text-sb-muted">{p}</p>)}
+      <main id="main" tabIndex={-1} className="outline-none">
+        <div className="twc-phd">
+          <div className="twc-fhead">
+            <span className="twc-eyebrow">The Women’s Collective</span>
+            <h1 className="twc-display">{form.name}</h1>
+            {paragraphs(form.intro).map((p, i) => <p key={i} className="twc-lede">{p}</p>)}
+          </div>
         </div>
-        <CustomForm form={form} onSent={() => void navigate({ to: "/f/$slug/thanks", params: { slug: form.slug } })} />
+        <div className="twc-fbody">
+          <CustomForm form={form} onSent={() => void navigate({ to: "/f/$slug/thanks", params: { slug: form.slug } })} />
+        </div>
       </main>
       <AppFooter bare />
     </AppPage>

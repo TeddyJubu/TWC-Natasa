@@ -1,4 +1,4 @@
-// A custom form's questions on the scrapbook kit: native validation first, then the shared check, then POST
+// A custom form's questions on the canvas kit (numbered on hairlines, twc-forms.css): native validation first, then the shared check, then POST
 // /api/forms/<slug>. `onSent` moves on to the thank-you page.
 import * as React from "react";
 import { Icon } from "@/app/layout/twc";
@@ -70,7 +70,7 @@ export function CustomForm({ form, onSent, send = sendFormAnswers }: {
   }
 
   return (
-    <form className="relative flex flex-col gap-[22px] rounded-[6px] bg-sb-paper p-5 shadow-[inset_0_0_0_1px_rgb(31_31_28/0.15)] sm:p-12" onSubmit={submit} aria-busy={busy}>
+    <form className="twc-form flex max-w-[760px] flex-col gap-[22px]" onSubmit={submit} aria-busy={busy}>
       {form.questions.map((q) => <QuestionField key={q.key} q={q} />)}
       {/* Honeypot: off-screen and out of the tab order and accessibility tree; people never fill it, bots do. */}
       <p aria-hidden className="absolute -left-[9999px] h-px w-px overflow-hidden">

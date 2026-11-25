@@ -56,31 +56,29 @@ function JoinPage() {
     <AppPage>
       <AppNav bare />
       <FormCopyProvider copy={state.copy}>
-      <main id="main" tabIndex={-1} className="twc-wrap flex max-w-[960px] flex-col gap-8 pb-[104px] pt-14 outline-none">
-        <div className="twc-ticket bg-[linear-gradient(160deg,#16213f_0%,#111111_100%)]">
-          <div className="twc-ticket__main grow-[4] basis-[480px]">
-            <p className="twc-eyebrow-script">{t("psst — there’s a seat for you")}</p>
-            <span className="twc-eyebrow text-sb-paper/70">{t("Membership application")}</span>
-            <h1 className="twc-display text-[clamp(32px,9vw,60px)]">{t("Tell us about your place in the constellation.")}</h1>
-            <p className="max-w-[520px] text-[17px] leading-[1.6] text-sb-paper/85">{t("Complete this application so we can learn about you, your work, and how you would like to participate in The Women’s Collective.")}</p>
+      <main id="main" tabIndex={-1} className="outline-none">
+        <div className="twc-phd">
+          <div className="twc-fhead">
+            <span className="twc-eyebrow">{t("Membership application")}</span>
+            <h1 className="twc-display">{t("Tell us about your place in the constellation.")}</h1>
+            <p className="twc-lede">{t("Complete this application so we can learn about you, your work, and how you would like to participate in The Women’s Collective.")}</p>
           </div>
-          <div className="twc-ticket__stub grow basis-[280px]">
-            <div className="twc-ticket__meta"><span>Admit one</span><span>New member</span></div>
-            <span aria-hidden className="font-script text-[28px] leading-[1.3] text-sb-butter">← that’s you</span>
-          </div>
+          <p className="twc-fmono twc-fhead__side">{t("psst — there’s a seat for you")}</p>
         </div>
-        {area ? (
-          <>
-            <AreaSwitch area={area} />
-            <ApplicationForm
-              area={area}
-              submit={submit}
-              initial={applicant ?? undefined}
-              // ponytail: pre-launch an applicant only needs to apply, so no login step; the thank-you is its own page.
-              onSent={() => void navigate({ to: "/join/thanks" })}
-            />
-          </>
-        ) : <AreaChoice />}
+        <div className="twc-fbody">
+          {area ? (
+            <>
+              <AreaSwitch area={area} />
+              <ApplicationForm
+                area={area}
+                submit={submit}
+                initial={applicant ?? undefined}
+                // ponytail: pre-launch an applicant only needs to apply, so no login step; the thank-you is its own page.
+                onSent={() => void navigate({ to: "/join/thanks" })}
+              />
+            </>
+          ) : <AreaChoice />}
+        </div>
       </main>
       </FormCopyProvider>
       <AppFooter bare />

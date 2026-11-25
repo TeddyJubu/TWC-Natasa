@@ -65,15 +65,19 @@ function ReviewPage() {
     <AppPage>
       <AppNav bare />
       <FormCopyProvider copy={copy}>
-      <main id="main" tabIndex={-1} className="twc-wrap flex max-w-[960px] flex-col gap-8 pb-[104px] pt-14 outline-none">
-        <div className="flex flex-col gap-4">
-          <span className="twc-eyebrow">{t("Existing members")}</span>
-          <h1 className="twc-h2">{t("Member information & permissions review")}</h1>
-          <p className="max-w-[640px] text-[17px] leading-[1.65] text-sb-muted">
-            {t("Hello {name} — this private page shows your own record only. Confirm or correct your details, then make each choice below separately. Nothing publishes automatically.").replace("{name}", prefill.firstName)}
-          </p>
+      <main id="main" tabIndex={-1} className="outline-none">
+        <div className="twc-phd">
+          <div className="twc-fhead">
+            <span className="twc-eyebrow">{t("Existing members")}</span>
+            <h1 className="twc-display">{t("Member information & permissions review")}</h1>
+            <p className="twc-lede">
+              {t("Hello {name} — this private page shows your own record only. Confirm or correct your details, then make each choice below separately. Nothing publishes automatically.").replace("{name}", prefill.firstName)}
+            </p>
+          </div>
         </div>
-        <ReviewForm token={token} prefill={prefill} />
+        <div className="twc-fbody">
+          <ReviewForm token={token} prefill={prefill} />
+        </div>
       </main>
       </FormCopyProvider>
       <AppFooter bare />

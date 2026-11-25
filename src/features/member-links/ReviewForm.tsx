@@ -53,11 +53,11 @@ export function ReviewForm({ token, prefill, send = sendReview }: {
 
   if (done) {
     return (
-      <div ref={thanks} tabIndex={-1} role="status" className="flex flex-col items-center gap-4 rounded-[6px] bg-sb-lime px-6 py-16 text-center outline-none sm:px-8">
-        <span className="twc-ticket__meta">{t("Response received")}</span>
+      <div ref={thanks} tabIndex={-1} role="status" className="twc-fdone twc-c-lime">
+        <p className="twc-fmono">{t("Response received")}</p>
         <h2 className="twc-h3">{t("Thank you — your response is saved.")}</h2>
-        <p className="max-w-[520px] text-[17px]">{t("Your choices have been recorded. A person will review them before anything changes.")}</p>
-        <ul className="max-w-[520px] list-disc pl-5 text-left text-[15px] text-sb-muted">
+        <p className="text-[17px]">{t("Your choices have been recorded. A person will review them before anything changes.")}</p>
+        <ul className="list-disc pl-5 text-[15px]">
           <li>Nothing is published automatically.</li>
           <li>If you asked for a correction or removal, it will be handled by a person who will contact you.</li>
           <li>This link is now closed and cannot be used again.</li>
@@ -68,7 +68,7 @@ export function ReviewForm({ token, prefill, send = sendReview }: {
 
   const pending = { "aria-disabled": busy || undefined, className: "aria-disabled:cursor-progress" };
   return (
-    <form className="relative rounded-[6px] bg-sb-paper p-5 shadow-[inset_0_0_0_1px_rgb(31_31_28/0.15)] sm:p-12" onSubmit={submit} aria-busy={busy}>
+    <form className="twc-form" onSubmit={submit} aria-busy={busy}>
       <div className="flex flex-col gap-12">
         <Section index="01 — Your information" title="Your information" description="Prefilled from our private records. Correct anything that has changed.">
           <div className="grid gap-[22px] sm:grid-cols-2">

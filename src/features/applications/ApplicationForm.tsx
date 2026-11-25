@@ -20,7 +20,7 @@ function focusField(id: string) {
 }
 
 /** Conditional follow-up questions sit in a tinted panel under the answer that opened them. */
-const followUp = "motion-panel-in flex flex-col gap-5 rounded-[6px] bg-sb-cream p-5 sm:p-6";
+const followUp = "twc-ffollow motion-panel-in";
 
 export interface ApplicationFormProps {
   /** Sends the parsed application; reject to show the inline error with Retry. */
@@ -135,11 +135,10 @@ function Received({ onReset }: { onReset?: () => void }) {
   // The long form is gone, so move focus to the confirmation instead of leaving it on a removed button.
   React.useEffect(() => panel.current?.focus(), []);
   return (
-    <div ref={panel} tabIndex={-1} role="status" className="motion-panel-in scroll-mt-28 flex flex-col items-center gap-4 rounded-[6px] bg-sb-butter px-6 py-16 text-center outline-none sm:px-8">
-      <span className="twc-ticket__meta">{t("Application received")}</span>
-      <p aria-hidden className="inline-flex items-center gap-2 font-script text-[36px] leading-[1.1]">thank you <Icon name="sparkle" className="size-6" /></p>
+    <div ref={panel} tabIndex={-1} role="status" className="twc-fdone twc-c-butter motion-panel-in scroll-mt-28">
+      <p className="twc-fmono">{t("Application received")}</p>
       <h2 className="twc-h3">{t("Thank you for introducing yourself.")}</h2>
-      <p className="max-w-[520px] text-[17px]">{t("We are excited to learn more about you and your work. Your application will be reviewed, and we will contact you if we need anything else.")}</p>
+      <p className="text-[17px]">{t("We are excited to learn more about you and your work. Your application will be reviewed, and we will contact you if we need anything else.")}</p>
       {onReset && <button type="button" className="twc-btn mt-2" onClick={onReset}>Review another application</button>}
     </div>
   );
@@ -248,7 +247,7 @@ function ApplicationFields({ area, initial, busy, failure, errors, attempt, clea
   return (
     <FieldErrors.Provider value={errorsByField}>
     {/* noValidate: the browser would stop at the first problem; collectErrors reports them all. */}
-    <form ref={form} noValidate className="rounded-[6px] bg-sb-paper p-5 shadow-[inset_0_0_0_1px_rgb(31_31_28/0.15)] sm:p-12" onSubmit={onSubmit} onChange={onFormChange} aria-busy={busy}>
+    <form ref={form} noValidate className="twc-form" onSubmit={onSubmit} onChange={onFormChange} aria-busy={busy}>
       <div aria-hidden="true" className="absolute -left-[9999px] h-px w-px overflow-hidden">
         <label>Leave this field empty<input name={HONEYPOT} type="text" tabIndex={-1} autoComplete="off" /></label>
       </div>
@@ -339,7 +338,7 @@ function ApplicationFields({ area, initial, busy, failure, errors, attempt, clea
             <Field id="signature" label="Electronic signature" hint="Type your full name to sign."><Input name="signature" required /></Field>
             <Field id="date" label="Date"><Input ref={dateInput} name="date" type="date" required /></Field>
           </div>
-          <Check name="final-confirmation" className="rounded-[6px] bg-sb-cream p-[18px]" label="By submitting, I confirm that I have read, understood, and agreed to the permissions, statements, and community guidelines in this application." required />
+          <Check name="final-confirmation" className="bg-sb-cream p-[18px]" label="By submitting, I confirm that I have read, understood, and agreed to the permissions, statements, and community guidelines in this application." required />
           {errors.length > 0 && (
             <Notice ref={summary} id="application-errors" tabIndex={-1} role="alert" tone="danger" title={`Please fix ${errors.length} ${errors.length === 1 ? "answer" : "answers"} before sending`} className="scroll-mt-44 outline-none">
               <ul className="flex flex-col gap-2.5">
