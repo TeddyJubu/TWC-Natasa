@@ -73,8 +73,8 @@ export function AdminEventsTable({ events, caption }: { events: AdminCalEvent[];
                 </th>
                 <td className="px-4 py-3 text-sm">{formatRange(e.startTime, e.endTime, e.timeZone, "en-US")}</td>
                 <td className="px-4 py-3"><Chip tone={tone}>{label}</Chip></td>
-                <td className="px-4 py-3 font-fragment whitespace-nowrap tabular-nums">{e.goingCount}{e.capacity !== null ? ` / ${e.capacity}` : ""}</td>
-                <td className="px-4 py-3 font-fragment tabular-nums">{e.maybeCount}</td>
+                <td className="px-4 py-3 font-plex whitespace-nowrap tabular-nums">{e.goingCount}{e.capacity !== null ? ` / ${e.capacity}` : ""}</td>
+                <td className="px-4 py-3 font-plex tabular-nums">{e.maybeCount}</td>
                 <td className="px-4 py-3">
                   <div className="flex gap-2">
                     <Link to="/admin/events/$uid" params={{ uid: e.uid }} className={cn(secondaryButton, "whitespace-nowrap")} aria-label={`Open ${e.title}`}>Open</Link>

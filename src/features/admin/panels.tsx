@@ -1419,7 +1419,7 @@ function AnswersCard({ form: f }: { form: AdminForm }) {
     return (
       <Card id="answers" title="Answers">
         <div className={cn(pad, "flex flex-col gap-2 py-8")}>
-          <p className="font-script text-[30px]/[1.1] text-app-accent">no answers yet</p>
+          <p className="font-display text-[26px]/[1.1] font-extrabold [font-stretch:75%] text-app-accent">No answers yet</p>
           <p className="max-w-[60ch] text-[15px] text-ink">
             {f.state === "open" ? "Share the link above. Each answer lands here the moment it’s sent." : "Nobody can answer it right now. Check Settings, then share the link above."}
           </p>

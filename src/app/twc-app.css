@@ -7,7 +7,7 @@
    (`twc-phd`, `twc-c-*`, `twc-calgrid`, `twc-toast`) are in twc-sections.css. */
 @layer components {
 /* ---- Base ---- */
-.app-ground { --font-script: var(--font-sans); background: var(--color-app-ground); accent-color: var(--color-ink); scrollbar-color: color-mix(in srgb, var(--color-ink) 25%, transparent) transparent; }
+.app-ground { background: var(--color-app-ground); accent-color: var(--color-ink); scrollbar-color: color-mix(in srgb, var(--color-ink) 25%, transparent) transparent; }
 .app-ground aside { scrollbar-width: thin; }
 .app-ground ::selection { background: var(--color-sb-lime); color: var(--color-sb-ink); }
 .app-ground .twc-notice__title { font: 800 condensed 20px/1.1 var(--font-display); letter-spacing: -0.01em; }

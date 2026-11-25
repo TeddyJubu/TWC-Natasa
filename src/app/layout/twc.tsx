@@ -45,30 +45,3 @@ export function JoinButton({ className, style, onClick }: { className?: string; 
     </Link>
   );
 }
-
-/** Scalloped divider between two bands: `from` is the band above, `to` the band below (hex). */
-export function Scallop({ from, to }: { from: string; to: string }) {
-  return <div aria-hidden className="twc-scallop" style={{ "--from": from, "--to": to } as React.CSSProperties} />;
-}
-
-/** Decorative marquee band; hover pauses it and the button stops it (WCAG 2.2.2). Static under reduced motion. */
-export function TwcRibbon({ items, tone = "mint", label = "Pause the moving ribbon" }: { items: string[]; tone?: "mint" | "lilac"; label?: string }) {
-  const [paused, setPaused] = React.useState(false);
-  const half = items.map((item, i) => (
-    <span key={i} className="inline-flex items-center gap-6">{item}<Icon name="sparkle" className="size-4" /></span>
-  ));
-  return (
-    <div className={cn("twc-ribbon", tone === "lilac" && "twc-ribbon--lilac")} data-paused={paused || undefined}>
-      <div aria-hidden className="twc-ribbon__track">{half}{half}</div>
-      <button
-        type="button"
-        aria-pressed={paused}
-        aria-label={label}
-        onClick={() => setPaused((p) => !p)}
-        className="absolute right-3 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-full bg-sb-paper/90 text-sb-ink outline-none focus-visible:ring-2 focus-visible:ring-sb-blue-ink motion-reduce:hidden"
-      >
-        <Icon name={paused ? "play" : "pause"} className="size-3.5" />
-      </button>
-    </div>
-  );
-}

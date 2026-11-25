@@ -52,6 +52,9 @@
 .twc-c-band-red { background: var(--color-sb-band-red); } .twc-c-band-butter { background: var(--color-sb-band-butter); }
 .twc-c-band-grey { background: var(--color-sb-band-grey); }
 :where([class*="twc-c-"]) { color: var(--color-sb-ink); }
+/* Links on a colour field are ink too: cobalt misses AA on sky, band-purple, sage and tomato. */
+[class*="twc-c-"]:not(.twc-c-ink) .twc-inlink { color: var(--color-sb-ink); }
+.twc-c-ink .twc-inlink { color: var(--color-sb-paper); }
 /* The one dark field: ink ground, paper text */
 .twc-c-ink { background: var(--color-sb-ink); color: var(--color-sb-paper); }
 

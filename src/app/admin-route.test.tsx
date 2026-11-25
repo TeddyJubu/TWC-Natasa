@@ -958,7 +958,7 @@ describe("/admin", () => {
       // The other tabs' panels are hidden, so out of the accessibility tree until chosen.
       expect(screen.queryByRole("region", { name: "Answers" })).toBeNull();
       fireEvent.click(screen.getByRole("tab", { name: "Answers" }));
-      expect(card("Answers").textContent).toMatch(/no answers yet.*Share the link above/);
+      expect(card("Answers").textContent).toMatch(/No answers yet.*Share the link above/);
       expect(within(card("Answers")).queryByRole("button", { name: "Download CSV" })).toBeNull();
     });
 

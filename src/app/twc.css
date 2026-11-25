@@ -22,8 +22,6 @@
 }
 @layer components {
 .twc-page { background: var(--color-sb-paper); color: var(--color-sb-ink); font: 400 15px/1.45 var(--font-sans); }
-.twc-wrap { width: 100%; max-width: 1152px; margin-inline: auto; padding-inline: 40px; box-sizing: border-box; }
-@media (max-width: 1100px) { .twc-wrap { padding-inline: 20px; } }
 :where(.twc-page) :focus-visible { outline: 2px solid var(--color-sb-ink); outline-offset: 3px; }
 
 /* Pill: 1.5px border, sentence case, press feedback (canvas .twc-pill). Default ink fill; --outline is the canvas
@@ -66,9 +64,8 @@
 .twc-flag { display: inline-block; padding: 3px 7px; border: 1px dashed var(--color-sb-muted); border-radius: var(--twc-radius-flag); color: var(--color-sb-muted); font: 500 10px/1.4 var(--font-plex); letter-spacing: 0.06em; text-transform: uppercase; }
 .twc-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; display: inline-block; }
 
-/* Eyebrows */
-/* Eyebrow (canvas .eyebrow). The retired hand-lettered line reads as a plain eyebrow until its pages are rebuilt. */
-.twc-eyebrow, .twc-eyebrow-script { font: 600 12px/16px var(--font-sans); letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-sb-muted); }
+/* Eyebrow (canvas .eyebrow) */
+.twc-eyebrow { font: 600 12px/16px var(--font-sans); letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-sb-muted); }
 .twc-index { font: 500 11px/1.55 var(--font-plex); letter-spacing: 0.08em; color: var(--color-sb-muted); }
 
 /* Headings: sentence case, Archivo heavy and condensed, on the canvas's fluid scale (.d1/.d2/.d3) */
@@ -76,59 +73,6 @@
 .twc-h2 { font: 800 condensed clamp(2.4rem, 5vw, 4rem)/0.95 var(--font-display); letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
 .twc-h3 { font: 800 condensed clamp(1.8rem, 3vw, 2.75rem)/1 var(--font-display); letter-spacing: -0.01em; margin: 0; text-wrap: balance; }
 .twc-lede { font: 400 17px/1.45 var(--font-sans); color: var(--color-sb-muted); max-width: 52ch; margin: 0; }
-
-/* Photos */
-.twc-photo { display: block; width: 100%; max-width: 100%; object-fit: cover; border-radius: 22px; background: var(--color-sb-cream); }
-.twc-photo--inline { border-radius: 14px; box-shadow: 0 14px 30px -18px rgb(17 17 17 / 0.5); rotate: -3deg; }
-.twc-photo--arch { border-radius: 160px 160px 8px 8px; }
-.twc-photo--disc { border-radius: 50%; aspect-ratio: 1; }
-
-/* Polaroid */
-.twc-polaroid { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 12px 12px 16px; background: var(--color-sb-paper); box-shadow: 0 10px 28px rgb(17 17 17 / 0.2); rotate: 6deg; width: max-content; max-width: 100%; box-sizing: border-box; transition: rotate 0.5s var(--ease-snap), translate 0.5s var(--ease-snap), scale 0.5s var(--ease-snap); }
-.twc-polaroid:hover { rotate: 0deg; translate: 0 -8px; scale: 1.03; }
-.twc-polaroid img, .twc-polaroid .twc-polaroid__img { display: block; width: 100%; aspect-ratio: 5 / 4; object-fit: cover; background: var(--color-sb-cream); }
-.twc-polaroid figcaption { font: 400 26px/1.4 var(--font-script); color: var(--color-sb-blue-ink); }
-.twc-polaroid--left { rotate: -5deg; }
-.twc-polaroid--night { background: var(--color-sb-cream); box-shadow: 0 14px 30px rgb(0 0 0 / 0.4); padding: 14px 14px 18px; }
-.twc-polaroid--night figcaption { color: var(--color-sb-ink); }
-
-/* Stamp card: wavy postage edge where -webkit-mask-box-image exists, a rounded card elsewhere */
-.twc-stamp {
-  display: flex; flex-direction: column; justify-content: space-between; gap: 24px;
-  padding: 32px; min-height: 300px; box-sizing: border-box; border-radius: 8px;
-  background-color: var(--color-sb-grey); color: var(--color-sb-ink);
-}
-@supports (-webkit-mask-box-image: none) {
-  .twc-stamp { border-radius: 0; -webkit-mask-box-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cpath d='M6 0C10.5 0 10.5 6 15 6S19.5 0 24 0A6 6 0 0 1 30 6C30 10.5 24 10.5 24 15S30 19.5 30 24A6 6 0 0 1 24 30C19.5 30 19.5 24 15 24S10.5 30 6 30A6 6 0 0 1 0 24C0 19.5 6 19.5 6 15S0 10.5 0 6A6 6 0 0 1 6 0Z'/%3E%3C/svg%3E") 6 / 6px round; }
-}
-.twc-stamp h3 { font: 800 condensed 40px/1.02 var(--font-display); letter-spacing: 0; margin: 0; }
-.twc-stamp p { margin: 0; font: 400 16px/1.6 var(--font-sans); max-width: 36ch; }
-.twc-stamp .twc-index { color: inherit; opacity: 0.8; }
-.twc-stamp--olive { background-color: var(--color-sb-sage); }
-.twc-stamp--mustard { background-color: var(--color-sb-band-butter); }
-.twc-stamp--rose { background-color: var(--color-sb-blush); }
-.twc-stamp--terracotta { background-color: var(--color-sb-tomato); }
-.twc-stamp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 8px; padding: 8px; background: var(--color-sb-cream); }
-@media (max-width: 720px) { .twc-stamp { padding: 24px; min-height: 240px; } .twc-stamp h3 { font-size: 32px; } }
-
-/* The stamp's postage edge alone, with smaller bumps (the /admin/forms cards); a hairline card without the mask */
-.twc-stamp-edge { border-radius: 6px; box-shadow: inset 0 0 0 1px var(--color-app-line); }
-@supports (-webkit-mask-box-image: none) {
-  .twc-stamp-edge { border-radius: 0; box-shadow: none; -webkit-mask-box-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cpath d='M6 0C10.5 0 10.5 6 15 6S19.5 0 24 0A6 6 0 0 1 30 6C30 10.5 24 10.5 24 15S30 19.5 30 24A6 6 0 0 1 24 30C19.5 30 19.5 24 15 24S10.5 30 6 30A6 6 0 0 1 0 24C0 19.5 6 19.5 6 15S0 10.5 0 6A6 6 0 0 1 6 0Z'/%3E%3C/svg%3E") 6 / 4px round; }
-}
-
-/* Scalloped divider: --from bumps hang over a --to strip */
-.twc-scallop { --from: var(--color-sb-paper); --to: var(--color-sb-butter); height: 28px; background: radial-gradient(circle at 28px 0, var(--from) 27.5px, transparent 28px) -8px 0 / 56px 28px repeat-x, var(--to); }
-
-/* Band (coloured section) */
-.twc-band { padding-block: 96px 120px; }
-.twc-band--cream { background: var(--color-sb-cream); }
-.twc-band--sun { background: var(--color-sb-butter); }
-.twc-band--night { background: var(--color-sb-ink); color: var(--color-sb-paper); }
-.twc-band--mint { background: var(--color-sb-lime); }
-.twc-band--lilac { background: var(--color-sb-lilac); }
-.twc-band--lilac .twc-inlink { color: var(--color-sb-ink); }
-@media (max-width: 720px) { .twc-band { padding-block: 64px 80px; } }
 
 /* FAQ item: native <details name> accordion */
 .twc-faq { border-bottom: 1px solid rgb(17 17 17 / 0.15); border-radius: 6px; transition: background-color 0.5s, border-color 0.5s; interpolate-size: allow-keywords; }
@@ -144,15 +88,6 @@
 .twc-faq::details-content { block-size: 0; overflow: clip; transition: block-size var(--duration-slow) var(--ease-gentle), content-visibility var(--duration-slow) allow-discrete; }
 .twc-faq[open]::details-content { block-size: auto; }
 @media (max-width: 720px) { .twc-faq summary { padding: 20px 16px; gap: 12px; } .twc-faq__q { font-size: 21px; line-height: 1.3; } .twc-faq__a { padding: 0 16px 24px; } }
-
-/* Admit ticket */
-.twc-ticket { display: flex; flex-wrap: wrap; border-radius: 6px; overflow: hidden; background: var(--color-sb-ink) center / cover no-repeat; color: var(--color-sb-paper); }
-.twc-ticket__main { flex: 1 1 520px; min-width: 0; padding: 56px; display: flex; flex-direction: column; gap: 16px; }
-.twc-ticket__stub { flex: 0 1 360px; min-width: 0; padding: 40px; display: flex; flex-direction: column; justify-content: space-between; gap: 24px; border-left: 2px dashed rgb(255 255 255 / 0.5); }
-.twc-ticket__meta { display: flex; justify-content: space-between; gap: 16px; font: 400 12px/16px var(--font-fragment); letter-spacing: 2px; text-transform: uppercase; }
-.twc-ticket__meta span + span { opacity: 0.65; letter-spacing: 1px; }
-.twc-ticket .twc-eyebrow-script { color: var(--color-sb-butter); font-size: 34px; }
-@media (max-width: 720px) { .twc-ticket__main, .twc-ticket__stub { padding: 24px; } .twc-ticket__stub { border-left: 0; border-top: 2px dashed rgb(255 255 255 / 0.5); } }
 
 /* Form fields */
 .twc-field { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
@@ -194,25 +129,15 @@ textarea.twc-input { min-height: 132px; padding: 12px 14px; border-radius: 0; re
 @media (max-width: 1100px) { .twc-footer__cols { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 600px) { .twc-footer__cols { grid-template-columns: 1fr; margin-top: 40px; } }
 
-/* Ribbon: marquee band. Use through <TwcRibbon> (it adds the WCAG 2.2.2 pause control). */
-.twc-ribbon { position: relative; overflow: hidden; white-space: nowrap; padding: 14px 0; background: var(--color-sb-lime); color: var(--color-sb-ink); font: 800 condensed 26px/32px var(--font-display); letter-spacing: 0.02em; text-transform: uppercase; rotate: -2deg; }
-.twc-ribbon--lilac { background: var(--color-sb-lilac); rotate: 2deg; }
-.twc-ribbon__track { display: inline-flex; gap: 24px; padding-right: 24px; animation: twc-marquee 40s linear infinite; }
-.twc-ribbon:hover .twc-ribbon__track, .twc-ribbon[data-paused] .twc-ribbon__track { animation-play-state: paused; }
-@media (max-width: 720px) { .twc-ribbon { font-size: 20px; line-height: 24px; padding: 12px 0; } }
 }
 
-@keyframes twc-marquee { to { translate: -50% 0; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .twc-btn, .twc-polaroid, .twc-faq, .twc-faq__toggle, .twc-link, .twc-choice { transition: none; }
+  .twc-btn, .twc-faq, .twc-faq__toggle, .twc-link, .twc-choice { transition: none; }
   .twc-faq::details-content { transition: none; }
-  .twc-ribbon__track { animation: none; }
-  .twc-btn:hover, .twc-polaroid:hover { translate: none; scale: none; }
+  .twc-btn:active { scale: none; }
 }
 
-/* ---- Members (/members, /members/:slug) ----
-   The design-system polaroid MemberCard/MemberDialog set their index line in `font-mono`; on the public site
-   that is Fragment Mono. Scoped to the page so nothing else's monospace changes. */
-.twc-page { --font-mono: var(--font-fragment); }
+/* The design-system MemberCard/MemberDialog set their index line in `font-mono`; on the site that is Plex Mono. */
+.twc-page { --font-mono: var(--font-plex); }
 

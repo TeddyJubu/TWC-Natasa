@@ -208,8 +208,10 @@ describe("public scrapbook palette (--color-sb-* in styles.css)", () => {
     expect(twc).not.toMatch(/\.twc-stamp--(olive|terracotta) \{[^}]*color: #fff;/);
   });
 
-  it("links on the lilac band are ink, since blue-ink misses AA on lilac", () => {
-    expect(twc).toMatch(/\.twc-band--lilac \.twc-inlink \{ color: var\(--color-sb-ink\); \}/);
+  it("links on any colour field are ink, since cobalt misses AA on several fields", () => {
+    const sections = readFileSync(`${process.cwd()}/src/app/twc-sections.css`, "utf8");
+    for (const f of ["sky", "band-purple", "sage", "tomato"]) expect(contrast(sb["blue-ink"], sb[f]), f).toBeLessThan(AA);
+    expect(sections).toMatch(/\[class\*="twc-c-"\]:not\(\.twc-c-ink\) \.twc-inlink \{ color: var\(--color-sb-ink\); \}/);
   });
 
   it("field placeholders are the solid muted token, never a fainter blend", () => {
