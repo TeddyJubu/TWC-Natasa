@@ -29,8 +29,13 @@ function BookingPage() {
     <AppPage>
       <AppNav />
       <main id="main" tabIndex={-1} className="outline-none">
-        <div className="twc-wrap flex max-w-200 flex-col gap-6 pt-14 pb-24">
-          <h1 className="twc-h2">Your booking</h1>
+        <section className="twc-phd">
+          <div className="min-w-0">
+            <p className="twc-eyebrow">Appointments</p>
+            <h1 className="twc-display">Your booking</h1>
+          </div>
+        </section>
+        <div className="twc-sec flex max-w-[56rem] flex-col gap-6">
           {missing ? (
             <div className="flex flex-col items-start gap-3">
               <p>We couldn’t find this booking. The link may be incomplete, or the booking may have been moved or cancelled.</p>

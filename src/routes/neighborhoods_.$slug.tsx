@@ -60,23 +60,21 @@ function NeighborhoodPage() {
     <AppPage>
       <AppNav />
       <main id="main" tabIndex={-1} className="outline-none" style={style}>
-        <div className="twc-wrap flex flex-col gap-14 pb-[104px] pt-10">
-          <Link to="/neighborhoods" className="twc-link inline-flex items-center gap-2 self-start font-sans font-semibold text-[13px] uppercase tracking-[0.08em]">
+        <div className="px-(--twc-gut) py-5">
+          <Link to="/neighborhoods" className="twc-link inline-flex items-center gap-2 font-plex text-xs uppercase tracking-[0.08em]">
             <Icon name="arrowLeft" />All neighborhoods
           </Link>
-          <Hero hood={hood} />
-          <Members hood={hood} onOpen={setOpen} />
-          <Gatherings hood={hood} />
-          <div className="flex flex-wrap items-center justify-between gap-x-10 gap-y-6 rounded-[6px] bg-sb-cream p-6 sm:p-10">
-            <div className="flex min-w-0 flex-[1_1_420px] flex-col gap-2.5">
-              <h2 className="font-display text-[clamp(1.75rem,4vw,2.25rem)] leading-[1.15]">Live or work in {hood.name}?</h2>
-              <p className="text-[17px] text-sb-muted">There is room in this constellation. Introduce yourself and meet the neighbors already here.</p>
-            </div>
-            <JoinButton />
-          </div>
         </div>
+        <Hero hood={hood} />
+        <Members hood={hood} onOpen={setOpen} />
+        <Gatherings hood={hood} />
+        <section className="twc-panel twc-panel--wide twc-c-stone border-t border-sb-ink">
+          <h2>Live or work in {hood.name}?</h2>
+          <p className="copy">There is room in this constellation. Introduce yourself and meet the neighbors already here.</p>
+          <JoinButton />
+        </section>
         {/* Members only: the dialog opens directory cards, which only members and admins load. */}
-        <MemberDialog member={open} onClose={() => setOpen(null)} variant="polaroid" tone={open ? toneFor(open.neighborhood, [hood]) : undefined}>
+        <MemberDialog member={open} onClose={() => setOpen(null)} variant="panel" tone={open ? toneFor(open.neighborhood, [hood]) : undefined}>
           {openSlug && (
             <Link to="/members/$slug" params={{ slug: openSlug }} className={memberDialogActionClass}>
               Open full page <span aria-hidden>→</span>
@@ -89,7 +87,8 @@ function NeighborhoodPage() {
   );
 }
 
-/** Photo with the name card over it; without a photo, a color + logo tile (never a stand-in photo). */
+/** The band opened onto its sheet: the name on the neighborhood's colour, then its photo in a frame; without a
+ *  photo, its mark (never a stand-in photo). */
 function Hero({ hood }: { hood: Neighborhood }) {
   const photo = neighborhoodPhoto(hood.slug);
   const colored = hasColor(hood.color);
@@ -101,36 +100,38 @@ function Hero({ hood }: { hood: Neighborhood }) {
     <section
       aria-labelledby="hood-title"
       className={cn(
-        "relative flex min-h-[360px] flex-col justify-end gap-6 overflow-hidden rounded-[22px] p-4 sm:flex-row sm:items-end sm:justify-start sm:p-8",
-        !photo && (colored ? "bg-(--hood)" : "border-[1.5px] border-dashed border-sb-ink/35 bg-sb-cream"),
+        "twc-hood-hero",
+        colored ? "bg-(--hood)" : "border-[1.5px] border-dashed border-sb-ink/35 bg-sb-cream",
+        tone?.text === "paper" ? "text-sb-paper" : "text-sb-ink",
       )}
     >
-      {photo ? (
-        <img
-          src={photo.src}
-          srcSet={photo.srcSet}
-          sizes="(min-width: 72rem) 64rem, 100vw"
-          alt={area ? `${hood.name}, ${area.borough}` : hood.name}
-          width={816}
-          height={816}
-          fetchPriority="high"
-          className="absolute inset-0 size-full object-cover"
-        />
-      ) : (
-        <HoodLogo hood={hood} sizes="(min-width: 40rem) 128px, 72px" className="size-28 self-end p-5 sm:absolute sm:right-10 sm:top-1/2 sm:size-48 sm:-translate-y-1/2 sm:p-8" />
-      )}
       <div
         className={cn(
-          "relative flex max-w-[560px] flex-col gap-3 rounded-[6px] p-6 sm:p-7",
-          cardOnColor ? "bg-(--hood)" : "bg-sb-paper",
+          "twc-hood-hero__card",
+          cardOnColor ? "bg-(--hood) px-0" : "bg-sb-paper shadow-[inset_0_0_0_1px_var(--color-sb-ink)]",
           cardOnColor && tone.text === "paper" ? "text-sb-paper" : "text-sb-ink",
-          colored && !cardOnColor && "border-l-8 border-(--hood)",
         )}
       >
-        <span className="twc-chip self-start">Neighborhood</span>
-        <h1 id="hood-title" className="twc-h3">{hood.name}</h1>
-        <p>One corner of our constellation{area ? ` in ${area.name}` : ""}, with its own color and its own people.</p>
+        <span className="twc-chip self-start">{area ? area.name : "Neighborhood"}</span>
+        <h1 id="hood-title">{hood.name}</h1>
+        <p className="max-w-[44ch] text-[17px]">One corner of our constellation{area ? ` in ${area.name}` : ""}, with its own color and its own people.</p>
       </div>
+      {photo ? (
+        <figure className="twc-map twc-hood-hero__media">
+          <img
+            src={photo.src}
+            srcSet={photo.srcSet}
+            sizes="(min-width: 69rem) 404px, calc(100vw - 58px)"
+            alt={area ? `${hood.name}, ${area.borough}` : hood.name}
+            width={816}
+            height={816}
+            fetchPriority="high"
+            className="object-cover"
+          />
+        </figure>
+      ) : (
+        <HoodLogo hood={hood} sizes="(min-width: 69rem) 128px, 72px" className="size-28 justify-self-end p-5 lg:size-48 lg:p-8" />
+      )}
     </section>
   );
 }
@@ -144,10 +145,10 @@ function Members({ hood, onOpen }: { hood: Neighborhood; onOpen: (m: MemberProfi
   if (!member) return null;
   const members = (profiles.data ?? []).filter((m) => m.neighborhood === hood.name);
   return (
-    <section aria-labelledby="hood-members" className="flex flex-col gap-7">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <h2 id="hood-members" className="twc-h3 min-w-0 text-[clamp(2rem,5vw,2.5rem)]">Women building in {hood.name}</h2>
-        <Link to="/directory" className="twc-link font-sans font-semibold text-[13px] uppercase leading-5 tracking-[0.08em] text-sb-blue-ink">See them in the directory <span aria-hidden>→</span></Link>
+    <section aria-labelledby="hood-members" className="twc-sec">
+      <div className="twc-shead">
+        <h2 id="hood-members" className="twc-h2 min-w-0">Women building in {hood.name}</h2>
+        <Link to="/directory" className="twc-link font-plex text-xs uppercase tracking-[0.08em]">See them in the directory <span aria-hidden>→</span></Link>
       </div>
       {profiles.isPending ? (
         <p role="status" className="text-sm text-sb-muted">Loading members…</p>
@@ -159,7 +160,7 @@ function Members({ hood, onOpen }: { hood: Neighborhood; onOpen: (m: MemberProfi
       ) : members.length === 0 ? (
         <p className="text-[15px] text-sb-muted">No one from {hood.name} is listed in the directory yet.</p>
       ) : (
-        <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(220px,100%),1fr))] gap-6">
+        <ul className="twc-people">
           {members.map((m) => <li key={m.id}><MemberTile member={m} hood={hood} onOpen={() => onOpen(m)} /></li>)}
         </ul>
       )}
@@ -179,16 +180,16 @@ function MemberTile({ member, hood, onOpen }: { member: MemberProfile; hood: Nei
         onOpen();
       }}
       aria-label={`View ${member.name}’s profile`}
-      className="flex w-full cursor-pointer flex-col gap-3 bg-sb-paper px-3 pb-[18px] pt-3 text-left shadow-[0_10px_28px_rgb(31_31_28/0.12)] transition-[translate,box-shadow] duration-300 ease-[var(--ease-snap)] hover:-translate-y-1 hover:shadow-[0_10px_28px_rgb(31_31_28/0.2)] focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-sb-blue-ink motion-reduce:transform-none"
+      className="twc-person"
     >
       {member.image ? (
-        <img src={member.image} alt="" loading="lazy" width={768} height={960} className="aspect-[4/5] w-full object-cover" />
+        <img src={member.image} alt="" loading="lazy" width={768} height={960} className="twc-person__ph" />
       ) : (
         // Initials mat, never a stand-in photo. 64px initials are large text: the pick reaches 3:1 on any color.
         <span
           aria-hidden
           className={cn(
-            "grid aspect-[4/5] w-full place-items-center font-display text-[64px] leading-none",
+            "twc-person__ph",
             colored ? "bg-(--hood)" : "bg-sb-cream",
             colored && textOn(hood.color).text === "paper" ? "text-sb-paper" : "text-sb-ink",
           )}
@@ -196,10 +197,10 @@ function MemberTile({ member, hood, onOpen }: { member: MemberProfile; hood: Nei
           {initials(member.name)}
         </span>
       )}
-      <span className="flex items-center gap-2 font-fragment text-xs uppercase leading-4 tracking-[1px] text-sb-muted">
+      <span className="flex items-center gap-2 font-plex text-[11px] uppercase tracking-[0.08em] text-sb-muted">
         <span aria-hidden className={cn("twc-dot", colored ? "bg-(--hood)" : "border border-dashed border-sb-ink/35")} />{hood.name}
       </span>
-      <span className="font-display text-[26px] leading-[1.2]">{member.name}</span>
+      <span className="twc-person__name">{member.name}</span>
       {role && <span className="text-sm text-sb-muted">{role}</span>}
     </button>
   );
@@ -212,27 +213,22 @@ function Gatherings({ hood }: { hood: Neighborhood }) {
   const events = useQuery({ ...eventsQuery, enabled: member });
   const here = (events.data ?? []).filter((e) => e.neighborhood === hood.name).slice(0, MAX_EVENTS);
   const across = <Link to="/events" className="twc-inlink">See what’s happening across the collective <span aria-hidden>→</span></Link>;
+  const list = member && events.isSuccess && here.length > 0;
   return (
-    <section aria-labelledby="hood-gatherings" className="flex flex-col gap-5">
-      <h2 id="hood-gatherings" className="twc-h3 text-[clamp(2rem,5vw,2.5rem)]">Coming up in {hood.name}</h2>
-      {member && events.isSuccess && here.length > 0 ? (
-        <ul className="flex flex-col">
+    <section aria-labelledby="hood-gatherings" className="twc-sec">
+      <h2 id="hood-gatherings" className="twc-h2 mb-6">Coming up in {hood.name}</h2>
+      {list ? (
+        <ul className="twc-evs twc-evs--list twc-bleed pb-0">
           {here.map((e) => {
             const when = eventWhen(e.starts_at);
             return (
-              <li key={e.id}>
-                <Link to="/events" className="flex flex-wrap items-center gap-x-7 gap-y-5 border-y border-sb-ink/15 py-6 text-sb-ink hover:text-sb-ink focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-sb-blue-ink">
-                  <span className="flex h-[104px] w-24 shrink-0 flex-col items-center justify-center gap-1.5 rounded-[6px] bg-sb-butter">
-                    <span className="font-fragment text-xs uppercase leading-4 tracking-[2px]">{when.month}</span>
-                    <span className="font-display text-[40px] leading-none">{when.day}</span>
-                  </span>
-                  <span className="flex min-w-0 flex-[1_1_300px] flex-col gap-2">
-                    <span className="font-display text-[26px] leading-[1.25]">{e.title}</span>
-                    <span className="inline-flex items-center gap-1.5 text-sm"><Icon name="clock" className="size-3.5" />{when.time}</span>
-                    {e.location && <span className="inline-flex items-center gap-1.5 text-sm"><Icon name="pin" className="size-3.5" />{e.location}</span>}
-                  </span>
-                  <span className="twc-btn twc-btn--outline">Details <span className="twc-arrow" aria-hidden>→</span></span>
-                </Link>
+              <li key={e.id} className="twc-ev twc-c-butter">
+                <h3>{e.title}</h3>
+                <p className="twc-meta"><span>{when.month} {when.day}</span><span>{when.time}</span></p>
+                <p className="twc-meta">
+                  {e.location && <span>{e.location}</span>}
+                  <Link to="/events" className="font-semibold">Details <span aria-hidden>↗</span></Link>
+                </p>
               </li>
             );
           })}

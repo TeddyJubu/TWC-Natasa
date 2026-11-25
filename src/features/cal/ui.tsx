@@ -55,7 +55,7 @@ export function DateTimeText({ iso, end, timeZone, mode = "range", className }: 
 
 export function ErrorBanner({ message, onRetry, className }: { message: string; onRetry?: () => void; className?: string }) {
   return (
-    <div role="alert" className={cn("flex flex-wrap items-center gap-4 rounded-md bg-sb-cream px-4 py-3 text-sb-ink", className)}>
+    <div role="alert" className={cn("flex flex-wrap items-center gap-4 border-t border-sb-ink bg-sb-cream px-4 py-3 text-sb-ink", className)}>
       <p className="min-w-0 flex-1">{message}</p>
       {onRetry && <button type="button" className="twc-btn twc-btn--outline twc-btn--sm" onClick={onRetry}>Try again</button>}
     </div>
@@ -76,11 +76,11 @@ export function useToast() {
   return { toast, toastNode };
 }
 
-/** Always mounted, so a screen reader announces each change. */
+/** The canvas toast (`twc-toast`): always mounted, so a screen reader announces each change. */
 export function Toast({ message }: { message: string }) {
   return (
-    <div role="status" aria-live="polite" className="pointer-events-none fixed inset-x-4 bottom-5 z-50 flex justify-center">
-      {message && <p className="pointer-events-auto rounded-full bg-sb-ink px-5 py-2.5 text-sm text-sb-paper shadow-lg">{message}</p>}
+    <div role="status" aria-live="polite">
+      <p className={cn("twc-toast max-w-[calc(100vw-32px)]", !message && "pointer-events-none")} data-open={message ? "" : undefined}>{message}</p>
     </div>
   );
 }

@@ -1,9 +1,9 @@
 // The live site's 404 and error pages, wired as the router defaults in `src/router.tsx`.
 import * as React from "react";
 import { Link, useRouter, type ErrorComponentProps } from "@tanstack/react-router";
-import { ConstellationLogo, cn } from "@/index";
+import { ConstellationLogo } from "@/index";
 import { AppFooter, AppNav, AppPage } from "./AppLayout";
-import { Icon, Scallop } from "./twc";
+import { Icon } from "./twc";
 
 const QUICK = [
   { label: "Events", to: "/events" },
@@ -11,28 +11,24 @@ const QUICK = [
   { label: "Sign in", to: "/account" },
 ] as const;
 
-/** One centred card on a cream band: logo, Caveat line, h1, message, actions. */
-export function StatusPage({ script, tilt, title, intro, children, bare }: {
-  script: string; tilt: string; title: string; intro: string; children?: React.ReactNode; bare?: boolean;
+/** The canvas page head on its own: an eyebrow, the h1, a message and the actions, with the mark at the side.
+ *  `tilt` is kept for the form pages that still pass it; the canvas head has no tilt. */
+export function StatusPage({ script, title, intro, children, bare }: {
+  script: string; tilt?: string; title: string; intro: string; children?: React.ReactNode; bare?: boolean;
 }) {
   return (
     <AppPage>
       <AppNav bare={bare} />
       <main id="main" tabIndex={-1} className="outline-none">
-        <Scallop from="#fcfcfa" to="#f3f0e8" />
-        <div className="twc-band twc-band--cream pb-24 pt-16">
-          <div className="twc-wrap flex justify-center">
-            <section aria-labelledby="status-title" className="flex w-full max-w-[520px] flex-col items-center gap-4 rounded-md bg-sb-paper px-5 py-8 text-center shadow-[inset_0_0_0_1px_rgb(31_31_28/0.15)] md:px-10 md:py-12">
-              <ConstellationLogo alt="" sizes="96px" className="w-24" />
-              <p aria-hidden className={cn("font-script text-5xl leading-none text-sb-sky md:text-[64px]", tilt)}>{script}</p>
-              <h1 id="status-title" className="text-balance font-display text-[34px] leading-[1.08] tracking-[-0.5px] md:text-[44px]">{title}</h1>
-              <p className="max-w-[40ch] text-sb-muted">{intro}</p>
-              {children}
-            </section>
+        <section aria-labelledby="status-title" className="twc-status">
+          <div className="min-w-0">
+            <p className="twc-eyebrow mb-3.5">{script}</p>
+            <h1 id="status-title" className="twc-display">{title}</h1>
+            <p className="twc-lede mt-4.5">{intro}</p>
+            {children && <div className="twc-status__acts">{children}</div>}
           </div>
-        </div>
-        <Scallop from="#f3f0e8" to="#fcfcfa" />
-        <div className="h-12" />
+          <ConstellationLogo alt="" sizes="96px" className="twc-phd__mark" />
+        </section>
       </main>
       <AppFooter bare={bare} />
     </AppPage>
@@ -43,12 +39,11 @@ export function NotFound() {
   return (
     <StatusPage
       script="page not found"
-      tilt="-rotate-3"
       title="We couldn’t find that page."
       intro="The link may be old, or the page may have moved. Head home and find your people from there."
     >
-      <Link to="/" className="twc-btn mt-2">Back to home <Icon name="arrow" className="twc-arrow" /></Link>
-      <nav aria-label="Try instead" className="mt-2 flex flex-wrap justify-center gap-x-2 text-sm text-sb-muted">
+      <Link to="/" className="twc-btn">Back to home <Icon name="arrow" className="twc-arrow" /></Link>
+      <nav aria-label="Try instead" className="flex flex-wrap gap-x-2 text-sm text-sb-muted">
         {QUICK.map((l, i) => (
           <React.Fragment key={l.to}>
             {i > 0 && <span aria-hidden>·</span>}
@@ -68,11 +63,10 @@ export function ErrorPage({ error, reset }: ErrorComponentProps) {
   return (
     <StatusPage
       script="something went wrong"
-      tilt="rotate-2"
       title="That page didn’t load."
       intro="Something on our side tripped up. Try again, or head home and pick up from there."
     >
-      <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
+      <>
         <button
           type="button"
           className="twc-btn"
@@ -84,7 +78,7 @@ export function ErrorPage({ error, reset }: ErrorComponentProps) {
           Try again <Icon name="arrow" className="twc-arrow" />
         </button>
         <Link to="/" className="twc-btn twc-btn--outline">Back to home</Link>
-      </div>
+      </>
     </StatusPage>
   );
 }

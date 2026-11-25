@@ -218,6 +218,15 @@ describe("public scrapbook palette (--color-sb-* in styles.css)", () => {
     expect(page).toMatch(/<span aria-hidden className="[^"]*bg-sb-paper[^"]*text-sb-ink">\{String\(index\)/);
   });
 
+  it("every event kind field is one of the ink-checked fields above, and a band's small tags sit on paper", () => {
+    const pub = readFileSync(`${process.cwd()}/src/app/twc-public.css`, "utf8");
+    const kinds = [...pub.matchAll(/\.twc-kind--\d \{ background: var\(--color-sb-([\w-]+)\); \}/g)].map((m) => m[1]);
+    expect(kinds).toHaveLength(8);
+    for (const k of kinds) expect(fields).toContain(k);
+    expect(pub).toMatch(/\.twc-kind \{ background: var\(--color-sb-cream\); color: var\(--color-sb-ink\); \}/);
+    expect(pub).toMatch(/\.twc-hband__tag \{[^}]*background: var\(--color-sb-paper\); color: var\(--color-sb-ink\);/);
+  });
+
   it("the sage brick's body copy is full ink", () => {
     const home = readFileSync(`${process.cwd()}/src/routes/index.tsx`, "utf8");
     expect(home).toMatch(/text-sb-ink">Not networking/);

@@ -30,11 +30,11 @@ import regoPark480 from "@/assets/photography/neighborhood-rego-park-480.webp";
 export const heroRockSrcSet = `${heroRock960} 960w, ${heroRock1280} 1280w, ${heroRock1600} 1600w, ${heroRock} 1920w`;
 export const heroRockSizes = "(min-width: 90rem) 1444px, (min-width: 64rem) calc(110vw - 141px), (min-width: 40rem) calc(110vw - 35px), calc(203vw - 65px)";
 
-/** /about arch (1280×1600, 4:5) in a 5:7 box at most 300px wide: cover draws it at most 336px wide. */
+/** /about page-head photo (1280×1600, 4:5) in its own 4:5 frame at most 336px wide. */
 export const aboutGatheringSrcSet = `${aboutGathering800} 800w, ${aboutGathering} 1280w`;
 export const aboutGatheringSizes = "336px";
 
-/** /fellowship arch (1600×1069, 3:2) in a 5:6 box at most 300px wide: cover draws it at most 540px wide. */
+/** /fellowship page-head photo (1600×1069, 3:2) in its own 3:2 frame at most 540px wide. */
 export const membersGatheringSrcSet = `${membersGathering800} 800w, ${membersGathering1080} 1080w, ${membersGathering} 1600w`;
 export const membersGatheringSizes = "540px";
 

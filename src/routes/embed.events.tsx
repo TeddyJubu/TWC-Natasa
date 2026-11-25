@@ -25,7 +25,7 @@ function EmbedGatherings() {
   const search = Route.useSearch();
   const query = useQuery({ ...calEventsQuery(params(search)), initialData: Route.useLoaderData() });
   return (
-    <main id="main" tabIndex={-1} className="bg-sb-paper p-4 text-sb-ink outline-none">
+    <main id="main" tabIndex={-1} className="twc-page p-4 outline-none">
       <h1 className="twc-h3 mb-3">Coming up</h1>
       {query.data ? <EventsWidget events={query.data.events} />
         : query.isError ? <ErrorBanner message="We couldn’t load the calendar right now." onRetry={() => void query.refetch()} />

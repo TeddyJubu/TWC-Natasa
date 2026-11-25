@@ -1,9 +1,9 @@
-// The public gatherings pages' pieces, on the scrapbook kit. Everything here renders the allowlisted `CalEvent`.
+// The public events pages' pieces, on the canvas kit (twc-sections.css, twc-public.css). Everything here renders the allowlisted `CalEvent`.
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/index";
 import { Icon } from "@/app/layout/twc";
-import { isEnded, isFull, type GatheringsView } from "./event-state";
+import { isEnded, isFull, kindClass, type GatheringsView } from "./event-state";
 import type { CalEvent } from "./types";
 import { CancelledBadge, CategoryChip, DateTimeText, EndedBadge, StatusBadge, useToast, useVisitorLocale } from "./ui";
 
@@ -14,23 +14,36 @@ export function EventStatus({ event }: { event: CalEvent }) {
   return null;
 }
 
+/** The categories on screen, each once, with the field it wears, for the calendar's legend. */
+export function KindLegend({ events }: { events: Pick<CalEvent, "category">[] }) {
+  const categories = [...new Set(events.map((e) => e.category).filter((c): c is string => !!c))].sort();
+  if (!categories.length) return null;
+  return (
+    <ul aria-label="Categories" className="twc-legend">
+      {categories.map((c) => <li key={c}><span aria-hidden className={cn("twc-e", kindClass(c))} />{c}</li>)}
+    </ul>
+  );
+}
+
 export function EventsPageHeader({ host }: { host?: string | null }) {
   return (
-    <section className="twc-wrap flex flex-col gap-5 pt-18 pb-10">
-      <p className="twc-eyebrow-script">events</p>
-      <h1 className="twc-display">Show up locally.</h1>
-      <p className="twc-lede max-w-160">
-        Coffee introductions, supper clubs and headshot days{host ? ` with ${host}` : ""}. See what’s coming up and tell us you’re coming.
-      </p>
+    <section className="twc-phd">
+      <div className="min-w-0">
+        <p className="twc-eyebrow">Events</p>
+        <h1 className="twc-display">Show up locally.</h1>
+        <p className="twc-lede">
+          Coffee introductions, supper clubs and headshot days{host ? ` with ${host}` : ""}. See what’s coming up and tell us you’re coming.
+        </p>
+      </div>
     </section>
   );
 }
 
-const pressable = "twc-choice aria-pressed:bg-sb-ink aria-pressed:text-sb-paper aria-pressed:shadow-none focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-sb-blue-ink";
+const pressable = "twc-choice twc-choice--filter";
 
 export function EventsTabs({ tab, onChange }: { tab: "upcoming" | "past"; onChange: (tab: "upcoming" | "past") => void }) {
   return (
-    <div role="group" aria-label="Which events" className="flex flex-wrap gap-2">
+    <div role="group" aria-label="Which events" className="twc-filters mb-0">
       {(["upcoming", "past"] as const).map((t) => (
         <button key={t} type="button" aria-pressed={tab === t} className={pressable} onClick={() => onChange(t)}>
           {t === "upcoming" ? "Upcoming" : "Past"}
@@ -42,7 +55,7 @@ export function EventsTabs({ tab, onChange }: { tab: "upcoming" | "past"; onChan
 
 export function EventsViewToggle({ view, onChange }: { view: GatheringsView; onChange: (view: GatheringsView) => void }) {
   return (
-    <div role="group" aria-label="View as" className="flex flex-wrap gap-2">
+    <div role="group" aria-label="View as" className="twc-filters mb-0">
       {(["grid", "list", "calendar"] as const).map((v) => (
         <button key={v} type="button" aria-pressed={view === v} className={pressable} onClick={() => onChange(v)}>
           {v === "grid" ? "Grid" : v === "list" ? "List" : "Calendar"}
@@ -58,7 +71,7 @@ export function CategoryFilter({ categories, value, onChange }: { categories: st
   return (
     <div className="flex flex-col gap-3">
       <span id={id} className="twc-eyebrow text-sb-ink">Browse by category</span>
-      <div role="group" aria-labelledby={id} className="flex flex-wrap gap-2">
+      <div role="group" aria-labelledby={id} className="twc-filters mb-0">
         <button type="button" aria-pressed={!value} className={pressable} onClick={() => onChange(undefined)}>All</button>
         {categories.map((c) => (
           <button key={c} type="button" aria-pressed={value === c} className={pressable} onClick={() => onChange(c)}>{c}</button>
@@ -106,14 +119,15 @@ export function CoverImage({ event, className, fallback = null }: { event: Pick<
   );
 }
 
+/** No cover: the date on the event's colour field, never a stand-in photo. */
 function DateTile({ event, className }: { event: CalEvent; className?: string }) {
   const locale = useVisitorLocale();
   const at = Date.parse(event.startTime);
   const part = (options: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat(locale, { timeZone: event.timeZone, ...options }).format(at);
   return (
-    <div aria-hidden className={cn("flex flex-col items-center justify-center gap-1 bg-sb-butter text-center text-sb-ink", className)}>
-      <span className="font-fragment text-xs tracking-[2px] uppercase">{part({ month: "short" })}</span>
-      <span className="font-display text-[40px] leading-none">{part({ day: "numeric" })}</span>
+    <div aria-hidden className={cn("twc-datetile", kindClass(event.category), className)}>
+      <span className="twc-datetile__m">{part({ month: "short" })}</span>
+      <span className="twc-datetile__d">{part({ day: "numeric" })}</span>
     </div>
   );
 }
@@ -124,15 +138,15 @@ const eventLink = (event: CalEvent, business?: string) => ({
 
 export function EventCard({ event, business }: { event: CalEvent; business?: string }) {
   return (
-    <article className="relative flex h-full flex-col overflow-hidden rounded-md border border-sb-ink/15 bg-sb-paper">
-      <CoverImage event={event} className="aspect-[16/9] w-full" fallback={<DateTile event={event} className="aspect-[16/9] w-full" />} />
-      <div className="flex flex-1 flex-col gap-2.5 p-5">
+    <article className="twc-evcard">
+      <CoverImage event={event} className="twc-evcard__media" fallback={<DateTile event={event} className="twc-evcard__media" />} />
+      <div className="twc-evcard__body">
         <div className="flex flex-wrap items-center gap-2">
           {event.category && <CategoryChip category={event.category} />}
           <EventStatus event={event} />
         </div>
-        <h3 className="font-display text-[24px]/[1.25] break-words">
-          <Link {...eventLink(event, business)} className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sb-blue-ink">
+        <h3>
+          <Link {...eventLink(event, business)} className="after:absolute after:inset-0 after:rounded-(--twc-radius-card) after:content-[''] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-3 focus-visible:after:outline-sb-ink">
             {event.title}
           </Link>
         </h3>
@@ -145,31 +159,33 @@ export function EventCard({ event, business }: { event: CalEvent; business?: str
 
 export function EventGrid({ events, business }: { events: CalEvent[]; business?: string }) {
   return (
-    <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <ul className="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-3">
       {events.map((e) => <li key={e.uid}><EventCard event={e} business={business} /></li>)}
     </ul>
   );
 }
 
+/** The canvas programme: one lifted, gently tilted colour strip per event, its field from its category. */
 export function EventList({ events, business }: { events: CalEvent[]; business?: string }) {
   return (
-    <ol>
+    <ol className="twc-evs twc-evs--list twc-bleed">
       {events.map((e) => (
-        <li key={e.uid} className="relative flex flex-wrap items-center gap-x-8 gap-y-4 border-b border-sb-ink/15 py-6 first:border-t">
-          <DateTile event={e} className="h-24 w-24 flex-none rounded-md" />
-          <div className="flex min-w-0 flex-[1_1_320px] flex-col gap-2">
-            <div className="flex flex-wrap items-center gap-2">
-              {e.category && <CategoryChip category={e.category} />}
-              <EventStatus event={e} />
-            </div>
-            <h3 className="font-display text-[24px]/[1.25] break-words">
-              <Link {...eventLink(e, business)} className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sb-blue-ink">
+        <li key={e.uid} className={cn("twc-ev", kindClass(e.category))}>
+          <div className="min-w-0">
+            <h3>
+              <Link {...eventLink(e, business)} className="no-underline hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sb-ink">
                 {e.title}
               </Link>
             </h3>
-            <EventDateTime event={e} />
-            {e.location && <EventLocation location={e.location} />}
+            {(e.category || e.status === "CANCELLED" || isEnded(e) || isFull(e)) && (
+              <div className="twc-ev__tags">
+                {e.category && <CategoryChip category={e.category} />}
+                <EventStatus event={e} />
+              </div>
+            )}
           </div>
+          <p className="twc-meta"><EventDateTime event={e} /></p>
+          <p className="twc-meta">{e.location && <EventLocation location={e.location} />}</p>
         </li>
       ))}
     </ol>
@@ -178,8 +194,8 @@ export function EventList({ events, business }: { events: CalEvent[]; business?:
 
 export function EmptyState({ title, children }: { title: string; children?: React.ReactNode }) {
   return (
-    <div className="flex flex-col items-start gap-2 rounded-md bg-sb-cream px-6 py-8">
-      <p className="font-display text-2xl">{title}</p>
+    <div className="flex flex-col items-start gap-2 border-t border-sb-ink bg-sb-cream px-6 py-8">
+      <p className="font-display text-[32px] font-extrabold leading-none [font-stretch:75%]">{title}</p>
       {children && <div className="text-sb-ink">{children}</div>}
     </div>
   );
@@ -188,7 +204,7 @@ export function EmptyState({ title, children }: { title: string; children?: Reac
 export function EventsSkeleton() {
   return (
     <div role="status" aria-label="Loading events" className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {[0, 1, 2].map((i) => <div key={i} className="h-72 rounded-md bg-sb-ink/8 motion-safe:animate-pulse" />)}
+      {[0, 1, 2].map((i) => <div key={i} className="h-72 rounded-(--twc-radius-card) bg-sb-cream motion-safe:animate-pulse" />)}
     </div>
   );
 }
@@ -209,8 +225,8 @@ export function EventsWidget({ events }: { events: CalEvent[] }) {
   return (
     <ul className="flex flex-col">
       {events.map((e) => (
-        <li key={e.uid} className="flex flex-col gap-1 border-b border-sb-ink/15 py-3 last:border-0">
-          <a href={`/events/${encodeURIComponent(e.slug)}`} target="_blank" rel="noopener" className="twc-link font-display text-xl">
+        <li key={e.uid} className="flex flex-col gap-1.5 border-t border-sb-ink py-3">
+          <a href={`/events/${encodeURIComponent(e.slug)}`} target="_blank" rel="noopener" className="twc-link font-display text-2xl font-extrabold leading-none [font-stretch:75%]">
             {e.title}<span className="sr-only"> (opens in a new tab)</span>
           </a>
           <EventDateTime event={e} />
@@ -222,16 +238,22 @@ export function EventsWidget({ events }: { events: CalEvent[] }) {
 
 export function EventHero({ event }: { event: CalEvent }) {
   return (
-    <header className="twc-wrap flex flex-col gap-5 pt-14 pb-8">
-      <Link to="/events" className="twc-link inline-flex w-fit items-center gap-1.5 text-sm">
-        <Icon name="arrowLeft" className="size-3.5" /> All events
-      </Link>
-      <div className="flex flex-wrap items-center gap-2">
-        {event.category && <CategoryChip category={event.category} />}
-        <EventStatus event={event} />
+    <header>
+      <div className="px-(--twc-gut) py-5">
+        <Link to="/events" className="twc-link inline-flex w-fit items-center gap-1.5 font-plex text-xs uppercase tracking-[0.08em]">
+          <Icon name="arrowLeft" className="size-3.5" /> All events
+        </Link>
       </div>
-      <h1 className="twc-display break-words">{event.title}</h1>
-      <CoverImage event={event} className="max-h-[440px] w-full rounded-md" />
+      <div className={cn("twc-phd", kindClass(event.category))}>
+        <div className="min-w-0">
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            {event.category && <CategoryChip category={event.category} />}
+            <EventStatus event={event} />
+          </div>
+          <h1 className="twc-display break-words">{event.title}</h1>
+        </div>
+      </div>
+      <CoverImage event={event} className="block max-h-[480px] w-full border-t border-sb-ink" />
     </header>
   );
 }
@@ -252,15 +274,15 @@ export function EventLocation({ location }: { location: string }) {
 /** Plain text, always: line breaks are kept and nothing is parsed as markup. */
 export function EventDescription({ text }: { text: string | null }) {
   if (!text) return null;
-  return <p className="text-[17px]/[1.65] break-words whitespace-pre-line">{text}</p>;
+  return <p className="twc-measure text-[17px]/[1.6] break-words whitespace-pre-line">{text}</p>;
 }
 
 export function HostCard({ host }: { host: CalEvent["host"] }) {
   if (!host.name) return null;
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1 border-t border-sb-ink pt-3">
       <span className="twc-eyebrow text-sb-ink">Hosted by</span>
-      <span className="font-display text-xl">{host.name}</span>
+      <span className="font-display text-[26px] font-extrabold leading-none [font-stretch:75%]">{host.name}</span>
     </div>
   );
 }
@@ -271,7 +293,7 @@ export function CapacityBar({ event }: { event: Pick<CalEvent, "capacity" | "spo
   const taken = Math.min(event.capacity - left, event.capacity);
   return (
     <div className="flex flex-col gap-1.5">
-      <progress className="h-2 w-full appearance-none overflow-hidden rounded-full bg-sb-ink/15 [&::-moz-progress-bar]:bg-sb-ink [&::-webkit-progress-bar]:bg-sb-ink/15 [&::-webkit-progress-value]:bg-sb-ink" max={event.capacity} value={taken} aria-label="Spots taken">{taken} of {event.capacity}</progress>
+      <progress className="h-2.5 w-full appearance-none overflow-hidden rounded-full border border-sb-ink bg-sb-paper [&::-moz-progress-bar]:bg-sb-ink [&::-webkit-progress-bar]:bg-sb-paper [&::-webkit-progress-value]:bg-sb-ink" max={event.capacity} value={taken} aria-label="Spots taken">{taken} of {event.capacity}</progress>
       <span className="text-sm">{left === 0 ? "No spots left" : `${left} of ${event.capacity} spots left`}</span>
     </div>
   );
@@ -289,7 +311,7 @@ export function AttendanceSummary({ event }: { event: CalEvent }) {
 export function AttendeeList({ names }: { names: string[] }) {
   if (!names.length) return null;
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2 border-t border-sb-ink pt-3">
       <span className="twc-eyebrow text-sb-ink">Who’s coming</span>
       <ul className="flex flex-wrap gap-2">{names.map((n, i) => <li key={`${n}-${i}`} className="twc-chip twc-chip--ring">{n}</li>)}</ul>
     </div>

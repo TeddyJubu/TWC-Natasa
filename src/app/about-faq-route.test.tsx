@@ -37,6 +37,12 @@ describe.each([["/about", About], ["/faq", Faq]] as const)("%s", (_path, route) 
     expectNoSkippedHeadings();
     expect(main().textContent).not.toMatch(/[[\]]/);
   });
+
+  // The canvas rollout retired the scrapbook pieces: nothing on these pages moves on its own any more.
+  it("uses none of the retired scrapbook pieces", () => {
+    show(route);
+    expect(main().querySelector(".twc-polaroid, .twc-stamp, .twc-ticket, .twc-scallop, .twc-ribbon, .font-script, .font-fragment")).toBeNull();
+  });
 });
 
 describe("/about", () => {
@@ -83,10 +89,6 @@ describe("/about", () => {
     expect(main().textContent).not.toContain("Woodside");
   });
 
-  it("gives the moving ribbon a pause control", () => {
-    show(About);
-    expect(screen.getByRole("button", { name: "Pause the neighborhood ribbon" }).getAttribute("aria-pressed")).toBe("false");
-  });
 
   it("doesn't promise timing for what approval unlocks", () => {
     show(About);
@@ -118,7 +120,7 @@ describe("/faq", () => {
     expect(main().textContent).not.toMatch(/How much does membership cost|Is the headshot session paid|guest/i);
   });
 
-  it("links contact, and the ticket to /contact and /join", () => {
+  it("links contact, and the closing panel to /contact and /join", () => {
     show(Faq);
     expect(href("get in touch")).toBe("/contact");
     expect(href(/Contact us/)).toBe("/contact");

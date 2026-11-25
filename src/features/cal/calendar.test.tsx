@@ -7,6 +7,7 @@ import { renderWithQueries } from "@/test/dom";
 vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs }));
 
 import { MonthCalendar } from "./calendar";
+import { kindClass } from "./event-state";
 import type { CalEvent } from "./types";
 
 afterEach(cleanup);
@@ -104,5 +105,21 @@ describe("MonthCalendar", () => {
     cell("2026-12-01").focus();
     fireEvent.keyDown(cell("2026-12-01"), { key: "Enter" });
     expect(screen.getByRole("region", { name: /December 1/ })).toBeTruthy();
+  });
+});
+
+describe("event kinds", () => {
+  it("gives a category the same one of eight fields every time, and none stone", () => {
+    expect(kindClass("Coffee")).toBe(kindClass("Coffee"));
+    expect(kindClass(null)).toBe("twc-kind");
+    for (const c of ["Coffee", "Supper club", "Headshots", "Workshop", "Panel", "Zoom"]) expect(kindClass(c)).toMatch(/^twc-kind twc-kind--[0-7]$/);
+  });
+
+  it("colours each chip by its category and lists every category on screen once in the legend", () => {
+    const at = "2026-12-10T15:00:00.000Z";
+    const withCategory = (uid: string, category: string) => ({ ...event(uid, at, "UTC"), category });
+    renderWithQueries(<Harness events={[withCategory("a", "Coffee"), withCategory("b", "Coffee"), withCategory("c", "Panel")]} />);
+    expect(within(cell("2026-12-10")).getAllByRole("link")[0].className).toContain(kindClass("Coffee"));
+    expect(within(screen.getByRole("list", { name: "Categories" })).getAllByRole("listitem").map((li) => li.textContent)).toEqual(["Coffee", "Panel"]);
   });
 });

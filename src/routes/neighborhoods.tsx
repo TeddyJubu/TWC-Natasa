@@ -2,10 +2,10 @@ import * as React from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { ConstellationLogo, cn } from "@/index";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
-import { Scallop } from "@/app/layout/twc";
 import { fetchNeighborhoods, type Neighborhood } from "@/features/neighborhoods/queries";
 import { hasColor, textOn } from "@/features/neighborhoods/tone";
 import { HoodLogo } from "@/features/neighborhoods/HoodLogo";
+import { areaOfPlace } from "@/features/applications/schema";
 
 const TITLE = "Neighborhoods — The Women’s Collective";
 const DESCRIPTION = "Each North Brooklyn and Queens neighborhood in The Women’s Collective has its own identity and color. Find yours and meet the women nearby.";
@@ -40,31 +40,27 @@ function NeighborhoodsPage() {
     <AppPage>
       <AppNav />
       <main id="main" tabIndex={-1} className="outline-none">
-        <Scallop from="#fcfcfa" to="#faf3bf" />
-        <section className="twc-band twc-band--sun pb-24 pt-16">
-          <div className="twc-wrap flex max-w-[860px] flex-col items-center gap-[18px] text-center">
-            <span className="grid size-[110px] place-items-center rounded-full bg-sb-paper p-6">
-              <ConstellationLogo alt="" sizes="62px" className="size-full" />
-            </span>
-            <p className="twc-eyebrow-script text-sb-ink">our constellation</p>
+        <section className="twc-phd">
+          <div className="min-w-0">
+            <p className="twc-eyebrow">Our constellation</p>
             <h1 className="twc-display">{headline(hoods.length)}</h1>
-            <p className="max-w-[620px] text-[17px] leading-[1.65]">
+            <p className="twc-lede">
               Each neighborhood has its own identity and color. The central star is the point where those neighborhoods and connections meet.
             </p>
           </div>
+          <ConstellationLogo alt="" sizes="96px" className="twc-phd__mark" />
         </section>
-        <Scallop from="#faf3bf" to="#fcfcfa" />
 
-        <section aria-label="All neighborhoods" className="twc-wrap flex flex-col gap-6 pb-[88px] pt-[72px]">
+        <section aria-label="All neighborhoods">
           {hoods.length > 0 && (
-            <ul className="grid grid-cols-[repeat(auto-fit,minmax(min(240px,100%),1fr))] gap-4">
-              {hoods.map((hood, i) => <li key={hood.slug}><Tile hood={hood} index={i + 1} /></li>)}
+            <ul className="twc-hbands">
+              {hoods.map((hood, i) => <li key={hood.slug}><Band hood={hood} index={i + 1} /></li>)}
             </ul>
           )}
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 rounded-[6px] px-6 py-[22px] shadow-[inset_0_0_0_1px_rgb(31_31_28/0.15)]">
-            <span className="twc-chip twc-chip--ring">Nearby</span>
-            <span className="flex min-w-0 flex-[1_1_320px] flex-col gap-0.5">
-              <span className="font-display text-2xl leading-[1.3]">Another neighborhood?</span>
+          <div className="twc-sec twc-sec--tight flex flex-wrap items-center gap-x-6 gap-y-3">
+            <span className="twc-flag">Nearby</span>
+            <span className="flex min-w-0 flex-[1_1_320px] flex-col gap-1">
+              <span className="font-display text-[28px] font-extrabold leading-none [font-stretch:75%]">Another neighborhood?</span>
               <span className="text-[15px] text-sb-muted">
                 Woodside, East Elmhurst and nearby neighbors belong here too.{" "}
                 <Link to="/join" className="twc-inlink">Introduce yourself</Link>
@@ -78,27 +74,29 @@ function NeighborhoodsPage() {
   );
 }
 
-function Tile({ hood, index }: { hood: Neighborhood; index: number }) {
+/** A constellation band (canvas .twc-band) that links to the neighborhood: number, name, area and mark. */
+function Band({ hood, index }: { hood: Neighborhood; index: number }) {
   const colored = hasColor(hood.color);
-  // Only large text (3:1, reached on any color) and the aria-hidden ordinal sit on the color; the list conveys order.
+  // The name is large text (3:1, reached on any color); the small number and area sit on paper tags.
   const onPaper = colored && textOn(hood.color).text === "paper";
+  const area = areaOfPlace(hood.name);
   return (
     <Link
       to="/neighborhoods/$slug"
       params={{ slug: hood.slug }}
       style={colored ? ({ "--hood": hood.color } as React.CSSProperties) : undefined}
       className={cn(
-        "flex min-h-[168px] flex-col sm:min-h-[260px] justify-between gap-6 rounded-[6px] p-6 transition-[translate] duration-300 ease-[var(--ease-snap)] hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-sb-blue-ink motion-reduce:transform-none",
+        "twc-hband",
         colored ? "bg-(--hood)" : "border-[1.5px] border-dashed border-sb-ink/35 bg-sb-cream",
         onPaper ? "text-sb-paper hover:text-sb-paper" : "text-sb-ink hover:text-sb-ink",
       )}
     >
-      <span className="flex items-start justify-between">
-        {/* A paper tag: an admin can pick any card colour, and 13px text needs 4.5:1 on all of them. */}
-        <span aria-hidden className="rounded-[3px] bg-sb-paper px-1.5 font-fragment text-[13px] leading-[19.5px] tracking-[1px] text-sb-ink">{String(index).padStart(2, "0")}</span>
+      <span aria-hidden className="twc-hband__tag bg-sb-paper text-sb-ink">{String(index).padStart(2, "0")}</span>
+      <span className="twc-hband__name">{hood.name}</span>
+      <span className="twc-hband__end">
+        {area && <span className="twc-hband__tag max-[1100px]:hidden">{area.name}</span>}
         <HoodLogo hood={hood} sizes="28px" className="size-11" />
       </span>
-      <span className="font-display text-[34px] leading-[1.1] tracking-[-0.3px]">{hood.name}</span>
     </Link>
   );
 }

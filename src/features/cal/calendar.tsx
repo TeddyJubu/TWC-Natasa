@@ -2,7 +2,8 @@
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/index";
-import { byEventDay } from "./event-state";
+import { byEventDay, kindClass } from "./event-state";
+import { KindLegend } from "./events-ui";
 import { browserTimeZone, dayKey, firstWeekday, formatTime, monthCells, shiftMonth } from "./time";
 import type { CalEvent } from "./types";
 import { useVisitorLocale } from "./ui";
@@ -16,10 +17,7 @@ export function CalendarEventPill({ event, locale, tabbable, business }: { event
   return (
     <Link
       to="/events/$slug" params={{ slug: event.slug }} {...(business ? { search: { business } } : {})} tabIndex={tabbable ? 0 : -1}
-      className={cn(
-        "block truncate rounded-sm bg-sb-lime px-1.5 py-0.5 text-xs text-sb-ink focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-sb-blue-ink",
-        event.status === "CANCELLED" && "line-through opacity-70",
-      )}
+      className={cn("twc-e", kindClass(event.category), event.status === "CANCELLED" && "line-through")}
     >
       <span className="sr-only">{event.status === "CANCELLED" ? "Cancelled: " : ""}</span>{time} {event.title}
     </Link>
@@ -38,12 +36,9 @@ export function CalendarDayCell({ day, month, events, locale, today, active, onF
     <td
       role="gridcell" data-day={day} tabIndex={active ? 0 : -1} aria-label={`${label}${count}`} aria-current={today ? "date" : undefined}
       onFocus={(e) => { if (e.target === e.currentTarget) onFocusDay(day); }}
-      className={cn(
-        "relative h-16 min-w-0 border border-sb-ink/15 p-1 align-top focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sb-blue-ink sm:h-28",
-        outside && "bg-sb-ink/4 text-sb-muted",
-      )}
+      className={cn(outside && "is-outside")}
     >
-      <span aria-hidden className={cn("mb-1 inline-grid size-6 place-items-center rounded-full text-xs", today && "bg-sb-ink text-sb-paper")}>
+      <span aria-hidden className={cn("twc-cal__num", today && "is-today")}>
         {Number(day.slice(8))}
       </span>
       <div className="hidden flex-col gap-1 sm:flex">
@@ -53,7 +48,7 @@ export function CalendarDayCell({ day, month, events, locale, today, active, onF
       {events.length > 0 && (
         <button
           type="button" tabIndex={active ? 0 : -1} onClick={() => onMore(day)}
-          className={cn("mt-0.5 rounded-sm text-xs underline after:absolute after:inset-0 focus-visible:outline-2 focus-visible:outline-sb-blue-ink sm:after:hidden", hidden <= 0 && "sm:hidden")}
+          className={cn("twc-cal__more after:absolute after:inset-0 focus-visible:outline-2 focus-visible:outline-sb-ink sm:after:hidden", hidden <= 0 && "sm:hidden")}
         >
           <span className="sm:hidden">{events.length}</span>
           <span className="hidden sm:inline">+{Math.max(hidden, 0)} more</span>
@@ -136,17 +131,17 @@ export function MonthCalendar({ month, events, onMonthChange, locale: localeProp
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 aria-live="polite" className="font-display text-2xl">{title}</h3>
+        <h3 aria-live="polite" className="twc-cal-title">{title}</h3>
         <div className="flex gap-2">
           <button type="button" className="twc-btn twc-btn--outline twc-btn--sm" aria-label="Previous month" onClick={() => { setOpenDay(null); onMonthChange(shiftMonth(month, -1)); }}>‹</button>
           <button type="button" className="twc-btn twc-btn--outline twc-btn--sm" onClick={goToday}>Today</button>
           <button type="button" className="twc-btn twc-btn--outline twc-btn--sm" aria-label="Next month" onClick={() => { setOpenDay(null); onMonthChange(shiftMonth(month, 1)); }}>›</button>
         </div>
       </div>
-      <table ref={grid} role="grid" aria-label={title} onKeyDown={onKeyDown} className="w-full table-fixed border-collapse">
+      <table ref={grid} role="grid" aria-label={title} onKeyDown={onKeyDown} className="twc-cal">
         <thead>
           <tr>
-            {heads.map((h) => <th key={h.long} scope="col" abbr={h.long} className="pb-2 text-xs font-medium"><span aria-hidden>{h.short}</span><span className="sr-only">{h.long}</span></th>)}
+            {heads.map((h) => <th key={h.long} scope="col" abbr={h.long}><span aria-hidden>{h.short}</span><span className="sr-only">{h.long}</span></th>)}
           </tr>
         </thead>
         <tbody>
@@ -162,10 +157,11 @@ export function MonthCalendar({ month, events, onMonthChange, locale: localeProp
           ))}
         </tbody>
       </table>
+      <KindLegend events={events} />
       {openDay && (
-        <section aria-labelledby="calendar-day" className="flex flex-col gap-2 rounded-md bg-sb-cream p-4">
+        <section aria-labelledby="calendar-day" className="flex flex-col gap-2 border border-sb-ink bg-sb-cream p-4">
           <div className="flex items-center justify-between gap-3">
-            <h4 id="calendar-day" ref={dayPanel} tabIndex={-1} className="font-display text-xl outline-none">
+            <h4 id="calendar-day" ref={dayPanel} tabIndex={-1} className="font-display text-[26px] font-extrabold leading-none outline-none [font-stretch:75%]">
               {new Intl.DateTimeFormat(locale, { timeZone: "UTC", weekday: "long", month: "long", day: "numeric" }).format(utc(openDay))}
             </h4>
             <button
