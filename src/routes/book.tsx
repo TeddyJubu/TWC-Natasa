@@ -26,12 +26,14 @@ function BookPage() {
     <AppPage>
       <AppNav />
       <main id="main" tabIndex={-1} className="outline-none">
-        <section className="twc-wrap flex flex-col gap-5 pt-18 pb-10">
-          <p className="twc-eyebrow-script">appointments</p>
-          <h1 className="twc-display">Book a time.</h1>
-          <p className="twc-lede max-w-160">Choose what you’d like to book, then pick a time that works for you.</p>
+        <section className="twc-phd">
+          <div className="min-w-0">
+            <p className="twc-eyebrow">Appointments</p>
+            <h1 className="twc-display">Book a time.</h1>
+            <p className="twc-lede">Choose what you’d like to book, then pick a time that works for you.</p>
+          </div>
         </section>
-        <section aria-label="What you can book" className="twc-wrap pb-26">
+        <section aria-label="What you can book" className="twc-sec">
           {query.data ? <EventTypeList types={query.data} business={business} />
             : query.isError ? <ErrorBanner message="We couldn’t load the appointments right now." onRetry={() => void query.refetch()} />
             : <p role="status" className="text-sb-muted">Loading…</p>}

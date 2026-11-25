@@ -2,7 +2,6 @@ import type * as React from "react";
 import { Link, createFileRoute, notFound, redirect } from "@tanstack/react-router";
 import { MemberCard, formatCatalogueNumber, initials } from "@/index";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
-import { Scallop } from "@/app/layout/twc";
 import { memberPageFn } from "@/features/members/fns";
 import { memberSlug } from "@/features/members/queries";
 import { useNeighborhoods } from "@/features/neighborhoods/queries";
@@ -54,100 +53,94 @@ function MemberPage() {
     <AppPage>
       <AppNav />
       <main id="main" tabIndex={-1} className="outline-none">
-        <nav aria-label="Breadcrumb" className="twc-wrap pt-7 font-fragment text-xs uppercase leading-4 tracking-[1px] text-sb-muted">
+        <nav aria-label="Breadcrumb" className="px-(--twc-gut) py-5 font-plex text-xs uppercase leading-4 tracking-[0.08em] text-sb-muted">
           <ol className="flex flex-wrap gap-1.5">
             <li><Link to="/directory" className="twc-link text-sb-blue-ink">Directory</Link></li>
             <li aria-current="page"><span aria-hidden>/ </span>{member.name}</li>
           </ol>
         </nav>
 
-        <section className="twc-wrap flex flex-wrap items-start gap-16 pb-24 pt-12 max-sm:gap-10" style={tone ? ({ "--hood": tone.color } as React.CSSProperties) : undefined}>
-          <div className="flex min-w-0 flex-[1_1_340px] justify-center pt-3">
-            <figure className="twc-polaroid w-[420px] -rotate-4 p-4 pb-5">
-              <div className={`relative aspect-[4/5] overflow-hidden ${tone ? "bg-(--hood)" : "bg-sb-cream"}`}>
+        <section className="twc-sec" style={tone ? ({ "--hood": tone.color } as React.CSSProperties) : undefined}>
+          <div className="twc-split twc-split--aside items-start">
+            <figure className="m-0 w-full max-w-[320px]">
+              <div className={`twc-hardphoto aspect-[4/5] overflow-hidden ${tone ? "bg-(--hood)" : "bg-sb-cream"}`}>
                 {member.image ? (
                   <img src={member.image} alt={member.imageAlt ?? ""} width={768} height={960} fetchPriority="high" className="size-full object-cover" />
                 ) : (
-                  <span aria-hidden className="grid size-full place-items-center font-display text-8xl leading-none text-sb-ink">{initials(member.name)}</span>
+                  <span aria-hidden className="grid size-full place-items-center font-display text-8xl font-extrabold leading-none text-sb-ink [font-stretch:75%]">{initials(member.name)}</span>
                 )}
               </div>
-              <figcaption className="text-[32px]">{[first, member.neighborhood].filter(Boolean).join(", ")}</figcaption>
+              <figcaption className="mt-4 font-plex text-[11px] uppercase tracking-[0.08em] text-sb-muted">{[first, member.neighborhood].filter(Boolean).join(", ")}</figcaption>
             </figure>
-          </div>
 
-          <div className="flex min-w-0 flex-[1_1_460px] flex-col gap-5.5">
-            <p className="flex flex-wrap items-center gap-2 font-fragment text-xs uppercase leading-4 tracking-[1px] text-sb-muted">
-              {tone && <span aria-hidden className="twc-dot bg-(--hood)" />}
-              {member.catalogueNumber !== undefined && <span>Nº {formatCatalogueNumber(member.catalogueNumber)}</span>}
-              {member.catalogueNumber !== undefined && member.neighborhood && <span aria-hidden>·</span>}
-              {member.neighborhood && <span>{member.neighborhood}</span>}
-            </p>
-            <h1 className="twc-display md:text-[72px]">{member.name}</h1>
-            {(member.role || member.business) && (
-              <p className="font-display text-[22px] leading-[1.4]">
-                {member.role}
-                {member.role && member.business && " at "}
-                {member.business && <strong className="font-normal text-sb-blue-ink">{member.business}</strong>}
+            <div className="flex min-w-0 flex-col gap-5">
+              <p className="flex flex-wrap items-center gap-2 font-plex text-xs uppercase leading-4 tracking-[0.08em] text-sb-muted">
+                {tone && <span aria-hidden className="twc-dot bg-(--hood)" />}
+                {member.catalogueNumber !== undefined && <span>Nº {formatCatalogueNumber(member.catalogueNumber)}</span>}
+                {member.catalogueNumber !== undefined && member.neighborhood && <span aria-hidden>·</span>}
+                {member.neighborhood && <span>{member.neighborhood}</span>}
               </p>
-            )}
-            {(member.logo || member.specialty) && (
-              <div className="flex items-center gap-3.5">
-                {member.logo && (
-                  <img src={member.logo} alt={`${member.business || member.name} logo`} width={56} height={56} className="size-14 shrink-0 rounded-[6px] object-contain" />
-                )}
-                {member.specialty && <span className="text-[15px] text-sb-muted">{member.specialty}</span>}
-              </div>
-            )}
-            {member.bio.trim() && (
-              <section className="mt-1.5 flex flex-col gap-2.5">
-                <h2 className="twc-eyebrow">In her words</h2>
-                <p className="text-[17px] leading-[1.65]">{member.bio}</p>
-              </section>
-            )}
-            {member.lookingFor.trim() && (
-              <div className="flex flex-col gap-1.5 rounded-[6px] bg-sb-cream px-6 py-5">
-                <span className="twc-eyebrow text-sb-ink">Looking to meet</span>
-                <span className="font-display text-[22px] leading-[1.35]">{member.lookingFor}</span>
-              </div>
-            )}
-            {website && (
-              <div className="mt-1 flex flex-wrap gap-2.5">
-                <a href={website} target="_blank" rel="noopener noreferrer" className="twc-btn twc-btn--outline">
-                  Website <span className="twc-arrow" aria-hidden>↗</span><span className="sr-only"> (opens in a new tab)</span>
-                </a>
-              </div>
-            )}
+              <h1 className="twc-display break-words">{member.name}</h1>
+              {(member.role || member.business) && (
+                <p className="text-[22px] leading-[1.35]">
+                  {member.role}
+                  {member.role && member.business && " at "}
+                  {member.business && <strong className="font-semibold">{member.business}</strong>}
+                </p>
+              )}
+              {(member.logo || member.specialty) && (
+                <div className="flex items-center gap-3.5">
+                  {member.logo && (
+                    <img src={member.logo} alt={`${member.business || member.name} logo`} width={56} height={56} className="size-14 shrink-0 rounded-(--twc-radius-flag) object-contain" />
+                  )}
+                  {member.specialty && <span className="twc-chip twc-chip--ring">{member.specialty}</span>}
+                </div>
+              )}
+              {member.bio.trim() && (
+                <section className="mt-1.5 flex flex-col gap-2.5 border-t border-sb-ink pt-4">
+                  <h2 className="twc-eyebrow text-sb-ink">In her words</h2>
+                  <p className="twc-measure whitespace-pre-line text-[17px] leading-[1.6]">{member.bio}</p>
+                </section>
+              )}
+              {member.lookingFor.trim() && (
+                <div className="flex flex-col gap-1.5 bg-sb-cream px-6 py-5">
+                  <span className="twc-eyebrow text-sb-ink">Looking to meet</span>
+                  <span className="text-[20px] font-semibold leading-[1.35]">{member.lookingFor}</span>
+                </div>
+              )}
+              {website && (
+                <div className="mt-1 flex flex-wrap gap-2.5">
+                  <a href={website} target="_blank" rel="noopener noreferrer" className="twc-btn twc-btn--outline">
+                    Website <span className="twc-arrow" aria-hidden>↗</span><span className="sr-only"> (opens in a new tab)</span>
+                  </a>
+                </div>
+              )}
+            </div>
           </div>
         </section>
 
-        <Scallop from="#fcfcfa" to="#faf3bf" />
-        <section className="twc-band twc-band--sun pb-22 pt-16">
-          <div className="twc-wrap flex flex-wrap items-center justify-between gap-x-10 gap-y-6">
-            <div className="flex min-w-0 flex-[1_1_440px] flex-col gap-3">
-              <h2 className="twc-h3">Want an introduction?</h2>
-              <p className="max-w-[560px] text-[17px]">Members can ask us to connect them with {first} directly. We’ll make the intro by email.</p>
-            </div>
-            <Link to="/contact" className="twc-btn">Ask for an introduction <span className="twc-arrow" aria-hidden>→</span></Link>
-          </div>
+        <section className="twc-panel twc-panel--wide twc-c-band-butter border-t border-sb-ink">
+          <h2>Want an introduction?</h2>
+          <p className="copy">Members can ask us to connect them with {first} directly. We’ll make the intro by email.</p>
+          <Link to="/contact" className="twc-btn">Ask for an introduction <span className="twc-arrow" aria-hidden>→</span></Link>
         </section>
-        <Scallop from="#faf3bf" to="#fcfcfa" />
 
         {neighbors.length > 0 && (
-          <section className="twc-wrap flex flex-col gap-8 pb-24 pt-18">
-            <div className="flex flex-wrap items-end justify-between gap-4">
-              <h2 className="twc-h3 min-w-0 md:text-[44px]">More neighbors from {member.neighborhood}</h2>
+          <section className="twc-sec">
+            <div className="twc-shead">
+              <h2 className="twc-h2 min-w-0">More neighbors from {member.neighborhood}</h2>
               {hood && (
-                <Link to="/neighborhoods/$slug" params={{ slug: hood.slug }} className="twc-link font-sans font-semibold text-[13px] uppercase leading-5 tracking-[0.08em] text-sb-blue-ink">
+                <Link to="/neighborhoods/$slug" params={{ slug: hood.slug }} className="twc-link font-plex text-xs uppercase leading-5 tracking-[0.08em]">
                   See all of {hood.name} <span aria-hidden>→</span>
                 </Link>
               )}
             </div>
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-6">
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(min(200px,100%),1fr))] gap-6">
               {neighbors.map((m) => {
                 const slug = memberSlug(m);
-                const card = <MemberCard member={m} variant="polaroid" tone={toneFor(m.neighborhood, hoodList)} />;
+                const card = <MemberCard member={m} variant="grid" />;
                 return slug ? (
-                  <Link key={m.id} to="/members/$slug" params={{ slug }} className="block rounded-[2px] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-sb-blue-ink">
+                  <Link key={m.id} to="/members/$slug" params={{ slug }} className="block rounded-[2px] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-sb-ink">
                     {card}
                   </Link>
                 ) : <div key={m.id}>{card}</div>;
@@ -155,7 +148,6 @@ function MemberPage() {
             </div>
           </section>
         )}
-        {neighbors.length === 0 && <div className="h-12" />}
       </main>
       <AppFooter />
     </AppPage>

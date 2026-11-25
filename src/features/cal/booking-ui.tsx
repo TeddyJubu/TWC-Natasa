@@ -1,8 +1,8 @@
-// Booking an appointment and managing it from its private link, on the public scrapbook kit.
+// Booking an appointment and managing it from its private link, on the canvas kit (twc-public.css).
 import * as React from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { cn, MultiSelectControl, SelectControl } from "@/index";
+import { MultiSelectControl, SelectControl } from "@/index";
 import { calSlotsQuery, CalRequestError, invalidateCal, manageBooking, sendBooking } from "./queries";
 import { browserTimeZone, firstWeekday, formatDay, formatRange, formatTime, monthCells, monthKey, shiftMonth, timeZones } from "./time";
 import { checkBooking, isEmail, MAX_GUESTS, type BookingField, type CalSlot, type PublicBooking, type PublicEventType, type SlotsByDay } from "./types";
@@ -16,11 +16,12 @@ const money = (amount: number, currency: string, locale: string) =>
 export function EventTypeCard({ type, business }: { type: PublicEventType; business?: string }) {
   const locale = useVisitorLocale();
   return (
-    <article className="relative flex h-full flex-col gap-2.5 rounded-md border border-sb-ink/15 bg-sb-paper p-5">
-      <h2 className="font-display text-[24px]/[1.25] break-words">
+    <article className="twc-evcard">
+      <div className="twc-evcard__body">
+      <h2 className="font-display text-[34px] font-extrabold leading-none tracking-[-0.01em] break-words [font-stretch:75%]">
         <Link
           to="/book/$eventType" params={{ eventType: type.slug }} {...(business ? { search: { business } } : {})}
-          className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sb-blue-ink"
+          className="after:absolute after:inset-0 after:rounded-(--twc-radius-card) after:content-[''] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-3 focus-visible:after:outline-sb-ink"
         >{type.title}</Link>
       </h2>
       {type.description && <p className="whitespace-pre-line text-sb-muted">{type.description}</p>}
@@ -29,15 +30,16 @@ export function EventTypeCard({ type, business }: { type: PublicEventType; busin
         {type.price > 0 && <span className="twc-chip twc-chip--ring">{money(type.price, type.currency, locale)}</span>}
         {type.seatsPerSlot !== null && <span className="twc-chip twc-chip--ring">Group · {type.seatsPerSlot} seats</span>}
       </p>
+      </div>
     </article>
   );
 }
 
 export function EventTypeList({ types, business }: { types: PublicEventType[]; business?: string }) {
   if (!types.length) {
-    return <div className="rounded-md bg-sb-cream px-6 py-8"><p className="font-display text-2xl">Nothing to book just yet.</p><p>Check back soon.</p></div>;
+    return <div className="border-t border-sb-ink bg-sb-cream px-6 py-8"><p className="font-display text-[32px] font-extrabold leading-none [font-stretch:75%]">Nothing to book just yet.</p><p className="mt-2">Check back soon.</p></div>;
   }
-  return <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">{types.map((t) => <li key={t.id}><EventTypeCard type={t} business={business} /></li>)}</ul>;
+  return <ul className="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-3">{types.map((t) => <li key={t.id}><EventTypeCard type={t} business={business} /></li>)}</ul>;
 }
 
 export function TimezoneSelect({ value, onChange }: { value: string; onChange: (timeZone: string) => void }) {
@@ -59,27 +61,23 @@ export function DatePicker({ month, minMonth, selected, available, onMonth, onSe
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-2">
-        <h3 aria-live="polite" className="font-display text-xl">{title}</h3>
+        <h2 aria-live="polite" className="font-display text-[26px] font-extrabold leading-none [font-stretch:75%]">{title}</h2>
         <div className="flex gap-2">
           <button type="button" aria-label="Previous month" disabled={month <= minMonth} className="twc-btn twc-btn--outline twc-btn--sm" onClick={() => onMonth(shiftMonth(month, -1))}>‹</button>
           <button type="button" aria-label="Next month" className="twc-btn twc-btn--outline twc-btn--sm" onClick={() => onMonth(shiftMonth(month, 1))}>›</button>
         </div>
       </div>
-      <div className="grid grid-cols-7 gap-1">
-        {cells.slice(0, 7).map((d) => <span key={d} aria-hidden className="text-center text-xs font-medium">{new Intl.DateTimeFormat(locale, { timeZone: "UTC", weekday: "narrow" }).format(utc(d))}</span>)}
+      <div className="twc-daypick grid-cols-7">
+        {cells.slice(0, 7).map((d) => <span key={d} aria-hidden className="twc-daypick__dow">{new Intl.DateTimeFormat(locale, { timeZone: "UTC", weekday: "narrow" }).format(utc(d))}</span>)}
         {cells.map((day) => {
           const open = day.startsWith(month) && available.has(day);
-          if (!day.startsWith(month)) return <span key={day} aria-hidden />;
+          if (!day.startsWith(month)) return <span key={day} aria-hidden className="bg-sb-cream!" />;
           return (
             <button
               key={day} type="button" disabled={!open} aria-pressed={selected === day}
               aria-label={`${new Intl.DateTimeFormat(locale, { timeZone: "UTC", weekday: "long", month: "long", day: "numeric" }).format(utc(day))}${open ? "" : ", no times"}`}
               onClick={() => onSelect(day)}
-              className={cn(
-                "aspect-square min-h-10 rounded-full text-sm focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-sb-blue-ink",
-                open ? "bg-sb-lime text-sb-ink hover:bg-sb-ink hover:text-sb-paper" : "text-sb-muted",
-                selected === day && "bg-sb-ink! text-sb-paper!",
-              )}
+              className="aspect-square"
             >{Number(day.slice(8))}</button>
           );
         })}
@@ -100,7 +98,7 @@ export function SlotPicker({ slots, timeZone, selected, onSelect, locale: locale
         <li key={s.start}>
           <button
             type="button" aria-pressed={selected === s.start} onClick={() => onSelect(s.start)}
-            className="twc-choice w-full justify-center aria-pressed:bg-sb-ink aria-pressed:text-sb-paper aria-pressed:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sb-blue-ink"
+            className="twc-choice twc-choice--filter w-full justify-center"
           >
             {formatTime({ iso: s.start, timeZone, locale })}
             {s.seatsRemaining !== null && <span className="text-xs">· {s.seatsRemaining} left</span>}
@@ -142,7 +140,7 @@ function SlotChooser({ eventTypeId, timeZone, onTimeZone, slot, onSlot, bookingU
         <TimezoneSelect value={timeZone} onChange={(next) => { onTimeZone(next); setDay(null); onSlot(null); }} />
       </div>
       <div className="flex flex-col gap-3">
-        <h3 className="font-display text-xl">{day ? formatDay({ iso: `${day}T12:00:00Z`, timeZone: "UTC", locale: "en-US" }) : "Times"}</h3>
+        <h2 className="font-display text-[26px] font-extrabold leading-none [font-stretch:75%]">{day ? formatDay({ iso: `${day}T12:00:00Z`, timeZone: "UTC", locale: "en-US" }) : "Times"}</h2>
         {query.isError ? <ErrorBanner message="We couldn’t load the open times." onRetry={() => void query.refetch()} />
           : query.isPending ? <p role="status" className="text-sb-muted">Loading times…</p>
           : !available.size ? <p className="text-sb-muted">No open times this month. Try the next one.</p>
@@ -243,8 +241,8 @@ export function BookingSummary({ title, lengthInMinutes, start, timeZone, end }:
   const locale = useVisitorLocale();
   const finish = end ?? (start ? new Date(Date.parse(start) + lengthInMinutes * 60_000).toISOString() : undefined);
   return (
-    <div className="flex flex-col gap-1 rounded-md bg-sb-cream p-4">
-      <p className="font-display text-xl">{title}</p>
+    <div className="flex flex-col gap-1 border-t border-sb-ink bg-sb-cream px-5 py-4">
+      <p className="font-display text-[26px] font-extrabold leading-none [font-stretch:75%]">{title}</p>
       {start && finish ? <p className="text-sm">{formatRange(start, finish, timeZone, locale)}</p> : <p className="text-sm">{lengthInMinutes} minutes</p>}
     </div>
   );
@@ -345,8 +343,8 @@ export function BookingFlow({ type, business }: { type: PublicEventType; busines
 
 export function BookingConfirmation({ booking }: { booking: PublicBooking }) {
   return (
-    <div role="status" className="flex flex-col gap-3 rounded-md bg-sb-lime p-5">
-      <p className="font-display text-2xl">You’re booked.</p>
+    <div role="status" className="flex flex-col gap-3 border-t border-sb-ink bg-sb-lime p-5">
+      <p className="font-display text-[32px] font-extrabold leading-none [font-stretch:75%]">You’re booked.</p>
       <p>We’ve emailed you the details. This page is your private link to change or cancel, so keep it to yourself.</p>
       <AddToCalendar entry={{ uid: booking.uid, title: booking.title, location: booking.location, startTime: booking.start, endTime: booking.end }} />
     </div>

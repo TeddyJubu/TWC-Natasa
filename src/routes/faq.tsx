@@ -92,61 +92,59 @@ function FaqPage() {
     <AppPage>
       <AppNav />
       <main id="main" tabIndex={-1} className="outline-none">
-        <section className="twc-wrap flex flex-wrap items-start gap-x-16 gap-y-12 pb-[88px] pt-[72px]">
-          <div className="flex min-w-0 max-w-[380px] flex-[1_1_300px] flex-col gap-5">
-            <p className="twc-eyebrow-script">a collective close to home</p>
-            <h1 className="twc-h2">Questions, answered.</h1>
-            <p className="text-[17px] leading-[1.65] text-sb-muted">Everything you might wonder before you apply, and after you’re in.</p>
-            <nav aria-labelledby="toc-h" className="mt-3 flex flex-col gap-3">
-              <span id="toc-h" className="twc-eyebrow">Topics</span>
-              <div className="flex flex-col">
-                {FAQ_GROUPS.map((g, i) => (
-                  <a key={g.id} href={`#${g.id}`} className="twc-link flex items-center gap-3 border-b border-sb-ink/15 py-3 font-display text-[17px] leading-[1.3] no-underline first:border-t">
-                    <span className="twc-index min-w-[22px]">{no(starts[i])}</span>{g.title}
-                  </a>
-                ))}
-              </div>
-            </nav>
-          </div>
-
-          <div className="flex min-w-0 flex-[999_1_520px] flex-col gap-11">
-            {FAQ_GROUPS.map((g, gi) => (
-              <section key={g.id} id={g.id} aria-labelledby={`${g.id}-h`} className="flex scroll-mt-[100px] flex-col gap-3">
-                <h2 id={`${g.id}-h`} className="twc-eyebrow pl-8 max-md:pl-4">{g.title}</h2>
-                <div>
-                  {g.items.map((item, i) => (
-                    <details key={item.q} name="faq" open={gi === 0 && i === 0} className="twc-faq">
-                      <summary>
-                        <span className="twc-index">{no(starts[gi] + i)}</span>
-                        <span className="twc-faq__q">{item.q}</span>
-                        <span className="twc-faq__toggle"><Icon name="plus" /></span>
-                      </summary>
-                      <p className="twc-faq__a">
-                        {item.a}
-                        {item.link && <><Link to={item.link.to} className="twc-inlink">{item.link.text}</Link>{item.link.after}</>}
-                      </p>
-                    </details>
-                  ))}
-                </div>
-              </section>
-            ))}
+        <section className="twc-phd">
+          <div className="min-w-0">
+            <p className="twc-eyebrow">A collective close to home</p>
+            <h1 className="twc-display">Questions, answered.</h1>
+            <p className="twc-lede">Everything you might wonder before you apply, and after you’re in.</p>
           </div>
         </section>
 
-        <section className="twc-wrap pb-[104px]">
-          <div className="twc-ticket bg-[linear-gradient(160deg,#16213f_0%,#111111_100%)]">
-            <div className="twc-ticket__main">
-              <p className="twc-eyebrow-script">ask us directly</p>
-              <h2 className="twc-display md:text-[72px]">Still wondering?</h2>
+        <section className="twc-sec">
+          <div className="twc-split--aside twc-split">
+            <nav aria-labelledby="toc-h" className="flex flex-col gap-3 lg:sticky lg:top-28">
+              <span id="toc-h" className="twc-eyebrow">Topics</span>
+              <ul className="twc-toc">
+                {FAQ_GROUPS.map((g, i) => (
+                  <li key={g.id}>
+                    <a href={`#${g.id}`}><span className="twc-index">{no(starts[i])}</span>{g.title}</a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+
+            <div className="twc-faqs flex min-w-0 flex-col gap-12">
+              {FAQ_GROUPS.map((g, gi) => (
+                <section key={g.id} id={g.id} aria-labelledby={`${g.id}-h`} className="flex scroll-mt-[100px] flex-col">
+                  <h2 id={`${g.id}-h`} className="twc-eyebrow text-sb-ink">{g.title}</h2>
+                  <div>
+                    {g.items.map((item, i) => (
+                      <details key={item.q} name="faq" open={gi === 0 && i === 0} className="twc-faq">
+                        <summary>
+                          <span className="twc-index">{no(starts[gi] + i)}</span>
+                          <span className="twc-faq__q">{item.q}</span>
+                          <span className="twc-faq__toggle"><Icon name="plus" /></span>
+                        </summary>
+                        <p className="twc-faq__a">
+                          {item.a}
+                          {item.link && <><Link to={item.link.to} className="twc-inlink">{item.link.text}</Link>{item.link.after}</>}
+                        </p>
+                      </details>
+                    ))}
+                  </div>
+                </section>
+              ))}
             </div>
-            <div className="twc-ticket__stub">
-              <div className="twc-ticket__meta"><span>Admit one</span><span>Nº 0001 — New York</span></div>
-              <p className="text-base leading-[1.6] text-sb-paper/85">A real person reads every note.</p>
-              <div className="flex flex-wrap gap-2.5">
-                <Link to="/contact" className="twc-btn twc-btn--sun">Contact us <Icon name="arrow" className="twc-arrow" /></Link>
-                <JoinButton />
-              </div>
-            </div>
+          </div>
+        </section>
+
+        <section className="twc-panel twc-panel--wide twc-c-lilac border-t border-sb-ink">
+          <p className="twc-eyebrow text-sb-ink">Ask us directly</p>
+          <h2>Still wondering?</h2>
+          <p className="copy">A real person reads every note.</p>
+          <div className="twc-panel__acts">
+            <Link to="/contact" className="twc-btn">Contact us <Icon name="arrow" className="twc-arrow" /></Link>
+            <JoinButton />
           </div>
         </section>
       </main>

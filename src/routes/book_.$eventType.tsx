@@ -35,10 +35,17 @@ function BookTypePage() {
     <AppPage>
       <AppNav />
       <main id="main" tabIndex={-1} className="outline-none">
-        <div className="twc-wrap flex flex-col gap-6 pt-14 pb-24">
-          <Link to="/book" className="twc-link inline-flex w-fit items-center gap-1.5 text-sm"><Icon name="arrowLeft" className="size-3.5" /> Everything to book</Link>
-          <h1 className="twc-h2 break-words">{type?.title ?? "Book a time"}</h1>
-          {type?.description && <p className="twc-lede max-w-160 whitespace-pre-line">{type.description}</p>}
+        <div className="px-(--twc-gut) py-5">
+          <Link to="/book" className="twc-link inline-flex w-fit items-center gap-1.5 font-plex text-xs uppercase tracking-[0.08em]"><Icon name="arrowLeft" className="size-3.5" /> Everything to book</Link>
+        </div>
+        <section className="twc-phd">
+          <div className="min-w-0">
+            <p className="twc-eyebrow">Appointments</p>
+            <h1 className="twc-display break-words">{type?.title ?? "Book a time"}</h1>
+            {type?.description && <p className="twc-lede whitespace-pre-line">{type.description}</p>}
+          </div>
+        </section>
+        <div className="twc-sec">
           {type ? <BookingFlow type={type} business={business} />
             : query.isError ? <ErrorBanner message="We couldn’t load this appointment right now." onRetry={() => void query.refetch()} />
             : <p role="status" className="text-sb-muted">Loading…</p>}

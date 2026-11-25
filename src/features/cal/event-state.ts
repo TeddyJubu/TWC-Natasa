@@ -32,3 +32,15 @@ export function byEventDay<T extends Pick<CalEvent, "startTime" | "timeZone">>(e
   }
   return days;
 }
+
+/**
+ * An event's colour field, the canvas calendar's kind chips: each category always gets the same one of eight ink-safe
+ * fields (a hash of its name, so a new category in Cal needs no code), and an event with none gets stone.
+ */
+const KINDS = 8;
+export function kindClass(category: string | null | undefined) {
+  if (!category) return "twc-kind";
+  let hash = 0;
+  for (const ch of category) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
+  return `twc-kind twc-kind--${hash % KINDS}`;
+}

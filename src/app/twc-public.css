@@ -1,3 +1,150 @@
-/* Canvas design system: page styles for the other public pages (about, events, booking, neighborhoods, faq, fellowship, members page, status pages; sub-project 2, thread B). Shared pieces live in twc-sections.css. */
+/* Canvas design system: page styles for the other public pages (about, events, booking, neighborhoods, faq, fellowship,
+   members page, status pages; sub-project 2, thread B). Shared pieces live in twc-sections.css; these are only what
+   those pages compose on top of it, in the canvas's Programme style on Archivo and white. Colour fields keep ink text. */
 @layer components {
+/* ---- Page head with a photo (canvas .phd, its right column holding a framed, hard-shadow photo) ---- */
+.twc-phd__media { justify-self: end; width: min(100%, 336px); margin: 0; }
+.twc-phd__media--wide { width: min(100%, 540px); }
+.twc-phd__media > img { width: 100%; height: auto; }
+.twc-phd--media { align-items: center; }
+@media (max-width: 1100px) { .twc-phd__media { justify-self: start; } }
+.twc-phd__mark { width: 96px; justify-self: end; }
+@media (max-width: 1100px) { .twc-phd__mark { justify-self: start; width: 72px; } }
+.twc-phd .twc-eyebrow { display: block; margin-bottom: 14px; }
+.twc-phd .twc-lede { margin-top: 18px; }
+
+/* A section's own measure: copy never runs the full width of the canvas gutter */
+.twc-measure { max-width: 62ch; }
+.twc-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--twc-space-40); align-items: start; }
+.twc-split--aside { grid-template-columns: minmax(0, 320px) minmax(0, 1fr); gap: var(--twc-space-60); }
+@media (max-width: 1100px) { .twc-split, .twc-split--aside { grid-template-columns: 1fr; gap: var(--twc-space-28); } }
+
+/* ---- Stepped colour tiles (canvas .twc-tile in a row of four or three): numbered steps and gives ---- */
+.twc-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; padding: 0; list-style: none; }
+@media (min-width: 1101px) { .twc-steps--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.twc-steps > li { aspect-ratio: auto; min-height: 340px; justify-content: space-between; text-align: left; }
+.twc-steps > li h3 { margin: 10px 0 0; font: 800 condensed clamp(30px, 2.6vw, 40px)/0.95 var(--font-display); letter-spacing: -0.01em; }
+.twc-steps > li p { margin: 0; font-size: 15px; line-height: 1.45; }
+@media (max-width: 1100px) { .twc-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .twc-steps { grid-template-columns: 1fr; } .twc-steps > li { min-height: 0; gap: 28px; } }
+
+/* Values / gives as stepped cards: the card body under its condensed title */
+.twc-cards .twc-card p { margin: 18px 0 0; font-size: 15px; line-height: 1.5; }
+
+/* ---- A full-width colour panel closing a page (canvas .twc-panel, one across) ---- */
+.twc-panel--wide { min-height: 0; }
+.twc-panel--wide .twc-panel__acts { display: flex; flex-wrap: wrap; gap: 10px; }
+.twc-panel em { font-style: italic; font-weight: 400; font-stretch: 100%; }
+
+/* ---- Constellation link bands for the neighborhoods list (canvas .twc-band as links: no · name · area) ---- */
+.twc-hbands { margin: 0; padding: 0; list-style: none; border-top: var(--twc-border-hairline) solid var(--color-sb-ink); }
+.twc-hband { position: relative; display: grid; grid-template-columns: 150px minmax(0, 1fr) 230px; align-items: center; gap: var(--twc-space-16); min-height: 110px; padding: var(--twc-space-16) var(--twc-gut); border-top: 1px solid var(--color-sb-ink); box-shadow: var(--twc-shadow-band); text-decoration: none; transition: padding-block 0.45s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.twc-hband:hover, .twc-hband:focus-visible { padding-block: 34px; }
+.twc-hband:focus-visible { outline: 2px solid var(--color-sb-ink); outline-offset: -4px; }
+.twc-hband__name { min-width: 0; overflow-wrap: anywhere; text-align: center; font: 800 clamp(40px, 5.4vw, 88px)/0.84 var(--font-display); font-stretch: 62%; letter-spacing: -0.01em; text-transform: uppercase; }
+.twc-hband__end { display: flex; align-items: center; justify-content: flex-end; gap: 14px; }
+/* Small text on an admin-picked colour sits on a paper tag, so it reads on every colour */
+.twc-hband__tag { justify-self: start; padding: 2px 7px; border-radius: var(--twc-radius-flag); background: var(--color-sb-paper); color: var(--color-sb-ink); font: 500 12px/1.5 var(--font-plex); letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
+@media (max-width: 1100px) {
+  .twc-hband { grid-template-columns: 1fr auto; min-height: 0; padding-block: 14px 18px; }
+  .twc-hband:hover, .twc-hband:focus-visible { padding-block: 14px 18px; }
+  .twc-hband__name { grid-row: 2; grid-column: 1 / -1; text-align: left; font-size: 46px; }
+}
+
+/* ---- Neighborhood page: the band opened onto its sheet ---- */
+.twc-hood-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 420px); gap: var(--twc-space-40); align-items: center; padding: var(--twc-space-60) var(--twc-gut); border-top: 1px solid var(--color-sb-ink); }
+.twc-hood-hero h1 { font: 800 clamp(56px, 8vw, 120px)/0.84 var(--font-display); font-stretch: 62%; letter-spacing: -0.01em; text-transform: uppercase; overflow-wrap: anywhere; }
+.twc-hood-hero__card { display: flex; flex-direction: column; gap: 14px; max-width: 560px; padding: 26px 28px; border-radius: var(--twc-radius-flag); }
+.twc-hood-hero__media { margin: 0; }
+.twc-hood-hero__media img { width: 100%; aspect-ratio: 1; }
+@media (max-width: 1100px) { .twc-hood-hero { grid-template-columns: 1fr; } }
+
+/* ---- People (canvas .person): a portrait mat over a hairline, name in condensed Archivo ---- */
+.twc-people { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr)); gap: var(--twc-space-24); margin: 0; padding: 0; list-style: none; }
+.twc-person { display: flex; flex-direction: column; gap: 10px; width: 100%; padding: 14px 0 0; border: 0; border-top: 1px solid var(--color-sb-ink); background: none; color: var(--color-sb-ink); text-align: left; cursor: pointer; }
+.twc-person:focus-visible { outline: 2px solid var(--color-sb-ink); outline-offset: 3px; }
+.twc-person__ph { display: grid; place-items: center; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; font: 800 condensed 64px/1 var(--font-display); transition: translate 0.3s var(--twc-ease), box-shadow 0.3s var(--twc-ease); }
+.twc-person:hover .twc-person__ph { translate: -3px -3px; box-shadow: var(--twc-shadow-hard); }
+.twc-person__name { font: 800 condensed 28px/1 var(--font-display); letter-spacing: -0.01em; }
+
+/* ---- Event kinds (canvas .e.<kind>): a category's colour field, on the chips, rows, tiles, heads and the legend.
+   Eight ink-safe fields (kindClass in features/cal/events-ui.tsx hashes a category onto one); no category is stone. */
+.twc-kind { background: var(--color-sb-cream); color: var(--color-sb-ink); }
+.twc-kind--0 { background: var(--color-sb-lime); } .twc-kind--1 { background: var(--color-sb-butter); }
+.twc-kind--2 { background: var(--color-sb-blush); } .twc-kind--3 { background: var(--color-sb-lilac); }
+.twc-kind--4 { background: var(--color-sb-ev-sky); } .twc-kind--5 { background: var(--color-sb-khaki); }
+.twc-kind--6 { background: var(--color-sb-ev-sea); } .twc-kind--7 { background: var(--color-sb-ev-peri); }
+
+/* Filter pills (canvas .filters .twc-pill): tracked capitals, filled ink when pressed; still 44px targets */
+.twc-choice--filter { padding: 6px 16px; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; }
+.twc-choice--filter[aria-pressed="true"] { background: var(--color-sb-ink); color: var(--color-sb-paper); }
+.twc-choice--filter:focus-visible { outline: 2px solid var(--color-sb-ink); outline-offset: 3px; }
+
+/* ---- Events: grid cards, programme rows, the calendar table and its legend ---- */
+.twc-evcard { position: relative; display: flex; flex-direction: column; height: 100%; overflow: hidden; border-radius: var(--twc-radius-card); background: var(--color-sb-paper); box-shadow: inset 0 0 0 1px var(--color-sb-ink); }
+.twc-evcard__body { display: flex; flex: 1; flex-direction: column; gap: 10px; padding: 22px 26px 28px; }
+.twc-evcard h3 { margin: 0; font: 800 condensed 30px/1 var(--font-display); letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.twc-evcard__media { display: block; width: 100%; aspect-ratio: 16 / 9; }
+.twc-datetile { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--color-sb-ink); text-align: center; }
+.twc-datetile__m { font: 500 12px var(--font-plex); letter-spacing: 0.12em; text-transform: uppercase; }
+.twc-datetile__d { font: 800 condensed 52px/1 var(--font-display); }
+.twc-evs--list { margin: 0; padding: 0 0 var(--twc-space-60); list-style: none; overflow-x: clip; } /* the tilt never adds a sideways scroll */
+.twc-evs--list .twc-ev { grid-template-columns: minmax(0, 1fr) 200px 220px; align-items: start; }
+.twc-evs--list .twc-ev h3 { overflow-wrap: anywhere; }
+.twc-evs--list .twc-ev .twc-meta { display: flex; flex-direction: column; gap: 6px; }
+.twc-ev__tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+@media (max-width: 1100px) { .twc-evs--list .twc-ev { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 600px) { .twc-evs--list .twc-ev { grid-template-columns: 1fr; } }
+/* A results list sits in the gutter; rows run edge to edge like the canvas programme */
+.twc-bleed { margin-inline: calc(var(--twc-gut) * -1); }
+
+/* Month calendar (canvas .cal) as a WAI-ARIA table: 1px ink rules, mono weekdays, condensed day numbers */
+.twc-cal { width: 100%; table-layout: fixed; border-collapse: collapse; border: 1px solid var(--color-sb-ink); }
+.twc-cal th { padding: 8px; border: 1px solid var(--color-sb-ink); background: var(--color-sb-paper); font: 500 10px var(--font-plex); letter-spacing: 0.08em; text-transform: uppercase; text-align: left; }
+.twc-cal td { position: relative; height: 112px; min-width: 0; padding: 6px; border: 1px solid var(--color-sb-ink); background: var(--color-sb-paper); vertical-align: top; }
+.twc-cal td.is-outside { background: var(--color-sb-cream); color: var(--color-sb-muted); }
+.twc-cal td:focus-visible { outline: 2px solid var(--color-sb-ink); outline-offset: -4px; }
+.twc-cal__num { display: inline-grid; min-width: 26px; height: 26px; place-items: center; margin-bottom: 4px; font: 800 condensed 22px/1 var(--font-display); }
+.twc-cal__num.is-today { border-radius: var(--twc-radius-pill); background: var(--color-sb-ink); color: var(--color-sb-paper); }
+.twc-cal .twc-e { display: block; text-decoration: none; }
+.twc-cal .twc-e:focus-visible { outline: 2px solid var(--color-sb-ink); outline-offset: 1px; }
+.twc-cal__more { margin-top: 2px; border: 0; padding: 0; background: none; color: inherit; font: 600 11px var(--font-sans); text-decoration: underline; cursor: pointer; }
+@media (max-width: 600px) { .twc-cal td { height: 64px; padding: 4px; } .twc-cal th { padding: 6px 4px; } .twc-cal__num { font-size: 18px; } }
+.twc-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin: 12px 0 0; padding: 0; list-style: none; font-size: 12px; }
+.twc-legend .twc-e { display: inline-block; width: 18px; height: 12px; margin-right: 6px; padding: 0; vertical-align: middle; }
+.twc-cal-title { margin: 0; font: 800 condensed clamp(2.4rem, 5vw, 4rem)/0.95 var(--font-display); letter-spacing: -0.02em; }
+
+/* ---- FAQ on hairlines (canvas .twc-qlist rows): the shared accordion, restated for this page only ---- */
+.twc-faqs .twc-faq { border-radius: 0; border-bottom: 1px solid var(--color-sb-ink); }
+.twc-faqs .twc-faq[open] { background: none; border-color: var(--color-sb-ink); }
+.twc-faqs .twc-faq summary { padding: 20px 0; border-radius: 0; }
+.twc-faqs .twc-faq summary:focus-visible { outline: 2px solid var(--color-sb-ink); outline-offset: 2px; }
+.twc-faqs .twc-faq__q { font: 800 condensed clamp(24px, 2.4vw, 32px)/1.05 var(--font-display); letter-spacing: -0.01em; }
+.twc-faqs .twc-faq__toggle { width: 40px; height: 40px; background: none; box-shadow: inset 0 0 0 1.5px var(--color-sb-ink); }
+.twc-faqs .twc-faq__a { padding: 0 56px 26px 44px; max-width: 64ch; font-size: 16px; line-height: 1.55; }
+@media (max-width: 720px) { .twc-faqs .twc-faq summary { padding: 18px 0; } .twc-faqs .twc-faq__a { padding: 0 0 22px; } }
+.twc-faqs h2 { padding-bottom: 10px; border-bottom: 1px solid var(--color-sb-ink); }
+.twc-toc { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--color-sb-ink); }
+.twc-toc a { display: grid; grid-template-columns: 28px 1fr; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--color-sb-hairline); color: var(--color-sb-ink); font-size: 15px; font-weight: 600; text-decoration: none; }
+.twc-toc a:hover { text-decoration: underline; text-underline-offset: 4px; }
+
+/* ---- Booking: the type cards and the day picker in the calendar's ink grid ---- */
+.twc-daypick { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 1px; background: var(--color-sb-ink); border: 1px solid var(--color-sb-ink); }
+.twc-daypick > * { min-height: 44px; background: var(--color-sb-paper); }
+.twc-daypick__dow { display: grid; place-items: center; min-height: 32px; font: 500 10px var(--font-plex); letter-spacing: 0.08em; text-transform: uppercase; }
+.twc-daypick button { border: 0; font: 800 condensed 20px/1 var(--font-display); color: var(--color-sb-ink); cursor: pointer; }
+.twc-daypick button:disabled { background: var(--color-sb-cream); color: var(--color-sb-muted); cursor: default; font-weight: 500; }
+.twc-daypick button[aria-pressed="true"] { background: var(--color-sb-ink); color: var(--color-sb-paper); }
+.twc-daypick button:focus-visible { outline: 2px solid var(--color-sb-ink); outline-offset: -4px; }
+.twc-daypick button:not(:disabled):not([aria-pressed="true"]) { background: var(--color-sb-ev-sky); }
+
+/* ---- Status pages: the page head centred in the canvas frame ---- */
+.twc-status { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--twc-space-40); align-items: end; padding: var(--twc-space-90) var(--twc-gut) var(--twc-space-120); border-top: 1px solid var(--color-sb-ink); }
+.twc-status__acts { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 28px; }
+@media (max-width: 1100px) { .twc-status { grid-template-columns: 1fr; padding-block: var(--twc-space-60) var(--twc-space-90); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .twc-hband, .twc-person__ph { transition: none; }
+  .twc-person:hover .twc-person__ph { translate: none; }
+}
 }

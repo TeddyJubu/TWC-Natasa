@@ -34,7 +34,7 @@ export function RsvpStatusSelector({ value, onChange, disabled }: { value: RsvpS
 export function RsvpConfirmation({ event, rsvp, onChange }: { event: CalEvent; rsvp: LastRsvp; onChange: () => void }) {
   return (
     <div className="flex flex-col gap-4">
-      <p className="font-display text-2xl">{CONFIRMED[rsvp.status]}</p>
+      <p className="font-display text-[32px] font-extrabold leading-none [font-stretch:75%]">{CONFIRMED[rsvp.status]}</p>
       <p className="text-sm">
         {rsvp.name ? `${rsvp.name} · ` : ""}{rsvp.email}
         {rsvp.status === "GOING" && rsvp.plusOnes > 0 ? ` · bringing ${rsvp.plusOnes}` : ""}
@@ -136,7 +136,7 @@ export function RsvpPanel({ event, business }: { event: CalEvent; business?: str
   React.useEffect(() => setSaved(lastRsvp(event.uid)), [event.uid]);
   const closed = event.status === "CANCELLED" ? "This event has been cancelled." : isEnded(event) ? "This event has ended." : null;
   return (
-    <aside aria-labelledby="rsvp-title" className="flex flex-col gap-5 rounded-md bg-sb-cream p-6">
+    <aside aria-labelledby="rsvp-title" className="twc-card flex flex-col gap-5 self-start bg-sb-cream lg:sticky lg:top-28">
       <h2 id="rsvp-title" className="twc-h3">Are you coming?</h2>
       <CapacityBar event={event} />
       {closed ? <p>{closed}</p> : saved && !editing ? (

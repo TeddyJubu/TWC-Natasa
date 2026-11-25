@@ -62,16 +62,16 @@ function GatheringPage() {
       <AppNav />
       <main id="main" tabIndex={-1} className="outline-none">
         {!event ? (
-          <div className="twc-wrap flex flex-col gap-6 py-20">
-            <h1 className="twc-h2">Event</h1>
+          <div className="twc-phd flex flex-col items-stretch gap-6">
+            <h1 className="twc-display">Event</h1>
             {query.isError ? <ErrorBanner message="We couldn’t load this event right now." onRetry={() => void query.refetch()} /> : <EventsSkeleton />}
           </div>
         ) : (
           <>
             <EventHero event={event} />
-            <div className="twc-wrap grid grid-cols-1 gap-10 pb-24 lg:grid-cols-[minmax(0,1fr)_400px]">
+            <div className="twc-sec grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_420px]">
               <div className="flex min-w-0 flex-col gap-6">
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 text-[17px]">
                   <EventDateTime event={event} className="text-base" />
                   {event.location && <EventLocation location={event.location} />}
                 </div>
