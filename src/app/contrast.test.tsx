@@ -239,9 +239,15 @@ describe("public scrapbook palette (--color-sb-* in styles.css)", () => {
 
   it("the home page's colour fields carry ink, and their labels are ink rather than muted", () => {
     const home = readFileSync(`${process.cwd()}/src/routes/index.tsx`, "utf8");
-    for (const field of ["band-lime", "band-purple", "band-butter", "blush", "tomato", "sky", "ev-mint", "ev-peri", "lilac"]) {
+    const homeCss = readFileSync(`${process.cwd()}/src/app/twc-home.css`, "utf8");
+    // Bands, experience tiles, the partner strip and the panels: ink on each; the incubator tile is paper on cobalt.
+    for (const field of ["band-lime", "band-purple", "sky", "band-butter", "band-red", "ev-green", "ev-mint", "ev-peri", "ev-violet", "ev-sea", "tomato", "blush"]) {
+      expect(home + "\n" + homeCss, field).toMatch(new RegExp(`(twc-c-|bg-sb-|--color-sb-)${field}\\b`));
       expect(contrast(sb.ink, sb[field]), field).toBeGreaterThanOrEqual(AA);
     }
+    expect(home).toMatch(/bg-sb-cobalt twc-home-tile--dark/);
+    expect(homeCss).toMatch(/\.twc-tile\.twc-home-tile--dark \{ color: var\(--color-sb-paper\); \}/);
+    expect(contrast(sb.paper, sb.cobalt)).toBeGreaterThanOrEqual(AA);
     // Muted eyebrows fail AA on sky; on the panels they are forced to ink.
     expect(home).toMatch(/twc-panel twc-c-sky">\s*<span className="twc-eyebrow text-sb-ink!"/);
   });

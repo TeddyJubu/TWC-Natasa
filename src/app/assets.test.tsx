@@ -2,7 +2,7 @@
 // T25 + T29: self-hosted Archivo WOFF2 and its preload; homepage photo loading.
 import { readFileSync, statSync } from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, screen } from "@testing-library/react";
+import { cleanup } from "@testing-library/react";
 import { displayFontUrl } from "@/index";
 import { renderWithQueries } from "@/test/dom";
 
@@ -51,10 +51,10 @@ describe("fonts", () => {
 describe("homepage images", () => {
   const renderHome = () => {
     const Page = Home.options.component as React.ComponentType;
-    renderWithQueries(<Page />, [[["cal", "events", { tab: "upcoming", take: 3 }], { events: [], total: 0, categories: [], host: null }]]);
+    renderWithQueries(<Page />, [[["cal", "events", { tab: "upcoming", take: 5 }], { events: [], total: 0, categories: [], host: null }]]);
   };
 
-  // The canvas's 01 Programme opens on type, not a photo: every photo sits below the fold.
+  // The canvas's 01 Programme opens on its constellation bands, not a photo: every photo sits below the fold.
   it("every photo is lazy, decoded off the main thread, and has alt text", () => {
     renderHome();
     const imgs = [...document.querySelectorAll("main img")];
@@ -64,14 +64,5 @@ describe("homepage images", () => {
       expect(img.getAttribute("fetchpriority")).toBeNull();
       expect(img.getAttribute("alt")).toBeTruthy();
     }
-  });
-
-  it("the tile photos serve their downscales at tile sizes", () => {
-    renderHome();
-    const rock = screen.getByAltText("A woman in sunglasses sitting on a sunlit rock beneath a wide blue sky");
-    expect(rock.getAttribute("srcset")).toMatch(/hero-rock-960\.webp 960w/);
-    const event = screen.getByAltText("Women talking together at a collective event");
-    expect(event.getAttribute("srcset")).toMatch(/event-800\.webp 800w/);
-    for (const img of [rock, event]) expect(img.getAttribute("sizes")).toMatch(/50vw$/);
   });
 });

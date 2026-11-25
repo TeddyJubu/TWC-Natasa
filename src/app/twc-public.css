@@ -29,7 +29,7 @@
 @media (max-width: 600px) { .twc-steps { grid-template-columns: 1fr; } .twc-steps > li { min-height: 0; gap: 28px; } }
 
 /* Values / gives as stepped cards: the card body under its condensed title */
-.twc-cards .twc-card p { margin: 18px 0 0; font-size: 15px; line-height: 1.5; }
+.twc-cards--values .twc-card p { margin: 18px 0 0; font-size: 15px; line-height: 1.5; }
 
 /* ---- A full-width colour panel closing a page (canvas .twc-panel, one across) ---- */
 .twc-panel--wide { min-height: 0; }

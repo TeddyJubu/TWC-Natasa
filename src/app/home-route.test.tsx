@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, screen, within } from "@testing-library/react";
-import { NEIGHBORHOOD_SEED } from "@/features/neighborhoods/queries";
 import { demoMembers } from "@/showcase/demo-members";
 import { renderWithQueries } from "@/test/dom";
 import { expectNoSkippedHeadings } from "@/test/headings";
@@ -69,59 +68,66 @@ describe("/ (home) structure", () => {
     expect(meta.find((m) => m.name === "robots")).toBeUndefined();
   });
 
-  it("the mission card sits in #mission and its Join us button goes to /join", () => {
+  it("the letter card sits in #letter and points to the application's opt-in with the one Join us button", () => {
     renderWithQueries(<Page />);
-    const mission = screen.getByRole("heading", { name: "Our mission", level: 2 }).closest("#mission")!;
-    expect(mission).not.toBeNull();
-    expect(within(mission as HTMLElement).getByRole("link", { name: /^Join us/ }).getAttribute("href")).toBe("/join");
+    const letter = screen.getByRole("heading", { name: "The Collective letter", level: 2 }).closest("#letter")!;
+    expect(letter).not.toBeNull();
+    expect(within(letter as HTMLElement).getByRole("link", { name: /^Join us/ }).getAttribute("href")).toBe("/join");
   });
 
-  it("two constellation bands follow the opening: North Brooklyn (open, with its map) then Queens, as native details", () => {
+  it("five constellation bands, as closed native details: the two live ones join, the others look for leads", () => {
     renderWithQueries(<Page />);
-    const section = screen.getByRole("heading", { name: "Two constellations", level: 2 }).closest("section")!;
-    expect(section.previousElementSibling).toBe(screen.getByRole("heading", { level: 1 }).closest("section"));
+    const section = screen.getByRole("heading", { name: "Five constellations", level: 2 }).closest("section")!;
     const bands = [...section.querySelectorAll("details.twc-cband")] as HTMLDetailsElement[];
-    expect(bands.map((d) => d.querySelector(".twc-cband__name")!.textContent)).toEqual(["North Brooklyn", "Queens"]);
-    expect(bands.map((d) => d.open)).toEqual([true, false]);
-    expect(within(bands[0]).getByRole("img").getAttribute("aria-label")).toMatch(/Newtown Creek/);
-    expect(within(section).getByRole("link", { name: "Explore the neighborhoods" }).getAttribute("href")).toBe("/neighborhoods");
+    expect(bands.map((d) => d.querySelector(".twc-cband__name")!.textContent)).toEqual(
+      ["North Brooklyn", "Western Queens", "Brownstone Brooklyn", "Uptown Manhattan", "Downtown Manhattan"]);
+    expect(bands.map((d) => d.querySelector(".twc-cband__st")!.textContent)).toEqual(
+      ["Live · Founding 50", "Live", "Launching", "Ambassador wanted", "Ambassador wanted"]);
+    expect(bands.every((d) => !d.open)).toBe(true);
+    for (const d of bands.slice(0, 2)) expect(within(d).getByRole("link", { name: /^Join us/ }).getAttribute("href")).toBe("/join");
+    for (const d of bands.slice(2)) expect(within(d).getByRole("link", { name: /Lead this constellation/ }).getAttribute("href")).toBe("/contact");
   });
 
-  it("each band lists its area's active neighborhoods from the data, never an inactive or unknown one", () => {
-    const hoods = [...NEIGHBORHOOD_SEED.slice(0, 2), { ...NEIGHBORHOOD_SEED[2], active: false }, { slug: "woodside", name: "Woodside", color: "#123456", logoUrl: null, active: true },
-      { slug: "nowhere", name: "Nowhere", color: "#000000", logoUrl: null, active: true }, NEIGHBORHOOD_SEED[7]];
-    renderWithQueries(<Page />, [[["neighborhoods"], hoods]]);
-    const names = (label: string) => within(screen.getByRole("list", { name: label })).getAllByRole("listitem");
-    expect(names("Queens neighborhoods").map((li) => li.textContent)).toEqual(["Long Island City", "Astoria", "Woodside"]);
-    expect(names("North Brooklyn neighborhoods").map((li) => li.textContent)).toEqual(["Greenpoint"]);
-    expect((names("Queens neighborhoods")[2].querySelector(".twc-dot") as HTMLElement).style.getPropertyValue("--hood")).toBe("#123456");
-    expect(document.body.textContent).not.toContain("Nowhere");
+  it("seven experience tiles link to the calendar, with five captioned photos between them", () => {
+    const { container } = renderWithQueries(<Page />);
+    const grid = container.querySelector(".twc-grid6")!;
+    const tiles = [...grid.querySelectorAll("a.twc-tile")];
+    expect(tiles.map((a) => a.querySelector("h3")!.textContent)).toEqual(["Constellation Zooms", "Coffee Connections", "Constellation Meetups",
+      "Expert Panels", "Hands-on Workshops", "Incubator Growth Sessions", "Happy Hours"]);
+    for (const a of tiles) expect(a.getAttribute("href")).toBe("/events");
+    expect(grid.querySelectorAll("figure.twc-tile--photo img")).toHaveLength(5);
+    expect(grid.children).toHaveLength(12);
   });
 
-  it("What’s on shows up to three upcoming public events, each linking to its page", () => {
+  it("the program shows up to five upcoming public events, titled by the first one's month, each linking to its page", () => {
     const at = new Date(Date.now() + 3 * 86_400_000).toISOString();
     const event = { uid: "u1", slug: "coffee", title: "Coffee morning", description: null, category: "Coffee", coverImageUrl: null, startTime: at, endTime: at,
       timeZone: "America/New_York", location: "Astoria", capacity: null, status: "SCHEDULED", host: { name: null, username: null }, goingCount: 0, maybeCount: 0, spotsLeft: null, attendees: [] };
-    renderWithQueries(<Page />, [[["cal", "events", { tab: "upcoming", take: 3 }], { events: [event], total: 1, categories: [], host: null }]]);
-    const section = screen.getByRole("heading", { name: "What’s on", level: 2 }).closest("section")!;
+    renderWithQueries(<Page />, [[["cal", "events", { tab: "upcoming", take: 5 }], { events: [event], total: 1, categories: [], host: null }]]);
+    const month = new Intl.DateTimeFormat("en-US", { month: "long", timeZone: "America/New_York" }).format(new Date(at));
+    const section = screen.getByRole("heading", { name: `Program, ${month}`, level: 2 }).closest("section")!;
     expect(within(section).getByRole("heading", { name: /^Coffee morning/, level: 3 })).toBeTruthy();
     expect(within(section).getByRole("link", { name: /Details and RSVP/ }).getAttribute("href")).toBe("/events/coffee");
-    expect(within(section).getByRole("link", { name: "See every event" }).getAttribute("href")).toBe("/events");
   });
 
-  it("What’s on with no events (or Cal down) shows only the link to the calendar", () => {
-    renderWithQueries(<Page />, [[["cal", "events", { tab: "upcoming", take: 3 }], { events: [], total: 0, categories: [], host: null }]]);
-    const section = screen.getByRole("heading", { name: "What’s on", level: 2 }).closest("section")!;
+  it("the program with no events (or Cal down) says dates come as they're announced and links the calendar", () => {
+    renderWithQueries(<Page />, [[["cal", "events", { tab: "upcoming", take: 5 }], { events: [], total: 0, categories: [], host: null }]]);
+    const section = screen.getByRole("heading", { name: "Program", level: 2 }).closest("section")!;
     expect(section.querySelector(".twc-ev")).toBeNull();
-    expect(within(section).getByRole("link", { name: "See every event" }).getAttribute("href")).toBe("/events");
+    expect(within(section).getByRole("link", { name: "See the calendar" }).getAttribute("href")).toBe("/events");
   });
 
-  it("FAQ: three questions, more on /faq, questions go to /contact", () => {
+  it("lead or partner: ambassadors write through /contact, partners see /partnerships, with no partner prices", () => {
     renderWithQueries(<Page />);
-    const faq = document.getElementById("faq")!;
-    expect(faq.querySelectorAll("details")).toHaveLength(3);
-    expect(within(faq).getByRole("link", { name: /More questions/ }).getAttribute("href")).toBe("/faq");
-    expect(within(faq).getByRole("link", { name: /Ask us anything/ }).getAttribute("href")).toBe("/contact");
+    expect(screen.getByRole("link", { name: /Become an ambassador/ }).getAttribute("href")).toBe("/contact");
+    expect(screen.getByRole("link", { name: /Ways to partner/ }).getAttribute("href")).toBe("/partnerships");
+    expect(screen.getByRole("link", { name: /See packages/ }).getAttribute("href")).toBe("/partnerships");
+  });
+
+  it("never says gathering (the word is events) and names no member beyond the founder", () => {
+    const { container } = renderWithQueries(<Page />);
+    expect(container.textContent).not.toMatch(/gathering/i);
+    expect(container.textContent).not.toMatch(/Shauna/);
   });
 
   it("drops the old decorations: no scallop, ribbon, polaroid, stamp, ticket or retired script face, and nothing loops", () => {

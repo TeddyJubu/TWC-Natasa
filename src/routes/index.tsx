@@ -1,16 +1,13 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import type { CSSProperties } from "react";
-import { useNeighborhoods } from "@/features/neighborhoods/queries";
-import { AREAS, areaOfPlace, type Area } from "@/features/applications/schema";
 import { calEventsQuery } from "@/features/cal/queries";
+import { kindClass } from "@/features/cal/event-state";
 import { formatRange } from "@/features/cal/time";
-import heroRock from "@/assets/photography/home/hero-rock.webp";
-import queensPolaroid from "@/assets/photography/home/queens-polaroid.webp";
-import neighbors from "@/assets/photography/home/neighbors.webp";
-import natasaFounder from "@/assets/photography/home/natasa-founder.webp";
-import gathering from "@/assets/photography/event.jpg";
-import { eventSrcSet, heroRockSrcSet } from "@/app/responsive-images";
+import xpZoom from "@/assets/photography/home/xp-zoom.webp";
+import xpCoffee from "@/assets/photography/home/xp-coffee.webp";
+import xpPanel from "@/assets/photography/home/xp-panel.webp";
+import xpWorkshop from "@/assets/photography/home/xp-workshop.webp";
+import xpEvening from "@/assets/photography/home/xp-evening.webp";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import { Icon, JoinButton } from "@/app/layout/twc";
 import { jsonLdScript, organizationLd, parseSiteUrl } from "@/app/seo";
@@ -40,33 +37,45 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
-/* ── data ─────────────────────────────────────────────────────────────── */
+/* ── data: the design canvas's homepage ("01 Programme", docs/design-canvas/), its own copy ─────────────────────────── */
 
-// The two live areas as constellation bands, in AREAS order. Copy is the page's own; nothing here is a member fact.
-const BANDS: Record<string, { field: string; body: string }> = {
-  "north-brooklyn": { field: "twc-c-band-lime", body: "Greenpoint, Williamsburg, East Williamsburg and Bushwick sit across Newtown Creek from Long Island City." },
-  queens: { field: "twc-c-band-purple", body: "Each neighborhood has its own identity and color. The central star is the point where those neighborhoods and connections meet." },
-};
-
-const TILE_SIZES = "(min-width: 1101px) 17vw, (min-width: 601px) 34vw, 50vw";
-// 6-up: colour tiles (what you do here) on the even slots, photos between; 3-up on tablets, 2-up on phones.
-const TILES = [
-  { field: "twc-c-band-butter", title: "Share what you do", text: "Introduce your business, work, or project and help neighbors understand what you bring." },
-  { src: queensPolaroid, alt: "Women laughing together at an evening rooftop event", caption: "Our people, Queens" },
-  { field: "twc-c-blush", title: "Find collaborators", text: "Build partnerships, exchange referrals, and discover opportunities through people nearby." },
-  { src: gathering, srcSet: eventSrcSet, alt: "Women talking together at a collective event", caption: "The collective, in person" },
-  { field: "twc-c-tomato", title: "Show up locally", text: "Promote women-owned businesses and learn about events and meetups close to home." },
-  { src: heroRock, srcSet: heroRockSrcSet, alt: "A woman in sunglasses sitting on a sunlit rock beneath a wide blue sky", caption: "Close to home" },
+// The five constellations. No member appears: the canvas's star charts and profile strips are members-only data.
+const CONSTELLATIONS = [
+  { short: "NB", name: "North Brooklyn", status: "Live · Founding 50", live: true, field: "twc-c-band-lime", hoods: "Greenpoint — Williamsburg — Bushwick",
+    led: "Founder: Nataša Tuohy", head: "The women behind the Collective", body: "A constellation of talent, ambition, and local connections. Meet the women shaping our community." },
+  { short: "WQ", name: "Western Queens", status: "Live", live: true, field: "twc-c-band-purple", hoods: "Astoria — Long Island City — Hunters Point — Sunnyside — Woodside — Jackson Heights",
+    led: "Ambassador-led", body: "Sunday coffees in Astoria, headshot days and a growing table of makers, agents and teachers." },
+  { short: "SB", name: "Brownstone Brooklyn", status: "Launching", live: false, field: "twc-c-sky", hoods: "Red Hook — Carroll Gardens — Cobble Hill — Boerum Hill — Park Slope",
+    led: "Ambassador onboarding", body: "Our next constellation. The launch coffee is on the calendar for December." },
+  { short: "UP", name: "Uptown Manhattan", status: "Ambassador wanted", live: false, field: "twc-c-band-butter", hoods: "Lincoln Square — Upper West Side — Central Park West / West 80s–90s — Carnegie Hill — Upper East Side",
+    led: "Looking for 2 ambassadors", body: "Every neighborhood is led by two or three women who live there. This one is waiting for its leads." },
+  { short: "DT", name: "Downtown Manhattan", status: "Ambassador wanted", live: false, field: "twc-c-band-red", hoods: "West Village — Greenwich Village — SoHo — Hudson Square — Tribeca",
+    led: "Looking for 2 ambassadors", body: "Every neighborhood is led by two or three women who live there. This one is waiting for its leads." },
 ] as const;
 
-// Three on the homepage; the rest live on /faq.
-const FAQ = [
-  { q: "Who is the collective for?", a: "Women in North Brooklyn and Queens who are building something — a business, a career, a creative practice — and want real relationships close to home. Founders, freelancers, makers, and the newly curious are all welcome. No follower count or pitch deck required." },
-  { q: "Is the community inclusive?", a: "Yes. We welcome women from all backgrounds, including moms, married and single women, LGBTQ+ members, non-binary people who feel aligned with the community, immigrants, international members, and people from diverse cultures." },
-  { q: "What happens after I apply?", a: "A real person reads every application. We’ll be in touch by email about next steps." },
+// The seven ways to take part, as colour tiles; photos sit between them (12 cells: 6 / 3 / 2 across).
+const XP = [
+  { k: "Constellation Zooms", h: "A monthly call with your own Constellation to share updates, ask for introductions, and follow up on what you’re working on.", a: ["Included in membership", "Your Constellation"], field: "bg-sb-ev-green" },
+  { k: "Coffee Connections", h: "A small neighborhood coffee where there’s time for a real conversation. New dates posted as they’re announced.", a: ["Included in membership", "First visit complimentary for invited guests", "Drinks purchased separately"], field: "bg-sb-ev-mint" },
+  { k: "Constellation Meetups", h: "A larger, in-person meetup for each Constellation, with time for introductions and member spotlights.", a: ["Included in membership", "Your Constellation"], field: "bg-sb-ev-peri" },
+  { k: "Expert Panels", h: "A focused conversation with two or three women who have firsthand experience with the topic, followed by audience Q&A.", a: ["Ticketed", "Member pricing", "Open to guests"], field: "bg-sb-ev-violet" },
+  { k: "Hands-on Workshops", h: "A guided working session where you leave with something you can use, such as a revised pitch or a plan for your next launch.", a: ["Ticketed", "Member pricing", "Guest access by event"], field: "bg-sb-ev-sea" },
+  { k: "Incubator Growth Sessions", h: "A small group that meets over several sessions to work through a specific business goal and follow up on progress.", a: ["Members only", "Separate paid program"], field: "bg-sb-cobalt twc-home-tile--dark" },
+  { k: "Happy Hours", h: "An informal evening to meet members in your neighborhood. New dates posted as they’re announced.", a: ["Included in membership", "First visit complimentary for invited guests", "Drinks purchased separately"], field: "bg-sb-sky" },
+] as const;
+// Stock photos (src/assets/photography/home/CREDITS.md), captioned by kind only: they are not our events.
+const PHOTOS = {
+  zoom: { src: xpZoom, alt: "A woman waving on a video call on a laptop", caption: "Zoom night" },
+  coffee: { src: xpCoffee, alt: "Two women talking over coffee at a café table", caption: "Coffee" },
+  panel: { src: xpPanel, alt: "A woman speaking into a microphone on a panel", caption: "Expert panel" },
+  workshop: { src: xpWorkshop, alt: "Two women drawing at a workshop table", caption: "Workshop" },
+  evening: { src: xpEvening, alt: "A hand lighting a candle on a long table", caption: "Happy hour" },
+} as const;
+type Cell = { tile: number } | { photo: keyof typeof PHOTOS };
+const GRID: Cell[] = [
+  { tile: 0 }, { photo: "zoom" }, { tile: 1 }, { photo: "coffee" }, { tile: 2 }, { tile: 3 },
+  { photo: "panel" }, { tile: 4 }, { photo: "workshop" }, { tile: 5 }, { tile: 6 }, { photo: "evening" },
 ];
-
-const EV_FIELDS = ["bg-sb-ev-mint", "bg-sb-ev-peri", "bg-sb-lilac"];
 const no = (i: number) => String(i + 1).padStart(2, "0");
 
 /* ── page ─────────────────────────────────────────────────────────────── */
@@ -76,152 +85,106 @@ function HomePage() {
     <AppPage className="sb-home">
       <AppNav />
       <main id="main" tabIndex={-1} className="outline-none">
-        <Opening />
+        {/* The canvas's Programme variation hides its hero; its headline stays for screen readers and route focus. */}
+        <h1 className="sr-only">Find your people. Build what comes next.</h1>
         <Constellations />
-        <WhoYoullMeet />
-        <WhatsOn />
+        <Experiences />
+        <Program />
         <Cards />
-        <Faq />
-        <Panels />
+        <Duo />
       </main>
       <AppFooter />
     </AppPage>
   );
 }
 
-function Opening() {
-  return (
-    <section aria-labelledby="home-title" className="twc-home-open">
-      <div className="flex flex-col gap-5">
-        <span className="twc-eyebrow">North Brooklyn &amp; Queens</span>
-        <h1 id="home-title" className="twc-display">Find your people.</h1>
-        <p className="twc-lede">For women building businesses, careers, creative work, and real relationships close to home.</p>
-        <JoinButton className="self-start" />
-      </div>
-      <p className="twc-meta">Live<br />{AREAS.map((a) => a.name).join(" · ")}</p>
-    </section>
-  );
-}
-
 function Constellations() {
-  const hoods = useNeighborhoods().data.filter((n) => n.active);
   return (
     <section id="constellations" aria-labelledby="constellations-title">
       <div className="twc-sec twc-sec--tight">
-        <div className="twc-shead mb-0!">
-          <h2 id="constellations-title" className="twc-h3">Two constellations</h2>
-          <Link to="/neighborhoods" className="twc-inlink">Explore the neighborhoods</Link>
+        <div className="twc-home-shead">
+          <h2 id="constellations-title" className="twc-h3">Five <i>constellations</i></h2>
+          <p className="twc-meta">Live<br />North Brooklyn, Western Queens</p>
+          <p className="twc-meta">Next<br />Brownstone Brooklyn</p>
         </div>
       </div>
       <div className="twc-cbands">
-        {AREAS.map((area, i) => (
-          // ponytail: a neighborhood on neither area's list shows on /neighborhoods only, not in a band.
-          <Band key={area.id} area={area} index={i} hoods={hoods.filter((n) => areaOfPlace(n.name)?.id === area.id)} open={i === 0} />
+        {CONSTELLATIONS.map((c, i) => (
+          <details key={c.short} className={`twc-cband ${c.field}`}>
+            <summary>
+              <span className="twc-cband__no">Nº{i + 1}<b>{c.short}</b></span>
+              <span className="twc-cband__name">{c.name}</span>
+              <span className="twc-cband__st">{c.status}</span>
+            </summary>
+            <div className="twc-cband__more">
+              <div>
+                {"head" in c && <p className="twc-home-bandhead">{c.head}</p>}
+                <p className="body">{c.body}</p>
+                {c.live ? <JoinButton /> : (
+                  <Link to="/contact" className="twc-btn">Lead this constellation <Icon name="arrow" className="twc-arrow size-3.5" /></Link>
+                )}
+                <p className="twc-meta mt-8">Led by<br />{c.led}</p>
+              </div>
+              <p className="twc-cband__outline"><span className="sr-only">Neighborhoods: </span>{c.hoods}</p>
+            </div>
+          </details>
         ))}
       </div>
     </section>
   );
 }
 
-function Band({ area, index, hoods, open }: { area: Area; index: number; hoods: { slug: string; name: string; color: string }[]; open: boolean }) {
-  const band = BANDS[area.id];
+function Experiences() {
   return (
-    <details className={`twc-cband ${band.field}`} open={open}>
-      <summary>
-        <span className="twc-cband__no">Nº{index + 1}<b>{area.borough}</b></span>
-        <span className="twc-cband__name">{area.name}</span>
-        <span className="twc-cband__st">Live</span>
-      </summary>
-      <div className="twc-cband__more">
-        <div>
-          <p className="body">{band.body}</p>
-          <ul aria-label={`${area.name} neighborhoods`} className="twc-home-hoods">
-            {hoods.map((n) => (
-              <li key={n.slug}>
-                <span aria-hidden className="twc-dot bg-(--hood)" style={{ "--hood": n.color } as CSSProperties} />
-                {n.name}
-              </li>
-            ))}
-          </ul>
-          <JoinButton />
-        </div>
-        {area.id === "north-brooklyn" ? <NorthBrooklynMap /> : <p aria-hidden className="twc-cband__outline">{hoods.map((n) => n.name).join(" · ")}</p>}
-      </div>
-    </details>
-  );
-}
-
-function NorthBrooklynMap() {
-  return (
-    <figure className="twc-map twc-home-map">
-      <svg viewBox="0 0 640 460" role="img" aria-label="Map: Greenpoint, Williamsburg, East Williamsburg and Bushwick across Newtown Creek from Long Island City, with Nataša’s studio marked in Greenpoint">
-        <rect width="640" height="460" className="fill-sb-paper" />
-        <path d="M0 0 L168 0 C178 40 196 80 190 118 C184 160 168 200 178 246 C188 300 218 360 250 460 L0 460 Z" className="fill-sb-map-water" />
-        <path d="M184 112 C230 122 280 132 330 128 C380 124 412 108 444 128 C478 150 500 182 540 196 C572 208 610 206 640 214" fill="none" strokeWidth="16" strokeLinecap="round" className="stroke-sb-map-water" />
-        <path d="M196 138 C240 146 290 152 330 148 C372 144 410 130 440 148 C470 166 494 196 534 214 C570 230 596 262 606 300 C616 344 604 392 588 430 L420 444 C360 446 300 438 262 420 C238 380 214 330 200 280 C190 236 192 190 196 138 Z" strokeWidth="2.5" strokeLinejoin="round" className="fill-sb-band-lime stroke-sb-ink" />
-        <g fill="none" strokeWidth="1.5" strokeDasharray="6 6" opacity=".6" className="stroke-sb-ink">
-          <path d="M196 226 C260 232 330 228 410 214 C440 208 470 200 500 196" />
-          <path d="M330 228 C344 290 352 360 360 442" />
-          <path d="M352 332 C420 330 500 320 600 316" />
-        </g>
-        <g className="fill-sb-ink font-plex" fontSize="18">
-          <text x="250" y="196">Greenpoint</text>
-          <text x="216" y="300">Williamsburg</text>
-          <text x="376" y="276">East Williamsburg</text>
-          <text x="430" y="392">Bushwick</text>
-          <text x="250" y="66">Long Island City</text>
-          <text x="24" y="210">East River</text>
-        </g>
-        <circle cx="238" cy="58" r="6" className="fill-sb-ink" />
-        <text x="296" y="176" fontSize="26" className="fill-sb-ink">✶</text>
-      </svg>
-      <figcaption>✶ Nataša’s studio, Greenpoint</figcaption>
-    </figure>
-  );
-}
-
-function WhoYoullMeet() {
-  return (
-    <section aria-labelledby="meet-title">
-      <h2 id="meet-title" className="twc-inline">
-        <span className="sr-only">Who you’ll meet here: </span>
-        Founders <span aria-hidden>✺</span> makers <span aria-hidden className="twc-chipmark twc-home-chip" /> creatives, artists <em>and</em> organizers <span aria-hidden>✺</span> longtime locals <em>&amp; brand-new</em> arrivals
+    <section aria-labelledby="xp-title">
+      <h2 id="xp-title" className="twc-inline">
+        Zooms <span aria-hidden>✺</span> Coffee <span aria-hidden className="twc-chipmark twc-home-chip" /> Meetups, panels <em>and</em> happy hours <span aria-hidden>✺</span> workshops <em>that move you</em> forward
       </h2>
       <div className="twc-grid6">
-        {TILES.map((t, i) =>
-          "src" in t ? (
-            <figure key={t.caption} className="twc-tile twc-tile--photo twc-c-stone m-0">
-              <img src={t.src} srcSet={"srcSet" in t ? t.srcSet : undefined} sizes={TILE_SIZES} alt={t.alt} loading="lazy" decoding="async" />
-              <span>{t.caption}</span>
-            </figure>
-          ) : (
-            <article key={t.title} className={`twc-tile ${t.field}`}>
-              <div><span className="no">{no(i / 2)}</span><h3>{t.title}</h3></div>
-              <p className="p">{t.text}</p>
-            </article>
-          ),
-        )}
+        {GRID.map((cell) => {
+          if ("photo" in cell) {
+            const p = PHOTOS[cell.photo];
+            return (
+              <figure key={cell.photo} className="twc-tile twc-tile--photo twc-c-stone m-0">
+                <img src={p.src} alt={p.alt} loading="lazy" decoding="async" />
+                <figcaption>{p.caption}</figcaption>
+              </figure>
+            );
+          }
+          const x = XP[cell.tile];
+          return (
+            <Link key={x.k} to="/events" className={`twc-tile ${x.field}`}>
+              <div><span className="no">{no(cell.tile)}</span><h3>{x.k}</h3><p className="h">{x.h}</p></div>
+              <p className="p">{x.a.map((line, i) => <span key={line} className="block">{i > 0 && <span className="sr-only"> · </span>}{line}</span>)}</p>
+            </Link>
+          );
+        })}
       </div>
     </section>
   );
 }
 
-function WhatsOn() {
+function Program() {
   // The public calendar the events page reads, in the browser only: the home page has no loader.
-  const { data } = useQuery(calEventsQuery({ tab: "upcoming", take: 3 }));
+  const { data } = useQuery(calEventsQuery({ tab: "upcoming", take: 5 }));
   const events = data?.events ?? [];
+  const month = events[0] && new Intl.DateTimeFormat("en-US", { month: "long", timeZone: events[0].timeZone }).format(new Date(events[0].startTime));
   return (
-    <section aria-labelledby="whats-on-title">
+    <section aria-labelledby="program-title">
       <div className="twc-sec">
-        <div className="twc-shead mb-0!">
-          <h2 id="whats-on-title" className="twc-h2">What’s on</h2>
-          <Link to="/events" className="twc-inlink">See every event</Link>
+        <div className="twc-home-shead">
+          <h2 id="program-title" className="twc-h2">Program{month && <>, <i>{month}</i></>}</h2>
+          <p className="twc-meta">Season<br />Winter 2026–27</p>
+          <p className="twc-meta">Members<br />Zooms, coffees and happy hours included</p>
         </div>
+        {events.length === 0 && (
+          <p className="twc-lede mt-6">New dates are posted as they’re announced. <Link to="/events" className="twc-inlink">See the calendar</Link></p>
+        )}
       </div>
       {events.length > 0 && (
         <div className="twc-evs">
-          {events.map((e, i) => (
-            <article key={e.uid} className={`twc-ev ${EV_FIELDS[i % EV_FIELDS.length]}`}>
+          {events.map((e) => (
+            <article key={e.uid} className={`twc-ev ${kindClass(e.category)}`}>
               <h3>{e.title}{e.category && <b>{e.category}</b>}</h3>
               <p className="twc-meta">{formatRange(e.startTime, e.endTime, e.timeZone)}</p>
               <p className="twc-meta">{e.location}</p>
@@ -236,83 +199,47 @@ function WhatsOn() {
 
 function Cards() {
   return (
-    <section aria-label="About the collective" className="twc-cards">
-      <article id="mission" className="twc-card twc-home-card">
-        <p className="twc-eyebrow">Why we exist</p>
-        <h2 className="twc-card__title">Our mission</h2>
-        <p className="twc-home-big">The Women’s Collective brings women across North Brooklyn and Queens together to meet, share knowledge, support one another’s work, and build real relationships close to home.</p>
-        <p>When women know who is around them, they can recommend each other, collaborate, show up for each other’s events, and create opportunities that would be harder to build alone.</p>
+    <section aria-label="The letter and partners" className="twc-cards">
+      <article id="letter" className="twc-card twc-home-card">
+        <p className="twc-eyebrow">Every Thursday</p>
+        <h2 className="twc-card__title">The Collective letter</h2>
+        <div className="twc-home-two">
+          <p className="twc-home-big">Member stories, local finds and opportunities.</p>
+          <p className="text-[12.5px] leading-snug">One email a week. Unsubscribe in a click. Guests welcome.</p>
+        </div>
+        <p>Opt in to the letter on your application.</p>
         <JoinButton className="self-start" />
       </article>
-      <article className="twc-card twc-home-card">
-        <p className="twc-eyebrow">How it works</p>
-        <h2 className="twc-card__title">Connections that move work forward</h2>
-        <p className="twc-home-big">Not networking for networking’s sake. This is a place to build genuine relationships and support women-owned work.</p>
-        <img src={neighbors} alt="Hands shaping a handmade ceramic cup in a sunny studio" loading="lazy" decoding="async" className="twc-home-cardphoto" />
-      </article>
-      <article className="twc-card twc-card--dark twc-home-card">
-        <p className="twc-eyebrow text-sb-paper!">Our founder</p>
-        <h2 className="twc-card__title">Meet Nataša</h2>
-        <img src={natasaFounder} alt="Portrait of Nataša Tuohy, founder of The Women’s Collective" loading="lazy" decoding="async" className="twc-home-cardphoto" />
-        <p>Nataša Tuohy is a New York–based architectural and interior designer whose work brings European sensibility together with New York pragmatism. Educated at the University of Florence, she founded her Greenpoint studio around thoughtful spaces, trusted collaboration, and enduring relationships.</p>
-        <a href="https://natasatuohy.com/about/" target="_blank" rel="noreferrer" className="twc-btn twc-btn--paper self-start">
-          Visit Nataša’s studio <Icon name="arrowUp" className="size-4" />
-          <span className="sr-only">(opens in a new tab)</span>
-        </a>
+      <article className="twc-card twc-card--dark twc-home-card twc-home-card--strip">
+        <p className="twc-eyebrow text-sb-paper!">Spotlight partner</p>
+        <h2 className="twc-card__title">Your brand here</h2>
+        <p className="max-w-[30ch]">One partner per season on the homepage, in the letter and at every event.</p>
+        <Link to="/partnerships" className="twc-btn twc-btn--paper self-start">See packages <Icon name="arrow" className="twc-arrow size-3.5" /></Link>
+        <p aria-hidden className="twc-home-strip">Partner</p>
       </article>
     </section>
   );
 }
 
-function Faq() {
+function Duo() {
   return (
-    <section id="faq" aria-labelledby="faq-title" className="twc-sec twc-home-faq">
-      <div className="flex flex-col gap-4">
-        <h2 id="faq-title" className="twc-h2">Questions, answered.</h2>
-        <p className="twc-lede">Still wondering about something? Send us a note — a real person reads every one.</p>
-        <Link to="/contact" className="twc-inlink self-start">Ask us anything</Link>
-      </div>
-      <div>
-        {FAQ.map((item, i) => (
-          <details key={item.q} name="faq" open={i === 0} className="twc-faq">
-            <summary>
-              <span className="twc-index">{no(i)}</span>
-              <span className="twc-faq__q">{item.q}</span>
-              <span className="twc-faq__toggle"><Icon name="plus" /></span>
-            </summary>
-            <p className="twc-faq__a">{item.a}</p>
-          </details>
-        ))}
-        <Link to="/faq" className="twc-inlink mt-6 inline-block">More questions</Link>
-      </div>
-    </section>
-  );
-}
-
-function Panels() {
-  return (
-    <section aria-label="Take part" className="twc-duo">
+    <section aria-label="Lead or partner" className="twc-duo">
       <div className="twc-panel twc-c-sky">
-        <span className="twc-eyebrow text-sb-ink!">Membership</span>
-        <h2>There is room in this constellation.</h2>
-        <p className="copy">The application helps us learn about you, your work, and how you would like to participate in the community.</p>
-        <JoinButton />
+        <span className="twc-eyebrow text-sb-ink!">Ambassadors</span>
+        <h2>Lead a <i>constellation</i></h2>
+        <p className="copy">Every neighborhood is led by two or three women who live there. Uptown and Downtown Manhattan are waiting for theirs.</p>
+        <Link to="/contact" className="twc-btn">Become an ambassador <Icon name="arrow" className="twc-arrow size-3.5" /></Link>
         <div className="twc-panel__info">
-          <p>Areas<br />North Brooklyn · Queens</p>
-          <p>Who reads it<br />A real person, every time</p>
-          <p>Next<br />We’ll be in touch by email</p>
+          <p>Uptown<br />Two seats open</p>
+          <p>Downtown<br />Two seats open</p>
+          <p>Term<br />One year</p>
         </div>
       </div>
       <div className="twc-panel twc-c-blush">
         <span className="twc-eyebrow text-sb-ink!">Partners</span>
-        <h2>Partners, not vendors.</h2>
-        <p className="copy">Every event happens because someone opens their doors and shares what they know. That’s a collaboration, and we treat it like one.</p>
+        <h2>Partner <i>with</i> us</h2>
+        <p className="copy">Bring a space, a product or a budget, and meet the women who run businesses and households in our neighborhoods.</p>
         <Link to="/partnerships" className="twc-btn twc-btn--outline">Ways to partner <Icon name="arrow" className="twc-arrow size-3.5" /></Link>
-        <div className="twc-panel__info">
-          <p>Host<br />Open your space</p>
-          <p>Teach<br />Share what you know</p>
-          <p>Supply<br />Feed the room</p>
-        </div>
       </div>
     </section>
   );

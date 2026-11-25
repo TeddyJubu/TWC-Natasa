@@ -88,7 +88,7 @@ function AboutPage() {
             <p className="twc-meta">Come as you are</p>
           </div>
         </section>
-        <div className="twc-cards">
+        <div className="twc-cards twc-cards--values">
           {VALUES.map((v, i) => (
             <div key={v.title} className={i === 2 ? "twc-card twc-card--dark" : "twc-card"}>
               <h3 className="twc-card__title">{v.title}</h3>
