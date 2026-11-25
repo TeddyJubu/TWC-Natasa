@@ -222,7 +222,7 @@ function Gatherings({ hood }: { hood: Neighborhood }) {
             return (
               <li key={e.id}>
                 <Link to="/events" className="flex flex-wrap items-center gap-x-7 gap-y-5 border-y border-sb-ink/15 py-6 text-sb-ink hover:text-sb-ink focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-sb-blue-ink">
-                  <span className="flex h-[104px] w-24 shrink-0 flex-col items-center justify-center gap-1.5 rounded-[6px] bg-sb-sun">
+                  <span className="flex h-[104px] w-24 shrink-0 flex-col items-center justify-center gap-1.5 rounded-[6px] bg-sb-butter">
                     <span className="font-fragment text-xs uppercase leading-4 tracking-[2px]">{when.month}</span>
                     <span className="font-display text-[40px] leading-none">{when.day}</span>
                   </span>

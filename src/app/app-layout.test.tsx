@@ -139,17 +139,18 @@ describe("root route", () => {
 describe("AppNav", () => {
   // Measured in Archivo at lg: links 15px + 0.3px tracking, the 18px wordmark, 20px link gaps and 16px column
   // gaps make ~845px, inside the 896px `.twc-wrap` leaves at 1024px. So the row starts at lg, Sign in included.
-  it("shows the desktop row, Sign in included, from lg (tight gaps there) and the menu button below it", () => {
+  it("shows the desktop row (lockup left, links and Join right), Sign in included, from lg and the menu button below it", () => {
     renderWithQueries(<AppNav />, [[["viewer"], { signedIn: false, member: false, admin: false }]]);
     const signIn = screen.getAllByRole("link", { name: "Sign in" });
     const nav = screen.getByRole("navigation", { name: "Main" });
     const row = nav.parentElement!;
     expect(row.className).toMatch(/(^| )hidden( |$)/);
-    expect(row.className.split(" ")).toEqual(expect.arrayContaining(["lg:grid", "gap-4", "xl:gap-6"]));
-    expect(nav.className.split(" ")).toEqual(expect.arrayContaining(["gap-5", "xl:gap-9"]));
+    expect(row.className.split(" ")).toEqual(expect.arrayContaining(["lg:flex", "justify-between"]));
+    expect(row.firstElementChild?.getAttribute("aria-label")).toBe("The Women’s Collective home");
+    expect(nav.className.split(" ")).toEqual(expect.arrayContaining(["flex-wrap", "gap-x-5"]));
     const desktopSignIn = signIn.find((a) => row.contains(a))!;
     expect(desktopSignIn.className).not.toMatch(/hidden|min-\[/);
-    expect(desktopSignIn.parentElement!.className.split(" ")).toEqual(expect.arrayContaining(["gap-5", "xl:gap-9"]));
+    expect(nav.contains(desktopSignIn)).toBe(true);
     const bar = screen.getByRole("button", { name: "Open menu" }).closest("div.flex.min-h-16")!;
     expect(bar.className).toContain("lg:hidden");
     expect(bar.className).not.toContain("xl:hidden");

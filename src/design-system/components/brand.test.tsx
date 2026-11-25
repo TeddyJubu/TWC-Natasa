@@ -9,11 +9,11 @@ afterEach(cleanup);
 const img = () => document.querySelector("img")!;
 
 describe("ConstellationLogo", () => {
-  it("offers 128w and 256w downscales before the 471w original PNG, with its pixel size", () => {
+  it("offers the 128w downscale before the 168w original PNG of the three-star mark, with its pixel size", () => {
     render(<ConstellationLogo variant="astoria" />);
     expect(img().getAttribute("src")).toBe(constellationLogoSources.astoria);
-    expect(img().getAttribute("srcset")).toMatch(/astoria-128\.webp 128w, \S*astoria-256\.webp 256w, \S*astoria\.png 471w$/);
-    expect([img().getAttribute("width"), img().getAttribute("height")]).toEqual(["471", "495"]);
+    expect(img().getAttribute("srcset")).toMatch(/astoria-128\.webp 128w, \S*astoria\.png 168w$/);
+    expect([img().getAttribute("width"), img().getAttribute("height")]).toEqual(["168", "240"]);
   });
 
   it.each([
@@ -39,9 +39,9 @@ describe("constellationLogoSrcSet", () => {
     expect(constellationLogoSrcSet(undefined)).toBeUndefined();
   });
 
-  it("every variant has its two downscales", () => {
+  it("every variant has its downscale and its original", () => {
     for (const [key, set] of Object.entries(constellationLogoSrcSets)) {
-      expect(set.split(", ").map((c) => c.split(" ")[1]), key).toEqual(["128w", "256w", "471w"]);
+      expect(set.split(", ").map((c) => c.split(" ")[1]), key).toEqual(["128w", "168w"]);
     }
   });
 });

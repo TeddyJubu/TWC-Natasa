@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { ConstellationLogo, ImageTrail, cn } from "@/index";
+import { ImageTrail, LOCKUP, cn } from "@/index";
 import { viewerQuery } from "@/features/members/queries";
 import { Icon, JOIN_CLASS, JoinButton } from "./twc";
 
@@ -44,21 +44,24 @@ const navEnd = (member: boolean): SiteLink[] => (member ? [DIRECTORY, FAQ] : [FA
 const loadSiteMenu = () => import("./SiteMenu");
 const SiteMenu = React.lazy(loadSiteMenu);
 
-const navLink = "twc-link whitespace-nowrap font-display text-[15px] tracking-[0.3px] text-sb-ink";
+const navLink = "twc-link whitespace-nowrap text-[14px] text-sb-ink";
 
-/** Sticky site header: three links, the logo, FAQ + Sign in + Join us (members: Directory + FAQ + Account); a
- *  full-screen Dialog menu below lg. The row is narrower than the old Members-link one, which was measured at ~845px
- *  at lg (then Gilda at 15px; the 18px wordmark, 20px link gaps, 16px column gaps) in the 896px `.twc-wrap` leaves at
- *  1024px; Archivo now sets it. xl widens the gaps and the wordmark into the wrap's 1024px. */
+/** The wordmark lockup (three stars and the name), drawn as an image; its text is the link's or the page's. */
+function Lockup({ className }: { className?: string }) {
+  return <img src={LOCKUP.src} width={LOCKUP.width} height={LOCKUP.height} alt="" className={cn("block w-auto", className)} />;
+}
+
+/** Sticky site header, the canvas's Programme layout: the lockup on the left; About, Events, Neighborhoods, FAQ, Sign in
+ *  and Join us on the right (members: Directory, FAQ and Account); a full-screen Dialog menu below lg. */
 export function AppNav({ bare = false }: { bare?: boolean }) {
   // ponytail: pre-launch, the form pages (and sign-in, where /join leads) show only the name, so nobody browses the
   // unpublished site from them. Drop `bare` from the form routes at launch.
   if (bare) {
     return (
-      <header className="sticky top-0 z-40 bg-sb-paper/85 backdrop-blur-md">
-        <div className="flex min-h-16 items-center justify-center gap-2.5 px-4 text-sb-ink lg:min-h-[88px]">
-          <ConstellationLogo variant="ink" alt="" sizes="(min-width: 80rem) 34px, 28px" className="w-7 xl:w-[34px]" />
-          <span className="whitespace-nowrap font-display text-[15px] sm:text-base lg:text-[18px] xl:text-[22px]">The Women’s Collective</span>
+      <header className="sticky top-0 z-40 bg-sb-paper">
+        <div className="flex min-h-16 items-center justify-center px-4 py-3 text-sb-ink lg:min-h-[88px]">
+          <Lockup className="h-10 lg:h-[61px]" />
+          <span className="sr-only">The Women’s Collective</span>
         </div>
       </header>
     );
@@ -76,38 +79,34 @@ function SiteNav() {
   const member = viewer?.member === true || viewer?.admin === true;
   const end = navEnd(member);
   const brand = (
-    <Link to="/" activeOptions={{ exact: true }} className="group flex items-center gap-2.5 text-sb-ink outline-none focus-visible:text-sb-blue-ink" aria-label="The Women’s Collective home">
-      <ConstellationLogo variant="ink" alt="" sizes="(min-width: 80rem) 34px, 28px" className="w-7 transition-[rotate] duration-500 ease-[var(--ease-snap)] group-hover:rotate-[24deg] motion-reduce:transition-none xl:w-[34px]" />
-      <span className="whitespace-nowrap font-display text-[15px] max-[359px]:sr-only sm:text-base lg:text-[18px] xl:text-[22px]">The Women’s Collective</span>
+    <Link to="/" activeOptions={{ exact: true }} className="block shrink-0 rounded-sm text-sb-ink" aria-label="The Women’s Collective home">
+      <Lockup className="h-10 lg:h-[61px] xl:h-[81px]" />
     </Link>
   );
   const join = (size: string) => signedIn
     ? <Link to="/account" className={cn(JOIN_CLASS, "twc-btn--sm", size)}>Account</Link>
-    // The header's compact pill: no arrow and one line, so the lg row (~845px of 896) and a 360px phone bar still fit.
+    // The header's compact pill: no arrow and one line, so the lg row and a 360px phone bar still fit.
     : <JoinButton className={cn("twc-btn--sm whitespace-nowrap [&_.twc-arrow]:hidden", size)} />;
   return (
-    <header className="sticky top-0 z-40 bg-sb-paper/85 backdrop-blur-md">
-      <div className="twc-wrap hidden min-h-[88px] grid-cols-[1fr_auto_1fr] items-center gap-4 lg:grid xl:gap-6">
-        <nav aria-label="Main" className="flex items-center gap-5 xl:gap-9">
-          {NAV_START.map((l) => <Link key={l.to} to={l.to} className={navLink}>{l.label}</Link>)}
-        </nav>
+    <header className="sticky top-0 z-40 bg-sb-paper">
+      <div className="hidden items-center justify-between gap-6 px-10 pb-4 pt-[18px] lg:flex">
         {brand}
-        <div className="flex items-center justify-end gap-5 xl:gap-9">
-          {end.map((l) => <Link key={l.to} to={l.to} className={navLink}>{l.label}</Link>)}
+        <nav aria-label="Main" className="flex flex-wrap items-center justify-end gap-x-5 gap-y-2">
+          {[...NAV_START, ...end].map((l) => <Link key={l.to} to={l.to} className={navLink}>{l.label}</Link>)}
           {!signedIn && <Link to="/account" className={navLink}>Sign in</Link>}
           {join("")}
-        </div>
+        </nav>
       </div>
 
-      <div className="flex min-h-16 items-center justify-between gap-3 px-4 lg:hidden">
+      <div className="flex min-h-16 items-center justify-between gap-3 px-5 py-3 lg:hidden">
         {brand}
         <div className="-mr-2 flex items-center gap-1">
-          {join("min-h-9 px-3.5 py-2 text-[11px] tracking-[1.2px]")}
+          {join("min-h-9")}
           <button
             type="button" aria-label="Open menu" aria-haspopup="dialog" aria-expanded={menuOpen}
             onPointerEnter={() => void loadSiteMenu()} onFocus={() => void loadSiteMenu()}
             onClick={() => { setMenuMounted(true); setMenuOpen(true); }}
-            className="grid size-11 place-items-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-sb-blue-ink"
+            className="grid size-11 place-items-center rounded-full"
           >
             <Icon name="menu" className="size-[22px]" />
           </button>
@@ -134,23 +133,27 @@ const FOOTER: SiteLink[] = [
   { label: "Contact", to: "/contact" },
   { label: "Sign in", to: "/account" },
 ];
-/** Lilac site footer: tagline + site links, the big wordmark and the collective's name. No legal links until the
- *  pages exist again (docs/LEGAL-PAGES-REQUIRED.md). */
+/** Site footer, the canvas's: a giant "find your people." over Plex Mono columns (the name, the two live
+ *  constellations, the site links). No legal links until the pages exist again (docs/LEGAL-PAGES-REQUIRED.md). */
 export function AppFooter({ bare = false }: { bare?: boolean }) {
   return (
     <footer className="twc-footer">
-      <div className="twc-wrap">
-        <div className="twc-footer__top">
-          <p className="twc-footer__tag">find your people, share what you do &amp; help someone else shine</p>
+      <div className="px-5 lg:px-10">
+        <p className="twc-footer__big">find your people.</p>
+        <div className="twc-footer__cols">
+          <div>
+            <p className="twc-footer__wm">The Women’s Collective</p>
+            <p className="mt-2">Share what you do &amp; help someone else shine.</p>
+          </div>
+          <div>
+            <p>Constellations</p>
+            <p>North Brooklyn · Queens</p>
+          </div>
           {!bare && (
-            <nav aria-label="Footer" className="twc-footer__links">
-              {FOOTER.map((l) => <Link key={l.to} to={l.to} className="twc-link">{l.label}</Link>)}
+            <nav aria-label="Footer" className="col-span-2 max-[1100px]:col-span-1">
+              {FOOTER.map((l) => <Link key={l.to} to={l.to}>{l.label}</Link>)}
             </nav>
           )}
-        </div>
-        <p aria-hidden className="twc-footer__word">The Women’s Collective</p>
-        <div className="twc-footer__legal">
-          <span>The Women’s Collective · North Brooklyn and Queens</span>
         </div>
       </div>
     </footer>

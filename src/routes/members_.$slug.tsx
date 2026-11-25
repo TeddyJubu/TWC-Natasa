@@ -120,7 +120,7 @@ function MemberPage() {
           </div>
         </section>
 
-        <Scallop from="#fcfcfa" to="#edd22e" />
+        <Scallop from="#fcfcfa" to="#faf3bf" />
         <section className="twc-band twc-band--sun pb-22 pt-16">
           <div className="twc-wrap flex flex-wrap items-center justify-between gap-x-10 gap-y-6">
             <div className="flex min-w-0 flex-[1_1_440px] flex-col gap-3">
@@ -130,7 +130,7 @@ function MemberPage() {
             <Link to="/contact" className="twc-btn">Ask for an introduction <span className="twc-arrow" aria-hidden>→</span></Link>
           </div>
         </section>
-        <Scallop from="#edd22e" to="#fcfcfa" />
+        <Scallop from="#faf3bf" to="#fcfcfa" />
 
         {neighbors.length > 0 && (
           <section className="twc-wrap flex flex-col gap-8 pb-24 pt-18">

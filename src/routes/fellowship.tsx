@@ -93,7 +93,7 @@ function FellowshipPage() {
           </p>
         </section>
 
-        <Scallop from="#fcfcfa" to="#0b0b0a" />
+        <Scallop from="#fcfcfa" to="#111111" />
         <section aria-labelledby="principles-title" className="twc-band twc-band--night">
           <div className="twc-wrap flex max-w-[820px] flex-col items-start gap-[18px]">
             <p className="twc-eyebrow text-sb-paper/60">Community principles</p>
@@ -102,7 +102,7 @@ function FellowshipPage() {
             <p className="text-[17px] leading-[1.65] text-sb-paper/80">And the one that matters most: the directory is not a mailing list. Members’ details are there so people can connect, never so anyone can broadcast. No bulk outreach, no cold pitching, no adding people to lists they didn’t join.</p>
           </div>
         </section>
-        <Scallop from="#0b0b0a" to="#fcfcfa" />
+        <Scallop from="#111111" to="#fcfcfa" />
 
         <section aria-labelledby="ask-title" className="twc-wrap flex flex-wrap items-end justify-between gap-8 pb-12 pt-[88px]">
           <div className="flex min-w-0 flex-[1_1_520px] flex-col gap-3">
@@ -117,7 +117,7 @@ function FellowshipPage() {
         </section>
 
         <section className="twc-wrap pb-[104px] pt-12">
-          <div className="twc-ticket bg-[linear-gradient(160deg,#16213f_0%,#0b0b0a_100%)]">
+          <div className="twc-ticket bg-[linear-gradient(160deg,#16213f_0%,#111111_100%)]">
             <div className="twc-ticket__main">
               <p className="twc-eyebrow-script">psst — the next step</p>
               <h2 className="twc-display">A real person reads every application.</h2>

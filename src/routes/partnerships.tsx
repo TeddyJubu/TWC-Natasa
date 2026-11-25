@@ -83,7 +83,7 @@ function PartnershipsPage() {
           </ul>
         </section>
 
-        <Scallop from="#fcfcfa" to="#d8cdf8" />
+        <Scallop from="#fcfcfa" to="#e2c8e8" />
         <section aria-labelledby="inquiry-title" className="twc-band twc-band--lilac">
           <div className="twc-wrap flex flex-wrap items-start gap-x-16 gap-y-12">
             <div className="flex min-w-0 flex-[1_1_340px] flex-col gap-[18px]">
@@ -104,7 +104,7 @@ function PartnershipsPage() {
             </div>
           </div>
         </section>
-        <Scallop from="#d8cdf8" to="#fcfcfa" />
+        <Scallop from="#e2c8e8" to="#fcfcfa" />
         <div className="pb-24" />
       </main>
       <AppFooter bare />

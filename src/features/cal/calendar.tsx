@@ -17,7 +17,7 @@ export function CalendarEventPill({ event, locale, tabbable, business }: { event
     <Link
       to="/events/$slug" params={{ slug: event.slug }} {...(business ? { search: { business } } : {})} tabIndex={tabbable ? 0 : -1}
       className={cn(
-        "block truncate rounded-sm bg-sb-mint px-1.5 py-0.5 text-xs text-sb-ink focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-sb-blue-ink",
+        "block truncate rounded-sm bg-sb-lime px-1.5 py-0.5 text-xs text-sb-ink focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-sb-blue-ink",
         event.status === "CANCELLED" && "line-through opacity-70",
       )}
     >

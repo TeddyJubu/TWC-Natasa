@@ -77,7 +77,7 @@ export function DatePicker({ month, minMonth, selected, available, onMonth, onSe
               onClick={() => onSelect(day)}
               className={cn(
                 "aspect-square min-h-10 rounded-full text-sm focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-sb-blue-ink",
-                open ? "bg-sb-mint text-sb-ink hover:bg-sb-ink hover:text-sb-paper" : "text-sb-muted",
+                open ? "bg-sb-lime text-sb-ink hover:bg-sb-ink hover:text-sb-paper" : "text-sb-muted",
                 selected === day && "bg-sb-ink! text-sb-paper!",
               )}
             >{Number(day.slice(8))}</button>
@@ -345,7 +345,7 @@ export function BookingFlow({ type, business }: { type: PublicEventType; busines
 
 export function BookingConfirmation({ booking }: { booking: PublicBooking }) {
   return (
-    <div role="status" className="flex flex-col gap-3 rounded-md bg-sb-mint p-5">
+    <div role="status" className="flex flex-col gap-3 rounded-md bg-sb-lime p-5">
       <p className="font-display text-2xl">You’re booked.</p>
       <p>We’ve emailed you the details. This page is your private link to change or cancel, so keep it to yourself.</p>
       <AddToCalendar entry={{ uid: booking.uid, title: booking.title, location: booking.location, startTime: booking.start, endTime: booking.end }} />

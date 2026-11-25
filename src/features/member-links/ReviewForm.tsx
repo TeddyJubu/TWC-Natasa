@@ -53,7 +53,7 @@ export function ReviewForm({ token, prefill, send = sendReview }: {
 
   if (done) {
     return (
-      <div ref={thanks} tabIndex={-1} role="status" className="flex flex-col items-center gap-4 rounded-[6px] bg-sb-mint px-6 py-16 text-center outline-none sm:px-8">
+      <div ref={thanks} tabIndex={-1} role="status" className="flex flex-col items-center gap-4 rounded-[6px] bg-sb-lime px-6 py-16 text-center outline-none sm:px-8">
         <span className="twc-ticket__meta">{t("Response received")}</span>
         <h2 className="twc-h3">{t("Thank you — your response is saved.")}</h2>
         <p className="max-w-[520px] text-[17px]">{t("Your choices have been recorded. A person will review them before anything changes.")}</p>

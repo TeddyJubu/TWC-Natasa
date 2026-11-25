@@ -42,7 +42,7 @@ export function PartnershipForm({ send = sendPartnership }: { send?: (input: Par
 
   if (sentTo) {
     return (
-      <div role="status" className="flex flex-col items-center gap-3 rounded-md bg-sb-mint px-6 py-12 text-center sm:px-8">
+      <div role="status" className="flex flex-col items-center gap-3 rounded-md bg-sb-lime px-6 py-12 text-center sm:px-8">
         <span className="twc-ticket__meta"><span>{t("Inquiry received")}</span></span>
         <h3 ref={thanks} tabIndex={-1} className="twc-h3 text-[32px] outline-none sm:text-[40px]">{t("Thanks for writing.")}</h3>
         <p className="max-w-[420px] text-[17px] [overflow-wrap:anywhere]">We’ll be in touch at {sentTo}.</p>

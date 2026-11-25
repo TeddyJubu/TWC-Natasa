@@ -15,8 +15,8 @@ export default function SiteMenu({ open, onOpenChange, links, signedIn }: {
         <DialogContent aria-label="Site menu" className="sb-menu bg-sb-paper text-sb-ink">
           <div className="flex h-full flex-col overflow-y-auto px-5 py-4">
             <div className="flex items-center justify-between">
-              <span className="font-script text-3xl">find your people</span>
-              <DialogClose aria-label="Close menu" className="grid size-11 place-items-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-sb-blue-ink">
+              <span className="font-display text-3xl font-black tracking-[-0.04em]">find your people.</span>
+              <DialogClose aria-label="Close menu" className="grid size-11 place-items-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-sb-ink">
                 <Icon name="close" className="size-6" />
               </DialogClose>
             </div>
@@ -26,10 +26,10 @@ export default function SiteMenu({ open, onOpenChange, links, signedIn }: {
                   key={l.to}
                   to={l.to}
                   onClick={() => onOpenChange(false)}
-                  className="sb-menu-item flex items-baseline justify-between border-b border-sb-ink/15 py-3.5 font-display text-[30px] leading-tight outline-none focus-visible:text-sb-blue-ink"
+                  className="sb-menu-item flex items-baseline justify-between border-b border-sb-ink/15 py-3.5 font-display text-[30px] font-extrabold leading-tight tracking-[-0.01em] [font-stretch:75%] underline-offset-4 outline-none focus-visible:underline"
                   style={{ "--d": `${60 + i * 45}ms` } as React.CSSProperties}
                 >
-                  {l.label}<span aria-hidden="true" className="font-fragment text-xs text-sb-ink/75">0{i + 1}</span>
+                  {l.label}<span aria-hidden="true" className="font-plex text-xs text-sb-ink/75">0{i + 1}</span>
                 </Link>
               ))}
             </nav>

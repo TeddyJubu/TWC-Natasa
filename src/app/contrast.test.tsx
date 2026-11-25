@@ -178,12 +178,15 @@ describe("public scrapbook palette (--color-sb-* in styles.css)", () => {
   const twc = readFileSync(`${process.cwd()}/src/app/twc.css`, "utf8");
   const menu = readFileSync(`${process.cwd()}/src/app/layout/SiteMenu.tsx`, "utf8");
 
-  // [text, background]: olive and terracotta stamps carry white text; mustard, shell, sun and lilac carry ink.
+  // [text, background]: every colour field keeps ink text (the canvas rule), the role pairs on paper and stone, and
+  // cobalt (links, Join) on paper, stone and as a fill under white.
+  const fields = ["tomato", "sky", "blush", "butter", "lime", "khaki", "slate", "sage", "lilac", "grey",
+    "band-lime", "band-purple", "band-red", "band-butter", "band-grey", "card-ground",
+    "ev-green", "ev-mint", "ev-sea", "ev-peri", "ev-sky", "ev-violet"];
   const pairs: [string, string][] = [
-    ["white", "olive"], ["white", "terracotta"],
-    ["ink", "mustard"], ["ink", "shell"], ["ink", "sun"], ["ink", "lilac"],
+    ...fields.map((bg) => ["ink", bg] as [string, string]),
     ["muted", "paper"], ["muted", "cream"], ["blue-ink", "paper"], ["blue-ink", "cream"],
-    ["ink", "mint"], ["ink", "paper"],
+    ["white", "cobalt"], ["white", "wine"], ["danger", "paper"], ["ink", "paper"], ["ink", "cream"],
   ];
   it.each(pairs)("%s on %s clears AA", (fg, bg) => {
     expect(sb[fg]).toBeDefined();
@@ -191,10 +194,10 @@ describe("public scrapbook palette (--color-sb-* in styles.css)", () => {
     expect(contrast(sb[fg], sb[bg])).toBeGreaterThanOrEqual(AA);
   });
 
-  it("olive and terracotta stamps use white text and a full-opacity index", () => {
-    expect(twc).toMatch(/\.twc-stamp--olive \{[^}]*color: #fff;/);
-    expect(twc).toMatch(/\.twc-stamp--terracotta \{[^}]*color: #fff;/);
-    expect(twc).toMatch(/\.twc-stamp--olive \.twc-index, \.twc-stamp--terracotta \.twc-index \{ opacity: 1; \}/);
+  it("sage and tomato fields take ink, never white (white fails AA on both)", () => {
+    expect(contrast(sb.white, sb.sage)).toBeLessThan(AA);
+    expect(contrast(sb.white, sb.tomato)).toBeLessThan(AA);
+    expect(twc).not.toMatch(/\.twc-stamp--(olive|terracotta) \{[^}]*color: #fff;/);
   });
 
   it("links on the lilac band are ink, since blue-ink misses AA on lilac", () => {
@@ -205,8 +208,8 @@ describe("public scrapbook palette (--color-sb-* in styles.css)", () => {
     expect(twc).toMatch(/\.twc-input::placeholder \{ color: var\(--color-sb-muted\); \}/);
   });
 
-  it("an open FAQ's number is ink, which clears AA on mint (and stays so if muted is ever lightened)", () => {
-    expect(contrast(sb.ink, sb.mint)).toBeGreaterThanOrEqual(AA);
+  it("an open FAQ's number is ink, which clears AA on stone (and stays so if muted is ever lightened)", () => {
+    expect(contrast(sb.ink, sb.cream)).toBeGreaterThanOrEqual(AA);
     expect(twc).toMatch(/\.twc-faq\[open\] \.twc-index \{ color: var\(--color-sb-ink\); \}/);
   });
 
@@ -215,10 +218,10 @@ describe("public scrapbook palette (--color-sb-* in styles.css)", () => {
     expect(page).toMatch(/<span aria-hidden className="[^"]*bg-sb-paper[^"]*text-sb-ink">\{String\(index\)/);
   });
 
-  it("the olive brick's body copy is full white: any transparency drops it below AA", () => {
+  it("the sage brick's body copy is full ink", () => {
     const home = readFileSync(`${process.cwd()}/src/routes/index.tsx`, "utf8");
-    expect(home).toMatch(/text-white">Not networking/);
-    expect(contrast(blend("#ffffff", sb.olive, 0.9), sb.olive)).toBeLessThan(AA);
+    expect(home).toMatch(/text-sb-ink">Not networking/);
+    expect(contrast(sb.ink, sb.sage)).toBeGreaterThanOrEqual(AA);
   });
 
   it("the mobile menu is white, and its decorative ordinals' ink blend clears AA there", () => {

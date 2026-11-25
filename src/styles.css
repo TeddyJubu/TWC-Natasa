@@ -10,35 +10,58 @@
 /* Route focus (useRouteFocus) lands on the page h1; it is a target, not a control, so no ring. */
 #main [tabindex="-1"]:focus { outline: none; }
 
-/* ── Scrapbook homepage (app-only; not part of the design-system attach) ── */
-/* Self-hosted (CSP is font-src 'self'); latin subset, SIL OFL. Text faces are Archivo (design-system theme.css); these are
-   the accents: Caveat for hand-lettered lines, Fragment Mono for indexes and ticket meta. */
-@font-face { font-family: "Caveat"; src: url("./assets/fonts/home/caveat-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
-@font-face { font-family: "Fragment Mono"; src: url("./assets/fonts/home/fragment-mono-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
-/* Airmail (/account): IBM Plex Mono for its stamps and labels (Archivo comes from the shared theme). Latin subset. */
+/* ── Public site (app-only; not part of the design-system attach) ── */
+/* The canvas design system (docs/design-canvas/, "01 Programme"), ported onto Archivo on white with #111 ink. Fonts are
+   self-hosted (CSP is font-src 'self'): Archivo from the design-system theme, IBM Plex Mono for labels and indexes. The
+   retired accent faces point at those two until their last users go (spec 2026-11-26). */
+/* IBM Plex Mono: labels, indexes, stamps. Latin subset. */
 @font-face { font-family: "IBM Plex Mono"; src: url("./assets/fonts/airmail/ibm-plex-mono-latin-500-normal.woff2") format("woff2"); font-weight: 500; font-display: swap; }
 @font-face { font-family: "IBM Plex Mono"; src: url("./assets/fonts/airmail/ibm-plex-mono-latin-600-normal.woff2") format("woff2"); font-weight: 600; font-display: swap; }
 @font-face { font-family: "IBM Plex Mono"; src: url("./assets/fonts/airmail/ibm-plex-mono-latin-700-normal.woff2") format("woff2"); font-weight: 700; font-display: swap; }
 @theme {
-  --font-script: "Caveat", cursive;
-  --font-fragment: "Fragment Mono", ui-monospace, monospace;
+  --font-script: "Archivo", system-ui, sans-serif;
+  --font-fragment: "IBM Plex Mono", ui-monospace, monospace;
   --font-plex: "IBM Plex Mono", ui-monospace, monospace;
+  /* Roles */
   --color-sb-ink: #111111;
   --color-sb-paper: #ffffff;
-  --color-sb-blue: #1f8ad6;
-  --color-sb-mint: #c6f3df;
-  --color-sb-lilac: #d8cdf8;
-  --color-sb-sun: #edd22e;
-  --color-sb-night: #0b0b0a;
-  --color-sb-muted: #595959;
-  --color-sb-cream: #f4f4f4;
-  --color-sb-blue-ink: #1670b0;
-  --color-sb-olive: #737a4e;
-  --color-sb-mustard: #d9ae5c;
-  --color-sb-rose: #e6b5c1;
-  --color-sb-shell: #f4f4f4;
-  --color-sb-terracotta: #b85a45;
-  --color-sb-danger: #c2412d;
+  --color-sb-muted: #5c5751;
+  --color-sb-cream: #e7ecf2; /* the Programme stone: light grounds, notices, mats (cool, never cream) */
+  --color-sb-blue-ink: #1f2bd8; /* cobalt: inline links, Join, focus rings */
+  --color-sb-danger: #93313a; /* wine */
+  /* Accents */
+  --color-sb-tomato: #ea5a2c;
+  --color-sb-sky: #4fa6de;
+  --color-sb-blush: #f6cad5;
+  --color-sb-butter: #faf3bf;
+  --color-sb-lime: #d5f57b;
+  --color-sb-cobalt: #1f2bd8;
+  --color-sb-khaki: #c3bfa5;
+  --color-sb-slate: #86809a;
+  --color-sb-wine: #93313a;
+  --color-sb-sage: #3f8d72;
+  --color-sb-lilac: #e2c8e8;
+  --color-sb-grey: #e1e5ea;
+  --color-sb-stone-rule: #c8d0da;
+  --color-sb-stone-shelf: #dce3ea;
+  --color-sb-hairline: #d9d9d9;
+  --color-sb-card-ground: #acacae;
+  /* Constellation bands (band-red lightened from #e8332c so ink passes AA) */
+  --color-sb-band-lime: #63d873;
+  --color-sb-band-purple: #a685e2;
+  --color-sb-band-red: #ec4a43;
+  --color-sb-band-butter: #f8de6e;
+  --color-sb-band-grey: #cbc7c6;
+  /* Map and event kinds */
+  --color-sb-map-water: #8ec6ea;
+  --color-sb-map-peach: #f4b08f;
+  --color-sb-map-park: #63b39a;
+  --color-sb-ev-green: #4fcf6a;
+  --color-sb-ev-mint: #bfe8c6;
+  --color-sb-ev-sea: #8fdcae;
+  --color-sb-ev-peri: #d3dcf8;
+  --color-sb-ev-sky: #cfe6f7;
+  --color-sb-ev-violet: #8b7fd9;
 }
 
 html:has(.sb-home) { scroll-behavior: smooth; }

@@ -93,7 +93,7 @@ function AboutPage() {
           </ol>
         </section>
 
-        <Scallop from="#fcfcfa" to="#edd22e" />
+        <Scallop from="#fcfcfa" to="#faf3bf" />
         <section className="twc-band twc-band--sun">
           <div className="twc-wrap flex flex-col gap-11">
             <div className="flex flex-col items-center gap-2 text-center">
@@ -110,7 +110,7 @@ function AboutPage() {
             </div>
           </div>
         </section>
-        <Scallop from="#edd22e" to="#0b0b0a" />
+        <Scallop from="#faf3bf" to="#111111" />
 
         <section aria-labelledby="founder-title" className="twc-band twc-band--night">
           <div className="twc-wrap flex flex-wrap items-center gap-[72px] max-md:gap-12">
@@ -123,7 +123,7 @@ function AboutPage() {
             <div className="flex min-w-0 flex-[1_1_420px] flex-col items-start gap-[18px]">
               <p className="twc-eyebrow text-sb-paper/60">Founder</p>
               <h2 id="founder-title" className="twc-display md:text-[74px]">
-                Meet Nataša <span className="font-script text-[0.7em] leading-none tracking-normal text-sb-sun">(hi!)</span>
+                Meet Nataša <span className="font-script text-[0.7em] leading-none tracking-normal text-sb-butter">(hi!)</span>
               </h2>
               <p className="max-w-[560px] text-[17px] leading-[1.65] text-sb-paper/75">Nataša is a New York–based architectural and interior designer whose work brings European sensibility together with New York pragmatism. Educated at the University of Florence, she founded her Greenpoint studio around thoughtful spaces, trusted collaboration, and enduring relationships.</p>
               <a className="twc-btn twc-btn--sun mt-1.5" href="https://natasatuohy.com/about/" target="_blank" rel="noreferrer">
@@ -132,7 +132,7 @@ function AboutPage() {
             </div>
           </div>
         </section>
-        <Scallop from="#0b0b0a" to="#fcfcfa" />
+        <Scallop from="#111111" to="#fcfcfa" />
 
         <section className="twc-wrap flex flex-wrap items-end justify-between gap-8 pb-12 pt-[88px]">
           <div className="flex min-w-0 flex-[1_1_520px] flex-col gap-3">
@@ -147,11 +147,11 @@ function AboutPage() {
         </section>
 
         <section className="twc-wrap pb-[104px] pt-12">
-          <div className="twc-ticket bg-[linear-gradient(160deg,#16213f_0%,#0b0b0a_100%)]">
+          <div className="twc-ticket bg-[linear-gradient(160deg,#16213f_0%,#111111_100%)]">
             <div className="twc-ticket__main">
               <p className="twc-eyebrow-script">psst — there’s a seat for you</p>
               <h2 className="twc-display">There is room in this constellation.</h2>
-              <span aria-hidden className="font-script text-[30px] leading-[1.3] text-sb-sun">← that’s you</span>
+              <span aria-hidden className="font-script text-[30px] leading-[1.3] text-sb-butter">← that’s you</span>
             </div>
             <div className="twc-ticket__stub">
               <div className="twc-ticket__meta"><span>Admit one</span><span>Nº 0001 — New York</span></div>

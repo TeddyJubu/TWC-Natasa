@@ -48,7 +48,7 @@ function Confirmed() {
   const declined = viewer.data?.declined === true;
   return (
     <div className={cn(authCard, "items-center text-center")}>
-      <span aria-hidden className="grid size-20 place-items-center rounded-full bg-sb-sun">
+      <span aria-hidden className="grid size-20 place-items-center rounded-full bg-sb-butter">
         <ConstellationLogo variant="ink" alt="" sizes="44px" className="w-11" />
       </span>
       <div className="flex flex-col items-center gap-2.5">

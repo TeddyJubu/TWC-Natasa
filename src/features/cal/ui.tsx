@@ -11,11 +11,11 @@ export type StatusKind = "cancelled" | "ended" | "full" | "hidden" | "scheduled"
 const STATUS: Record<StatusKind, { label: string; className: string }> = {
   cancelled: { label: "Cancelled", className: "bg-sb-ink text-sb-paper" },
   ended: { label: "Ended", className: "twc-chip--ring" },
-  full: { label: "Full", className: "bg-sb-sun text-sb-ink" },
+  full: { label: "Full", className: "bg-sb-butter text-sb-ink" },
   hidden: { label: "Unlisted", className: "twc-chip--ring" },
   scheduled: { label: "Scheduled", className: "twc-chip--ring" },
   accepted: { label: "Confirmed", className: "bg-sb-ink text-sb-paper" },
-  pending: { label: "Awaiting confirmation", className: "bg-sb-sun text-sb-ink" },
+  pending: { label: "Awaiting confirmation", className: "bg-sb-butter text-sb-ink" },
   rejected: { label: "Declined", className: "twc-chip--ring" },
 };
 

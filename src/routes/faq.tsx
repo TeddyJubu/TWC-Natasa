@@ -134,7 +134,7 @@ function FaqPage() {
         </section>
 
         <section className="twc-wrap pb-[104px]">
-          <div className="twc-ticket bg-[linear-gradient(160deg,#16213f_0%,#0b0b0a_100%)]">
+          <div className="twc-ticket bg-[linear-gradient(160deg,#16213f_0%,#111111_100%)]">
             <div className="twc-ticket__main">
               <p className="twc-eyebrow-script">ask us directly</p>
               <h2 className="twc-display md:text-[72px]">Still wondering?</h2>

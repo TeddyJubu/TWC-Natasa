@@ -111,7 +111,7 @@ function DateTile({ event, className }: { event: CalEvent; className?: string })
   const at = Date.parse(event.startTime);
   const part = (options: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat(locale, { timeZone: event.timeZone, ...options }).format(at);
   return (
-    <div aria-hidden className={cn("flex flex-col items-center justify-center gap-1 bg-sb-sun text-center text-sb-ink", className)}>
+    <div aria-hidden className={cn("flex flex-col items-center justify-center gap-1 bg-sb-butter text-center text-sb-ink", className)}>
       <span className="font-fragment text-xs tracking-[2px] uppercase">{part({ month: "short" })}</span>
       <span className="font-display text-[40px] leading-none">{part({ day: "numeric" })}</span>
     </div>

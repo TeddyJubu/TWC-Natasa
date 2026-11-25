@@ -135,7 +135,7 @@ function Received({ onReset }: { onReset?: () => void }) {
   // The long form is gone, so move focus to the confirmation instead of leaving it on a removed button.
   React.useEffect(() => panel.current?.focus(), []);
   return (
-    <div ref={panel} tabIndex={-1} role="status" className="motion-panel-in scroll-mt-28 flex flex-col items-center gap-4 rounded-[6px] bg-sb-sun px-6 py-16 text-center outline-none sm:px-8">
+    <div ref={panel} tabIndex={-1} role="status" className="motion-panel-in scroll-mt-28 flex flex-col items-center gap-4 rounded-[6px] bg-sb-butter px-6 py-16 text-center outline-none sm:px-8">
       <span className="twc-ticket__meta">{t("Application received")}</span>
       <p aria-hidden className="inline-flex items-center gap-2 font-script text-[36px] leading-[1.1]">thank you <Icon name="sparkle" className="size-6" /></p>
       <h2 className="twc-h3">{t("Thank you for introducing yourself.")}</h2>

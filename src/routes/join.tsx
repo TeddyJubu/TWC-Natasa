@@ -57,7 +57,7 @@ function JoinPage() {
       <AppNav bare />
       <FormCopyProvider copy={state.copy}>
       <main id="main" tabIndex={-1} className="twc-wrap flex max-w-[960px] flex-col gap-8 pb-[104px] pt-14 outline-none">
-        <div className="twc-ticket bg-[linear-gradient(160deg,#16213f_0%,#0b0b0a_100%)]">
+        <div className="twc-ticket bg-[linear-gradient(160deg,#16213f_0%,#111111_100%)]">
           <div className="twc-ticket__main grow-[4] basis-[480px]">
             <p className="twc-eyebrow-script">{t("psst — there’s a seat for you")}</p>
             <span className="twc-eyebrow text-sb-paper/70">{t("Membership application")}</span>
@@ -66,7 +66,7 @@ function JoinPage() {
           </div>
           <div className="twc-ticket__stub grow basis-[280px]">
             <div className="twc-ticket__meta"><span>Admit one</span><span>New member</span></div>
-            <span aria-hidden className="font-script text-[28px] leading-[1.3] text-sb-sun">← that’s you</span>
+            <span aria-hidden className="font-script text-[28px] leading-[1.3] text-sb-butter">← that’s you</span>
           </div>
         </div>
         {area ? (

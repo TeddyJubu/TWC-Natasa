@@ -121,7 +121,7 @@ function GatheringsPage() {
           {list.isFetchNextPageError && <ErrorBanner message="We couldn’t load more events." onRetry={() => void list.fetchNextPage()} />}
         </section>
 
-        <Scallop from="#fcfcfa" to="#edd22e" />
+        <Scallop from="#fcfcfa" to="#faf3bf" />
         <section aria-labelledby="host" className="twc-band twc-band--sun pt-18 pb-26">
           <div className="twc-wrap flex max-w-190 flex-col items-center gap-4.5 text-center">
             <h2 id="host" className="twc-h3">Want to host one?</h2>
@@ -131,7 +131,7 @@ function GatheringsPage() {
             <Link to="/contact" className="twc-btn mt-2">Pitch an event <span className="twc-arrow" aria-hidden>→</span></Link>
           </div>
         </section>
-        <Scallop from="#edd22e" to="#fcfcfa" />
+        <Scallop from="#faf3bf" to="#fcfcfa" />
         <div className="h-12" />
       </main>
       <AppFooter />

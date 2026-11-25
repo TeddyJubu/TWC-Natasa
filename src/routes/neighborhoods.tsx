@@ -40,7 +40,7 @@ function NeighborhoodsPage() {
     <AppPage>
       <AppNav />
       <main id="main" tabIndex={-1} className="outline-none">
-        <Scallop from="#fcfcfa" to="#edd22e" />
+        <Scallop from="#fcfcfa" to="#faf3bf" />
         <section className="twc-band twc-band--sun pb-24 pt-16">
           <div className="twc-wrap flex max-w-[860px] flex-col items-center gap-[18px] text-center">
             <span className="grid size-[110px] place-items-center rounded-full bg-sb-paper p-6">
@@ -53,7 +53,7 @@ function NeighborhoodsPage() {
             </p>
           </div>
         </section>
-        <Scallop from="#edd22e" to="#fcfcfa" />
+        <Scallop from="#faf3bf" to="#fcfcfa" />
 
         <section aria-label="All neighborhoods" className="twc-wrap flex flex-col gap-6 pb-[88px] pt-[72px]">
           {hoods.length > 0 && (

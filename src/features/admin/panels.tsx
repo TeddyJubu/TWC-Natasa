@@ -1814,10 +1814,10 @@ type TileData = { figure: number | null; unit: string; waiting?: string | null; 
  * @theme inline. Muted text stays 5.2:1 or better on every one.
  */
 const TINT = {
-  mustard: "[--bl-app:color-mix(in_srgb,var(--color-sb-mustard)_18%,var(--color-air-paper))]",
-  rose: "[--bl-app:color-mix(in_srgb,var(--color-sb-rose)_25%,var(--color-air-paper))]",
+  mustard: "[--bl-app:color-mix(in_srgb,var(--color-sb-band-butter)_18%,var(--color-air-paper))]",
+  rose: "[--bl-app:color-mix(in_srgb,var(--color-sb-blush)_25%,var(--color-air-paper))]",
   lilac: "[--bl-app:color-mix(in_srgb,var(--color-sb-lilac)_25%,var(--color-air-paper))]",
-  mint: "[--bl-app:color-mix(in_srgb,var(--color-sb-mint)_25%,var(--color-air-paper))]",
+  mint: "[--bl-app:color-mix(in_srgb,var(--color-sb-lime)_25%,var(--color-air-paper))]",
 } as const;
 const TILE_TINT: Partial<Record<AdminSection, keyof typeof TINT>> = { inbox: "lilac", applications: "rose", reviews: "mint", bookings: "mustard" };
 

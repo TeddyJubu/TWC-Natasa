@@ -13,7 +13,6 @@ import gathering from "@/assets/photography/event.jpg";
 import { eventPolaroidSizes, eventSizes, eventSrcSet, heroRockSizes, heroRockSrcSet } from "@/app/responsive-images";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import { Icon, JoinButton, Scallop } from "@/app/layout/twc";
-import caveatUrl from "@/assets/fonts/home/caveat-400.woff2?url";
 import { jsonLdScript, organizationLd, parseSiteUrl } from "@/app/seo";
 
 export const Route = createFileRoute("/")({
@@ -35,7 +34,6 @@ export const Route = createFileRoute("/")({
         { property: "og:type", content: "website" },
         { name: "twitter:card", content: "summary_large_image" },
       ],
-      links: [{ rel: "preload", href: caveatUrl, as: "font", type: "font/woff2", crossOrigin: "anonymous" }],
       scripts,
     };
   },
@@ -60,9 +58,9 @@ const ROLES = [
 ];
 // White, not paper, on olive and terracotta: paper is 4.4:1 there, under AA for body text.
 const BRICKS = [
-  { title: "Share what you do", text: "Introduce your business, work, or project and help neighbors understand what you bring.", tone: "bg-sb-mustard text-sb-ink" },
-  { title: "Find collaborators", text: "Build partnerships, exchange referrals, and discover opportunities through people nearby.", tone: "bg-sb-rose text-sb-ink" },
-  { title: "Show up locally", text: "Promote women-owned businesses and learn about events and meetups close to home.", tone: "bg-sb-terracotta text-white" },
+  { title: "Share what you do", text: "Introduce your business, work, or project and help neighbors understand what you bring.", tone: "bg-sb-band-butter text-sb-ink" },
+  { title: "Find collaborators", text: "Build partnerships, exchange referrals, and discover opportunities through people nearby.", tone: "bg-sb-blush text-sb-ink" },
+  { title: "Show up locally", text: "Promote women-owned businesses and learn about events and meetups close to home.", tone: "bg-sb-tomato text-sb-ink" },
 ];
 
 // Three on the homepage; the rest live on /faq. "Which neighborhoods" is left out: the ribbon and the colour row answer it.
@@ -86,7 +84,7 @@ const liftNight = "shadow-[0_14px_30px_rgb(0_0_0/0.4)]";
 const tape = "absolute h-7 w-[110px] bg-sb-cream/85 shadow-[0_1px_2px_rgb(17_17_17/0.12)]";
 
 const delay = (ms: number) => ({ "--d": `${ms}ms` }) as CSSProperties;
-const pill = "sb-pill inline-flex items-center gap-2 whitespace-nowrap rounded-full font-sans font-semibold uppercase tracking-[0.08em] outline-none focus-visible:ring-2 focus-visible:ring-sb-blue focus-visible:ring-offset-2";
+const pill = "sb-pill inline-flex items-center gap-2 whitespace-nowrap rounded-full font-sans font-semibold uppercase tracking-[0.08em] outline-none focus-visible:ring-2 focus-visible:ring-sb-sky focus-visible:ring-offset-2";
 const inkPill = cn(pill, "bg-sb-ink px-6 py-3.5 text-[13px] text-sb-paper hover:bg-black lg:text-sm");
 const moreLink = "group inline-flex w-fit items-center gap-2.5 font-sans text-sm font-semibold uppercase tracking-[0.08em] text-sb-blue-ink outline-none focus-visible:underline";
 
@@ -135,11 +133,11 @@ function HomePage() {
         <Ribbons />
         <WhoYoullMeet />
         <Bricklayer />
-        <Scallop from="#f3f0e8" to="#edd22e" />
+        <Scallop from="#f3f0e8" to="#faf3bf" />
         <Constellation />
-        <Scallop from="#edd22e" to="#0b0b0a" />
+        <Scallop from="#faf3bf" to="#111111" />
         <Founder />
-        <Scallop from="#0b0b0a" to="#fcfcfa" />
+        <Scallop from="#111111" to="#fcfcfa" />
         <Membership />
         <Faq />
       </main>
@@ -192,7 +190,7 @@ function Hero() {
         </p>
         <div className="flex flex-col lg:contents">
           <JoinButton className="sb-rise shrink-0 self-start" style={delay(HERO_BEATS.cta)} />
-          <p aria-hidden className="sb-write mr-4 mt-1 -rotate-6 self-end whitespace-nowrap font-script text-[28px] leading-[27px] text-sb-blue lg:mr-6 lg:mt-0 lg:self-auto lg:text-4xl lg:leading-[34px]" style={delay(HERO_BEATS.note)}>
+          <p aria-hidden className="sb-write mr-4 mt-1 -rotate-6 self-end whitespace-nowrap font-script text-[28px] leading-[27px] text-sb-sky lg:mr-6 lg:mt-0 lg:self-auto lg:text-4xl lg:leading-[34px]" style={delay(HERO_BEATS.note)}>
             &amp; help someone<br />else shine ↓
           </p>
         </div>
@@ -203,17 +201,17 @@ function Hero() {
 
 // Across Newtown Creek from Long Island City, north to south.
 const NORTH_BROOKLYN = [
-  { name: "Greenpoint", tone: "bg-sb-olive text-sb-paper" },
-  { name: "Williamsburg", tone: "bg-sb-rose text-sb-ink" },
-  { name: "East Williamsburg", tone: "bg-sb-shell text-sb-ink" },
-  { name: "Bushwick", tone: "bg-sb-terracotta text-sb-paper" },
+  { name: "Greenpoint", tone: "bg-sb-sage text-sb-ink" },
+  { name: "Williamsburg", tone: "bg-sb-blush text-sb-ink" },
+  { name: "East Williamsburg", tone: "bg-sb-grey text-sb-ink" },
+  { name: "Bushwick", tone: "bg-sb-tomato text-sb-ink" },
 ];
 
 function NorthBrooklyn() {
   return (
     // The scallops sit inside the section so it stays the hero's next sibling.
-    <section aria-labelledby="brooklyn-title" className="bg-sb-mustard">
-      <Scallop from="#fcfcfa" to="#d9ae5c" />
+    <section aria-labelledby="brooklyn-title" className="bg-sb-band-butter">
+      <Scallop from="#fcfcfa" to="#f8de6e" />
       <div className={cn(wrap, band, "grid items-center gap-x-16 gap-y-12 lg:grid-cols-[1.2fr_1fr] xl:gap-x-24")}>
         <div className="flex flex-col gap-6 px-2 lg:px-4">
           <div className={cn("relative -rotate-2 bg-sb-paper p-3.5 pb-[18px]", lift)}>
@@ -221,9 +219,9 @@ function NorthBrooklyn() {
             <span aria-hidden className={cn(tape, "-top-2.5 right-[13%] rotate-5")} />
             <svg viewBox="0 0 640 460" role="img" aria-label="Hand-drawn map: Greenpoint, Williamsburg, East Williamsburg and Bushwick across Newtown Creek from Long Island City, with Nataša’s studio marked in Greenpoint" className="block h-auto w-full">
               <rect width="640" height="460" className="fill-sb-paper" />
-              <path d="M0 0 L168 0 C178 40 196 80 190 118 C184 160 168 200 178 246 C188 300 218 360 250 460 L0 460 Z" className="fill-sb-mint" />
-              <path d="M184 112 C230 122 280 132 330 128 C380 124 412 108 444 128 C478 150 500 182 540 196 C572 208 610 206 640 214" fill="none" strokeWidth="16" strokeLinecap="round" className="stroke-sb-mint" />
-              <path d="M196 138 C240 146 290 152 330 148 C372 144 410 130 440 148 C470 166 494 196 534 214 C570 230 596 262 606 300 C616 344 604 392 588 430 L420 444 C360 446 300 438 262 420 C238 380 214 330 200 280 C190 236 192 190 196 138 Z" fillOpacity=".55" strokeWidth="2.5" strokeLinejoin="round" className="fill-sb-sun stroke-sb-ink" />
+              <path d="M0 0 L168 0 C178 40 196 80 190 118 C184 160 168 200 178 246 C188 300 218 360 250 460 L0 460 Z" className="fill-sb-lime" />
+              <path d="M184 112 C230 122 280 132 330 128 C380 124 412 108 444 128 C478 150 500 182 540 196 C572 208 610 206 640 214" fill="none" strokeWidth="16" strokeLinecap="round" className="stroke-sb-lime" />
+              <path d="M196 138 C240 146 290 152 330 148 C372 144 410 130 440 148 C470 166 494 196 534 214 C570 230 596 262 606 300 C616 344 604 392 588 430 L420 444 C360 446 300 438 262 420 C238 380 214 330 200 280 C190 236 192 190 196 138 Z" fillOpacity=".55" strokeWidth="2.5" strokeLinejoin="round" className="fill-sb-butter stroke-sb-ink" />
               <g fill="none" strokeWidth="1.5" strokeDasharray="6 6" opacity=".6" className="stroke-sb-ink">
                 <path d="M196 226 C260 232 330 228 410 214 C440 208 470 200 500 196" />
                 <path d="M330 228 C344 290 352 360 360 442" />
@@ -238,7 +236,7 @@ function NorthBrooklyn() {
                 <text x="24" y="210" fontSize="22" className="fill-sb-blue-ink">East River</text>
               </g>
               <circle cx="238" cy="58" r="6" className="fill-lic" />
-              <text x="296" y="176" fontSize="28" className="fill-sb-blue font-script">✶</text>
+              <text x="296" y="176" fontSize="28" className="fill-sb-sky font-script">✶</text>
             </svg>
           </div>
           <p className="-rotate-2 font-script text-[22px] leading-[1.15] lg:text-[28px]">✶ Nataša’s studio, Greenpoint</p>
@@ -265,7 +263,7 @@ function NorthBrooklyn() {
           </Link>
         </div>
       </div>
-      <Scallop from="#d9ae5c" to="#fcfcfa" />
+      <Scallop from="#f8de6e" to="#fcfcfa" />
     </section>
   );
 }
@@ -287,18 +285,18 @@ function Ribbons() {
         <Icon name={paused ? "play" : "pause"} className="size-3.5" />
       </button>
       <p className="sr-only">Across {unique.join(", ")}.</p>
-      <Ribbon items={Array.from({ length: 10 }, () => "Find your people")} className="top-[62px] rotate-[2.5deg] bg-sb-mint lg:top-10" />
+      <Ribbon items={Array.from({ length: 10 }, () => "Find your people")} className="top-[62px] rotate-[2.5deg] bg-sb-lime lg:top-10" />
       <Ribbon items={names} className="top-6 z-10 -rotate-3 bg-sb-lilac lg:top-28" reverse />
     </section>
   );
 }
 
-const role = "inline-block transition-[color,rotate,translate] duration-300 ease-[var(--ease-snap)] hover:-translate-y-1 hover:-rotate-2 hover:text-sb-blue";
+const role = "inline-block transition-[color,rotate,translate] duration-300 ease-[var(--ease-snap)] hover:-translate-y-1 hover:-rotate-2 hover:text-sb-sky";
 
 function WhoYoullMeet() {
   return (
     <section id="mission" aria-labelledby="meet-title" className={cn(wrap, "flex scroll-mt-20 flex-col items-center gap-3 pb-[72px] pt-14 text-center lg:gap-5 lg:pb-28 lg:pt-24")}>
-      <h2 id="meet-title" className="motion-scroll-reveal font-script text-[clamp(3.625rem,8.4vw,7.5rem)] leading-none text-sb-blue text-balance">
+      <h2 id="meet-title" className="motion-scroll-reveal font-script text-[clamp(3.625rem,8.4vw,7.5rem)] leading-none text-sb-sky text-balance">
         who you’ll meet here
       </h2>
       <ul className="flex flex-col items-center font-display text-[clamp(1.875rem,4.7vw,4.25rem)] font-extrabold font-stretch-condensed leading-[1.04] tracking-[-0.01em]">
@@ -358,9 +356,9 @@ function Bricklayer() {
     // Rows use min-heights, never fixed ones, so copy can't spill out of a brick at in-between widths.
     <section id="take-part" aria-labelledby="bricks-title" className="scroll-mt-20 bg-sb-cream">
       <div className="mx-auto grid max-w-[1440px] gap-2 p-2 md:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr]">
-        <div className="sb-stamp flex flex-col justify-between gap-12 bg-sb-olive px-7 pb-8 pt-9 text-white md:col-span-2 lg:col-span-1 lg:row-span-2 lg:px-10 lg:py-12">
+        <div className="sb-stamp flex flex-col justify-between gap-12 bg-sb-sage px-7 pb-8 pt-9 text-sb-ink md:col-span-2 lg:col-span-1 lg:row-span-2 lg:px-10 lg:py-12">
           <h2 id="bricks-title" className="font-display text-[clamp(2.25rem,3.3vw,3.125rem)] leading-[1.06] tracking-[0.3px] text-balance">Connections that move work forward.</h2>
-          <p className="max-w-[34ch] font-sans text-[17px] leading-[26px] text-white">Not networking for networking’s sake. This is a place to build genuine relationships and support women-owned work.</p>
+          <p className="max-w-[34ch] font-sans text-[17px] leading-[26px] text-sb-ink">Not networking for networking’s sake. This is a place to build genuine relationships and support women-owned work.</p>
         </div>
         <Brick {...share} />
         <div className="sb-stamp group h-[230px] overflow-hidden md:h-auto">
@@ -376,7 +374,7 @@ function Bricklayer() {
 function Constellation() {
   const hoods = useNeighborhoods().data.filter((n) => n.active);
   return (
-    <section id="constellation" aria-labelledby="constellation-title" className="scroll-mt-20 bg-sb-sun">
+    <section id="constellation" aria-labelledby="constellation-title" className="scroll-mt-20 bg-sb-butter">
       <div className={cn(wrap, "grid grid-cols-2 items-center gap-x-4 gap-y-10 pb-[72px] pt-14 lg:grid-cols-[260px_1fr_260px] lg:gap-x-10 lg:gap-y-16 lg:pb-28 lg:pt-20 xl:grid-cols-[300px_1fr_300px] min-[1440px]:grid-cols-[340px_1fr_340px]")}>
         <div className="group h-[250px] w-full max-w-[340px] justify-self-center overflow-hidden rounded-[170px_170px_8px_8px] sm:h-[380px] lg:h-[460px]">
           <img src={balconyFriends} alt="Two friends leaning on a balcony railing, faces turned to the sky" loading="lazy" className="size-full object-cover transition-[scale] duration-700 ease-[var(--ease-gentle)] group-hover:scale-105" />
@@ -417,7 +415,7 @@ function Constellation() {
 
 function Founder() {
   return (
-    <section aria-labelledby="founder-title" className="bg-sb-night text-sb-paper">
+    <section aria-labelledby="founder-title" className="bg-sb-ink text-sb-paper">
       <div className={cn(wrap, band, "flex flex-col items-center gap-10 lg:flex-row lg:gap-14 xl:gap-24")}>
         {/* The frame's ratio is the stack's own, so the band closes right under the photos. */}
         <div className="relative aspect-[6/5] w-full max-w-[350px] shrink-0 lg:max-w-[440px] xl:max-w-[540px]">
@@ -445,12 +443,12 @@ function Founder() {
         <div className="flex w-full flex-col gap-5 lg:flex-1 lg:gap-6">
           <div className="flex items-end gap-2.5 lg:gap-[18px]">
             <h2 id="founder-title" className="motion-scroll-reveal whitespace-nowrap font-display text-[clamp(3.125rem,5.8vw,5.25rem)] leading-none">Meet Nataša</h2>
-            <span aria-hidden className="mb-[0.4em] inline-block rotate-6 font-script text-[32px] leading-none text-sb-sun transition-[rotate,scale] duration-300 hover:-rotate-6 hover:scale-110 lg:text-[52px]">(hi!)</span>
+            <span aria-hidden className="mb-[0.4em] inline-block rotate-6 font-script text-[32px] leading-none text-sb-butter transition-[rotate,scale] duration-300 hover:-rotate-6 hover:scale-110 lg:text-[52px]">(hi!)</span>
           </div>
           <p className="motion-scroll-reveal max-w-[560px] font-sans text-[17px] leading-7 text-sb-paper/75">
             Nataša Tuohy is a New York–based architectural and interior designer whose work brings European sensibility together with New York pragmatism. Educated at the University of Florence, she founded her Greenpoint studio around thoughtful spaces, trusted collaboration, and enduring relationships.
           </p>
-          <a href="https://natasatuohy.com/about/" target="_blank" rel="noreferrer" className={cn(pill, "mt-1 w-fit bg-sb-sun px-6 py-3.5 text-sm text-sb-ink hover:bg-[#f5dc3c] focus-visible:ring-offset-sb-night")}>
+          <a href="https://natasatuohy.com/about/" target="_blank" rel="noreferrer" className={cn(pill, "mt-1 w-fit bg-sb-butter px-6 py-3.5 text-sm text-sb-ink hover:bg-[#f5dc3c] focus-visible:ring-offset-sb-ink")}>
             Visit Nataša’s studio <Icon name="arrowUp" className="sb-arrow sb-arrow-up size-4" />
             <span className="sr-only">(opens in a new tab)</span>
           </a>
@@ -462,8 +460,8 @@ function Founder() {
 
 function YourStar({ className }: { className?: string }) {
   return (
-    <span aria-hidden className={cn("items-center gap-2.5 font-script text-2xl tracking-normal text-sb-sun lg:text-[30px]", className)}>
-      <span className="sb-twinkle inline-block size-6 shrink-0 rounded-full border-[1.5px] border-sb-sun lg:size-7" />
+    <span aria-hidden className={cn("items-center gap-2.5 font-script text-2xl tracking-normal text-sb-butter lg:text-[30px]", className)}>
+      <span className="sb-twinkle inline-block size-6 shrink-0 rounded-full border-[1.5px] border-sb-butter lg:size-7" />
       <span className="inline-block rotate-3 whitespace-nowrap">← that’s you</span>
     </span>
   );
@@ -479,7 +477,7 @@ function Membership() {
           <div aria-hidden className="absolute inset-0 bg-linear-to-b from-[#0A0F2E33] to-[#0A0F2EB8] lg:bg-linear-to-r" />
 
           <div className="relative flex flex-1 flex-col justify-center gap-2 px-6 pb-9 pt-11 lg:gap-3 lg:py-[72px] lg:pl-16 lg:pr-14">
-            <p className="motion-scroll-reveal origin-left rotate-3 font-script text-[28px] text-sb-sun lg:text-4xl">psst — there’s a seat for you</p>
+            <p className="motion-scroll-reveal origin-left rotate-3 font-script text-[28px] text-sb-butter lg:text-4xl">psst — there’s a seat for you</p>
             <h2 id="apply-title" className="motion-scroll-reveal font-display text-[clamp(2.875rem,6.1vw,5.5rem)] leading-[1.03] tracking-[-0.02em]">
               There is room in this constellation.{" "}
               <YourStar className="relative top-[-0.15em] hidden align-middle sm:inline-flex" />
@@ -513,7 +511,7 @@ function Faq() {
   return (
     <section id="faq" aria-labelledby="faq-title" className={cn(wrap, "flex scroll-mt-20 flex-col gap-9 pb-20 lg:flex-row lg:gap-24 lg:pb-32")}>
       <div className="flex flex-col gap-2.5 lg:w-[380px] lg:shrink-0 lg:gap-3.5">
-        <span className={cn(script, "text-sb-blue")}>come as you are</span>
+        <span className={cn(script, "text-sb-sky")}>come as you are</span>
         <h2 id="faq-title" className="font-display text-[42px] leading-[1.03] tracking-[-1px] lg:text-[64px]">Questions, answered.</h2>
         <div className="flex flex-col gap-[18px] pt-3.5">
           <p className="font-sans text-[17px] leading-[1.6] text-sb-muted">Still wondering about something? Send us a note — a real person reads every one.</p>
@@ -525,8 +523,8 @@ function Faq() {
 
       <div className="flex flex-1 flex-col">
         {FAQ.map((item, i) => (
-          <details key={item.q} name="faq" open={i === 0} className="sb-faq group rounded-md border-b border-sb-ink/15 transition-[background-color,border-color] duration-500 open:border-transparent open:bg-sb-mint">
-            <summary className="flex cursor-pointer items-center gap-4 rounded-md px-4 py-5 outline-none focus-visible:ring-2 focus-visible:ring-sb-blue lg:px-8 lg:py-[26px]">
+          <details key={item.q} name="faq" open={i === 0} className="sb-faq group rounded-md border-b border-sb-ink/15 transition-[background-color,border-color] duration-500 open:border-transparent open:bg-sb-lime">
+            <summary className="flex cursor-pointer items-center gap-4 rounded-md px-4 py-5 outline-none focus-visible:ring-2 focus-visible:ring-sb-sky lg:px-8 lg:py-[26px]">
               <span className="flex-1 font-display text-[19px] font-bold font-stretch-semi-condensed leading-[23px] transition-[translate] duration-300 group-hover:translate-x-1 lg:text-[26px] lg:leading-tight">{item.q}</span>
               <span className="sb-toggle grid size-9 shrink-0 place-items-center rounded-full bg-sb-paper ring-1 ring-sb-ink/25 group-open:bg-sb-ink group-open:text-sb-paper group-open:ring-0 lg:size-11">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" aria-hidden className="size-[18px]">
