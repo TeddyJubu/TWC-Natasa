@@ -1,4 +1,4 @@
-// The admin side of Cal, on the airmail kit. Every call is checked again by requireAdmin in cal.server.ts.
+// The admin side of Cal, on the internal kit (twc-app.css). Every call is checked again by requireAdmin in cal.server.ts.
 import * as React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";

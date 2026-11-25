@@ -9,7 +9,7 @@ const storageKey = (userId: string) => `twc-youre-in:v1:${userId}`;
 /**
  * One-time welcome after approval: concrete next steps (portrait, polish the draft, turn on visibility).
  * Dismiss is per account in localStorage so a shared browser doesn't hide it for someone else.
- * Unnumbered on purpose — it sits above the account letters and must not steal their Nº 01.
+ * Unnumbered on purpose — it sits above the account sections and must not steal their 01.
  */
 export function YoureIn({ userId }: { userId: string }) {
   const key = storageKey(userId);
