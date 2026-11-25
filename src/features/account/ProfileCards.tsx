@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ConstellationLogo, cn, formatCatalogueNumber, SelectControl } from "@/index";
+import { cn, formatCatalogueNumber, SelectControl } from "@/index";
 import type { Neighborhood } from "@/features/neighborhoods/queries";
 import { pickerNames } from "@/features/neighborhoods/options";
 import type { Profile } from "@/features/members/queries";
@@ -115,8 +115,8 @@ function LogoRow({ userId, path, url, business }: { userId: string; path: string
   );
 }
 
-/** Bio and who she'd like to meet, as a letter on ruled paper. */
-export function WordsCard({ editor, catalogueNumber }: { editor: ProfileEditor; catalogueNumber: number | null }) {
+/** Bio and who she'd like to meet: her words large, the ask beside them. */
+export function WordsCard({ editor }: { editor: ProfileEditor }) {
   const { card, set } = editor;
   const editing = editor.isEditing("words");
   return (
@@ -139,16 +139,6 @@ export function WordsCard({ editor, catalogueNumber }: { editor: ProfileEditor; 
           )}
         </div>
         <div className="air-to">
-          <svg aria-hidden viewBox="0 0 130 40" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" className="air-waves">
-            {[9, 20, 31].map((y) => <path key={y} d={`M2 ${y} q8 -6 16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0`} />)}
-          </svg>
-          <div aria-hidden className="air-mini">
-            <div><div className="air-mini-face">
-              <span>{catalogueNumber !== null ? `${catalogueNumber}¢` : ""}</span>
-              <ConstellationLogo variant="white" alt="" sizes="26px" className="w-6.5" />
-              <b>TWC</b>
-            </div></div>
-          </div>
           {editing ? (
             <>
               <label htmlFor={fieldId("looking_for")} className="air-lbl">Looking to meet</label>
@@ -166,16 +156,13 @@ export function WordsCard({ editor, catalogueNumber }: { editor: ProfileEditor; 
   );
 }
 
-/** Status, catalogue number and member since: read-only, set by admins. The rubber stamp is decoration. */
+/** Status, catalogue number and member since: read-only, set by admins. */
 export function MembershipCard({ profile, children }: { profile: Profile; children?: React.ReactNode }) {
   const approved = profile.status === "approved";
   const declined = profile.status === "declined";
   const since = approved ? monthYear(profile.member_since) : null;
   return (
-    <Letter span={5} no={4} title="Membership" subtitle="Your standing in the collective" className="[&_.air-ch]:pr-28">
-      {approved && (
-        <div aria-hidden className="air-rubber"><b>Approved</b>{since && <small>{since.replace(/^(\w{3})\w*/, "$1")}</small>}</div>
-      )}
+    <Letter span={5} no={4} title="Membership" subtitle="Your standing in the collective">
       <dl className="air-rule">
         <div className="air-catno">
           <dt className="air-lbl">Catalogue number</dt>

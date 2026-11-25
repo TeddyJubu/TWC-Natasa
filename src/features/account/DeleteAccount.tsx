@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/index";
 import { getAuthClient } from "@/app/auth-client";
 import { emitAuthEvent } from "@/app/auth-events";
-import { fieldClass, redButton, secondaryButton } from "@/app/layout/app-classes";
+import { dangerButton, fieldClass, secondaryButton } from "@/app/layout/app-classes";
 import { viewerQuery } from "@/features/members/queries";
 
 // Better Auth's codes (and ours from src/server/auth.server.ts / account-delete.ts) in her words.
@@ -109,7 +109,7 @@ export function DeleteAccount() {
       )}
       {error && <p id="delete-error" role="alert" className="text-sm text-danger">{error}</p>}
       <div className="flex flex-wrap gap-3">
-        <button type="submit" disabled={busy} aria-busy={busy || undefined} className={cn(redButton, "air-btn--sm")}>Delete my account for good</button>
+        <button type="submit" disabled={busy} aria-busy={busy || undefined} className={cn(dangerButton, "air-btn--sm")}>Delete my account for good</button>
         <button type="button" onClick={() => { setConfirming(false); setError(null); }} className={secondaryButton}>Cancel</button>
       </div>
     </form>

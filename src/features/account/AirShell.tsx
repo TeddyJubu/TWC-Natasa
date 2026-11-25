@@ -1,5 +1,6 @@
-// /account's own frame (DESIGN.md "Member profile"): the airmail desk, a top bar whose name and avatar open the account
-// menu (the account sections, plus Admin for admins), and the page. The admin pages keep AppShell's sidebar.
+// The members' frame for /account, /feed and /directory (DESIGN.md "Member profile"): a canvas top bar over a hairline
+// whose name and avatar open the account menu (the account sections, plus Admin for admins), and the page. The admin
+// pages keep AppShell's sidebar.
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
 import { Popover, PopoverContent, PopoverTrigger } from "@ui-sdk/react/popover";
@@ -36,7 +37,7 @@ export function AirShell({ page = "/account", admin, name, avatar, catalogueNumb
             </button>
           </div>
         </header>
-        {error && <p role="alert" className="mt-3 rounded-xl bg-app px-4 py-3 text-sm text-danger">{error}</p>}
+        {error && <p role="alert" className="mt-3 px-4 py-3 text-sm text-danger shadow-[inset_0_0_0_1.5px_currentColor]">{error}</p>}
         {children}
       </div>
     </div>
