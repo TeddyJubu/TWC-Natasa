@@ -1,0 +1,155 @@
+/* The canvas's page sections (docs/design-canvas/, "01 Programme"), ported onto Archivo on white: every face the canvas
+   set in Instrument Serif is Archivo 800 condensed here, serif italics are Archivo italic, and there is no paper grain.
+   Shared by the public pages, the form pages and the signed-in pages; a page's own tweaks go in its area's file
+   (twc-home.css, twc-public.css, twc-forms.css, twc-app.css), never here. Colour fields keep ink text (the canvas rule;
+   white fails AA on sage and tomato). Spec: docs/superpowers/specs/2026-11-26-canvas-design-system-design.md. */
+:root { --twc-gut: 40px; }
+@media (max-width: 1100px) { :root { --twc-gut: 20px; } }
+
+@layer components {
+/* ---- Section frame: a hairline rule over each section, the canvas gutter, a head row ---- */
+.twc-sec { border-top: var(--twc-border-hairline) solid var(--color-sb-ink); padding: var(--twc-space-60) var(--twc-gut); }
+.twc-sec--tight { padding-block: var(--twc-space-40); }
+.twc-shead { display: grid; grid-template-columns: 1fr auto; gap: var(--twc-space-24); align-items: end; margin-bottom: var(--twc-space-40); }
+.twc-phd { border-top: var(--twc-border-hairline) solid var(--color-sb-ink); padding: var(--twc-space-60) var(--twc-gut) var(--twc-space-40); display: grid; grid-template-columns: 1fr auto; gap: var(--twc-space-24); align-items: end; }
+.twc-meta { font-size: 14px; line-height: 1.3; margin: 0; }
+.twc-giant { margin: 18px 0 0; font: 900 clamp(5rem, 15.5vw, 15rem)/0.78 var(--font-display); letter-spacing: -0.055em; }
+.twc-cond { font-family: var(--font-display); font-weight: 800; font-stretch: 62%; text-transform: uppercase; letter-spacing: -0.01em; }
+@media (max-width: 1100px) { .twc-shead, .twc-phd { grid-template-columns: 1fr; } }
+
+/* ---- Constellation band (canvas .twc-band): a coloured tab — number, name, status — that opens onto a white sheet.
+   Markup: <details class="twc-cband twc-c-band-lime"><summary>…no / .name / .st…</summary><div class="twc-cband__more">…
+   Opens on click/Enter (native details); a fine pointer may also preview it on hover. ---- */
+.twc-cbands { border-top: var(--twc-border-hairline) solid var(--color-sb-ink); }
+.twc-cband { position: relative; color: var(--color-sb-ink); box-shadow: var(--twc-shadow-band); border-top: 1px solid var(--color-sb-ink); interpolate-size: allow-keywords; }
+.twc-cband > summary { list-style: none; display: grid; grid-template-columns: 150px 1fr 230px; align-items: start; gap: var(--twc-space-16); min-height: 74px; padding: var(--twc-space-16) var(--twc-gut) 0; cursor: pointer; }
+.twc-cband > summary::-webkit-details-marker { display: none; }
+.twc-cband > summary:focus-visible { outline: 2px solid var(--color-sb-ink); outline-offset: -4px; }
+.twc-cband__no { font-size: 20px; font-weight: 500; white-space: nowrap; }
+.twc-cband__no b { margin-left: 10px; font-weight: 700; font-stretch: 80%; text-transform: uppercase; }
+.twc-cband__name { min-width: 0; overflow: hidden; margin: -4px 0 0; text-align: center; white-space: nowrap; font: 800 clamp(40px, 4.4vw, 68px)/0.84 var(--font-display); font-stretch: 62%; letter-spacing: -0.01em; text-transform: uppercase; }
+.twc-cband__st { text-align: right; font-size: 20px; font-weight: 500; white-space: nowrap; }
+.twc-cband__more { display: grid; grid-template-columns: minmax(0, 380px) 1fr; gap: var(--twc-space-40); margin-top: var(--twc-space-16); padding: var(--twc-space-40) var(--twc-gut) var(--twc-space-60); background: var(--color-sb-paper); border-top: 1px solid var(--color-sb-ink); }
+.twc-cband__more p.body { font-size: 16px; max-width: 34ch; margin: 0 0 var(--twc-space-16); }
+.twc-cband__outline { margin: 0; font: 800 clamp(40px, 5vw, 74px)/0.92 var(--font-display); font-stretch: 62%; text-transform: uppercase; color: transparent; -webkit-text-stroke: 1.4px var(--color-sb-ink); }
+.twc-cband::details-content { block-size: 0; overflow: clip; transition: block-size 0.45s cubic-bezier(0.2, 0.7, 0.2, 1), content-visibility 0.45s allow-discrete; }
+.twc-cband[open]::details-content { block-size: auto; }
+@media (max-width: 1100px) {
+  .twc-cband > summary { grid-template-columns: 1fr auto; padding: 14px var(--twc-gut) 16px; }
+  .twc-cband__no, .twc-cband__st { font-size: 15px; }
+  .twc-cband__name { grid-row: 2; grid-column: 1 / -1; text-align: left; font-size: 46px; margin-top: 8px; white-space: normal; }
+  .twc-cband__more { grid-template-columns: 1fr; gap: 20px; padding: 24px var(--twc-gut) 28px; }
+}
+
+/* Colour fields (any section, tile, card or band): ink text on every one */
+.twc-c-tomato { background: var(--color-sb-tomato); } .twc-c-sky { background: var(--color-sb-sky); }
+.twc-c-blush { background: var(--color-sb-blush); } .twc-c-butter { background: var(--color-sb-butter); }
+.twc-c-lime { background: var(--color-sb-lime); } .twc-c-lilac { background: var(--color-sb-lilac); }
+.twc-c-khaki { background: var(--color-sb-khaki); } .twc-c-sage { background: var(--color-sb-sage); }
+.twc-c-slate { background: var(--color-sb-slate); } .twc-c-grey { background: var(--color-sb-grey); }
+.twc-c-stone { background: var(--color-sb-cream); } .twc-c-white { background: var(--color-sb-paper); }
+.twc-c-band-lime { background: var(--color-sb-band-lime); } .twc-c-band-purple { background: var(--color-sb-band-purple); }
+.twc-c-band-red { background: var(--color-sb-band-red); } .twc-c-band-butter { background: var(--color-sb-band-butter); }
+.twc-c-band-grey { background: var(--color-sb-band-grey); }
+:where([class*="twc-c-"]) { color: var(--color-sb-ink); }
+/* The one dark field: ink ground, paper text */
+.twc-c-ink { background: var(--color-sb-ink); color: var(--color-sb-paper); }
+
+/* ---- Inline headline + tiles (canvas .twc-inline, .twc-grid6, .twc-tile) ---- */
+.twc-inline { margin: 0; padding: var(--twc-space-120) var(--twc-gut) var(--twc-space-60); border-top: var(--twc-border-hairline) solid var(--color-sb-ink); text-align: center; text-transform: uppercase; font: 800 clamp(2.2rem, 4.8vw, 4.6rem)/1.16 var(--font-display); letter-spacing: -0.02em; text-wrap: balance; }
+.twc-inline em { font: italic 400 1.04em/1 var(--font-sans); text-transform: none; letter-spacing: -0.01em; white-space: nowrap; }
+.twc-inline .twc-chipmark { display: inline-block; width: 1.5em; height: 0.78em; margin: 0 0.1em; vertical-align: -0.04em; }
+.twc-grid6 { display: grid; grid-template-columns: repeat(6, 1fr); }
+.twc-tile { aspect-ratio: 3 / 4.1; display: flex; flex-direction: column; justify-content: space-between; padding: var(--twc-space-22) var(--twc-space-18) var(--twc-space-18); text-align: center; text-decoration: none; color: var(--color-sb-ink); }
+.twc-tile .no { font: 500 11px var(--font-plex); letter-spacing: 0.08em; }
+.twc-tile h3 { margin: 8px 0 0; font: 500 22px/1.15 var(--font-sans); }
+.twc-tile .h { margin: 10px 0 0; font: italic 400 17px/1.2 var(--font-sans); }
+.twc-tile .p { margin: 0; font-size: 12px; line-height: 1.35; }
+.twc-tile--photo { position: relative; overflow: hidden; justify-content: flex-end; align-items: flex-start; padding: 14px; }
+.twc-tile--photo > img { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; object-fit: cover; }
+.twc-tile--photo > span { position: relative; z-index: 1; padding: 3px 7px; background: var(--color-sb-paper); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
+@media (max-width: 1100px) { .twc-grid6 { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 600px) { .twc-grid6 { grid-template-columns: repeat(2, 1fr); } }
+
+/* ---- Event rows (canvas .twc-ev): stacked, lifted, gently tilted strips ---- */
+.twc-evs { padding-bottom: var(--twc-space-60); }
+.twc-ev { position: relative; display: grid; grid-template-columns: 1fr 170px 170px 300px; gap: var(--twc-space-24); margin-top: -10px; padding: var(--twc-space-22) var(--twc-gut) 34px; box-shadow: var(--twc-shadow-event); color: var(--color-sb-ink); }
+.twc-ev:first-child { margin-top: 0; }
+.twc-ev:nth-child(odd) { rotate: var(--twc-tilt-odd); }
+.twc-ev:nth-child(even) { rotate: var(--twc-tilt-even); }
+.twc-ev h3 { margin: 0; font: 800 condensed clamp(30px, 3.6vw, 50px)/1.02 var(--font-display); letter-spacing: -0.01em; }
+.twc-ev h3 b { margin-left: 6px; vertical-align: 0.25em; font: 800 0.5em var(--font-sans); letter-spacing: 0.02em; text-transform: uppercase; }
+.twc-ev a { text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 1100px) { .twc-ev { grid-template-columns: 1fr 1fr; } .twc-ev h3 { grid-column: 1 / -1; } }
+@media (max-width: 600px) { .twc-ev { grid-template-columns: 1fr; } }
+
+/* ---- Stepped cards on grey (canvas .twc-cards; the card itself is .twc-card in twc.css) ---- */
+.twc-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--twc-space-28); align-items: start; padding: var(--twc-space-90) var(--twc-gut); background: var(--color-sb-card-ground); color: var(--color-sb-ink); }
+.twc-cards > :nth-child(2) { margin-top: 60px; }
+.twc-cards > :nth-child(3) { margin-top: 120px; }
+.twc-cards .twc-card { box-shadow: none; overflow: hidden; }
+.twc-card__title { margin: 0; font: 800 condensed clamp(46px, 4.4vw, 66px)/0.86 var(--font-display); letter-spacing: -0.03em; text-transform: uppercase; }
+.twc-card--dark { background: var(--color-sb-ink); color: var(--color-sb-paper); }
+@media (max-width: 1100px) { .twc-cards { grid-template-columns: 1fr; } .twc-cards > * { margin-top: 0 !important; } }
+
+/* ---- Arches on a stone shelf (canvas .twc-arches): tiers or pathways, never prices until they are decided ---- */
+.twc-arches { padding: var(--twc-space-60) var(--twc-gut) 0; background: var(--color-sb-cream); border-top: var(--twc-border-hairline) solid var(--color-sb-stone-rule); color: var(--color-sb-ink); }
+.twc-arch-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 46px; padding: 0 20px; border-bottom: var(--twc-border-shelf) solid var(--color-sb-stone-shelf); }
+.twc-arch { position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; min-height: 560px; padding: 190px 30px 40px; text-align: center; border-radius: var(--twc-radius-pill) var(--twc-radius-pill) 0 0; box-shadow: var(--twc-shadow-arch); color: var(--color-sb-ink); }
+.twc-arch__title { position: absolute; top: 92px; left: 0; right: 0; margin: 0; font: italic 800 condensed 52px/1 var(--font-display); letter-spacing: -0.01em; }
+.twc-arch__badge { position: absolute; top: 44px; left: 50%; translate: -50% 0; white-space: nowrap; font: 500 11px var(--font-plex); letter-spacing: 0.08em; text-transform: uppercase; }
+.twc-arch ul { display: grid; gap: var(--twc-space-8); margin: 26px 0 30px; padding: 0; list-style: none; font-size: 14px; line-height: 1.35; }
+.twc-arch .twc-btn { margin-top: auto; }
+@media (max-width: 1100px) { .twc-arch-row { grid-template-columns: 1fr 1fr; gap: 24px; padding: 0; } }
+@media (max-width: 600px) { .twc-arch-row { grid-template-columns: 1fr; } }
+
+/* ---- Panel pair (canvas .twc-duo / .twc-panel) ---- */
+.twc-duo { display: grid; grid-template-columns: 1fr 1fr; }
+.twc-panel { display: flex; flex-direction: column; gap: var(--twc-space-18); min-height: 380px; padding: 70px var(--twc-gut) var(--twc-space-60); color: var(--color-sb-ink); }
+.twc-panel h2 { margin: 0; font: 800 condensed clamp(40px, 4.4vw, 58px)/0.95 var(--font-display); letter-spacing: -0.02em; }
+.twc-panel .copy { max-width: 44ch; margin: 0; font-size: 16px; }
+.twc-panel .twc-btn { align-self: flex-start; }
+.twc-panel__info { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: auto; padding-top: 20px; border-top: var(--twc-border-hairline) solid currentColor; font-size: 13px; }
+@media (max-width: 1100px) { .twc-duo { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .twc-panel__info { grid-template-columns: 1fr; } }
+
+/* ---- Numbered list on hairlines (canvas .twc-qlist) ---- */
+.twc-qlist { margin: 18px 0 0; padding: 0; list-style: none; border-top: var(--twc-border-hairline) solid var(--color-sb-ink); }
+.twc-qlist li { display: grid; grid-template-columns: 28px 1fr; gap: var(--twc-space-8); padding: 10px 0; border-bottom: var(--twc-border-hairline) solid var(--color-sb-hairline); font-size: 14px; }
+.twc-qlist li > span { padding-top: 2px; font: 500 11px var(--font-plex); color: var(--color-sb-muted); }
+.twc-qlist li em { display: block; font: italic 500 18px/1.2 var(--font-sans); color: var(--color-sb-ink); }
+
+/* ---- Framed map (canvas .twc-map) and a hard-shadow photo ---- */
+.twc-map { margin: 0; padding: 8px; background: var(--color-sb-paper); border: var(--twc-border-control) solid var(--color-sb-ink); rotate: var(--twc-tilt-map); box-shadow: var(--twc-shadow-hard); }
+.twc-map svg, .twc-map img { display: block; width: 100%; height: auto; }
+.twc-map figcaption { padding: 8px 4px 2px; font: 500 11px/1.5 var(--font-plex); color: var(--color-sb-muted); }
+.twc-hardphoto { display: block; border: 6px solid var(--color-sb-paper); box-shadow: var(--twc-shadow-hard); object-fit: cover; }
+
+/* ---- Month calendar (canvas .cal): 1px ink gaps, event-kind chips ---- */
+.twc-calgrid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 1px; background: var(--color-sb-ink); border: 1px solid var(--color-sb-ink); }
+.twc-calgrid__dow { padding: 8px; background: var(--color-sb-paper); font: 500 10px var(--font-plex); letter-spacing: 0.08em; text-transform: uppercase; }
+.twc-calgrid__day { display: flex; flex-direction: column; gap: 4px; min-width: 0; min-height: 100px; padding: 6px; background: var(--color-sb-paper); }
+.twc-calgrid__day--blank { background: var(--color-sb-cream); }
+.twc-calgrid__num { font: 800 condensed 22px/1 var(--font-display); }
+.twc-e { overflow: hidden; padding: 3px 6px; color: var(--color-sb-ink); font-size: 11px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; background: var(--color-sb-ev-sky); }
+.twc-e--green { background: var(--color-sb-ev-green); } .twc-e--mint { background: var(--color-sb-ev-mint); }
+.twc-e--sea { background: var(--color-sb-ev-sea); } .twc-e--peri { background: var(--color-sb-ev-peri); }
+.twc-e--violet { background: var(--color-sb-ev-violet); }
+@media (max-width: 600px) { .twc-calgrid__day { min-height: 64px; } }
+
+/* ---- Filter pills row and the sliding underline nav are plain .twc-choice / aria-current; this is just the row ---- */
+.twc-filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: var(--twc-space-24); }
+
+/* ---- Toast (canvas #toast): rises in on the slow clock, leaves on the fast one ---- */
+.twc-toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); z-index: 60; padding: 11px 22px; border-radius: var(--twc-radius-pill); background: var(--color-sb-ink); color: var(--color-sb-paper); font-size: 14px; font-weight: 600; translate: -50% var(--toast-y, 16px); opacity: 0; transition: opacity var(--twc-toast-close) var(--twc-ease), translate var(--twc-toast-close) var(--twc-ease); }
+.twc-toast[data-open] { --toast-y: 0; opacity: 1; transition-duration: var(--twc-toast-open); }
+
+/* ---- Page enter and staggered rise (canvas tw-page / tw-rise) ---- */
+@keyframes twc-rise { from { opacity: 0; translate: 0 12px; filter: blur(3px); } to { opacity: 1; translate: 0; filter: none; } }
+.twc-rise { animation: twc-rise var(--twc-stagger-dur) var(--twc-ease) backwards; animation-delay: calc(var(--twc-stagger-step) * var(--i, 0)); }
+
+@media (prefers-reduced-motion: reduce) {
+  .twc-cband::details-content, .twc-toast { transition: none; }
+  .twc-rise { animation: none; }
+}
+}

@@ -2,6 +2,11 @@
 @import "tailwindcss";
 @import "./design-system/styles/theme.css";
 @import "./app/twc.css";
+@import "./app/twc-sections.css";
+@import "./app/twc-home.css";
+@import "./app/twc-public.css";
+@import "./app/twc-forms.css";
+@import "./app/twc-app.css";
 @import "./features/eve/eve-dock.css";
 /* Eve's chat components have their own Tailwind pass (features/eve/eve.css), loaded with the chat. */
 @source not "./features/eve/genui";
