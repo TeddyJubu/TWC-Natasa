@@ -1,3 +1,25 @@
 /* Canvas design system: page styles for the home page (/; sub-project 2, thread A). Shared pieces live in twc-sections.css. */
 @layer components {
+/* Opening: the h1 and Join on the left, the live areas on the right (the canvas hides its hero in 01 Programme) */
+.twc-home-open { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--twc-space-24); align-items: end; padding: var(--twc-space-60) var(--twc-gut); }
+@media (max-width: 1100px) { .twc-home-open { grid-template-columns: 1fr; } }
+
+/* A band's neighborhoods, each with its colour dot */
+.twc-home-hoods { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0 0 var(--twc-space-24); padding: 0; list-style: none; font-size: 14px; }
+.twc-home-hoods li { display: inline-flex; align-items: center; gap: 8px; }
+.twc-home-map { max-width: 560px; justify-self: end; width: 100%; }
+@media (max-width: 1100px) { .twc-home-map { justify-self: stretch; rotate: none; } }
+
+/* The inline headline's one chip: a lime pill between words */
+.twc-home-chip { border-radius: var(--twc-radius-pill); background: var(--color-sb-ev-green); }
+
+/* Stepped cards: a column of kicker, title, copy, photo, action */
+.twc-home-card { display: flex; flex-direction: column; gap: var(--twc-space-18); }
+.twc-home-card p { margin: 0; }
+.twc-home-big { font-size: 19px; line-height: 1.35; }
+.twc-home-cardphoto { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--twc-radius-image); }
+
+/* FAQ: the head beside three questions */
+.twc-home-faq { display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); gap: var(--twc-space-60); }
+@media (max-width: 1100px) { .twc-home-faq { grid-template-columns: 1fr; gap: var(--twc-space-30); } }
 }

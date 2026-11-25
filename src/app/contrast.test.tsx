@@ -218,10 +218,13 @@ describe("public scrapbook palette (--color-sb-* in styles.css)", () => {
     expect(page).toMatch(/<span aria-hidden className="[^"]*bg-sb-paper[^"]*text-sb-ink">\{String\(index\)/);
   });
 
-  it("the sage brick's body copy is full ink", () => {
+  it("the home page's colour fields carry ink, and their labels are ink rather than muted", () => {
     const home = readFileSync(`${process.cwd()}/src/routes/index.tsx`, "utf8");
-    expect(home).toMatch(/text-sb-ink">Not networking/);
-    expect(contrast(sb.ink, sb.sage)).toBeGreaterThanOrEqual(AA);
+    for (const field of ["band-lime", "band-purple", "band-butter", "blush", "tomato", "sky", "ev-mint", "ev-peri", "lilac"]) {
+      expect(contrast(sb.ink, sb[field]), field).toBeGreaterThanOrEqual(AA);
+    }
+    // Muted eyebrows fail AA on sky; on the panels they are forced to ink.
+    expect(home).toMatch(/twc-panel twc-c-sky">\s*<span className="twc-eyebrow text-sb-ink!"/);
   });
 
   it("the mobile menu is white, and its decorative ordinals' ink blend clears AA there", () => {
