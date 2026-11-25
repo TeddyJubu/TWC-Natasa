@@ -1,4 +1,5 @@
-// The membership form's field vocabulary on the public twc kit (classes in src/app/twc.css).
+// The membership form's field vocabulary on the public twc kit (classes in src/app/twc.css; the canvas form layout,
+// numbered questions on hairlines inside a `twc-form`, in src/app/twc-forms.css).
 import * as React from "react";
 import { cn, SelectControl } from "@/index";
 import { useCopy } from "@/features/form-copy/use-copy";
@@ -122,16 +123,21 @@ export function Choices({ name, legend, options, type = "checkbox", hint, option
   );
 }
 
-/** One numbered form section; its visible heading names the fieldset, so the title is announced once. */
+/**
+ * One numbered form section on an ink rule (`twc-fsec`, twc-forms.css): number, heading and words beside its questions
+ * from 1100px. Its visible heading names the fieldset, so the title is announced once.
+ */
 export function Section({ index, title, description, children }: { index: string; title: string; description: string; children: React.ReactNode }) {
   const t = useCopy();
   const headingId = React.useId();
   return (
-    <fieldset aria-labelledby={headingId} data-step={index} className="flex min-w-0 flex-col gap-[22px] border-t border-sb-ink/15 pt-12 first:border-t-0 first:pt-0">
-      <span className="twc-index">{index}</span>
-      <h2 id={headingId} className="font-display text-[32px] leading-[1.09] tracking-[-0.5px] sm:text-[40px]">{t(title)}</h2>
-      <p className="max-w-[56ch] text-sb-muted">{t(description)}</p>
-      {children}
+    <fieldset aria-labelledby={headingId} data-step={index} className="twc-fsec">
+      <div className="twc-fsec__head">
+        <span className="twc-index">{index}</span>
+        <h2 id={headingId} className="twc-fsec__title">{t(title)}</h2>
+        <p className="twc-fsec__desc">{t(description)}</p>
+      </div>
+      <div className="twc-fsec__body">{children}</div>
     </fieldset>
   );
 }

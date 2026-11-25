@@ -4,9 +4,8 @@ import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { cn } from "@/index";
 import { getAuthClient } from "@/app/auth-client";
 import { emitAuthEvent } from "@/app/auth-events";
-import { AuthFrame, authAlert, authCard, authH, authScript, slink } from "@/app/auth-ui";
+import { AuthFrame, authAlert, authCard, authEyebrow, authH, slink } from "@/app/auth-ui";
 import { Icon } from "@/app/layout/twc";
-import sky from "@/assets/photography/site/auth-sky.webp";
 
 type Mode = "signin" | "signup" | "forgot";
 const MODES: readonly string[] = ["signin", "signup", "forgot"];
@@ -127,80 +126,69 @@ function AuthPage() {
 
   return (
     <AuthFrame>
-      <div className="twc-wrap grid items-start justify-center gap-10 [grid-template-columns:minmax(0,480px)] min-[981px]:[grid-template-columns:minmax(0,1fr)_minmax(0,480px)_minmax(0,1fr)]">
-        <div className="order-2 flex flex-col gap-7 min-[981px]:order-none min-[981px]:items-end min-[981px]:pt-10">
-          <figure className="twc-polaroid twc-polaroid--left hidden w-full max-w-[230px] min-[981px]:flex">
-            <img src={sky} alt="City rooftops under a soft pink and lilac sky at dusk" width={1067} height={1600} loading="lazy" className="aspect-[4/5]" />
-          </figure>
-          <div className="flex min-w-0 flex-col gap-2.5 self-stretch">
-            <span className="twc-chip twc-chip--ring self-start">Members only</span>
-            <p className="font-display text-2xl leading-[1.2]">Your profile, your events, your introductions.</p>
-            <p className="text-sm leading-normal text-sb-muted">Accounts open fully once your membership application is approved.</p>
-          </div>
-        </div>
+      <div className={authCard}>
+        {showTabs && (
+          <Tabs value={mode} onValueChange={(next) => { if (next) setMode(next as typeof mode); }}>
+            <TabsList aria-label="Sign in or create an account" className="flex gap-2">
+              {TABS.map(([m, label]) => (
+                <TabsTab key={m} value={m} id={`tab-${m}`} aria-controls="auth-panel" className="twc-ftab">
+                  {label}
+                </TabsTab>
+              ))}
+            </TabsList>
+          </Tabs>
+        )}
 
-        <div className={authCard}>
-          {showTabs && (
-            <Tabs value={mode} onValueChange={(next) => { if (next) setMode(next as typeof mode); }}>
-              <TabsList aria-label="Sign in or create an account" className="flex gap-1 rounded-full p-1 shadow-[inset_0_0_0_1px_rgb(31_31_28/0.25)]">
-                {TABS.map(([m, label]) => (
-                  <TabsTab key={m} value={m} id={`tab-${m}`} aria-controls="auth-panel"
-                    className={cn("min-h-10 flex-1 cursor-pointer rounded-full font-sans font-semibold text-[13px] uppercase leading-5 tracking-[0.08em] max-[400px]:text-[12px] max-[400px]:tracking-[0.8px] outline-none transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sb-blue-ink motion-reduce:transition-none",
-                      mode === m ? "bg-sb-ink text-sb-paper" : "text-sb-ink hover:bg-sb-ink/5")}>
-                    {label}
-                  </TabsTab>
-                ))}
-              </TabsList>
-            </Tabs>
+        <div id="auth-panel" role={showTabs ? "tabpanel" : undefined} aria-labelledby={showTabs ? `tab-${mode}` : undefined} className="flex flex-col gap-[18px]">
+          <div className="flex flex-col gap-3 pt-2">
+            <p className={authEyebrow}>{copy.script}</p>
+            <h1 className={authH}>{copy.title}</h1>
+          </div>
+          <p className="twc-lede">{copy.lede}</p>
+
+          {/* Off unless the server has GOOGLE_CLIENT_ID/SECRET: a dead button is worse than none. */}
+          {showTabs && import.meta.env.VITE_GOOGLE_AUTH === "true" && (
+            <>
+              <button type="button" onClick={google} className="twc-btn twc-btn--outline w-full">
+                <svg aria-hidden viewBox="0 0 24 24" className="size-[18px]"><path fill="currentColor" d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.3ZM12 22c2.7 0 5-.9 6.6-2.4l-3.2-2.5c-.9.6-2 1-3.4 1-2.6 0-4.8-1.8-5.6-4.1H3.1v2.6A10 10 0 0 0 12 22Zm-5.6-8c-.2-.6-.3-1.3-.3-2s.1-1.4.3-2V7.4H3.1a10 10 0 0 0 0 9.2L6.4 14ZM12 6c1.5 0 2.8.5 3.8 1.5l2.9-2.9A10 10 0 0 0 3.1 7.4L6.4 10C7.2 7.7 9.4 6 12 6Z" /></svg>
+                Continue with Google
+              </button>
+              <div className="flex items-center gap-3 text-[13px] text-sb-muted"><span className="h-px flex-1 bg-sb-ink/25" />or with email<span className="h-px flex-1 bg-sb-ink/25" /></div>
+            </>
           )}
 
-          <div id="auth-panel" role={showTabs ? "tabpanel" : undefined} aria-labelledby={showTabs ? `tab-${mode}` : undefined} className="flex flex-col gap-[18px]">
-            <div className="flex flex-col gap-2.5 pt-2">
-              <p className={authScript}>{copy.script}</p>
-              <h1 className={authH}>{copy.title}</h1>
-            </div>
-            <p className="text-sb-muted">{copy.lede}</p>
-
-            {/* Off unless the server has GOOGLE_CLIENT_ID/SECRET: a dead button is worse than none. */}
-            {showTabs && import.meta.env.VITE_GOOGLE_AUTH === "true" && (
-              <>
-                <button type="button" onClick={google} className="twc-btn twc-btn--outline w-full">
-                  <svg aria-hidden viewBox="0 0 24 24" className="size-[18px]"><path fill="currentColor" d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.3ZM12 22c2.7 0 5-.9 6.6-2.4l-3.2-2.5c-.9.6-2 1-3.4 1-2.6 0-4.8-1.8-5.6-4.1H3.1v2.6A10 10 0 0 0 12 22Zm-5.6-8c-.2-.6-.3-1.3-.3-2s.1-1.4.3-2V7.4H3.1a10 10 0 0 0 0 9.2L6.4 14ZM12 6c1.5 0 2.8.5 3.8 1.5l2.9-2.9A10 10 0 0 0 3.1 7.4L6.4 10C7.2 7.7 9.4 6 12 6Z" /></svg>
-                  Continue with Google
-                </button>
-                <div className="flex items-center gap-3 text-[13px] text-sb-muted"><span className="h-px flex-1 bg-sb-ink/15" />or with email<span className="h-px flex-1 bg-sb-ink/15" /></div>
-              </>
+          <form onSubmit={submit} className="twc-form flex flex-col gap-[18px]">
+            {mode === "signup" && field("name", "Full name", { autoComplete: "name" })}
+            {field("email", "Email", { type: "email", autoComplete: "email" })}
+            {mode !== "forgot" && field(
+              "password", "Password",
+              { type: "password", minLength: 8, autoComplete: mode === "signup" ? "new-password" : "current-password" },
+              mode === "signin" ? <button type="button" onClick={() => switchTo("forgot")} className={cn(slink, "text-[13px]")}>Forgot password?</button> : undefined,
+              mode === "signup" ? "At least 8 characters." : undefined,
             )}
+            {error && <p id="auth-error" role="alert" className={authAlert}>{error}</p>}
+            {notice && (
+              <div role="status" className="twc-notice twc-notice--mint">
+                <h2 className="twc-notice__title">{notice.title}</h2>
+                <p className="text-[15px]">{notice.text}</p>
+              </div>
+            )}
+            <button type="submit" disabled={busy} aria-busy={busy || undefined} className="twc-btn mt-1 w-full">
+              {copy.submit} <Icon name="arrow" className="twc-arrow" />
+            </button>
+          </form>
 
-            <form onSubmit={submit} className="flex flex-col gap-[18px]">
-              {mode === "signup" && field("name", "Full name", { autoComplete: "name" })}
-              {field("email", "Email", { type: "email", autoComplete: "email" })}
-              {mode !== "forgot" && field(
-                "password", "Password",
-                { type: "password", minLength: 8, autoComplete: mode === "signup" ? "new-password" : "current-password" },
-                mode === "signin" ? <button type="button" onClick={() => switchTo("forgot")} className={cn(slink, "text-[13px]")}>Forgot password?</button> : undefined,
-                mode === "signup" ? "At least 8 characters." : undefined,
-              )}
-              {error && <p id="auth-error" role="alert" className={authAlert}>{error}</p>}
-              {notice && (
-                <div role="status" className="twc-notice twc-notice--mint">
-                  <h2 className="twc-notice__title">{notice.title}</h2>
-                  <p className="text-[15px]">{notice.text}</p>
-                </div>
-              )}
-              <button type="submit" disabled={busy} aria-busy={busy || undefined} className="twc-btn mt-1 w-full">
-                {copy.submit} <Icon name="arrow" className="twc-arrow" />
-              </button>
-            </form>
-
-            <p className="flex flex-col items-center gap-2 text-center text-sm">
-              {mode === "forgot" && <button type="button" onClick={() => switchTo("signin")} className={slink}>Back to sign in</button>}
-              <Link to="/join" className={slink}>Not a member yet? Apply</Link>
-            </p>
-          </div>
+          <p className="flex flex-col items-center gap-2 text-center text-sm">
+            {mode === "forgot" && <button type="button" onClick={() => switchTo("signin")} className={slink}>Back to sign in</button>}
+            <Link to="/join" className={slink}>Not a member yet? Apply</Link>
+          </p>
         </div>
 
-        <div aria-hidden className="hidden min-[981px]:block" />
+        <div className="mt-4 flex flex-col gap-2.5 border-t border-sb-ink pt-5">
+          <span className="twc-chip twc-chip--ring self-start">Members only</span>
+          <p className="font-display text-2xl font-extrabold leading-[1.1] font-stretch-condensed">Your profile, your events, your introductions.</p>
+          <p className="text-sm leading-normal text-sb-muted">Accounts open fully once your membership application is approved.</p>
+        </div>
       </div>
     </AuthFrame>
   );

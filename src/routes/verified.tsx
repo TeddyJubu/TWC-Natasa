@@ -3,7 +3,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ConstellationLogo, cn } from "@/index";
 import { getAuthClient } from "@/app/auth-client";
-import { AuthFrame, authAlert, authCard, authH, authScript, slink } from "@/app/auth-ui";
+import { AuthFrame, authAlert, authCard, authEyebrow, authH, slink } from "@/app/auth-ui";
 import { Icon } from "@/app/layout/twc";
 import { viewerQuery } from "@/features/members/queries";
 
@@ -34,9 +34,7 @@ function Verified() {
   const { error } = Route.useSearch();
   return (
     <AuthFrame>
-      <div className="twc-wrap flex justify-center">
-        <div className="w-full max-w-[480px]">{error ? <Resend /> : <Confirmed />}</div>
-      </div>
+      {error ? <Resend /> : <Confirmed />}
     </AuthFrame>
   );
 }
@@ -48,14 +46,12 @@ function Confirmed() {
   const declined = viewer.data?.declined === true;
   return (
     <div className={cn(authCard, "items-center text-center")}>
-      <span aria-hidden className="grid size-20 place-items-center rounded-full bg-sb-butter">
-        <ConstellationLogo variant="ink" alt="" sizes="44px" className="w-11" />
-      </span>
-      <div className="flex flex-col items-center gap-2.5">
-        <p className={cn(authScript, "inline-flex items-center gap-2")}>email verified <Icon name="sparkle" className="size-6" /></p>
+      <ConstellationLogo variant="ink" alt="" sizes="44px" className="w-11" />
+      <div className="flex flex-col items-center gap-3">
+        <p className={authEyebrow}>email verified</p>
         <h1 className={authH}>You’re confirmed, neighbor.</h1>
       </div>
-      <p className="text-sb-muted">
+      <p className="twc-lede">
         {declined
           ? "Your email is verified. Your account shows where your application stands."
           : viewer.isSuccess ? "Your email is verified. Open your account to finish your profile — it stays private until you choose to show it." : "Your email is verified."}
@@ -87,8 +83,8 @@ function Resend() {
   return (
     <div className={authCard}>
       <h1 className={authH}>This link has run its course.</h1>
-      <p className="text-sb-muted">Confirmation links only work once and expire after a while. Pop in your email and we’ll send a fresh one.</p>
-      <form onSubmit={submit} className="flex flex-col gap-[18px]">
+      <p className="twc-lede">Confirmation links only work once and expire after a while. Pop in your email and we’ll send a fresh one.</p>
+      <form onSubmit={submit} className="twc-form flex flex-col gap-[18px]">
         <div className="twc-field">
           <label htmlFor="email">Email</label>
           <input id="email" name="email" type="email" required autoComplete="email" className="twc-input" aria-describedby={failed ? "resend-error" : undefined} />

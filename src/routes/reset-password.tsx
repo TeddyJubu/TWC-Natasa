@@ -54,41 +54,39 @@ function ResetPassword() {
   const bad = status === "invalid" || status === "expired";
   return (
     <AuthFrame>
-      <div className="twc-wrap flex justify-center">
-        <div className={cn(authCard, "max-w-[480px]")}>
-          <span className="twc-eyebrow">Account</span>
-          <h1 className={cn(authH, "-mt-1.5")}>Choose a new password.</h1>
-          {status === "checking" && <p role="status" className="text-sb-muted">Checking your reset link…</p>}
-          {bad && (
-            <>
-              <p role="alert" className={authAlert}>
-                {status === "expired"
-                  ? "This reset link has expired or was already used."
-                  : "This link isn’t valid for resetting a password. Open the newest link from your email, or ask for a fresh one."}
-              </p>
-              <Link to="/auth" search={{ mode: "forgot" }} className="twc-btn twc-btn--outline w-full">
-                Request a new link <Icon name="arrow" className="twc-arrow" />
-              </Link>
-            </>
-          )}
-          {status === "ready" && (
-            <>
-              <p className="text-sb-muted">Set a new password for your member account.</p>
-              <form onSubmit={submit} className="flex flex-col gap-[18px]">
-                <div className="twc-field">
-                  <label htmlFor="password">New password</label>
-                  <input id="password" name="password" type="password" minLength={8} required autoComplete="new-password" className="twc-input"
-                    aria-invalid={error ? true : undefined} aria-describedby={cn("password-hint", error && "password-error")} />
-                  <span id="password-hint" className="twc-hint">At least 8 characters.</span>
-                  {error && <p id="password-error" role="alert" className="twc-error">{error}</p>}
-                </div>
-                <button type="submit" disabled={busy} aria-busy={busy || undefined} className="twc-btn mt-1 w-full">
-                  Save password <Icon name="arrow" className="twc-arrow" />
-                </button>
-              </form>
-            </>
-          )}
-        </div>
+      <div className={authCard}>
+        <span className="twc-eyebrow">Account</span>
+        <h1 className={authH}>Choose a new password.</h1>
+        {status === "checking" && <p role="status" className="text-sb-muted">Checking your reset link…</p>}
+        {bad && (
+          <>
+            <p role="alert" className={authAlert}>
+              {status === "expired"
+                ? "This reset link has expired or was already used."
+                : "This link isn’t valid for resetting a password. Open the newest link from your email, or ask for a fresh one."}
+            </p>
+            <Link to="/auth" search={{ mode: "forgot" }} className="twc-btn twc-btn--outline w-full">
+              Request a new link <Icon name="arrow" className="twc-arrow" />
+            </Link>
+          </>
+        )}
+        {status === "ready" && (
+          <>
+            <p className="twc-lede">Set a new password for your member account.</p>
+            <form onSubmit={submit} className="twc-form flex flex-col gap-[18px]">
+              <div className="twc-field">
+                <label htmlFor="password">New password</label>
+                <input id="password" name="password" type="password" minLength={8} required autoComplete="new-password" className="twc-input"
+                  aria-invalid={error ? true : undefined} aria-describedby={cn("password-hint", error && "password-error")} />
+                <span id="password-hint" className="twc-hint">At least 8 characters.</span>
+                {error && <p id="password-error" role="alert" className="twc-error">{error}</p>}
+              </div>
+              <button type="submit" disabled={busy} aria-busy={busy || undefined} className="twc-btn mt-1 w-full">
+                Save password <Icon name="arrow" className="twc-arrow" />
+              </button>
+            </form>
+          </>
+        )}
       </div>
     </AuthFrame>
   );

@@ -38,11 +38,11 @@ export function ApplicationProgress({ form, errorCount, onShowErrors }: {
 
   const label = `Step ${step} of ${STEPS.length}: ${STEPS[step - 1]}`;
   return (
-    <div className="sticky top-16 z-30 -mx-5 -mt-5 mb-6 rounded-t-[6px] bg-sb-paper px-5 py-3 shadow-[inset_0_0_0_1px_rgb(31_31_28/0.15)] sm:-mx-12 sm:-mt-12 sm:px-12 lg:top-[88px]">
+    <div className="twc-fprogress">
       <div className="flex min-h-6 items-center justify-between gap-3">
-        <p aria-hidden className="twc-ticket__meta min-w-0 justify-start">
+        <p aria-hidden className="twc-fmono flex min-w-0 gap-4">
           <span className="whitespace-nowrap">Step {String(step).padStart(2, "0")} of {STEPS.length}</span>
-          <span className="truncate">{STEPS[step - 1]}</span>
+          <span className="truncate text-sb-muted">{STEPS[step - 1]}</span>
         </p>
         <span className="sr-only" aria-live="polite">{label}</span>
         {errorCount > 0 && (
@@ -60,7 +60,7 @@ export function ApplicationProgress({ form, errorCount, onShowErrors }: {
           <li
             key={name}
             aria-current={i + 1 === step ? "step" : undefined}
-            className={cn("h-1.5 rounded-[3px] transition-colors motion-reduce:transition-none", i < step ? "bg-sb-ink" : "bg-sb-ink/15")}
+            className={cn("h-1.5 transition-colors motion-reduce:transition-none", i < step ? "bg-sb-ink" : "bg-sb-ink/15")}
           >
             <span className="sr-only">{i + 1}. {name}</span>
           </li>

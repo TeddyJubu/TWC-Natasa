@@ -26,22 +26,26 @@ function ContactPage() {
     <FormCopyProvider copy={copy}>
     <AppPage>
       <AppNav bare />
-      <main id="main" tabIndex={-1} className="twc-wrap flex flex-wrap items-start gap-x-16 gap-y-14 pt-12 pb-20 outline-none md:pt-[72px] md:pb-[104px]">
-        <div className="flex min-w-0 flex-[1_1_380px] flex-col gap-[22px]">
-          <p className="twc-eyebrow-script">{t("say hello")}</p>
-          <h1 className="twc-h2">{t("Say hello, neighbor.")}</h1>
-          <p className="max-w-[480px] text-[17px] leading-[1.65] text-sb-muted">
-            {t("A question about membership, an idea for an event, a partnership you’d like to explore: send it our way. A real person reads every message.")}
-          </p>
-          <div className="mt-2 flex flex-col gap-2 rounded-md bg-sb-cream px-6 py-[22px]">
-            <h2 className="font-display text-[22px] leading-[1.3]">Something happened that shouldn’t have?</h2>
-            <p className="text-[15px] text-sb-muted">
-              Reports about a member or an event go straight to the people who handle them, confidentially. Choose “Reporting conduct” as the topic of your message.
+      <main id="main" tabIndex={-1} className="outline-none">
+        <div className="twc-phd">
+          <div className="twc-fhead">
+            <span className="twc-eyebrow">{t("say hello")}</span>
+            <h1 className="twc-display">{t("Say hello, neighbor.")}</h1>
+            <p className="twc-lede">
+              {t("A question about membership, an idea for an event, a partnership you’d like to explore: send it our way. A real person reads every message.")}
             </p>
           </div>
         </div>
-        <div className="flex min-w-0 flex-[1_1_460px] flex-col gap-8">
-          <ContactForm />
+        <div className="twc-fbody">
+          <div className="twc-ftwo">
+            <ContactForm />
+            <aside aria-labelledby="conduct-title" className="twc-fieldc twc-c-blush">
+              <h2 id="conduct-title">Something happened that shouldn’t have?</h2>
+              <p>
+                Reports about a member or an event go straight to the people who handle them, confidentially. Choose “Reporting conduct” as the topic of your message.
+              </p>
+            </aside>
+          </div>
         </div>
       </main>
       <AppFooter bare />
