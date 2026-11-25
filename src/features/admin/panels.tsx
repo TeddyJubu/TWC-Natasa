@@ -982,20 +982,16 @@ function OpenSwitch({ idPrefix, name, open, savedMessage, hint, busy, error, onS
 }
 
 /**
- * The kit's admit ticket on the app palette: a paper card whose stub tears off along a dashed line, with a punched
- * notch at each end of the tear. `row` puts the stub beside the main part from sm; otherwise it sits underneath.
- * `label` makes it a named region; `stamp` swaps the hairline outline for the postage edge (twc-stamp-edge).
+ * A box in a 1px ink frame (the canvas's working-view cards) with a foot under a hairline: a form's answer count, a
+ * tile's context. `row` puts the foot beside the main part from sm; otherwise it sits underneath. `label` makes it a
+ * named region.
  */
-function Ticket({ label, row, stamp, stub, className, children }: { label?: string; row?: boolean; stamp?: boolean; stub: React.ReactNode; className?: string; children: React.ReactNode }) {
+function Ticket({ label, row, stub, className, children }: { label?: string; row?: boolean; stub: React.ReactNode; className?: string; children: React.ReactNode }) {
   const Tag = label ? "section" : "div";
-  const line = "shadow-[inset_0_0_0_1px_var(--color-app-line)]";
-  const notch = cn("absolute size-4 rounded-full bg-app-sunken", !stamp && line);
   return (
-    <Tag aria-label={label} className={cn("relative flex flex-col overflow-hidden bg-app", stamp ? "twc-stamp-edge" : cn("rounded-md", line), row && "sm:flex-row", className)}>
+    <Tag aria-label={label} className={cn("relative flex flex-col bg-app shadow-[inset_0_0_0_1px_var(--color-ink)]", row && "sm:flex-row", className)}>
       <div className="flex min-w-0 flex-1 flex-col gap-3 p-5 sm:p-6">{children}</div>
-      <div className={cn("relative flex shrink-0 flex-col justify-center border-t border-dashed border-app-muted/60 px-5 py-4 sm:px-6", row && "sm:w-56 sm:border-t-0 sm:border-l sm:py-6")}>
-        <span aria-hidden className={cn(notch, "top-0 left-0 -translate-1/2")} />
-        <span aria-hidden className={cn(notch, "top-0 right-0 translate-x-1/2 -translate-y-1/2", row && "sm:top-auto sm:right-auto sm:bottom-0 sm:left-0 sm:-translate-x-1/2 sm:translate-y-1/2")} />
+      <div className={cn("flex shrink-0 flex-col justify-center border-t border-ink px-5 py-4 sm:px-6", row && "sm:w-56 sm:border-t-0 sm:border-l sm:py-6")}>
         {stub}
       </div>
     </Tag>
@@ -1010,8 +1006,8 @@ function FormCard({ id, title, status, where, note, stub, onDuplicate, onDelete,
   const headingId = `form-card-${id}`;
   return (
     <article aria-labelledby={headingId}
-      className="group relative rounded-md air-grounded has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-app-accent motion-reduce:transition-none motion-reduce:hover:translate-y-0">
-      <Ticket stamp className="h-full"
+      className="group relative transition-shadow duration-150 hover:shadow-[6px_6px_0_var(--color-ink)] has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-app-accent motion-reduce:transition-none">
+      <Ticket className="h-full"
         stub={(
           <div className="flex items-center justify-between gap-3 text-[13px] text-app-muted">
             <span className="min-w-0">{stub}</span>
@@ -1051,8 +1047,8 @@ const LISTED_BUILT_IN = BUILT_IN.filter((kind) => kind !== "newsletter");
 
 function SectionHead({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-1">
-      <h2 id={id} className="font-display text-[27px]/[1.05] font-bold tracking-[-0.015em] text-ink lg:text-[31px]">{title}</h2>
+    <div className="flex flex-col gap-1.5 border-t border-ink pt-3.5">
+      <h2 id={id} className="font-display text-[30px]/[1] text-ink lg:text-[36px]">{title}</h2>
       <p className="text-sm text-app-muted">{children}</p>
     </div>
   );
@@ -1092,8 +1088,7 @@ export function FormsListPanel() {
             ))}
             <button ref={tile} type="button" aria-expanded={adding === true} aria-controls="forms-new" onClick={() => (adding ? close() : setAdding(true))}
               className={cn("group flex min-h-40 text-ink", ring)}>
-              {/* The postage edge sits on an inner layer: a mask on the button would clip its focus outline too. */}
-              <span className="twc-stamp-edge flex flex-1 flex-col items-center justify-center gap-3 bg-app/50 p-5 transition-colors duration-150 group-hover:bg-app group-aria-expanded:bg-app">
+              <span className="flex flex-1 flex-col items-center justify-center gap-3 border-[1.5px] border-dashed border-ink p-5 transition-colors duration-150 group-hover:bg-air-sky group-aria-expanded:bg-air-sky motion-reduce:transition-none">
                 <span aria-hidden className="grid size-11 place-items-center rounded-full bg-ink text-app transition-transform duration-150 ease-snap group-hover:scale-105 motion-reduce:transition-none"><Icon name="plus" className="size-5" /></span>
                 <span className="font-display text-[22px]/[1.2]">New form</span>
               </span>
@@ -1349,7 +1344,7 @@ const TAB_LABEL: Record<FormTab, string> = { answers: "Answers", questions: "Que
 
 function FormTabs({ current }: { current: FormTab }) {
   return (
-    <TabsList aria-label="Form" className="flex w-fit gap-1 rounded-full bg-app p-1 shadow-[inset_0_0_0_1px_var(--color-app-line)]">
+    <TabsList aria-label="Form" className="flex w-fit gap-1 rounded-full bg-app p-1 shadow-[inset_0_0_0_1.5px_var(--color-ink)]">
       {FORM_TABS.map((tab) => (
         <TabsTab key={tab} value={tab} id={`form-tab-${tab}`}
           className={cn("min-h-10 rounded-full px-4.5 text-[15px] transition-colors duration-150", tab === current ? "bg-ink text-app" : "text-ink hover:bg-app-sunken", ring)}>
@@ -1809,17 +1804,10 @@ type QueryState = { isError: boolean; isPending: boolean };
 type TileData = { figure: number | null; unit: string; waiting?: string | null; note?: string | null; query: QueryState };
 
 /**
- * Each Home card's paper: a member-pass colour mixed into the airmail paper, a quarter (mustard, the warmest, less, so
- * it doesn't outshine the card that has work waiting). It re-points the card's --bl-app, which bg-app compiles to under
- * @theme inline. Muted text stays 5.2:1 or better on every one.
+ * Each Home card is a canvas colour field (`twc-c-*`), ink text on every one: the field re-points muted text and links
+ * at ink (twc-app.css), since muted misses AA on some of them. `bg-transparent` lets the field show through the box.
  */
-const TINT = {
-  mustard: "[--bl-app:color-mix(in_srgb,var(--color-sb-band-butter)_18%,var(--color-air-paper))]",
-  rose: "[--bl-app:color-mix(in_srgb,var(--color-sb-blush)_25%,var(--color-air-paper))]",
-  lilac: "[--bl-app:color-mix(in_srgb,var(--color-sb-lilac)_25%,var(--color-air-paper))]",
-  mint: "[--bl-app:color-mix(in_srgb,var(--color-sb-lime)_25%,var(--color-air-paper))]",
-} as const;
-const TILE_TINT: Partial<Record<AdminSection, keyof typeof TINT>> = { inbox: "lilac", applications: "rose", reviews: "mint", bookings: "mustard" };
+const TILE_FIELD: Partial<Record<AdminSection, string>> = { inbox: "twc-c-lilac", applications: "twc-c-blush", reviews: "twc-c-lime", bookings: "twc-c-band-butter" };
 
 /** The whole tile is its section's link (the heading's link stretches over it), like the form cards. */
 function OverviewTile({ section, tile }: { section: AdminSection; tile: TileData }) {
@@ -1828,10 +1816,9 @@ function OverviewTile({ section, tile }: { section: AdminSection; tile: TileData
   const linkCls = "outline-none after:absolute after:inset-0 after:content-['']";
   const note = tile.query.isError ? "Couldn’t load this. Open it to try again." : tile.note;
   return (
-    // air-grounded: the desk's resting shadow as a filter, which follows the stamp edge's mask (a box-shadow is clipped).
     <article aria-labelledby={headingId}
-      className="group relative rounded-md air-grounded has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-app-accent motion-reduce:transition-none motion-reduce:hover:translate-y-0">
-      <Ticket stamp className={cn("h-full", TINT[TILE_TINT[section] ?? "lilac"])}
+      className={cn("group relative transition-shadow duration-150 hover:shadow-[6px_6px_0_var(--color-ink)] has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-app-accent motion-reduce:transition-none", TILE_FIELD[section] ?? "twc-c-lilac")}>
+      <Ticket className="h-full bg-transparent"
         stub={(
           <div className="flex items-center justify-between gap-3 text-[13px] text-app-muted">
             <span className="min-w-0">{note || "Open"}</span>
@@ -1846,7 +1833,7 @@ function OverviewTile({ section, tile }: { section: AdminSection; tile: TileData
           {tile.waiting && <Chip tone="pending">{tile.waiting}</Chip>}
         </div>
         <p className="flex items-baseline gap-2">
-          <span className="font-display text-[40px]/[1] text-ink tabular-nums">{tile.figure ?? "–"}</span>
+          <span className="font-display text-[56px]/[0.9] text-ink tabular-nums">{tile.figure ?? "–"}</span>
           <span className="twc-eyebrow">{tile.unit}</span>
         </p>
       </Ticket>
