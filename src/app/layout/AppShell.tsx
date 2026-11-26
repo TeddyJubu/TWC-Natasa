@@ -4,7 +4,7 @@
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
 import { Drawer, DrawerBackdrop, DrawerClose, DrawerContent, DrawerTrigger } from "@ui-sdk/react/drawer";
-import { ConstellationLogo, cn, initials } from "@/index";
+import { LOCKUP, cn, initials } from "@/index";
 import { Icon, type IconName } from "./icons";
 import { useWaiting } from "@/features/admin/waiting";
 import { ADMIN_AREAS, areaOf, sectionItem, type AdminSection, type ShellPage } from "./shell-nav";
@@ -13,12 +13,11 @@ import { useSignOut } from "./sign-out";
 import { useButtonSparkles } from "./sparkles";
 import { ConfirmHost } from "./ConfirmHost";
 
-/** The constellation and the collective's name, linking home. */
+/** The canvas's lockup (the three stars and the name), linking home. */
 function Brand({ className }: { className?: string }) {
   return (
-    <Link to="/" aria-label="The Women’s Collective home" className={cn("air-brand min-w-0 px-1.5 leading-tight whitespace-normal text-ink", ring, className)}>
-      <ConstellationLogo variant="ink" alt="" sizes="28px" className="w-7 shrink-0" />
-      <span className="min-w-0">The Women’s Collective</span>
+    <Link to="/" aria-label="The Women’s Collective home" className={cn("air-brand self-start px-1.5", ring, className)}>
+      <img src={LOCKUP.src} width={LOCKUP.width} height={LOCKUP.height} alt="" className="h-[61px] w-auto" />
     </Link>
   );
 }

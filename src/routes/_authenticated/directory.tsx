@@ -1,18 +1,21 @@
-// The signed-in member directory (DESIGN.md "Member directory"): the canvas's people grid. Choosing a member shows her
-// card in the colour panel beside the grid; choosing her again puts it away.
+// The signed-in directory (DESIGN.md "Member directory"): the canvas's `directory()` — its page head, the search,
+// constellation and neighborhood filters, the people grid of directory cards beside the constellation map; a card or
+// a star opens her profile. Members and admins read the real directory (`directoryQuery`); anyone else signed in
+// reads the club's roster (`rosterQuery`), which is empty unless the site is behind its PIN — then only a notice.
 import * as React from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { cn, safeHref, type MemberProfile } from "@/index";
+import { cn } from "@/index";
 import { AppPage } from "@/app/layout/AppLayout";
-import { EmptySlot, InlineError, Stamp } from "@/app/layout/app-ui";
-import { fieldClass, mainButton, ring, secondaryButton } from "@/app/layout/app-classes";
+import { EmptySlot, InlineError } from "@/app/layout/app-ui";
+import { fieldClass, ring, secondaryButton } from "@/app/layout/app-classes";
 import { Icon } from "@/app/layout/icons";
 import { AirShell } from "@/features/account/AirShell";
 import { matchesSearch } from "@/features/admin/format";
-import { useNeighborhoods } from "@/features/neighborhoods/queries";
-import { pickerNames } from "@/features/neighborhoods/options";
-import { directoryQuery, memberSlug, profileQuery, viewerQuery } from "@/features/members/queries";
+import { CONSTELLATIONS, DirectoryMap, type ConId } from "@/features/directory/DirectoryMap";
+import { PersonCard, PersonDialog, fromMember, fromRoster, whereOf, type Person } from "@/features/directory/directory-people";
+import { directoryQuery, profileQuery, viewerQuery } from "@/features/members/queries";
+import { rosterQuery } from "@/features/roster/queries";
 
 export const Route = createFileRoute("/_authenticated/directory")({
   head: () => ({
@@ -25,47 +28,47 @@ export const Route = createFileRoute("/_authenticated/directory")({
   component: DirectoryPage,
 });
 
-/** Members on one page: four across, three down. */
+/** Cards on one page. */
 const SHEET_SIZE = 12;
-const no4 = (n?: number) => (n === undefined ? "" : String(n).padStart(4, "0"));
-const printed = new Date().toLocaleDateString("en-US", { month: "short", year: "numeric", timeZone: "America/New_York" });
 
 function DirectoryPage() {
   const { user } = Route.useRouteContext();
   const own = useQuery(profileQuery(user.id)).data;
   const viewer = useQuery(viewerQuery);
   // Admins read the directory like approved members. It is members-only (owner decision, 2026-11-24): anyone else
-  // signed in (pending, declined) gets a note and no cards — the server gives them none either.
+  // signed in (pending, declined) gets the roster at most — empty once the PIN is lifted — and never a database card.
   const member = viewer.data?.member === true || viewer.data?.admin === true;
   const outsider = viewer.isSuccess && !member;
   const list = useQuery({ ...directoryQuery, enabled: member });
-  const all = list.data ?? [];
-  const { data: hoodList = [] } = useNeighborhoods();
+  const roster = useQuery({ ...rosterQuery, enabled: outsider });
+  const all: Person[] = React.useMemo(
+    () => (member ? (list.data ?? []).map(fromMember) : (roster.data?.members ?? []).map(fromRoster)),
+    [member, list.data, roster.data],
+  );
 
+  const [con, setCon] = React.useState<ConId | "all">("all");
   const [hood, setHood] = React.useState("All");
   const [query, setQuery] = React.useState("");
   const [page, setPage] = React.useState(0);
-  const [outId, setOutId] = React.useState<string | null>(null);
-  const passRef = React.useRef<HTMLElement>(null);
+  const [openKey, setOpenKey] = React.useState<string | null>(null);
 
-  const count = (name: string) => all.filter((m) => m.neighborhood === name).length;
-  const hoods = pickerNames(hoodList, all.map((m) => m.neighborhood)).filter((n) => count(n) > 0);
-  const shown = all.filter((m) => (hood === "All" || m.neighborhood === hood)
-    && matchesSearch(query, [m.name, m.role, m.business, m.specialty, m.neighborhood]));
+  const inCon = all.filter((p) => con === "all" || p.con === con);
+  const count = (name: string) => inCon.filter((p) => p.hood === name).length;
+  const hoods = [...new Set(inCon.map((p) => p.hood).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  const shown = inCon.filter((p) => (hood === "All" || p.hood === hood)
+    && matchesSearch(query, [p.name, p.role, p.business, p.member?.specialty, p.hood, whereOf(p), p.line]));
   const pages = Math.max(1, Math.ceil(shown.length / SHEET_SIZE));
   const sheet = shown.slice(page * SHEET_SIZE, page * SHEET_SIZE + SHEET_SIZE);
-  const out = all.find((m) => m.id === outId) ?? null;
+  const open = all.find((p) => p.key === openKey) ?? null;
   const filter = (next: () => void) => { next(); setPage(0); };
+  const chooseCon = (next: ConId | "all") => filter(() => { setCon(next); setHood("All"); });
 
-  function tear(m: MemberProfile) {
-    const next = m.id === outId ? null : m.id;
-    setOutId(next);
-    // Below lg the pass sits above the sheet, out of view: bring it in.
-    if (next && window.matchMedia("(max-width: 1023px)").matches) passRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
-  }
-
-  const loading = viewer.isPending || (!viewer.isError && list.isPending);
-  const failed = viewer.isError || list.isError;
+  const loading = viewer.isPending || (member ? list.isPending : outsider && roster.isPending);
+  const failed = viewer.isError || list.isError || roster.isError;
+  const empty = outsider && !loading && !failed && all.length === 0;
+  const lead = member
+    ? `Search ${all.length || "no"} ${all.length === 1 ? "member" : "members"} across North Brooklyn and Queens: a designer in Greenpoint, a bookkeeper in Astoria.`
+    : "The women of the Collective, across North Brooklyn and Queens.";
 
   return (
     <AppPage trail={false}>
@@ -74,132 +77,87 @@ function DirectoryPage() {
         avatar={own?.avatarUrl} catalogueNumber={own?.profile.status === "approved" ? own.profile.catalogue_number : null}
       >
         <main id="main" tabIndex={-1} className="outline-none">
-          <section className="air-dir-intro">
+          <section className="twc-phd">
             <div>
-              <p className="air-lbl">Member directory · Page {page + 1} of {pages}</p>
-              <h1>Members</h1>
+              <span className="twc-eyebrow">Directory &amp; map</span>
+              <h1>Women-owned, <i>nearby</i></h1>
+              <p className="twc-lede">{lead}</p>
             </div>
-            {!outsider && <div>
-              <p className="air-dir-lede">
-                <b>{all.length || "No"} {all.length === 1 ? "member" : "members"} across North Brooklyn and Queens</b>. Choose one to meet her.
-              </p>
-              <dl className="air-dir-stats">
-                <div><dt>Members</dt><dd>{all.length}</dd></div>
-                <div><dt>Neighborhoods</dt><dd>{hoods.length}</dd></div>
-                <div><dt>As of</dt><dd>{printed}</dd></div>
-              </dl>
-            </div>}
+            {outsider && !empty && <span className="twc-flag">Full cards are for members</span>}
           </section>
 
-          {outsider ? (
-            viewer.data.declined ? (
-              <div className="twc-notice mt-8 text-sm">
-                <p>The directory is for members, and your application wasn’t approved.</p>
-                <Link to="/contact" className={cn("air-link self-start", ring)}>Have a question? Contact us</Link>
-              </div>
-            ) : (
-              <p className="twc-notice mt-8 text-sm">The directory is for members. It unlocks once you’re welcomed in.</p>
-            )
-          ) : <>
-          <div className="air-dir-bar">
-            <div role="group" aria-label="Filter by neighborhood" className="flex flex-wrap gap-2">
-              {["All", ...hoods].map((name) => (
-                <button key={name} type="button" aria-pressed={hood === name} onClick={() => filter(() => setHood(name))} className={cn("air-filter", ring)}>
-                  {name}<span>{name === "All" ? all.length : count(name)}</span>
-                </button>
-              ))}
-            </div>
-            <label className="air-dir-search">
-              <span className="sr-only">Search members</span>
-              <input type="search" value={query} onChange={(e) => filter(() => setQuery(e.target.value))} placeholder="Search members" className={fieldClass} />
-            </label>
-          </div>
-
-          {failed ? (
-            <InlineError message="We couldn’t load the member directory right now." onRetry={() => void (viewer.isError ? viewer.refetch() : list.refetch())} />
-          ) : loading ? (
-            <p role="status" className="mt-16 text-sm text-app-muted">Loading members…</p>
-          ) : (
-            <div className="air-dir-split">
-              <div>
-                <Pass ref={passRef} member={out} />
-                <p className="air-dir-hint"><Icon name="arrow-up" className="mt-0.5 size-4 rotate-[-45deg]" />Choose a member to see her card here. Choose her again to put it away.</p>
-              </div>
-              <div className="min-w-0">
-                {sheet.length === 0 ? (
-                  <EmptySlot>
-                    <p className="air-empty-title">{all.length === 0 ? "No one is listed yet." : "No one matches."}</p>
-                    <p>{all.length === 0 ? "Members choose whether they appear here. Check back soon." : "Try another neighborhood or search."}</p>
-                    {all.length > 0 && (
-                      <button type="button" onClick={() => filter(() => { setHood("All"); setQuery(""); })} className={cn(secondaryButton, "mt-3")}>Show everyone</button>
-                    )}
-                  </EmptySlot>
-                ) : (
-                  <div role="group" aria-label={`Members, page ${page + 1}`} className="air-sheet">
-                    {sheet.map((m) => (
-                      <Stamp key={m.id} member={m} pressed={m.id === outId} onClick={() => tear(m)}
-                        label={[m.name, m.role, m.neighborhood && `in ${m.neighborhood}`].filter(Boolean).join(", ")} />
-                    ))}
-                  </div>
-                )}
-                <div className="air-dir-foot">
-                  <p>
-                    {/* Announced, so a search or filter says what it found (the sheet itself changes silently). */}
-                    <span aria-live="polite">{shown.length < all.length ? `${shown.length} of ${all.length} match` : `Showing ${sheet.length} of ${all.length}`}</span>
-                    {" "}· As of {printed}
-                  </p>
-                  <div className="flex items-center gap-3.5 font-semibold text-ink">
-                    <button type="button" disabled={page === 0} onClick={() => setPage(page - 1)} aria-label="Previous page" className={cn("air-icon-btn", ring)}><Icon name="arrow-left" className="size-4" /></button>
-                    <span aria-live="polite">Page {page + 1} of {pages}</span>
-                    <button type="button" disabled={page >= pages - 1} onClick={() => setPage(page + 1)} aria-label="Next page" className={cn("air-icon-btn", ring)}><Icon name="arrow-right" className="size-4" /></button>
-                  </div>
+          <section className="air-sec">
+            {outsider && (
+              viewer.data.declined ? (
+                <div className="twc-notice mb-8 text-sm">
+                  <p>The directory is for members, and your application wasn’t approved.</p>
+                  <Link to="/contact" className={cn("air-link self-start", ring)}>Have a question? Contact us</Link>
                 </div>
+              ) : (
+                <p className="twc-notice mb-8 text-sm">The directory is for members. It unlocks once you’re welcomed in.</p>
+              )
+            )}
+            {failed ? (
+              <InlineError message="We couldn’t load the member directory right now." onRetry={() => void (viewer.isError ? viewer.refetch() : member ? list.refetch() : roster.refetch())} />
+            ) : loading ? (
+              <p role="status" className="text-sm text-app-muted">Loading members…</p>
+            ) : empty ? null : (
+              <div className="dir-cols">
+                <div className="min-w-0">
+                  <div className="dir-bar">
+                    <label className="dir-search">
+                      <span className="sr-only">Search members</span>
+                      <input type="search" value={query} onChange={(e) => filter(() => setQuery(e.target.value))} placeholder="Search by name, business, or specialty" className={fieldClass} autoComplete="off" spellCheck={false} />
+                    </label>
+                    <label className="dir-hood">
+                      <span className="dir-hood-l">Neighborhood</span>
+                      <select value={con} onChange={(e) => chooseCon(e.target.value as ConId | "all")} className={cn("dir-select", ring)} aria-label="Constellation">
+                        <option value="all">All five constellations</option>
+                        {CONSTELLATIONS.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                      </select>
+                    </label>
+                    <div role="group" aria-label="Filter by neighborhood" className="dir-filters">
+                      {["All", ...hoods].map((name) => (
+                        <button key={name} type="button" aria-pressed={hood === name} onClick={() => filter(() => setHood(name))} className={cn("air-filter", ring)}>
+                          {name}<span>{name === "All" ? inCon.length : count(name)}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Announced, so a search or filter says what it found (the grid itself changes silently). */}
+                  <p aria-live="polite" className="dir-count">{shown.length < all.length ? `${shown.length} of ${all.length} match` : `${all.length} ${all.length === 1 ? "member" : "members"}`}</p>
+                  {sheet.length === 0 ? (
+                    <EmptySlot>
+                      <p className="air-empty-title">{all.length === 0 ? "No one is listed yet." : "No members match yet."}</p>
+                      <p>{all.length === 0 ? "Members choose whether they appear here. Check back soon." : "Try another name, specialty or neighborhood."}</p>
+                      {all.length > 0 && (
+                        <button type="button" onClick={() => filter(() => { setCon("all"); setHood("All"); setQuery(""); })} className={cn(secondaryButton, "mt-3")}>Show everyone</button>
+                      )}
+                    </EmptySlot>
+                  ) : (
+                    <div role="group" aria-label={`Members, page ${page + 1}`} className="people">
+                      {sheet.map((p) => <PersonCard key={p.key} person={p} onOpen={() => setOpenKey(p.key)} />)}
+                    </div>
+                  )}
+                  {pages > 1 && (
+                    <div className="dir-pager">
+                      <button type="button" disabled={page === 0} onClick={() => setPage(page - 1)} aria-label="Previous page" className={cn("air-icon-btn", ring)}><Icon name="arrow-left" className="size-4" /></button>
+                      <span aria-live="polite">Page {page + 1} of {pages}</span>
+                      <button type="button" disabled={page >= pages - 1} onClick={() => setPage(page + 1)} aria-label="Next page" className={cn("air-icon-btn", ring)}><Icon name="arrow-right" className="size-4" /></button>
+                    </div>
+                  )}
+                </div>
+                <DirectoryMap
+                  con={con} onCon={chooseCon} onPin={setOpenKey}
+                  pins={all.filter((p) => p.con).map((p) => ({ key: p.key, name: p.name, hood: p.hood, con: p.con!, caption: [p.role, p.business].filter(Boolean).join(", ") }))}
+                />
               </div>
-            </div>
-          )}
-          </>}
+            )}
+          </section>
+          <PersonDialog person={open} onClose={() => setOpenKey(null)} />
         </main>
       </AirShell>
     </AppPage>
-  );
-}
-
-/** The chosen member's card (a lime colour field): only the facts she published, never a placeholder. */
-function Pass({ member: m, ref }: { member: MemberProfile | null; ref: React.Ref<HTMLElement> }) {
-  const slug = m ? memberSlug(m) : undefined;
-  // Websites are free text: only an http(s) URL becomes a link (never javascript: and the like).
-  const website = m?.website ? safeHref(m.website) : undefined;
-  return (
-    <aside ref={ref} aria-live="polite" aria-label="Chosen member" className={cn("air-dir-pass", !m && "is-empty")}>
-      {!m ? (
-        <div className="py-3 text-center">
-          <div aria-hidden className="air-empty-stamp mx-auto mb-5"><span><Icon name="users" /></span></div>
-          <h2>No one chosen yet</h2>
-          <p className="mt-2.5 text-sm text-app-muted">Choose anyone in the directory to meet her.</p>
-        </div>
-      ) : (
-        <>
-          <div>
-            <p className="flex items-center justify-between air-lbl mb-0"><span>Member</span>{m.catalogueNumber !== undefined && <span>No. {no4(m.catalogueNumber)}</span>}</p>
-            <h2>{m.name}</h2>
-            {(m.role || m.business) && <p className="mt-2 text-[13px] font-medium text-app-muted">{[m.role, m.business].filter(Boolean).join(", ")}</p>}
-          </div>
-          <div className="pt-5">
-            {(m.neighborhood || m.specialty) && (
-              <dl className="grid grid-cols-2 gap-4 pt-3">
-                {m.neighborhood && <div><dt className="air-lbl">Neighborhood</dt><dd className="text-[13px] font-bold">{m.neighborhood}</dd></div>}
-                {m.specialty && <div><dt className="air-lbl">Craft</dt><dd className="text-[13px] font-bold">{m.specialty}</dd></div>}
-              </dl>
-            )}
-            {m.bio && <div className="mt-5"><span className="air-lbl">In her words</span><p className="text-sm/[1.5]">{m.bio}</p></div>}
-            {m.lookingFor && <div className="mt-4"><span className="air-lbl">Looking to meet</span><p className="text-[13px]/[1.45] font-semibold">{m.lookingFor}</p></div>}
-            <div className="mt-5 flex flex-col gap-2">
-              {slug && <Link to="/members/$slug" params={{ slug }} className={cn(mainButton, "w-full")}>Open her page<Icon name="arrow-right" /></Link>}
-              {website && <a href={website} target="_blank" rel="noopener noreferrer" className={cn(secondaryButton, "w-full bg-air-paper")}>Visit her website<Icon name="external-link" /><span className="sr-only"> (opens in a new tab)</span></a>}
-            </div>
-          </div>
-        </>
-      )}
-    </aside>
   );
 }

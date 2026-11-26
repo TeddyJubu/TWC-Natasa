@@ -34,6 +34,7 @@ import { Route as VerifiedRouteImport } from './routes/verified'
 import { Route as DotwellKnownSecurityDottxtRouteImport } from './routes/[.]well-known/security[.]txt'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/_admin/route'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
+import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedDirectoryRouteImport } from './routes/_authenticated/directory'
 import { Route as AuthenticatedFeedRouteImport } from './routes/_authenticated/feed'
 import { Route as ApiSplatRouteImport } from './routes/api/$'
@@ -192,6 +193,11 @@ const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
 const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   id: '/account',
   path: '/account',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCalendarRoute = AuthenticatedCalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDirectoryRoute = AuthenticatedDirectoryRouteImport.update({
@@ -399,6 +405,7 @@ export interface FileRoutesByFullPath {
   '/verified': typeof VerifiedRoute
   '/.well-known/security.txt': typeof DotwellKnownSecurityDottxtRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/calendar': typeof AuthenticatedCalendarRoute
   '/directory': typeof AuthenticatedDirectoryRoute
   '/feed': typeof AuthenticatedFeedRoute
   '/api/$': typeof ApiSplatRoute
@@ -459,6 +466,7 @@ export interface FileRoutesByTo {
   '/verified': typeof VerifiedRoute
   '/.well-known/security.txt': typeof DotwellKnownSecurityDottxtRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/calendar': typeof AuthenticatedCalendarRoute
   '/directory': typeof AuthenticatedDirectoryRoute
   '/feed': typeof AuthenticatedFeedRoute
   '/api/$': typeof ApiSplatRoute
@@ -522,6 +530,7 @@ export interface FileRoutesById {
   '/_authenticated/_admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/.well-known/security.txt': typeof DotwellKnownSecurityDottxtRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
+  '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
   '/_authenticated/directory': typeof AuthenticatedDirectoryRoute
   '/_authenticated/feed': typeof AuthenticatedFeedRoute
   '/api/$': typeof ApiSplatRoute
@@ -584,6 +593,7 @@ export interface FileRouteTypes {
     | '/verified'
     | '/.well-known/security.txt'
     | '/account'
+    | '/calendar'
     | '/directory'
     | '/feed'
     | '/api/$'
@@ -644,6 +654,7 @@ export interface FileRouteTypes {
     | '/verified'
     | '/.well-known/security.txt'
     | '/account'
+    | '/calendar'
     | '/directory'
     | '/feed'
     | '/api/$'
@@ -706,6 +717,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_admin'
     | '/.well-known/security.txt'
     | '/_authenticated/account'
+    | '/_authenticated/calendar'
     | '/_authenticated/directory'
     | '/_authenticated/feed'
     | '/api/$'
@@ -971,6 +983,13 @@ declare module '@tanstack/react-router' {
       path: '/account'
       fullPath: '/account'
       preLoaderRoute: typeof AuthenticatedAccountRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/calendar': {
+      id: '/_authenticated/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof AuthenticatedCalendarRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/directory': {
@@ -1252,6 +1271,7 @@ const AuthenticatedAdminRouteRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
+  AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
   AuthenticatedDirectoryRoute: typeof AuthenticatedDirectoryRoute
   AuthenticatedFeedRoute: typeof AuthenticatedFeedRoute
 }
@@ -1259,6 +1279,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRouteWithChildren,
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
+  AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
   AuthenticatedDirectoryRoute: AuthenticatedDirectoryRoute,
   AuthenticatedFeedRoute: AuthenticatedFeedRoute,
 }

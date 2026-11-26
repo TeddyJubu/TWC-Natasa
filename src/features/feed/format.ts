@@ -21,10 +21,10 @@ export function postedAgo(iso: string, now = new Date()): string {
 export const postedAt = (iso: string) =>
   new Date(iso).toLocaleString("en-US", { dateStyle: "full", timeStyle: "short", timeZone: TZ });
 
-/** "You, Cara and 21 others loved this": her first, then up to two named others; never a name the server didn't send. */
+/** "You, Cara and 21 others liked this": her first, then up to two named others; never a name the server didn't send. */
 export function lovedLine(loves: number, loved: boolean, lovedBy: string[]): string {
   const names = [...(loved ? ["You"] : []), ...lovedBy].slice(0, 2);
-  if (names.length === 0) return `${loves} ${loves === 1 ? "member" : "members"} loved this`;
+  if (names.length === 0) return `${loves} ${loves === 1 ? "member" : "members"} liked this`;
   const others = loves - names.length;
-  return others > 0 ? `${names.join(", ")} and ${others} ${others === 1 ? "other" : "others"} loved this` : `${names.join(" and ")} loved this`;
+  return others > 0 ? `${names.join(", ")} and ${others} ${others === 1 ? "other" : "others"} liked this` : `${names.join(" and ")} liked this`;
 }

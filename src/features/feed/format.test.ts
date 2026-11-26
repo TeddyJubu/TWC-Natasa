@@ -26,10 +26,10 @@ describe("postedAgo", () => {
 
 describe("lovedLine", () => {
   it("puts her first, names up to two, and counts the rest", () => {
-    expect(lovedLine(1, true, [])).toBe("You loved this");
-    expect(lovedLine(2, true, ["Cara"])).toBe("You and Cara loved this");
-    expect(lovedLine(23, false, ["Lucía Ferreira", "Aiko Tanaka"])).toBe("Lucía Ferreira, Aiko Tanaka and 21 others loved this");
-    expect(lovedLine(3, true, ["Cara", "Ada"])).toBe("You, Cara and 1 other loved this");
-    expect(lovedLine(2, false, [])).toBe("2 members loved this");
+    expect(lovedLine(1, true, [])).toBe("You liked this");
+    expect(lovedLine(2, true, ["Cara"])).toBe("You and Cara liked this");
+    expect(lovedLine(23, false, ["Lucía Ferreira", "Aiko Tanaka"])).toBe("Lucía Ferreira, Aiko Tanaka and 21 others liked this");
+    expect(lovedLine(3, true, ["Cara", "Ada"])).toBe("You, Cara and 1 other liked this");
+    expect(lovedLine(2, false, [])).toBe("2 members liked this");
   });
 });

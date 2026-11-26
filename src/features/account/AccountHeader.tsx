@@ -5,8 +5,7 @@ import type { Profile } from "@/features/members/queries";
 import { useUploadAvatar } from "@/features/members/mutations";
 import { bookingQuery, eventsQuery, rsvpsQuery } from "@/features/events/queries";
 import { eventWhen } from "@/features/events/format";
-import { mainButton, ring } from "@/app/layout/app-classes";
-import { Chip } from "@/app/layout/app-ui";
+import { ring, secondaryButton } from "@/app/layout/app-classes";
 import { Icon } from "@/app/layout/icons";
 import { dayParts, errorMessage } from "./helpers";
 
@@ -65,16 +64,15 @@ export function AccountHeader({ userId, profile, avatar, onPreview }: {
           />
         </label>
         <div className="air-phead-txt">
-          {approved
-            ? <Chip tone="ok"><Icon name="badge-check" className="size-3.5" />Verified member</Chip>
-            : <Chip tone={declined ? "muted" : "pending"}>{declined ? "Application not approved" : "Application under review"}</Chip>}
-          <h1 id="account-name">{profile.full_name || "Welcome, neighbor"}</h1>
-          {profile.specialty.trim() && <p className="air-tag">{profile.specialty}</p>}
-          {work && <p className="air-role">{work}</p>}
+          <h1 id="account-name"><NameLine name={profile.full_name || "Welcome, neighbor"} /></h1>
+          {(profile.specialty.trim() || work) && <p className="air-role">{[profile.specialty.trim(), work].filter(Boolean).join(" · ")}</p>}
         </div>
-        <button type="button" onClick={onPreview} className={cn(mainButton, "mb-2")}>
-          View public card <Icon name="arrow-right" />
-        </button>
+        <div className="air-phead-tags">
+          <span className="twc-flag">{approved ? "Verified member" : declined ? "Application not approved" : "Application under review"}</span>
+          <button type="button" onClick={onPreview} className={secondaryButton}>
+            View public card <Icon name="arrow-right" />
+          </button>
+        </div>
       </div>
       {upload.isError && <p role="alert" className="mt-3 text-sm text-danger">{errorMessage(upload.error)}</p>}
       {fields.length > 0 && (
@@ -91,4 +89,10 @@ export function AccountHeader({ userId, profile, avatar, onPreview }: {
       )}
     </section>
   );
+}
+
+/** Her name as the canvas sets it: the first word upright, the rest in italic. */
+function NameLine({ name }: { name: string }) {
+  const [first, ...rest] = name.split(" ");
+  return rest.length ? <>{first} <i>{rest.join(" ")}</i></> : <>{name}</>;
 }

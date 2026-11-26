@@ -1,19 +1,17 @@
-// The feed's composer (DESIGN.md "Newsfeed"): her mini stamp, the words, what kind of post it is, up to four photos
-// each with an optional description, and Post (the page's one red button).
+// The feed's composer (DESIGN.md "Newsfeed"), the canvas's: a label over a square field, then Photo (up to four, each
+// with an optional description), what kind of post it is, and Post.
 import * as React from "react";
 import { cn } from "@/index";
-import { fieldClass, mainButton, ring } from "@/app/layout/app-classes";
+import { fieldClass, primaryButton, ring } from "@/app/layout/app-classes";
 import { Icon } from "@/app/layout/icons";
 import { errorMessage } from "@/features/account/helpers";
 import { AVATAR_TYPES } from "@/features/members/mutations";
 import { FEED_KINDS, KINDS, MAX_ALT, MAX_PHOTOS, MAX_POST, type FeedKind } from "./kinds";
-import { areaOfPlace } from "@/features/applications/schema";
-import { MiniStamp } from "./FeedPost";
 import { photoProblem, preparePhoto, useCreatePost, type DraftPhoto } from "./mutations";
 
 type Picked = DraftPhoto & { url: string };
 
-export function Composer({ name, image, hood }: { name: string; image?: string; hood?: string | null }) {
+export function Composer({ name }: { name: string }) {
   const create = useCreatePost();
   const [kind, setKind] = React.useState<FeedKind>("update");
   const [body, setBody] = React.useState("");
@@ -69,17 +67,11 @@ export function Composer({ name, image, hood }: { name: string; image?: string; 
   const empty = !body.trim() && photos.length === 0;
   const error = problem ?? (create.isError ? errorMessage(create.error) : null);
   return (
-    <form onSubmit={submit} aria-labelledby="compose-title" aria-busy={preparing > 0} className="air-entry air-compose">
+    <form onSubmit={submit} aria-labelledby="compose-title" aria-busy={preparing > 0} className="air-compose">
       <h2 id="compose-title" className="sr-only">Write a post</h2>
-      <div className="air-compose-row">
-        <MiniStamp name={name} image={image} size="l" />
-        <div className="min-w-0 flex-1">
-          <label htmlFor="compose-body" className="sr-only">What’s new, {first}?</label>
-          <textarea ref={field} id="compose-body" value={body} onChange={(e) => setBody(e.target.value)} maxLength={MAX_POST} rows={2}
-            placeholder={`What’s new in your corner of ${areaOfPlace(hood)?.name ?? "the neighborhood"}, ${first}?`} className="air-compose-field" />
-          <p className="air-compose-to"><Icon name="globe" className="size-3.5" />Posting to every member of the collective</p>
-        </div>
-      </div>
+      <label htmlFor="compose-body" className="twc-eyebrow">Post to every member</label>
+      <textarea ref={field} id="compose-body" value={body} onChange={(e) => setBody(e.target.value)} maxLength={MAX_POST} rows={3}
+        placeholder={`Share news, ask a question, offer help, ${first}…`} className="air-compose-field" />
 
       {photos.length > 0 && (
         <ul aria-label="Photos to post" className="air-compose-photos">
@@ -99,24 +91,22 @@ export function Composer({ name, image, hood }: { name: string; image?: string; 
       {error && <p role="alert" className="air-entry-err mt-3">{error}</p>}
 
       <div className="air-compose-foot">
+        <label className={cn("air-compose-add", photos.length >= MAX_PHOTOS && "is-full")}>
+          <input type="file" multiple accept={AVATAR_TYPES.join(",")} onChange={pick} disabled={photos.length >= MAX_PHOTOS} className="sr-only" />
+          Photo<span className="sr-only">s (up to {MAX_PHOTOS})</span>
+        </label>
         <fieldset className="air-kinds">
           <legend className="sr-only">What kind of post</legend>
           {FEED_KINDS.map((k) => (
             <label key={k} className="air-kind">
               <input type="radio" name="kind" value={k} checked={kind === k} onChange={() => setKind(k)} className="sr-only" />
-              <Icon name={KINDS[k].icon} className="size-3.5" />{KINDS[k].label}
+              {KINDS[k].label}
             </label>
           ))}
         </fieldset>
-        <div className="flex items-center gap-2">
-          <label className={cn("air-icon-btn air-compose-add", photos.length >= MAX_PHOTOS && "is-full")}>
-            <input type="file" multiple accept={AVATAR_TYPES.join(",")} onChange={pick} disabled={photos.length >= MAX_PHOTOS} className="sr-only" />
-            <Icon name="image" className="size-4.5" /><span className="sr-only">Add photos (up to {MAX_PHOTOS})</span>
-          </label>
-          <button type="submit" disabled={empty || preparing > 0 || create.isPending} className={mainButton}>
-            {create.isPending ? "Posting…" : "Post"}<Icon name="arrow-right" />
-          </button>
-        </div>
+        <button type="submit" disabled={empty || preparing > 0 || create.isPending} className={cn(primaryButton, "ml-auto")}>
+          {create.isPending ? "Posting…" : "Post"}
+        </button>
       </div>
     </form>
   );

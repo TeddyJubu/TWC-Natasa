@@ -1,5 +1,5 @@
 # One group, so every named crawler follows the same rules (RFC 9309: a named group does not inherit *).
-# Signed-in pages (/account, /directory, /feed, /admin) are not disallowed: they answer X-Robots-Tag: noindex,
+# Signed-in pages (/account, /directory, /feed, /calendar, /admin) are not disallowed: they answer X-Robots-Tag: noindex,
 # which a crawler only sees if it may fetch them. /media/neighborhood-logos/ stays open.
 User-agent: *
 User-agent: Googlebot

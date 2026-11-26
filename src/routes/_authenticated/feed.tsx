@@ -1,11 +1,12 @@
-// The members' newsfeed (DESIGN.md "Newsfeed"): a masthead, the composer, filters and the posts, newest first, with
-// her pass on one side and neighbors to meet and what's coming up on the other. Approved members and admins only.
+// The members' newsfeed (DESIGN.md "Newsfeed"), the canvas's feed(): its page head, the composer, filters and the posts,
+// newest first, with the side column (her constellation, what's coming up, neighbors to meet, her card). Approved
+// members and admins only.
 import * as React from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { MemberDialog, cn, type MemberProfile } from "@/index";
 import { AppPage } from "@/app/layout/AppLayout";
-import { Chip, EmptySlot, InlineError, Stamp } from "@/app/layout/app-ui";
+import { Chip, EmptySlot, InlineError } from "@/app/layout/app-ui";
 import { ring, secondaryButton } from "@/app/layout/app-classes";
 import { Icon } from "@/app/layout/icons";
 import { AirShell } from "@/features/account/AirShell";
@@ -58,33 +59,34 @@ function FeedPage() {
         page="/feed" admin={viewer.data?.admin === true} name={name} avatar={own?.avatarUrl}
         catalogueNumber={own?.profile.status === "approved" ? own.profile.catalogue_number : null}
       >
-        <main id="main" tabIndex={-1} className="air-feed outline-none">
-          <div className="air-feed-main">
-            <section className="air-feed-mast">
-              <div>
-                <p className="air-lbl">{today} · {area ? `${area.name} edition` : "Members’ edition"}</p>
-                <h1>The feed</h1>
-              </div>
-              {head && <p className="air-feed-note"><span aria-hidden className="air-dot" />{head.week ? `${head.week} new this week` : "Quiet this week"}</p>}
-            </section>
+        <main id="main" tabIndex={-1} className="outline-none">
+          <section className="twc-phd">
+            <div>
+              <span className="twc-eyebrow">{area ? area.name : "Members"} · {today}</span>
+              <h1>The <i>feed</i></h1>
+              <p className="twc-lede">News, asks, offers and events from members across North Brooklyn and Queens.</p>
+            </div>
+            {head && <p className="air-feed-note"><span aria-hidden className="air-dot" />{head.week ? `${head.week} new this week` : "Quiet this week"}</p>}
+          </section>
 
+          <section className="air-sec">
+          <div className="air-two">
+          <div className="min-w-0">
             {viewer.isError ? (
               <InlineError message="We couldn’t load the feed right now." onRetry={() => void viewer.refetch()} />
             ) : viewer.isPending ? (
               <p role="status" className="air-feed-status">Loading the feed…</p>
             ) : !member ? (
-              <div className="mt-8">
-                {viewer.data.declined ? <DeclinedSlot /> : (
-                  <EmptySlot icon="shield-check">
-                    <p className="air-empty-title">Unlocks once you’re welcomed in</p>
-                    <p>Members share news, asks, offers and events here.</p>
-                    {own && !own.hasApplication && <Link to="/join" className={cn("air-link", ring)}>Haven’t applied yet? Start your application</Link>}
-                  </EmptySlot>
-                )}
-              </div>
+              viewer.data.declined ? <DeclinedSlot /> : (
+                <EmptySlot icon="shield-check">
+                  <p className="air-empty-title">Unlocks once you’re welcomed in</p>
+                  <p>Members share news, asks, offers and events here.</p>
+                  {own && !own.hasApplication && <Link to="/join" className={cn("air-link", ring)}>Haven’t applied yet? Start your application</Link>}
+                </EmptySlot>
+              )
             ) : (
               <>
-                <Composer name={name} image={own?.avatarUrl} hood={hood} />
+                <Composer name={name} />
                 <div role="group" aria-label="Filter the feed" className="air-feed-filters">
                   {filters.map(([key, label]) => (
                     <button key={key} type="button" aria-pressed={filter === key} onClick={() => setFilter(key)} className={cn("air-filter", ring)}>{label}</button>
@@ -115,17 +117,20 @@ function FeedPage() {
           </div>
 
           {member && (
-            <>
-              <aside aria-label="Your pass" className="air-feed-rail">
-                <FeedPass own={own} name={name} mine={head?.mine} />
-                <p className="air-dir-hint"><Icon name="shield-check" className="mt-0.5 size-4" />Keep it neighborly: wins, asks, offers and events. Cold sales pitches get returned to sender.</p>
-              </aside>
-              <aside aria-label="Neighbors and events" className="air-feed-side">
-                <Neighbors userId={user.id} hood={hood} onOpen={setOpenMember} />
-                <ComingUp userId={user.id} />
-              </aside>
-            </>
+            <aside aria-label="Your constellation and what’s coming up" className="air-side">
+              <section className="air-blk" aria-labelledby="mine-title">
+                <h2 id="mine-title">Your constellation</h2>
+                <p className="text-app-muted">{[hood, area?.name].filter(Boolean).join(" · ") || "Choose your neighborhood on your profile."}</p>
+                <p className="mt-2"><Link to="/directory" className={cn("air-link", ring)}>Who’s in the directory →</Link></p>
+              </section>
+              <ComingUp userId={user.id} />
+              <Neighbors userId={user.id} hood={hood} onOpen={setOpenMember} />
+              <FeedPass own={own} name={name} mine={head?.mine} />
+              <p className="air-feed-why">Keep it neighborly: wins, asks, offers and events. Cold sales pitches get returned to sender.</p>
+            </aside>
           )}
+          </div>
+          </section>
           <MemberDialog member={openMember} onClose={() => setOpenMember(null)} />
         </main>
       </AirShell>
@@ -162,12 +167,18 @@ function Neighbors({ userId, hood, onOpen }: { userId: string; hood: string | nu
   const list = intros.data ?? [];
   if (list.length === 0) return null;
   return (
-    <section aria-labelledby="neighbors-title">
-      <div className="air-feed-h"><h2 id="neighbors-title">Neighbors to meet</h2><Link to="/directory" className={cn("air-link", ring)}>All members</Link></div>
-      <div className="air-sheet air-sheet--pair">
-        {list.map((m) => <Stamp key={m.id} member={m} label={`View ${m.name}’s profile`} onClick={() => onOpen(m)} />)}
-      </div>
-      <p className="air-feed-why">{hood ? `Neighbors from ${hood} first, then across the collective.` : "Neighbors from across the collective."}</p>
+    <section className="air-blk" aria-labelledby="neighbors-title">
+      <h2 id="neighbors-title">Neighbors to meet</h2>
+      <ul>
+        {list.map((m) => (
+          <li key={m.id}>
+            <button type="button" onClick={() => onOpen(m)} aria-label={`View ${m.name}’s profile`} className={cn("air-who-row", ring)}>
+              <MiniStamp name={m.name} image={m.image} size="s" />
+              <span className="min-w-0"><b>{m.name}</b>{(m.role || m.neighborhood) && <small>{[m.role, m.neighborhood].filter(Boolean).join(" · ")}</small>}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
@@ -179,24 +190,25 @@ function ComingUp({ userId }: { userId: string }) {
   const next = (events.data ?? []).slice(0, COMING_UP);
   if (next.length === 0) return null;
   return (
-    <section aria-labelledby="coming-up-title">
-      <div className="air-feed-h"><h2 id="coming-up-title">Coming up</h2><Link to="/account" hash="events" className={cn("air-link", ring)}>All events</Link></div>
-      <ul className="air-feed-events">
+    <section className="air-blk" aria-labelledby="coming-up-title">
+      <h2 id="coming-up-title">Coming up</h2>
+      <ul className="air-evlist">
         {next.map((e) => {
           const when = eventWhen(e.starts_at);
           const going = rsvps.has(e.id);
           return (
             <li key={e.id}>
-              <div aria-hidden className={cn("air-feed-date", going && "is-going")}><b>{when.day}</b><small>{when.weekday}</small></div>
+              <b aria-hidden>{when.day}</b>
               <div className="min-w-0">
-                <p className="font-semibold">{e.title}</p>
-                <p className="air-entry-meta">{when.weekday}, {when.month} {when.day} · {when.time}{e.location && ` · ${e.location}`}</p>
+                <p className="air-evlist-n">{e.title}</p>
+                <p className="air-evlist-m">{when.weekday}, {when.month} {when.day} · {when.time}{e.location && ` · ${e.location}`}</p>
                 {going && <Chip tone="ok" className="mt-1.5">You’re going</Chip>}
               </div>
             </li>
           );
         })}
       </ul>
+      <p className="mt-2"><Link to="/calendar" className={cn("air-link", ring)}>The calendar →</Link></p>
     </section>
   );
 }
