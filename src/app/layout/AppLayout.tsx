@@ -86,7 +86,7 @@ function SiteNav() {
   const join = (size: string) => signedIn
     ? <Link to="/account" className={cn(JOIN_CLASS, "twc-btn--sm", size)}>Account</Link>
     // The header's compact pill: no arrow and one line, so the lg row and a 360px phone bar still fit.
-    : <JoinButton className={cn("twc-btn--sm whitespace-nowrap [&_.twc-arrow]:hidden", size)} />;
+    : <JoinButton className={cn("twc-btn--sm whitespace-nowrap [&_.twc-arrow]:hidden", size)}>Join</JoinButton>;
   return (
     <header className="sticky top-0 z-40 bg-sb-paper">
       <div className="hidden items-center justify-between gap-6 px-10 pb-4 pt-[18px] lg:flex">

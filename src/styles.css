@@ -16,19 +16,24 @@
 #main [tabindex="-1"]:focus { outline: none; }
 
 /* ── Public site (app-only; not part of the design-system attach) ── */
-/* The canvas design system (docs/design-canvas/, "01 Programme"), ported onto Archivo on white with #111 ink. Fonts are
-   self-hosted (CSP is font-src 'self'): Archivo from the design-system theme, IBM Plex Mono for labels and indexes. Caveat and
-   Fragment Mono are retired (spec 2026-11-26). */
+/* The canvas design system (docs/design-canvas/, "01 Programme"), as drawn: the cool grey-blue ground, Instrument Serif
+   headlines, Archivo text and IBM Plex Mono labels (user decision, 2026-11-26: no deliberate differences from the canvas).
+   Fonts are self-hosted (CSP is font-src 'self'). */
+/* Instrument Serif: headlines and the canvas's italic accents. Latin subset (OFL). */
+@font-face { font-family: "Instrument Serif"; src: url("./assets/fonts/instrument-serif/instrument-serif-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Instrument Serif"; src: url("./assets/fonts/instrument-serif/instrument-serif-latin-400-italic.woff2") format("woff2"); font-weight: 400; font-style: italic; font-display: swap; }
 /* IBM Plex Mono: labels, indexes, stamps. Latin subset. */
 @font-face { font-family: "IBM Plex Mono"; src: url("./assets/fonts/airmail/ibm-plex-mono-latin-500-normal.woff2") format("woff2"); font-weight: 500; font-display: swap; }
 @font-face { font-family: "IBM Plex Mono"; src: url("./assets/fonts/airmail/ibm-plex-mono-latin-600-normal.woff2") format("woff2"); font-weight: 600; font-display: swap; }
 @font-face { font-family: "IBM Plex Mono"; src: url("./assets/fonts/airmail/ibm-plex-mono-latin-700-normal.woff2") format("woff2"); font-weight: 700; font-display: swap; }
 @theme {
   --font-plex: "IBM Plex Mono", ui-monospace, monospace;
+  --font-serif: "Instrument Serif", Georgia, serif;
   /* Roles */
-  --color-sb-ink: #111111;
+  --color-sb-ink: #151414;
+  --color-sb-ground: #f1f4f8; /* the Programme ground: the page behind every section (canvas --paper) */
   --color-sb-paper: #ffffff;
-  --color-sb-muted: #5c5751;
+  --color-sb-muted: #525a66;
   --color-sb-cream: #e7ecf2; /* the Programme stone: light grounds, notices, mats (cool, never cream) */
   --color-sb-blue-ink: #1f2bd8; /* cobalt: inline links, Join, focus rings */
   --color-sb-danger: #93313a; /* wine */

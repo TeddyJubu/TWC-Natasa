@@ -33,9 +33,11 @@ describe("fonts", () => {
     },
   );
 
-  it("Archivo is the only text face: no retired serif or sans face is declared anywhere", () => {
+  it("the canvas's faces only: Archivo text, Instrument Serif headlines (self-hosted), no retired face", () => {
     const css = theme + readFileSync(`${cwd}/src/styles.css`, "utf8");
-    for (const gone of ["Gilda Display", "Instrument Serif", "Geist", "Inter"]) expect(css).not.toContain(`"${gone}"`);
+    for (const gone of ["Gilda Display", "Geist", "Inter", "Caveat", "Fragment Mono"]) expect(css).not.toContain(`"${gone}"`);
+    expect(css).toMatch(/--font-serif: "Instrument Serif"/);
+    expect(css).toMatch(/font-family: "Instrument Serif"; src: url\("\.\/assets\/fonts\/instrument-serif\//);
     expect(theme).toMatch(/--font-display: "Archivo"/);
     expect(theme).toMatch(/--font-sans: "Archivo"/);
   });

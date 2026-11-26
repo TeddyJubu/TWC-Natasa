@@ -21,7 +21,7 @@
   --twc-press-dur: 150ms; --twc-learn-dur: 350ms; --twc-learn-shift: 3px;
 }
 @layer components {
-.twc-page { background: var(--color-sb-paper); color: var(--color-sb-ink); font: 400 15px/1.45 var(--font-sans); }
+.twc-page { background: var(--color-sb-ground); color: var(--color-sb-ink); font: 400 15px/1.45 var(--font-sans); }
 :where(.twc-page) :focus-visible { outline: 2px solid var(--color-sb-ink); outline-offset: 3px; }
 
 /* Pill: 1.5px border, sentence case, press feedback (canvas .twc-pill). Default ink fill; --outline is the canvas
@@ -67,10 +67,12 @@
 .twc-eyebrow { font: 600 12px/16px var(--font-sans); letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-sb-muted); }
 .twc-index { font: 500 11px/1.55 var(--font-plex); letter-spacing: 0.08em; color: var(--color-sb-muted); }
 
-/* Headings: sentence case, Archivo heavy and condensed, on the canvas's fluid scale (.d1/.d2/.d3) */
-.twc-display { font: 800 condensed clamp(3rem, 7.4vw, 6.4rem)/0.92 var(--font-display); letter-spacing: -0.025em; margin: 0; text-wrap: balance; }
-.twc-h2 { font: 800 condensed clamp(2.4rem, 5vw, 4rem)/0.95 var(--font-display); letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
-.twc-h3 { font: 800 condensed clamp(1.8rem, 3vw, 2.75rem)/1 var(--font-display); letter-spacing: -0.01em; margin: 0; text-wrap: balance; }
+/* Headings: sentence case in Instrument Serif, on the canvas's fluid scale (.d1/.d2/.d3/.s3) */
+.twc-display { font: 400 clamp(3rem, 7.4vw, 6.4rem)/0.92 var(--font-serif); letter-spacing: -0.025em; margin: 0; text-wrap: balance; }
+.twc-h2 { font: 400 clamp(2.4rem, 5vw, 4rem)/0.95 var(--font-serif); letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
+.twc-h3 { font: 400 clamp(1.8rem, 3vw, 2.75rem)/1 var(--font-serif); letter-spacing: 0; margin: 0; text-wrap: balance; }
+.twc-s3 { font: 400 26px/1.05 var(--font-serif); margin: 0; }
+.twc-display i, .twc-h2 i, .twc-h3 i, .twc-s3 i { font-style: italic; }
 .twc-lede { font: 400 17px/1.45 var(--font-sans); color: var(--color-sb-muted); max-width: 52ch; margin: 0; }
 
 /* FAQ item: native <details name> accordion */
@@ -121,12 +123,30 @@ textarea.twc-input { min-height: 132px; padding: 12px 14px; border-radius: 0; re
 .twc-footer__big { margin: 0; font: 900 clamp(2.7rem, 7.95vw, 7.65rem)/0.82 var(--font-display); letter-spacing: -0.055em; }
 .twc-footer__cols { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; gap: var(--twc-space-24); margin-top: 70px; font: 500 11px/1.55 var(--font-plex); }
 .twc-footer__cols p { margin: 0; }
-.twc-footer__wm { font: 800 condensed 22px/1.1 var(--font-display); letter-spacing: -0.01em; }
+.twc-footer__wm { font: 400 22px/1.1 var(--font-serif); }
 .twc-footer__cols nav { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: var(--twc-space-8); }
 .twc-footer__cols a { text-decoration: none; }
 .twc-footer__cols a:hover, .twc-footer__cols a:focus-visible { text-decoration: underline; text-underline-offset: 3px; }
 @media (max-width: 1100px) { .twc-footer__cols { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 600px) { .twc-footer__cols { grid-template-columns: 1fr; margin-top: 40px; } }
+
+/* Paper texture on coloured cards (canvas, verbatim): a fine tooth over a soft mottle, tiled. Not on white or ink fields. */
+.twc-cband, .twc-tile:not(.twc-tile--photo), .twc-ev, .twc-panel, .twc-card, [class*="twc-c-"]:not(.twc-c-white, .twc-c-ink) {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' seed='3' stitchTiles='stitch' result='t'/%3E%3CfeColorMatrix in='t' type='matrix' values='0 0 0 0 .3  0 0 0 0 .25  0 0 0 0 .18  0 0 -1.4 0 .76' result='tooth'/%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.03' numOctaves='3' seed='9' stitchTiles='stitch' result='m'/%3E%3CfeColorMatrix in='m' type='matrix' values='0 0 0 0 .3  0 0 0 0 .25  0 0 0 0 .18  0 0 -.7 0 .38' result='mottle'/%3E%3CfeMerge%3E%3CfeMergeNode in='mottle'/%3E%3CfeMergeNode in='tooth'/%3E%3C/feMerge%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url%28%23f%29' opacity='.25'/%3E%3C/svg%3E") !important;
+  background-size: 300px 300px !important; background-repeat: repeat !important; /* !important as in the canvas: a later `background` shorthand must not drop it */
+}
+/* Film photos (canvas .photo.film): a grain that flickers for 4.5 s then rests (motion stops within 5 s), and a warm
+   light leak on hover or in an open band. */
+.twc-film { position: relative; overflow: hidden; isolation: isolate; background: var(--color-sb-cream); }
+.twc-film > img { display: block; width: 100%; height: 100%; object-fit: cover; transform: scale(1.02); transition: transform 1.4s cubic-bezier(.2, .7, .2, 1); }
+.twc-film::after { content: ""; position: absolute; inset: -60%; z-index: 2; pointer-events: none; opacity: 0.1; mix-blend-mode: overlay;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: twc-grain 0.9s steps(5) 5; }
+.twc-film::before { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0; mix-blend-mode: screen; transition: opacity 0.9s ease;
+  background: radial-gradient(120% 70% at 105% -5%, rgba(234, 90, 44, .85), rgba(248, 222, 110, .35) 35%, transparent 62%); }
+.twc-film:hover::before, [open] .twc-film::before { opacity: 0.55; }
+.twc-film:hover > img, a:hover .twc-film > img { transform: scale(1.08); }
+@keyframes twc-grain { 0% { transform: translate(0, 0); } 20% { transform: translate(-6%, 4%); } 40% { transform: translate(5%, -7%); } 60% { transform: translate(-3%, 8%); } 80% { transform: translate(7%, 2%); } 100% { transform: translate(0, 0); } }
 
 }
 
@@ -135,6 +155,8 @@ textarea.twc-input { min-height: 132px; padding: 12px 14px; border-radius: 0; re
   .twc-btn, .twc-faq, .twc-faq__toggle, .twc-link, .twc-choice { transition: none; }
   .twc-faq::details-content { transition: none; }
   .twc-btn:active { scale: none; }
+  .twc-film::after { animation: none; }
+  .twc-film > img, .twc-film::before { transition: none; }
 }
 
 /* The design-system MemberCard/MemberDialog set their index line in `font-mono`; on the site that is Plex Mono. */

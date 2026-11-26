@@ -173,6 +173,21 @@ it (and restarting `twc-natasa.service`) opens the site. The PIN lives only in `
 **Before removing it, remove the demo members** (below): they share one known password, so the moment the PIN is
 gone anyone could sign in as one and read the members-only directory.
 
+### Roster (real members on the canvas pages)
+
+The canvas pages' member charts, cards and strips read the club's real members from `${DATA_DIR}/roster/`:
+`roster.json` (`{"leads": {"NB": "…", "WQ": "…"}, "members": [{"name", "hood", "constellation", "file", "role"?,
+"business"?, "founder"?, "line"?}]}`) and the `.webp` photos it names (lowercase `a-z0-9-` file names). It is
+member data, so it is **never committed** (this repository is public) and never under `public/` or `src/`: on the
+VPS it lives beside the database, and its photos are served only by `/media/roster/<file>`. Anyone past the PIN sees
+it while `SITE_PIN` is set; once the PIN is lifted only approved members and admins do (`src/features/roster/`).
+Without the folder the pages show open seats. Copy it up (from a machine with the files) and keep it readable by
+the service:
+
+```
+scp -r roster/ vps:/var/lib/twc-natasa/data/ && ssh vps 'chown -R www-data: /var/lib/twc-natasa/data/roster'
+```
+
 ### Demo data (preview only)
 
 `scripts/seed-demo.ts` fills the preview with exactly 100 made-up members so the directory, member pages, `/account`

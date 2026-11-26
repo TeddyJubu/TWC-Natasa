@@ -35,13 +35,13 @@ export function Icon({ name, className }: { name: IconName; className?: string }
 }
 
 export const JOIN_HREF = "/join";
-export const JOIN_CLASS = "twc-btn twc-btn--blue";
-/** The one join call to action (owner's request, 2026-11-24): every join button on the site is this — the same blue
- *  pill, the same words and plain `/join` (no `?area=`; the form asks). `className` is for layout and size only. */
-export function JoinButton({ className, style, onClick }: { className?: string; style?: React.CSSProperties; onClick?: () => void }) {
+export const JOIN_CLASS = "twc-btn";
+/** The one join call to action: the canvas's solid ink pill to plain `/join` (no `?area=`; the form asks), worded as the
+ *  canvas words it at that spot ("Join", "Join North Brooklyn", "Become a member"…). `className` is for layout and size. */
+export function JoinButton({ className, style, onClick, children = "Join us" }: { className?: string; style?: React.CSSProperties; onClick?: () => void; children?: React.ReactNode }) {
   return (
     <Link to={JOIN_HREF} onClick={onClick} style={style} className={cn(JOIN_CLASS, className)}>
-      Join us <Icon name="arrow" className="twc-arrow" />
+      {children} <Icon name="arrow" className="twc-arrow" />
     </Link>
   );
 }

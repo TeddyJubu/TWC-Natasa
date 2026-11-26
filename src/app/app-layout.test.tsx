@@ -288,7 +288,6 @@ describe("join buttons", () => {
     for (const a of buttons) {
       expect(a.getAttribute("href")).toBe("/join");
       expect(a.className.split(" ")).toEqual(expect.arrayContaining(JOIN_CLASS.split(" ")));
-      expect(a.textContent?.trim()).toBe("Join us");
     }
     // No join link anywhere on a public page carries an area or another path.
     for (const a of container.querySelectorAll("a[href^='/join']")) expect(a.getAttribute("href")).toBe("/join");
