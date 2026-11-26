@@ -24,6 +24,7 @@ const ROSTER = {
   leads: { WQ: "Wren Example" },
   members: [
     { name: "Ann Example", hood: "Greenpoint", constellation: "NB", photo: "/media/roster/ann.webp", role: "Florist", business: "Stems", founder: true },
+    { name: "Cleo Sample", hood: "Williamsburg", constellation: "NB", photo: "/media/roster/cleo.webp", role: "Potter", business: "Kiln" },
     { name: "Bea Sample", hood: "Astoria", constellation: "WQ", photo: "/media/roster/bea.webp" },
   ],
 };
@@ -44,15 +45,16 @@ describe.each([["/constellations", Constellations], ["/membership", Membership],
 });
 
 describe("/constellations", () => {
-  it("draws the five bands, and a band's cards are its roster members", () => {
+  it("draws the five bands, and a band's cards are its roster members (the founder leads it, as on the canvas, with no card)", () => {
     show(Constellations, ROSTER);
     expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Five Constellations");
     const bands = [...main().querySelectorAll("details.twc-cband")];
     expect(bands.map((b) => b.querySelector(".twc-cband__name")!.textContent)).toEqual(
       ["North Brooklyn", "Western Queens", "Brownstone Brooklyn", "Uptown Manhattan", "Downtown Manhattan"]);
     const nb = within(bands[0] as HTMLElement);
-    expect(nb.getByAltText("Ann Example").getAttribute("src")).toBe("/media/roster/ann.webp");
-    expect(nb.getByText("Stems")).toBeTruthy();
+    expect(nb.getByAltText("Cleo Sample").getAttribute("src")).toBe("/media/roster/cleo.webp");
+    expect(nb.getByText("Kiln")).toBeTruthy();
+    expect(nb.queryByAltText("Ann Example")).toBeNull();
     expect(nb.getByRole("link", { name: /^Join North Brooklyn/ }).getAttribute("href")).toBe("/join");
     expect(within(bands[1] as HTMLElement).getByText(/Wren Example/)).toBeTruthy(); // "Led by", from roster.leads
   });

@@ -18,8 +18,8 @@ export function Bands({ cardHeading = "h3" }: { cardHeading?: "h2" | "h3" }) {
   return (
     <div className="twc-cbands">
       {CONSTELLATIONS.map((c, i) => (
-        <Band key={c.short} c={c} no={i + 1} H={cardHeading} lead={roster?.leads[c.short]}
-          members={(roster?.members ?? []).filter((m) => m.constellation === c.short)} />
+        <Band key={c.short} c={c} no={i + 1} H={cardHeading} lead={roster?.leads[c.short]} stars={roster?.members.length ? c.stars : 0}
+          members={(roster?.members ?? []).filter((m) => m.constellation === c.short && !m.founder)} />
       ))}
     </div>
   );
@@ -29,7 +29,8 @@ const reduced = () => typeof matchMedia === "function" && matchMedia("(prefers-r
 
 /** One constellation (canvas bands()): a native <details> folder whose sheet holds the words, the star chart and the
  *  sliding profile cards; a member's spark and card light up together (data-m), and a spark shows her card. */
-function Band({ c, no, lead, members, H }: { c: Con; no: number; H: "h2" | "h3"; lead?: string; members: RosterMember[] }) {
+/** `stars`: the chart's star count, 0 while the roster is hidden (a visitor after launch sees only open seats). */
+function Band({ c, no, lead, members, stars, H }: { c: Con; no: number; H: "h2" | "h3"; lead?: string; members: RosterMember[]; stars: number }) {
   const [hl, setHl] = useState<string | null>(null);
   const slider = useRef<HTMLDivElement>(null);
   const ids = members.map((_, i) => `${c.short.toLowerCase()}-${String(i + 1).padStart(2, "0")}`);
@@ -55,7 +56,7 @@ function Band({ c, no, lead, members, H }: { c: Con; no: number; H: "h2" | "h3";
             : <Link to="/contact" className="twc-btn">Apply to lead it</Link>}
         </div>
         <div className="twc-cband__chart">
-          <StarChart id={c.short} name={c.name} hoods={c.hoods} live={c.live} hl={hl} onPick={show}
+          <StarChart id={c.short} name={c.name} hoods={c.hoods} live={c.live} total={stars} hl={hl} onPick={show}
             members={members.map((m, i) => ({ id: ids[i], name: m.name, hood: m.hood, job: [m.role, m.business].filter(Boolean).join(" · ") }))} />
         </div>
         <div className="twc-pf">

@@ -61,15 +61,20 @@ describe("/ (home): members come only from the roster", () => {
     expect(bandsOf(container)[1].querySelector(".twc-cband__facts")!.textContent).toBe("Led byAmbassador-led");
   });
 
-  it("a roster: one spark per member in her neighborhood, hub counts equal the roster's, her card has her photo and name", () => {
+  it("a roster: a named spark per member in her neighborhood, unnamed ones up to the canvas's count, her card has her photo and name", () => {
     const { container } = renderWithQueries(<Page />, withRoster(ROSTER));
     const [nb, wq, sb] = bandsOf(container);
     const nbChart = nb.querySelector("svg.twc-starchart")!;
-    expect(nbChart.querySelectorAll("path.sc-mem")).toHaveLength(3);
-    expect(subLabels(nbChart)).toEqual(["2 members", "1 member", "Your star here", "★ neighborhood · ✦ member"]);
-    expect(nbChart.getAttribute("aria-label")).toBe("North Brooklyn constellation: Greenpoint, Williamsburg, Bushwick, 3 members");
-    expect(subLabels(wq.querySelector("svg.twc-starchart")!).slice(0, 2)).toEqual(["1 member", "Your star here"]);
-    expect(sb.querySelectorAll("path.sc-mem")).toHaveLength(0);
+    expect([...nbChart.querySelectorAll("path.sc-named")].map((p) => p.querySelector("title")!.textContent)).toEqual(
+      ["Ada Example · Potter · Clay Co, Greenpoint", "Bea Sample, Greenpoint", "Cy Placeholder · Florist, Williamsburg"]);
+    expect(nbChart.querySelectorAll("path.sc-mem")).toHaveLength(50);
+    // The unnamed stars take the neighborhoods in turn after the named ones (the canvas's order): 2+16, 1+16, 0+15.
+    expect(subLabels(nbChart)).toEqual(["18 members", "17 members", "15 members", "★ neighborhood · ✦ member"]);
+    expect(nbChart.getAttribute("aria-label")).toBe("North Brooklyn constellation: Greenpoint, Williamsburg, Bushwick, 50 members");
+    expect(nbChart.querySelector("path.sc-mem:not(.sc-named) title")!.textContent).toMatch(/^Member \d+, /);
+    expect(subLabels(wq.querySelector("svg.twc-starchart")!).slice(0, 2)).toEqual(["4 members", "4 members"]);
+    expect(sb.querySelectorAll("path.sc-mem")).toHaveLength(15);
+    expect(sb.querySelectorAll("path.sc-named")).toHaveLength(0);
     expect(sb.querySelectorAll(".twc-pf-card.is-open")).toHaveLength(2);
 
     const cards = [...nb.querySelectorAll(".twc-pf-card")];
@@ -82,12 +87,12 @@ describe("/ (home): members come only from the roster", () => {
   it("hovering a member's spark lights her card, and her card lights her spark", () => {
     const { container } = renderWithQueries(<Page />, withRoster(ROSTER));
     const nb = bandsOf(container)[0];
-    const spark = nb.querySelector<SVGPathElement>("path.sc-mem")!, id = spark.dataset.m!;
+    const spark = nb.querySelector<SVGPathElement>("path.sc-named")!, id = spark.dataset.m!;
     fireEvent.mouseOver(spark);
     expect(nb.querySelector(`.twc-pf-card[data-m="${id}"]`)!.classList.contains("is-hl")).toBe(true);
     fireEvent.mouseOver(nb.querySelectorAll(".twc-pf-card")[2]);
     expect(spark.classList.contains("is-hl")).toBe(false);
-    expect(nb.querySelectorAll("path.sc-mem")[2].classList.contains("is-hl")).toBe(true);
+    expect(nb.querySelectorAll("path.sc-named")[2].classList.contains("is-hl")).toBe(true);
   });
 
   it("the profile slider is keyboard reachable, with labelled previous and next buttons", () => {
