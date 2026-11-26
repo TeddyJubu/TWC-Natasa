@@ -19,6 +19,7 @@ import elmhurst128 from "../assets/logos/the-womens-collective-elmhurst-128.webp
 import forestHills128 from "../assets/logos/the-womens-collective-forest-hills-128.webp";
 import regoPark128 from "../assets/logos/the-womens-collective-rego-park-128.webp";
 import lockupInk from "../assets/logos/the-womens-collective-lockup-ink.webp";
+import clubLockupInk from "../assets/logos/the-womens-collective-club-lockup-ink.webp";
 
 export const constellationLogoSources = {
   ink: inkLogo,
@@ -59,3 +60,6 @@ export function constellationLogoSrcSet(src: string | null | undefined): string 
 
 /** The wordmark lockup: the three stars beside "The Women's Collective" (docs/design-canvas/logos/twc-ink.webp). */
 export const LOCKUP = { src: lockupInk, width: 770, height: 400 } as const;
+
+/** The boxed club lockup the site header uses: the three stars over "The Women's Collective Club" (docs/design-canvas/logos/twc-club-ink.webp). */
+export const CLUB_LOCKUP = { src: clubLockupInk, width: 783, height: 480 } as const;

@@ -92,15 +92,11 @@ export const COPY_FIELDS: Record<CopyForm, CopyField[]> = {
   ],
   partnership: [
     ...g("Top of the page", [
-      "for businesses",
-      "Partners, not vendors.",
-      "Every event happens because someone opens their doors and shares what they know. That’s a collaboration, and we treat it like one.",
+      "Work with us",
+      "Ways to partner",
+      "Whether you’re a neighborhood business, a global brand or someone who wants to give back, there is a way to partner that fits your goals and budget.",
     ]),
-    ...g("Next to the form", [
-      "start the conversation",
-      "Tell us what you had in mind.",
-      "A couple of sentences is plenty. We answer every one of these, and we’ll say no clearly if it isn’t a fit rather than going quiet on you.",
-    ]),
+    ...g("Next to the form", ["Talk to us"]),
     ...g("The form", [
       "Your name", "Email", "Business", "Type of collaboration", "What did you have in mind?",
       "A couple of sentences is plenty. Include your neighborhood if it’s relevant.", "Send inquiry",

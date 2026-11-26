@@ -74,26 +74,3 @@
 
 html:has(.sb-home) { scroll-behavior: smooth; }
 
-/* The phone menu's items rise in on open (the menu below). */
-@keyframes sb-rise { from { opacity: 0; transform: translateY(24px); } }
-
-/* Mobile menu: a full-screen ui-sdk Dialog, which handles Esc, focus and the scroll lock. */
-.sb-menu {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  max-width: none;
-  height: 100dvh;
-  max-height: none;
-  margin: 0;
-  border: 0;
-  padding: 0;
-  transition: opacity var(--duration-base) var(--ease-gentle), translate var(--duration-slow) var(--ease-gentle);
-}
-.sb-menu[data-starting-style], .sb-menu[data-ending-style] { opacity: 0; translate: 0 -1.5rem; }
-.sb-menu[data-open] .sb-menu-item { animation: sb-rise 0.6s var(--ease-gentle) var(--d, 0ms) both; }
-@media (prefers-reduced-motion: reduce) {
-  .sb-menu { transition: none; }
-  .sb-menu[data-starting-style], .sb-menu[data-ending-style] { translate: none; }
-  .sb-menu[data-open] .sb-menu-item { animation: none; }
-}

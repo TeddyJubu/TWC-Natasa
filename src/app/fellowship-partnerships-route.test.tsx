@@ -47,16 +47,16 @@ describe.each([["/fellowship", Fellowship], ["/partnerships", Partnerships]] as 
     expect(main().textContent).not.toMatch(/[[\]]/);
   });
 
-  // One club, two areas (owner's decision, 2026-11-23): both pages speak for the whole club.
-  it("names both areas", () => {
-    show(route);
-    expect(main().textContent).toMatch(/North Brooklyn and Queens/);
-  });
+});
+
+// One club, two areas (owner's decision, 2026-11-23): the fellowship speaks for the whole club.
+it("/fellowship names both areas", () => {
+  show(Fellowship);
+  expect(main().textContent).toMatch(/North Brooklyn and Queens/);
 });
 
 describe.each([
   ["/fellowship", Fellowship, "members-gathering", [800, 1080], 1600, "540px"],
-  ["/partnerships", Partnerships, "gathering-ceramics", [800, 1280], 1600, "612px"],
 ] as const)("%s arch photo", (_path, route, name, widths, original, sizes) => {
   it("is the high-priority hero, with downscales and the drawn width as sizes", () => {
     show(route);
@@ -86,13 +86,15 @@ describe("/fellowship", () => {
 });
 
 describe("/partnerships", () => {
-  it("shows the four ways in and no current-partners block", () => {
+  // The design canvas's partner page (owner decision, 2026-11-26): its three ways, its packages and its questions.
+  it("shows the canvas's ways and packages, and no invented partner stories or current-partners block", () => {
     show(Partnerships);
-    for (const way of ["Open your space", "Share what you know", "Feed the room", "Underwrite something"]) {
-      expect(screen.getByRole("heading", { name: way })).toBeTruthy();
-    }
-    expect(main().textContent).not.toMatch(/in great company|who we work with/i);
-    expect(href("Apply to join")).toBe("/join");
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Ways to partner");
+    for (const way of ["Sponsor", "Collaborator", "Supporter"]) expect(screen.getByRole("heading", { level: 2, name: way })).toBeTruthy();
+    for (const pkg of ["Event sponsor", "Newsletter sponsor", "Constellation partner", "Founding partner"]) expect(screen.getByRole("heading", { level: 3, name: pkg })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Talk to us" })).toBeTruthy();
+    expect(main().textContent).not.toMatch(/in great company|who we work with|credit union|Partnership in action/i);
+    expect(href(/Apply to be an ambassador/)).toBe("/contact");
   });
 
   const type = (label: RegExp, value: string) => fireEvent.change(screen.getByLabelText(label), { target: { value } });

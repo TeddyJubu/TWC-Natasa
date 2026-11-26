@@ -26,7 +26,8 @@ describe("/ (home) and the members-only directory", () => {
     expect(fake.calls).not.toContainEqual(["directoryFn"]);
     expect(screen.queryByRole("heading", { name: "Women doing remarkable work nearby." })).toBeNull();
     expect(screen.queryByRole("link", { name: /member directory|meet the members/i })).toBeNull();
-    for (const a of screen.getAllByRole("link")) expect(a.getAttribute("href"), a.textContent ?? "").not.toMatch(/^\/(members|directory)(\/|$)/);
+    // The header links Directory for everyone (owner decision, 2026-11-26); the page itself links no member.
+    for (const a of within(screen.getByRole("main")).getAllByRole("link")) expect(a.getAttribute("href"), a.textContent ?? "").not.toMatch(/^\/(members|directory)(\/|$)/);
     for (const m of demoMembers) expect(screen.queryByAltText(new RegExp(m.name))).toBeNull();
   });
 });

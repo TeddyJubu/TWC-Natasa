@@ -40,11 +40,11 @@ const ALREADY_EXISTS = ["USER_ALREADY_EXISTS", "USER_ALREADY_EXISTS_USE_ANOTHER_
 const PASSWORD_RULES = ["PASSWORD_TOO_SHORT", "PASSWORD_TOO_LONG"];
 
 const COPY: Record<Mode, { script: string; title: string; lede: string; submit: string }> = {
-  signin: { script: "good to see you", title: "Welcome back, neighbor.", lede: "Sign in to update your profile and see what’s happening nearby.", submit: "Sign in" },
+  signin: { script: "Members", title: "Log in to your constellation", lede: "", submit: "Log in" }, // the canvas's login()
   signup: { script: "hello, neighbor", title: "Open your member account", lede: "Create your login now; your profile unlocks once the collective approves your application.", submit: "Create account" },
   forgot: { script: "it happens", title: "Reset your password", lede: "We’ll send a link to choose a new password.", submit: "Send reset link" },
 };
-const TABS = [["signin", "Sign in"], ["signup", "Create account"]] as const;
+const TABS = [["signin", "Log in"], ["signup", "Create account"]] as const;
 
 function AuthPage() {
   const navigate = useNavigate();
@@ -129,7 +129,7 @@ function AuthPage() {
       <div className={authCard}>
         {showTabs && (
           <Tabs value={mode} onValueChange={(next) => { if (next) setMode(next as typeof mode); }}>
-            <TabsList aria-label="Sign in or create an account" className="flex gap-2">
+            <TabsList aria-label="Log in or create an account" className="flex gap-2">
               {TABS.map(([m, label]) => (
                 <TabsTab key={m} value={m} id={`tab-${m}`} aria-controls="auth-panel" className="twc-ftab">
                   {label}
@@ -142,9 +142,9 @@ function AuthPage() {
         <div id="auth-panel" role={showTabs ? "tabpanel" : undefined} aria-labelledby={showTabs ? `tab-${mode}` : undefined} className="flex flex-col gap-[18px]">
           <div className="flex flex-col gap-3 pt-2">
             <p className={authEyebrow}>{copy.script}</p>
-            <h1 className={authH}>{copy.title}</h1>
+            <h1 className={authH}>{mode === "signin" ? <>Log in to your <i>constellation</i></> : copy.title}</h1>
           </div>
-          <p className="twc-lede">{copy.lede}</p>
+          {copy.lede && <p className="twc-lede">{copy.lede}</p>}
 
           {/* Off unless the server has GOOGLE_CLIENT_ID/SECRET: a dead button is worse than none. */}
           {showTabs && import.meta.env.VITE_GOOGLE_AUTH === "true" && (

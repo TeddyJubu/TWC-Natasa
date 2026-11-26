@@ -36,20 +36,37 @@
 .twc-panel--wide .twc-panel__acts { display: flex; flex-wrap: wrap; gap: 10px; }
 .twc-panel em { font-style: italic; font-weight: 400; font-stretch: 100%; }
 
-/* ---- Constellation link bands for the neighborhoods list (canvas .twc-band as links: no · name · area) ---- */
-.twc-hbands { margin: 0; padding: 0; list-style: none; border-top: var(--twc-border-hairline) solid var(--color-sb-ink); }
-.twc-hband { position: relative; display: grid; grid-template-columns: 150px minmax(0, 1fr) 230px; align-items: center; gap: var(--twc-space-16); min-height: 110px; padding: var(--twc-space-16) var(--twc-gut); border-top: 1px solid var(--color-sb-ink); box-shadow: var(--twc-shadow-band); text-decoration: none; transition: padding-block 0.45s cubic-bezier(0.2, 0.7, 0.2, 1); }
-.twc-hband:hover, .twc-hband:focus-visible { padding-block: 34px; }
-.twc-hband:focus-visible { outline: 2px solid var(--color-sb-ink); outline-offset: -4px; }
-.twc-hband__name { min-width: 0; overflow-wrap: anywhere; text-align: center; font: 800 clamp(40px, 5.4vw, 88px)/0.84 var(--font-display); font-stretch: 62%; letter-spacing: -0.01em; text-transform: uppercase; }
-.twc-hband__end { display: flex; align-items: center; justify-content: flex-end; gap: 14px; }
-/* Small text on an admin-picked colour sits on a paper tag, so it reads on every colour */
-.twc-hband__tag { justify-self: start; padding: 2px 7px; border-radius: var(--twc-radius-flag); background: var(--color-sb-paper); color: var(--color-sb-ink); font: 500 12px/1.5 var(--font-plex); letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
-@media (max-width: 1100px) {
-  .twc-hband { grid-template-columns: 1fr auto; min-height: 0; padding-block: 14px 18px; }
-  .twc-hband:hover, .twc-hband:focus-visible { padding-block: 14px 18px; }
-  .twc-hband__name { grid-row: 2; grid-column: 1 / -1; text-align: left; font-size: 46px; }
-}
+/* ---- Leadership (canvas leadership(): .port, .leadnav): one team's portraits beside the team list ---- */
+.twc-lead { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: var(--twc-space-40); align-items: start; }
+.twc-ports { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--twc-space-24); margin-top: var(--twc-space-28); }
+.twc-port { display: flex; flex-direction: column; margin: 0; }
+.twc-port__ph { display: grid; place-items: center; aspect-ratio: 4 / 5; color: var(--color-sb-ink); font: 400 64px var(--font-serif); }
+.twc-port__cap { display: flex; gap: var(--twc-space-10); margin-top: var(--twc-space-8); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
+.twc-port__cap::before { content: "\2014"; }
+.twc-port h3 { margin: 6px 0 0; font: 400 26px/1 var(--font-serif); }
+.twc-leadnav { display: grid; margin-top: 10px; border-top: 1px solid var(--color-sb-ink); }
+.twc-leadnav button { padding: 9px 0; border: 0; border-bottom: 1px solid var(--color-sb-stone-rule); background: none; color: var(--color-sb-muted); text-align: left; font: inherit; font-size: 14px; cursor: pointer; transition: color var(--twc-tabs-dur) var(--twc-ease); }
+.twc-leadnav button[aria-pressed="true"] { color: var(--color-sb-ink); font-weight: 600; }
+@media (max-width: 1100px) { .twc-lead { grid-template-columns: 1fr; } }
+
+/* ---- Partner page (canvas partner(): .field-c, .pkg, .two-col, .twc-qlist, #partnerform) ---- */
+.twc-fieldcs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.twc-field-c { padding: var(--twc-space-30); color: var(--color-sb-ink); }
+.twc-field-c h2 { margin: 0; font: 400 clamp(36px, 3.6vw, 48px)/0.95 var(--font-serif); letter-spacing: -0.02em; }
+.twc-field-c > p { max-width: 36ch; margin: 14px 0 0; }
+.twc-field-c ul { margin: 18px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--color-sb-ink); }
+.twc-field-c li { padding: 8px 0; border-bottom: 1px solid rgb(21 20 20 / 0.2); font-size: 14px; }
+.twc-pkg { display: grid; grid-template-columns: minmax(0, 1fr) 220px minmax(0, 1.2fr); gap: var(--twc-space-24); align-items: baseline; padding: 18px 0; border-top: 1px solid var(--color-sb-ink); }
+.twc-pkg h3 { margin: 0; font: 400 34px/1 var(--font-serif); }
+.twc-pkg__amt { font: italic 400 26px var(--font-serif); }
+.twc-pkg p { margin: 0; }
+.twc-twocol { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: var(--twc-space-40); align-items: start; }
+.twc-qlist { margin: 18px 0 0; padding: 0; list-style: none; border-top: var(--twc-border-hairline) solid var(--color-sb-ink); }
+.twc-qlist li { display: grid; grid-template-columns: 28px 1fr; gap: var(--twc-space-8); padding: 10px 0; border-bottom: var(--twc-border-hairline) solid var(--color-sb-stone-rule); font-size: 14px; }
+.twc-qlist li > span { padding-top: 2px; color: var(--color-sb-muted); font: 400 11px var(--font-plex); }
+.twc-qlist li em { display: block; color: var(--color-sb-ink); font: italic 400 18px/1.2 var(--font-serif); }
+.twc-partnerform { display: grid; gap: 14px; padding: var(--twc-space-30); }
+@media (max-width: 1100px) { .twc-fieldcs, .twc-twocol, .twc-pkg { grid-template-columns: 1fr; } }
 
 /* ---- Neighborhood page: the band opened onto its sheet ---- */
 .twc-hood-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 420px); gap: var(--twc-space-40); align-items: center; padding: var(--twc-space-60) var(--twc-gut); border-top: 1px solid var(--color-sb-ink); }
@@ -85,9 +102,6 @@
 .twc-evcard__body { display: flex; flex: 1; flex-direction: column; gap: 10px; padding: 22px 26px 28px; }
 .twc-evcard h3 { margin: 0; font: 800 condensed 30px/1 var(--font-display); letter-spacing: -0.01em; overflow-wrap: anywhere; }
 .twc-evcard__media { display: block; width: 100%; aspect-ratio: 16 / 9; }
-.twc-datetile { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--color-sb-ink); text-align: center; }
-.twc-datetile__m { font: 500 12px var(--font-plex); letter-spacing: 0.12em; text-transform: uppercase; }
-.twc-datetile__d { font: 800 condensed 52px/1 var(--font-display); }
 .twc-evs--list { margin: 0; padding: 0 0 var(--twc-space-60); list-style: none; overflow-x: clip; } /* the tilt never adds a sideways scroll */
 .twc-evs--list .twc-ev { grid-template-columns: minmax(0, 1fr) 200px 220px; align-items: start; }
 .twc-evs--list .twc-ev h3 { overflow-wrap: anywhere; }
@@ -104,7 +118,7 @@
 .twc-cal td { position: relative; height: 112px; min-width: 0; padding: 6px; border: 1px solid var(--color-sb-ink); background: var(--color-sb-paper); vertical-align: top; }
 .twc-cal td.is-outside { background: var(--color-sb-cream); color: var(--color-sb-muted); }
 .twc-cal td:focus-visible { outline: 2px solid var(--color-sb-ink); outline-offset: -4px; }
-.twc-cal__num { display: inline-grid; min-width: 26px; height: 26px; place-items: center; margin-bottom: 4px; font: 800 condensed 22px/1 var(--font-display); }
+.twc-cal__num { display: inline-grid; min-width: 26px; height: 26px; place-items: center; margin-bottom: 4px; font: 400 22px/1 var(--font-serif); }
 .twc-cal__num.is-today { border-radius: var(--twc-radius-pill); background: var(--color-sb-ink); color: var(--color-sb-paper); }
 .twc-cal .twc-e { display: block; text-decoration: none; }
 .twc-cal .twc-e:focus-visible { outline: 2px solid var(--color-sb-ink); outline-offset: 1px; }
@@ -112,7 +126,7 @@
 @media (max-width: 600px) { .twc-cal td { height: 64px; padding: 4px; } .twc-cal th { padding: 6px 4px; } .twc-cal__num { font-size: 18px; } }
 .twc-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin: 12px 0 0; padding: 0; list-style: none; font-size: 12px; }
 .twc-legend .twc-e { display: inline-block; width: 18px; height: 12px; margin-right: 6px; padding: 0; vertical-align: middle; }
-.twc-cal-title { margin: 0; font: 800 condensed clamp(2.4rem, 5vw, 4rem)/0.95 var(--font-display); letter-spacing: -0.02em; }
+.twc-cal-title { margin: 0; font: 400 clamp(2.4rem, 5vw, 4rem)/0.95 var(--font-serif); letter-spacing: -0.02em; }
 
 /* ---- FAQ on hairlines (canvas .twc-qlist rows): the shared accordion, restated for this page only ---- */
 .twc-faqs .twc-faq { border-radius: 0; border-bottom: 1px solid var(--color-sb-ink); }

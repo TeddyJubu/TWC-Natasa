@@ -69,14 +69,14 @@ describe("/about", () => {
     expect(img.getAttribute("sizes")).toBe("336px");
   });
 
-  it("links the studio in a new tab, announced, and the CTAs to /neighborhoods and /join", () => {
+  it("links the studio in a new tab, announced, and the CTAs to /constellations and /join", () => {
     show(About);
     const studio = within(main()).getByRole("link", { name: /Visit Nataša’s studio/ });
     expect(studio.getAttribute("href")).toBe("https://natasatuohy.com/about/");
     expect(studio.getAttribute("target")).toBe("_blank");
     expect(studio.getAttribute("rel")).toContain("noreferrer");
     expect(studio.textContent).toContain("(opens in a new tab)");
-    expect(href(/Explore the neighborhoods/)).toBe("/neighborhoods");
+    expect(href(/Explore the constellations/)).toBe("/constellations");
     expect(href(/^Join us/)).toBe("/join");
   });
 
@@ -108,7 +108,7 @@ describe("/faq", () => {
 
   it("is one native accordion with the first question open, numbered across the page", () => {
     const { container } = show(Faq);
-    const items = [...container.querySelectorAll("details")];
+    const items = [...container.querySelectorAll<HTMLDetailsElement>("details.twc-faq")];
     expect(items.length).toBeGreaterThan(5);
     expect(items.every((d) => d.getAttribute("name") === "faq")).toBe(true);
     expect(items.map((d) => d.open)).toEqual(items.map((_, i) => i === 0));
@@ -133,7 +133,7 @@ describe("/faq", () => {
     expect(script.type).toBe("application/ld+json");
     const ld = JSON.parse(script.children) as { "@type": string; mainEntity: { name: string; acceptedAnswer: { text: string } }[] };
     expect(ld["@type"]).toBe("FAQPage");
-    const rendered = [...container.querySelectorAll("details")].map((d) => ({
+    const rendered = [...container.querySelectorAll<HTMLDetailsElement>("details.twc-faq")].map((d) => ({
       name: d.querySelector(".twc-faq__q")?.textContent,
       text: d.querySelector(".twc-faq__a")?.textContent,
     }));

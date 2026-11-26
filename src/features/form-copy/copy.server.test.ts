@@ -35,7 +35,8 @@ describe("server", () => {
     insert.run("partnership", partnership, "Our partnership words");
     db.exec(readFileSync("db/migrations/0016_events_wording.sql", "utf8"));
     expect(db.prepare("select original from form_copy where value = 'Our contact words'").get()).toEqual({ original: contact.replace("a gathering", "an event") });
-    expect(publicFormCopy(as(null), { form: "partnership" })).toEqual({ [partnership.replace("Every gathering", "Every event")]: "Our partnership words" });
+    // The canvas partner page (2026-11-26) no longer shows this text, so the row is kept but no longer read.
+    expect(db.prepare("select original from form_copy where value = 'Our partnership words'").get()).toEqual({ original: partnership.replace("Every gathering", "Every event") });
   });
 
   it("0017 keeps an admin's saved contact wording when its default stops naming North Brooklyn", () => {
