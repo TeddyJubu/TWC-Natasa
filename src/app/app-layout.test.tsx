@@ -4,7 +4,6 @@ import { join, resolve } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
-import SiteMenu from "@/app/layout/SiteMenu";
 import { JOIN_CLASS } from "@/app/layout/twc";
 import type { Profile } from "@/features/members/queries";
 import { renderWithQueries } from "@/test/dom";
@@ -26,6 +25,9 @@ import { Route as Admin } from "@/routes/_authenticated/_admin/admin";
 import { Route as Colors } from "@/routes/colors";
 import { Route as Typography } from "@/routes/typography";
 import { Route as Components } from "@/routes/components";
+import { Route as Constellations } from "@/routes/constellations";
+import { Route as Membership } from "@/routes/membership";
+import { Route as Leadership } from "@/routes/leadership";
 
 vi.spyOn(Account, "useRouteContext").mockReturnValue({ user: { id: "u1" } } as never);
 vi.spyOn(Admin, "useRouteContext").mockReturnValue({ user: { id: "u1", email: "rosa@x.test", name: "Rosa Diaz" } } as never);
@@ -59,6 +61,7 @@ const seed: [unknown[], unknown][] = [
 
 const live = {
   "/": Home, "/about": About, "/join": Join, "/account": Account, "/admin": Admin,
+  "/constellations": Constellations, "/membership": Membership, "/leadership": Leadership,
 } as const;
 const showcase = { "/colors": Colors, "/typography": Typography, "/components": Components } as const;
 
@@ -137,37 +140,28 @@ describe("root route", () => {
 
 // The legal pages are gone until they're written for real (docs/LEGAL-PAGES-REQUIRED.md): nothing may link them.
 describe("AppNav", () => {
-  // Measured in Archivo at lg: links 15px + 0.3px tracking, the 18px wordmark, 20px link gaps and 16px column
-  // gaps make ~845px, inside the 896px `.twc-wrap` leaves at 1024px. So the row starts at lg, Sign in included.
-  it("shows the desktop row (lockup left, links and Join right), Sign in included, from lg and the menu button below it", () => {
-    renderWithQueries(<AppNav />, [[["viewer"], { signedIn: false, member: false, admin: false }]]);
-    const signIn = screen.getAllByRole("link", { name: "Sign in" });
+  const signedOut: [unknown[], unknown][] = [[["viewer"], { signedIn: false, member: false, admin: false }]];
+  const NAV = [["Constellations", "/constellations"], ["Directory", "/directory"], ["Events", "/events"], ["Leadership", "/leadership"],
+    ["Membership", "/membership"], ["Partner", "/partnerships"]];
+
+  // The canvas's .twc-header (owner decision, 2026-11-26: no deliberate differences from the canvas).
+  it("is the canvas header: the lockup, the six links, Log in and the small ink Join pill, in that order", () => {
+    renderWithQueries(<AppNav />, signedOut);
+    const header = screen.getByRole("banner");
+    expect(header.className).toBe("twc-header");
+    const home = screen.getByRole("link", { name: "The Women’s Collective home" });
+    expect(home.getAttribute("href")).toBe("/");
+    expect(home.querySelector("img")!.getAttribute("width")).toBe("770"); // the canvas header's twc-ink.webp
     const nav = screen.getByRole("navigation", { name: "Main" });
-    const row = nav.parentElement!;
-    expect(row.className).toMatch(/(^| )hidden( |$)/);
-    expect(row.className.split(" ")).toEqual(expect.arrayContaining(["lg:flex", "justify-between"]));
-    expect(row.firstElementChild?.getAttribute("aria-label")).toBe("The Women’s Collective home");
-    expect(nav.className.split(" ")).toEqual(expect.arrayContaining(["flex-wrap", "gap-x-5"]));
-    const desktopSignIn = signIn.find((a) => row.contains(a))!;
-    expect(desktopSignIn.className).not.toMatch(/hidden|min-\[/);
-    expect(nav.contains(desktopSignIn)).toBe(true);
-    const bar = screen.getByRole("button", { name: "Open menu" }).closest("div.flex.min-h-16")!;
-    expect(bar.className).toContain("lg:hidden");
-    expect(bar.className).not.toContain("xl:hidden");
+    const links = [...nav.querySelectorAll("a")].map((a) => [a.textContent!.trim(), a.getAttribute("href")]);
+    expect(links).toEqual([...NAV, ["Log in", "/auth"], ["Join", "/join"]]);
+    const join = nav.querySelector("a[href='/join']")!;
+    expect(join.className.split(" ")).toEqual(expect.arrayContaining(["twc-btn", "twc-btn--sm"]));
+    expect(screen.queryByRole("button", { name: "Open menu" })).toBeNull(); // the links wrap below 1100px, no menu
   });
 
-  // The member directory is members-only (owner decision, 2026-11-24).
-  it("never links visitors or pending accounts to the directory or the old /members", () => {
-    for (const viewer of [{ signedIn: false, member: false, admin: false }, { signedIn: true, member: false, admin: false, declined: false }]) {
-      const { unmount } = renderWithQueries(<><AppNav /><AppFooter /></>, [[["viewer"], viewer]]);
-      expect(screen.queryByRole("link", { name: /Members|Directory/ })).toBeNull();
-      expect(screen.getAllByRole("link").map((a) => a.getAttribute("href")).filter((h) => /^\/(members|directory)(\/|$)/.test(h ?? ""))).toEqual([]);
-      unmount();
-    }
-  });
-
-  it("shows approved members and admins a Directory link to /directory", () => {
-    for (const viewer of [{ signedIn: true, member: true, admin: false }, { signedIn: true, member: false, admin: true }]) {
+  it("links Directory to /directory for everyone; that page decides who sees members", () => {
+    for (const viewer of [signedOut[0][1], { signedIn: true, member: false, admin: false }, { signedIn: true, member: true, admin: false }]) {
       const { unmount } = renderWithQueries(<AppNav />, [[["viewer"], viewer]]);
       expect(screen.getByRole("link", { name: "Directory" }).getAttribute("href")).toBe("/directory");
       expect(screen.queryByRole("link", { name: "Members" })).toBeNull();
@@ -175,12 +169,11 @@ describe("AppNav", () => {
     }
   });
 
-  it("offers a signed-in visitor their account instead of Sign in and Join us", () => {
+  it("offers a signed-in visitor their account instead of Log in and Join", () => {
     renderWithQueries(<AppNav />, [[["viewer"], { signedIn: true, member: true, admin: false }]]);
-    expect(screen.queryByRole("link", { name: "Sign in" })).toBeNull();
-    expect(screen.queryByRole("link", { name: "Join us" })).toBeNull();
-    expect(screen.queryByRole("link", { name: /Start your application/ })).toBeNull();
-    for (const link of screen.getAllByRole("link", { name: /^(Your a|A)ccount/ })) expect(link.getAttribute("href")).toBe("/account");
+    expect(screen.queryByRole("link", { name: "Log in" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Join" })).toBeNull();
+    expect(screen.getByRole("link", { name: "Account" }).getAttribute("href")).toBe("/account");
   });
 });
 
@@ -278,10 +271,11 @@ describe("robots.txt", () => {
   });
 });
 
-// The owner's rule (2026-11-24): every join button is the same blue pill, says "Join us" and goes to plain /join.
+// The owner's rule (2026-11-24, 2026-11-26): every join button is JoinButton, the canvas's ink pill, to plain /join.
 describe("join buttons", () => {
   const signedOut: [unknown[], unknown][] = [[["viewer"], { signedIn: false, member: false, admin: false }], [["public-profiles"], []], [["events"], []]];
-  const joinish = /\bjoin\b|\bappl(y|ication)\b|introduce yourself/i;
+  // "Apply to lead it", "Apply to be an ambassador" and "Apply for this seat" ask for leaders, not members.
+  const joinish = /\bjoin\b|\bappl(y|ication)\b(?! (to lead|to be an ambassador|for this seat))|introduce yourself/i;
   const check = (container: HTMLElement) => {
     const buttons = [...container.querySelectorAll<HTMLAnchorElement>("a.twc-btn, a.sb-pill")]
       // An ambassador's application ("Apply to lead it", "Apply to be an ambassador") goes to /contact: it is no join.
@@ -295,17 +289,12 @@ describe("join buttons", () => {
     return buttons.length;
   };
 
-  it.each([["/", Home], ["/about", About], ["/faq", Faq], ["/fellowship", Fellowship]] as const)(
+  it.each([["/", Home], ["/about", About], ["/faq", Faq], ["/fellowship", Fellowship], ["/membership", Membership], ["/constellations", Constellations]] as const)(
     "%s: every join button is JoinButton", (_path, route) => {
       const Page = component(route);
       const { container } = renderWithQueries(<Page />, signedOut);
-      expect(check(container)).toBeGreaterThan(1); // the nav's two (desktop row and phone bar) plus the page's own
+      expect(check(container)).toBeGreaterThan(1); // the nav's Join plus the page's own
     });
-
-  it("the phone menu's call to action is JoinButton", () => {
-    renderWithQueries(<SiteMenu open onOpenChange={() => {}} links={[]} signedIn={false} />, []);
-    expect(check(document.body)).toBe(1);
-  });
 
   // Pages the DOM test can't render cheaply (loaders, params) are held by their source: a join pill is JoinButton.
   it("no source draws its own join pill or sends a CTA to /join with an area", () => {

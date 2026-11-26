@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { act, cleanup, fireEvent, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, screen, within } from "@testing-library/react";
 import { QueryClient } from "@tanstack/react-query";
 import { isNotFound } from "@tanstack/react-router";
 import type { MemberProfile } from "@/index";
@@ -18,7 +18,6 @@ import { fake } from "@/test/fake-fns";
 import { Route as IndexRoute } from "@/routes/neighborhoods";
 import { Route as SlugRoute } from "@/routes/neighborhoods_.$slug";
 
-const IndexPage = IndexRoute.options.component as React.ComponentType;
 const SlugPage = SlugRoute.options.component as React.ComponentType;
 type Loader = (ctx: unknown) => Promise<unknown>;
 const runLoader = (route: { options: { loader?: unknown } }, slug?: string) =>
@@ -35,66 +34,17 @@ const settle = () => act(() => new Promise((r) => setTimeout(r, 20)));
 
 const astoria = NEIGHBORHOOD_SEED.find((n) => n.slug === "astoria")!;
 const woodside: Neighborhood = { slug: "woodside", name: "Woodside", color: "#1d3b6e", logoUrl: null, active: true };
-const noColor: Neighborhood = { slug: "east-elmhurst", name: "East Elmhurst", color: "", logoUrl: null, active: true };
 const card = (name: string, neighborhood: string, image?: string): MemberProfile => ({
   id: `catalogue-${name}`, name, role: "Founder", business: `${name} Co`, neighborhood, specialty: "", bio: "", lookingFor: "",
   image, imageAlt: image ? `Portrait of ${name}` : undefined,
 });
 
-describe("/neighborhoods loader", () => {
-  it("lists only active neighborhoods, in the server's order", async () => {
-    fake.results.push([{ ...astoria, active: false }, woodside, NEIGHBORHOOD_SEED[0]]);
-    expect(await runLoader(IndexRoute)).toEqual([woodside, NEIGHBORHOOD_SEED[0]]);
-  });
-
-  it("falls back to the seed when the fetch fails", async () => {
-    fake.results.push(new Error("down"));
-    expect(await runLoader(IndexRoute)).toEqual(NEIGHBORHOOD_SEED);
-  });
-});
-
+// The canvas's constellations page took over the list (owner decision, 2026-11-26); each neighborhood keeps its page.
 describe("/neighborhoods", () => {
-  it("counts the neighborhoods from the data, links each tile and keeps the outline", () => {
-    withLoaderData(IndexRoute, [...NEIGHBORHOOD_SEED, woodside]);
-    renderWithQueries(<IndexPage />);
-    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Eleven neighborhoods, one constellation.");
-    expect(screen.getAllByRole("listitem")).toHaveLength(11);
-    expect(screen.getByRole("link", { name: /Woodside/ })).toBeTruthy();
-    expectNoSkippedHeadings();
-  });
-
-  it("says one neighborhood, and drops the number when there are none", () => {
-    withLoaderData(IndexRoute, [astoria]);
-    const { unmount } = renderWithQueries(<IndexPage />);
-    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("One neighborhood, one constellation.");
-    unmount();
-    withLoaderData(IndexRoute, []);
-    renderWithQueries(<IndexPage />);
-    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Our neighborhoods, one constellation.");
-  });
-
-  it("colors tiles only through --hood, picks paper text on dark colors, and gives a colorless one the cream dashed tile", () => {
-    withLoaderData(IndexRoute, [astoria, woodside, noColor]);
-    renderWithQueries(<IndexPage />);
-    const tile = (name: string) => screen.getByRole("link", { name: new RegExp(name) });
-    expect(tile("Astoria").getAttribute("style")).toContain("--hood: #ff9a1f");
-    expect(tile("Astoria").className).toContain("bg-(--hood)");
-    expect(tile("Astoria").className).toContain("text-sb-ink");
-    expect(tile("Woodside").className).toContain("text-sb-paper");
-    expect(tile("East Elmhurst").getAttribute("style")).toBeNull();
-    expect(tile("East Elmhurst").className).toContain("bg-sb-cream");
-    expect(tile("East Elmhurst").className).toContain("border-dashed");
-  });
-
-  it("a bundled logo loads a downscale for its 28px mark; an uploaded one has no srcset", () => {
-    const uploaded = { ...woodside, logoUrl: "/media/neighborhood-logos/woodside.png" };
-    withLoaderData(IndexRoute, [astoria, uploaded]);
-    renderWithQueries(<IndexPage />);
-    const mark = (name: string) => screen.getByRole("link", { name: new RegExp(name) }).querySelector("img")!;
-    expect(mark("Astoria").getAttribute("srcset")).toMatch(/astoria-128\.webp 128w/);
-    expect(mark("Astoria").getAttribute("sizes")).toBe("28px");
-    expect(mark("Woodside").getAttribute("src")).toBe("/media/neighborhood-logos/woodside.png");
-    expect(mark("Woodside").hasAttribute("srcset")).toBe(false);
+  it("moves permanently to /constellations", () => {
+    let thrown: unknown;
+    try { (IndexRoute.options.beforeLoad as () => void)(); } catch (e) { thrown = e; }
+    expect(thrown).toMatchObject({ options: { to: "/constellations", statusCode: 301 } });
   });
 });
 
@@ -160,7 +110,7 @@ describe("/neighborhoods/:slug", () => {
     renderWithQueries(<SlugPage />, [visitor]);
     expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Astoria");
     expect(screen.queryByRole("heading", { name: /Women building in/ })).toBeNull();
-    expect(screen.queryByRole("link", { name: /directory/i })).toBeNull();
+    expect(within(screen.getByRole("main")).queryByRole("link", { name: /directory/i })).toBeNull(); // the header links it for everyone
     expectNoSkippedHeadings();
     await settle();
     // Never the members-only directory, and no gatherings call for a visitor.

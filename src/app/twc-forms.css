@@ -25,10 +25,6 @@
 @media (max-width: 600px) { .twc-fieldc { padding: var(--twc-space-24) var(--twc-space-18); } }
 
 /* Four (or three) colour fields edge to edge under a rule (canvas partner page) */
-.twc-fways { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; padding: 0; list-style: none; border-top: var(--twc-border-hairline) solid var(--color-sb-ink); }
-.twc-fways > li { min-height: 300px; justify-content: space-between; gap: var(--twc-space-24); }
-@media (max-width: 1100px) { .twc-fways { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 600px) { .twc-fways { grid-template-columns: minmax(0, 1fr); } .twc-fways > li { min-height: 0; } }
 
 /* /join's area choice: one colour field per area (its constellation band colour) */
 .twc-farea { display: flex; flex-direction: column; justify-content: space-between; gap: var(--twc-space-24); min-height: 220px; padding: var(--twc-space-30); color: var(--color-sb-ink); text-decoration: none; transition: translate var(--twc-learn-dur) var(--twc-ease); }

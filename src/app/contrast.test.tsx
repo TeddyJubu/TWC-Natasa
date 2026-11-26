@@ -184,7 +184,6 @@ describe("public scrapbook palette (--color-sb-* in styles.css)", () => {
     white: "#ffffff",
   };
   const twc = readFileSync(`${process.cwd()}/src/app/twc.css`, "utf8");
-  const menu = readFileSync(`${process.cwd()}/src/app/layout/SiteMenu.tsx`, "utf8");
 
   // [text, background]: every colour field keeps ink text (the canvas rule), the role pairs on paper and stone, and
   // cobalt (links, Join) on paper, stone and as a fill under white.
@@ -223,23 +222,17 @@ describe("public scrapbook palette (--color-sb-* in styles.css)", () => {
     expect(twc).toMatch(/\.twc-faq\[open\] \.twc-index \{ color: var\(--color-sb-ink\); \}/);
   });
 
-  it("a neighborhood card's number sits on a paper tag, so any admin-picked colour stays readable", () => {
-    const page = readFileSync(`${process.cwd()}/src/routes/neighborhoods.tsx`, "utf8");
-    expect(page).toMatch(/<span aria-hidden className="[^"]*bg-sb-paper[^"]*text-sb-ink">\{String\(index\)/);
-  });
-
-  it("every event kind field is one of the ink-checked fields above, and a band's small tags sit on paper", () => {
+  it("every event kind field is one of the ink-checked fields above", () => {
     const pub = readFileSync(`${process.cwd()}/src/app/twc-public.css`, "utf8");
     const kinds = [...pub.matchAll(/\.twc-kind--\d \{ background: var\(--color-sb-([\w-]+)\); \}/g)].map((m) => m[1]);
     expect(kinds).toHaveLength(8);
     for (const k of kinds) expect(fields).toContain(k);
     expect(pub).toMatch(/\.twc-kind \{ background: var\(--color-sb-cream\); color: var\(--color-sb-ink\); \}/);
-    expect(pub).toMatch(/\.twc-hband__tag \{[^}]*background: var\(--color-sb-paper\); color: var\(--color-sb-ink\);/);
   });
 
   it("the home page's colour fields carry ink, and their labels are ink rather than muted", () => {
     const home = readFileSync(`${process.cwd()}/src/routes/index.tsx`, "utf8");
-    const homeCss = readFileSync(`${process.cwd()}/src/app/twc-home.css`, "utf8");
+    const homeCss = readFileSync(`${process.cwd()}/src/app/twc-home.css`, "utf8") + readFileSync(`${process.cwd()}/src/app/canvas/constellations.ts`, "utf8");
     // Bands, experience tiles, the partner strip and the panels: ink on each; the incubator tile is paper on cobalt.
     for (const field of ["band-lime", "band-purple", "sky", "band-butter", "band-red", "ev-green", "ev-mint", "ev-peri", "ev-violet", "ev-sea", "tomato", "blush"]) {
       expect(home + "\n" + homeCss, field).toMatch(new RegExp(`(twc-c-|bg-sb-|--color-sb-)${field}\\b`));
@@ -250,14 +243,6 @@ describe("public scrapbook palette (--color-sb-* in styles.css)", () => {
     expect(contrast(sb.paper, sb.cobalt)).toBeGreaterThanOrEqual(AA);
     // Muted eyebrows fail AA on sky; on the panels they are forced to ink.
     expect(home).toMatch(/twc-panel twc-c-sky">\s*<span className="twc-eyebrow text-sb-ink!"/);
-  });
-
-  it("the mobile menu is white, and its decorative ordinals' ink blend clears AA there", () => {
-    expect(menu).toMatch(/className="sb-menu bg-sb-paper text-sb-ink"/);
-    const ordinal = menu.match(/<span aria-hidden="true" className="[^"]*text-sb-ink\/(\d+)">0\{i \+ 1\}<\/span>/);
-    expect(ordinal).not.toBeNull();
-    const alpha = Number(ordinal![1]) / 100;
-    expect(contrast(blend(sb.ink, sb.paper, alpha), sb.paper)).toBeGreaterThanOrEqual(AA);
   });
 
   // The form pages (sub-project 3) set ink text on every colour field, and muted words only on paper or stone.

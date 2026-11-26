@@ -16,13 +16,16 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BookRouteImport } from './routes/book'
 import { Route as ColorsRouteImport } from './routes/colors'
 import { Route as ComponentsRouteImport } from './routes/components'
+import { Route as ConstellationsRouteImport } from './routes/constellations'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as FellowshipRouteImport } from './routes/fellowship'
 import { Route as HealthzRouteImport } from './routes/healthz'
 import { Route as JoinRouteImport } from './routes/join'
+import { Route as LeadershipRouteImport } from './routes/leadership'
 import { Route as MembersRouteImport } from './routes/members'
+import { Route as MembershipRouteImport } from './routes/membership'
 import { Route as NeighborhoodsRouteImport } from './routes/neighborhoods'
 import { Route as PartnershipsRouteImport } from './routes/partnerships'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
@@ -104,6 +107,11 @@ const ComponentsRoute = ComponentsRouteImport.update({
   path: '/components',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ConstellationsRoute = ConstellationsRouteImport.update({
+  id: '/constellations',
+  path: '/constellations',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
@@ -134,9 +142,19 @@ const JoinRoute = JoinRouteImport.update({
   path: '/join',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LeadershipRoute = LeadershipRouteImport.update({
+  id: '/leadership',
+  path: '/leadership',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MembersRoute = MembersRouteImport.update({
   id: '/members',
   path: '/members',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MembershipRoute = MembershipRouteImport.update({
+  id: '/membership',
+  path: '/membership',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NeighborhoodsRoute = NeighborhoodsRouteImport.update({
@@ -382,13 +400,16 @@ export interface FileRoutesByFullPath {
   '/book': typeof BookRoute
   '/colors': typeof ColorsRoute
   '/components': typeof ComponentsRoute
+  '/constellations': typeof ConstellationsRoute
   '/contact': typeof ContactRoute
   '/events': typeof EventsRoute
   '/faq': typeof FaqRoute
   '/fellowship': typeof FellowshipRoute
   '/healthz': typeof HealthzRoute
   '/join': typeof JoinRoute
+  '/leadership': typeof LeadershipRoute
   '/members': typeof MembersRoute
+  '/membership': typeof MembershipRoute
   '/neighborhoods': typeof NeighborhoodsRoute
   '/partnerships': typeof PartnershipsRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -442,13 +463,16 @@ export interface FileRoutesByTo {
   '/book': typeof BookRoute
   '/colors': typeof ColorsRoute
   '/components': typeof ComponentsRoute
+  '/constellations': typeof ConstellationsRoute
   '/contact': typeof ContactRoute
   '/events': typeof EventsRoute
   '/faq': typeof FaqRoute
   '/fellowship': typeof FellowshipRoute
   '/healthz': typeof HealthzRoute
   '/join': typeof JoinRoute
+  '/leadership': typeof LeadershipRoute
   '/members': typeof MembersRoute
+  '/membership': typeof MembershipRoute
   '/neighborhoods': typeof NeighborhoodsRoute
   '/partnerships': typeof PartnershipsRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -504,13 +528,16 @@ export interface FileRoutesById {
   '/book': typeof BookRoute
   '/colors': typeof ColorsRoute
   '/components': typeof ComponentsRoute
+  '/constellations': typeof ConstellationsRoute
   '/contact': typeof ContactRoute
   '/events': typeof EventsRoute
   '/faq': typeof FaqRoute
   '/fellowship': typeof FellowshipRoute
   '/healthz': typeof HealthzRoute
   '/join': typeof JoinRoute
+  '/leadership': typeof LeadershipRoute
   '/members': typeof MembersRoute
+  '/membership': typeof MembershipRoute
   '/neighborhoods': typeof NeighborhoodsRoute
   '/partnerships': typeof PartnershipsRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -567,13 +594,16 @@ export interface FileRouteTypes {
     | '/book'
     | '/colors'
     | '/components'
+    | '/constellations'
     | '/contact'
     | '/events'
     | '/faq'
     | '/fellowship'
     | '/healthz'
     | '/join'
+    | '/leadership'
     | '/members'
+    | '/membership'
     | '/neighborhoods'
     | '/partnerships'
     | '/reset-password'
@@ -627,13 +657,16 @@ export interface FileRouteTypes {
     | '/book'
     | '/colors'
     | '/components'
+    | '/constellations'
     | '/contact'
     | '/events'
     | '/faq'
     | '/fellowship'
     | '/healthz'
     | '/join'
+    | '/leadership'
     | '/members'
+    | '/membership'
     | '/neighborhoods'
     | '/partnerships'
     | '/reset-password'
@@ -688,13 +721,16 @@ export interface FileRouteTypes {
     | '/book'
     | '/colors'
     | '/components'
+    | '/constellations'
     | '/contact'
     | '/events'
     | '/faq'
     | '/fellowship'
     | '/healthz'
     | '/join'
+    | '/leadership'
     | '/members'
+    | '/membership'
     | '/neighborhoods'
     | '/partnerships'
     | '/reset-password'
@@ -751,13 +787,16 @@ export interface RootRouteChildren {
   BookRoute: typeof BookRoute
   ColorsRoute: typeof ColorsRoute
   ComponentsRoute: typeof ComponentsRoute
+  ConstellationsRoute: typeof ConstellationsRoute
   ContactRoute: typeof ContactRoute
   EventsRoute: typeof EventsRoute
   FaqRoute: typeof FaqRoute
   FellowshipRoute: typeof FellowshipRoute
   HealthzRoute: typeof HealthzRoute
   JoinRoute: typeof JoinRoute
+  LeadershipRoute: typeof LeadershipRoute
   MembersRoute: typeof MembersRoute
+  MembershipRoute: typeof MembershipRoute
   NeighborhoodsRoute: typeof NeighborhoodsRoute
   PartnershipsRoute: typeof PartnershipsRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -847,6 +886,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ComponentsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/constellations': {
+      id: '/constellations'
+      path: '/constellations'
+      fullPath: '/constellations'
+      preLoaderRoute: typeof ConstellationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/contact': {
       id: '/contact'
       path: '/contact'
@@ -889,11 +935,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JoinRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/leadership': {
+      id: '/leadership'
+      path: '/leadership'
+      fullPath: '/leadership'
+      preLoaderRoute: typeof LeadershipRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/members': {
       id: '/members'
       path: '/members'
       fullPath: '/members'
       preLoaderRoute: typeof MembersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/membership': {
+      id: '/membership'
+      path: '/membership'
+      fullPath: '/membership'
+      preLoaderRoute: typeof MembershipRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/neighborhoods': {
@@ -1274,13 +1334,16 @@ const rootRouteChildren: RootRouteChildren = {
   BookRoute: BookRoute,
   ColorsRoute: ColorsRoute,
   ComponentsRoute: ComponentsRoute,
+  ConstellationsRoute: ConstellationsRoute,
   ContactRoute: ContactRoute,
   EventsRoute: EventsRoute,
   FaqRoute: FaqRoute,
   FellowshipRoute: FellowshipRoute,
   HealthzRoute: HealthzRoute,
   JoinRoute: JoinRoute,
+  LeadershipRoute: LeadershipRoute,
   MembersRoute: MembersRoute,
+  MembershipRoute: MembershipRoute,
   NeighborhoodsRoute: NeighborhoodsRoute,
   PartnershipsRoute: PartnershipsRoute,
   ResetPasswordRoute: ResetPasswordRoute,

@@ -5,7 +5,7 @@ import { cn } from "@/index";
 import { Icon } from "@/app/layout/twc";
 import { isEnded, isFull, kindClass, type GatheringsView } from "./event-state";
 import type { CalEvent } from "./types";
-import { CancelledBadge, CategoryChip, DateTimeText, EndedBadge, StatusBadge, useToast, useVisitorLocale } from "./ui";
+import { CancelledBadge, CategoryChip, DateTimeText, EndedBadge, StatusBadge, useToast } from "./ui";
 
 export function EventStatus({ event }: { event: CalEvent }) {
   if (event.status === "CANCELLED") return <CancelledBadge />;
@@ -22,20 +22,6 @@ export function KindLegend({ events }: { events: Pick<CalEvent, "category">[] })
     <ul aria-label="Categories" className="twc-legend">
       {categories.map((c) => <li key={c}><span aria-hidden className={cn("twc-e", kindClass(c))} />{c}</li>)}
     </ul>
-  );
-}
-
-export function EventsPageHeader({ host }: { host?: string | null }) {
-  return (
-    <section className="twc-phd">
-      <div className="min-w-0">
-        <p className="twc-eyebrow">Events</p>
-        <h1 className="twc-display">Show up locally.</h1>
-        <p className="twc-lede">
-          Coffee introductions, supper clubs and headshot days{host ? ` with ${host}` : ""}. See what’s coming up and tell us you’re coming.
-        </p>
-      </div>
-    </section>
   );
 }
 
@@ -56,9 +42,9 @@ export function EventsTabs({ tab, onChange }: { tab: "upcoming" | "past"; onChan
 export function EventsViewToggle({ view, onChange }: { view: GatheringsView; onChange: (view: GatheringsView) => void }) {
   return (
     <div role="group" aria-label="View as" className="twc-filters mb-0">
-      {(["grid", "list", "calendar"] as const).map((v) => (
-        <button key={v} type="button" aria-pressed={view === v} className={pressable} onClick={() => onChange(v)}>
-          {v === "grid" ? "Grid" : v === "list" ? "List" : "Calendar"}
+      {(["grid", "calendar"] as const).map((v) => (
+        <button key={v} type="button" aria-pressed={view === v || (v === "grid" && view === "list")} className={pressable} onClick={() => onChange(v)}>
+          {v === "grid" ? "Program" : "Calendar"}
         </button>
       ))}
     </div>
@@ -119,51 +105,9 @@ export function CoverImage({ event, className, fallback = null }: { event: Pick<
   );
 }
 
-/** No cover: the date on the event's colour field, never a stand-in photo. */
-function DateTile({ event, className }: { event: CalEvent; className?: string }) {
-  const locale = useVisitorLocale();
-  const at = Date.parse(event.startTime);
-  const part = (options: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat(locale, { timeZone: event.timeZone, ...options }).format(at);
-  return (
-    <div aria-hidden className={cn("twc-datetile", kindClass(event.category), className)}>
-      <span className="twc-datetile__m">{part({ month: "short" })}</span>
-      <span className="twc-datetile__d">{part({ day: "numeric" })}</span>
-    </div>
-  );
-}
-
 const eventLink = (event: CalEvent, business?: string) => ({
   to: "/events/$slug" as const, params: { slug: event.slug }, ...(business ? { search: { business } } : {}),
 });
-
-export function EventCard({ event, business }: { event: CalEvent; business?: string }) {
-  return (
-    <article className="twc-evcard">
-      <CoverImage event={event} className="twc-evcard__media" fallback={<DateTile event={event} className="twc-evcard__media" />} />
-      <div className="twc-evcard__body">
-        <div className="flex flex-wrap items-center gap-2">
-          {event.category && <CategoryChip category={event.category} />}
-          <EventStatus event={event} />
-        </div>
-        <h3>
-          <Link {...eventLink(event, business)} className="after:absolute after:inset-0 after:rounded-(--twc-radius-card) after:content-[''] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-3 focus-visible:after:outline-sb-ink">
-            {event.title}
-          </Link>
-        </h3>
-        <EventDateTime event={event} />
-        {event.location && <EventLocation location={event.location} />}
-      </div>
-    </article>
-  );
-}
-
-export function EventGrid({ events, business }: { events: CalEvent[]; business?: string }) {
-  return (
-    <ul className="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-3">
-      {events.map((e) => <li key={e.uid}><EventCard event={e} business={business} /></li>)}
-    </ul>
-  );
-}
 
 /** The canvas programme: one lifted, gently tilted colour strip per event, its field from its category. */
 export function EventList({ events, business }: { events: CalEvent[]; business?: string }) {

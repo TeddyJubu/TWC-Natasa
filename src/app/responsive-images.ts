@@ -10,9 +10,6 @@ import aboutGathering800 from "@/assets/photography/site/about-gathering-800.web
 import membersGathering from "@/assets/photography/site/members-gathering.webp";
 import membersGathering800 from "@/assets/photography/site/members-gathering-800.webp";
 import membersGathering1080 from "@/assets/photography/site/members-gathering-1080.webp";
-import gatheringCeramics from "@/assets/photography/site/gathering-ceramics.webp";
-import gatheringCeramics800 from "@/assets/photography/site/gathering-ceramics-800.webp";
-import gatheringCeramics1280 from "@/assets/photography/site/gathering-ceramics-1280.webp";
 import event800 from "@/assets/photography/event-800.webp";
 import event from "@/assets/photography/event.jpg";
 import lic480 from "@/assets/photography/neighborhood-lic-480.webp";
@@ -37,10 +34,6 @@ export const aboutGatheringSizes = "336px";
 /** /fellowship page-head photo (1600×1069, 3:2) in its own 3:2 frame at most 540px wide. */
 export const membersGatheringSrcSet = `${membersGathering800} 800w, ${membersGathering1080} 1080w, ${membersGathering} 1600w`;
 export const membersGatheringSizes = "540px";
-
-/** /partnerships arch (1600×1067, 3:2) in a 5:6 box at most 340px wide: cover draws it at most 612px wide. */
-export const gatheringCeramicsSrcSet = `${gatheringCeramics800} 800w, ${gatheringCeramics1280} 1280w, ${gatheringCeramics} 1600w`;
-export const gatheringCeramicsSizes = "612px";
 
 /** Photo feature card: one of three columns from md up. */
 export const eventSrcSet = `${event800} 800w, ${event} 1280w`;

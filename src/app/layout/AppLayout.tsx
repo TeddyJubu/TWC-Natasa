@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { ImageTrail, LOCKUP, cn } from "@/index";
 import { viewerQuery } from "@/features/members/queries";
-import { Icon, JOIN_CLASS, JoinButton } from "./twc";
+import { JOIN_CLASS, JoinButton } from "./twc";
 
 /**
  * Live page wrapper. Its first child is a "Skip to content" link to `#main`: every page puts its content
@@ -28,41 +28,34 @@ export function AppPage({ children, className, trail = true }: { children: React
   );
 }
 
-export type SiteLink = { label: string; to: "/about" | "/directory" | "/events" | "/neighborhoods" | "/faq" | "/fellowship" | "/partnerships" | "/contact" | "/join" | "/account" };
+export type SiteLink = { label: string; to: "/constellations" | "/directory" | "/events" | "/leadership" | "/membership" | "/partnerships" | "/about" | "/faq" | "/fellowship" | "/contact" };
 
-const NAV_START: SiteLink[] = [
-  { label: "About", to: "/about" },
+// The canvas's visitor nav, in its order. Directory links to /directory for everyone; that page decides who sees members
+// (owner decision, 2026-11-26: no deliberate differences from the canvas).
+const NAV: SiteLink[] = [
+  { label: "Constellations", to: "/constellations" },
+  { label: "Directory", to: "/directory" },
   { label: "Events", to: "/events" },
-  { label: "Neighborhoods", to: "/neighborhoods" },
+  { label: "Leadership", to: "/leadership" },
+  { label: "Membership", to: "/membership" },
+  { label: "Partner", to: "/partnerships" },
 ];
-// The member directory is members-only (owner decision, 2026-11-24): its link shows only to approved members and admins.
-const DIRECTORY: SiteLink = { label: "Directory", to: "/directory" };
-const FAQ: SiteLink = { label: "FAQ", to: "/faq" };
-const navEnd = (member: boolean): SiteLink[] => (member ? [DIRECTORY, FAQ] : [FAQ]);
 
-// The menu and its dialog code load on first use, so a public page never pays for them up front.
-const loadSiteMenu = () => import("./SiteMenu");
-const SiteMenu = React.lazy(loadSiteMenu);
-
-const navLink = "twc-link whitespace-nowrap text-[14px] text-sb-ink";
-
-/** The wordmark lockup (three stars and the name), drawn as an image; its text is the link's or the page's. */
-function Lockup({ className }: { className?: string }) {
-  return <img src={LOCKUP.src} width={LOCKUP.width} height={LOCKUP.height} alt="" className={cn("block w-auto", className)} />;
+/** The boxed club lockup (stars over the name), drawn as an image; its text is the link's or the page's. */
+function Lockup() {
+  return <img src={LOCKUP.src} width={LOCKUP.width} height={LOCKUP.height} alt="" className="twc-header__lockup" />;
 }
 
-/** Sticky site header, the canvas's Programme layout: the lockup on the left; About, Events, Neighborhoods, FAQ, Sign in
- *  and Join us on the right (members: Directory, FAQ and Account); a full-screen Dialog menu below lg. */
+/** The site header, the canvas's `.twc-header` (Programme): the club lockup, then Constellations · Directory · Events ·
+ *  Leadership · Membership · Partner, Log in and the small ink Join pill. Sticky above 1100px; below, the links wrap under
+ *  the lockup, as the canvas draws it (no menu button). */
 export function AppNav({ bare = false }: { bare?: boolean }) {
   // ponytail: pre-launch, the form pages (and sign-in, where /join leads) show only the name, so nobody browses the
   // unpublished site from them. Drop `bare` from the form routes at launch.
   if (bare) {
     return (
-      <header className="sticky top-0 z-40 bg-sb-paper">
-        <div className="flex min-h-16 items-center justify-center px-4 py-3 text-sb-ink lg:min-h-[88px]">
-          <Lockup className="h-10 lg:h-[61px]" />
-          <span className="sr-only">The Women’s Collective</span>
-        </div>
+      <header className="twc-header twc-header--bare">
+        <span className="twc-logo"><Lockup /><span className="sr-only">The Women’s Collective</span></span>
       </header>
     );
   }
@@ -71,89 +64,60 @@ export function AppNav({ bare = false }: { bare?: boolean }) {
 
 /** The full nav. Bare pages never mount it, so they never ask who is looking (the PIN leaves that function shut). */
 function SiteNav() {
-  const [menuOpen, setMenuOpen] = React.useState(false);
-  const [menuMounted, setMenuMounted] = React.useState(false);
   // Known only in the browser: the server's HTML and first paint are the signed-out nav, so hydration always matches.
   const viewer = useQuery({ ...viewerQuery, staleTime: 60_000 }).data;
   const signedIn = viewer?.signedIn === true;
-  const member = viewer?.member === true || viewer?.admin === true;
-  const end = navEnd(member);
-  const brand = (
-    <Link to="/" activeOptions={{ exact: true }} className="block shrink-0 rounded-sm text-sb-ink" aria-label="The Women’s Collective home">
-      <Lockup className="h-10 lg:h-[61px] xl:h-[81px]" />
-    </Link>
-  );
-  const join = (size: string) => signedIn
-    ? <Link to="/account" className={cn(JOIN_CLASS, "twc-btn--sm", size)}>Account</Link>
-    // The header's compact pill: no arrow and one line, so the lg row and a 360px phone bar still fit.
-    : <JoinButton className={cn("twc-btn--sm whitespace-nowrap [&_.twc-arrow]:hidden", size)}>Join</JoinButton>;
   return (
-    <header className="sticky top-0 z-40 bg-sb-paper">
-      <div className="hidden items-center justify-between gap-6 px-10 pb-4 pt-[18px] lg:flex">
-        {brand}
-        <nav aria-label="Main" className="flex flex-wrap items-center justify-end gap-x-5 gap-y-2">
-          {[...NAV_START, ...end].map((l) => <Link key={l.to} to={l.to} className={navLink}>{l.label}</Link>)}
-          {!signedIn && <Link to="/account" className={navLink}>Sign in</Link>}
-          {join("")}
-        </nav>
-      </div>
-
-      <div className="flex min-h-16 items-center justify-between gap-3 px-5 py-3 lg:hidden">
-        {brand}
-        <div className="-mr-2 flex items-center gap-1">
-          {join("min-h-9")}
-          <button
-            type="button" aria-label="Open menu" aria-haspopup="dialog" aria-expanded={menuOpen}
-            onPointerEnter={() => void loadSiteMenu()} onFocus={() => void loadSiteMenu()}
-            onClick={() => { setMenuMounted(true); setMenuOpen(true); }}
-            className="grid size-11 place-items-center rounded-full"
-          >
-            <Icon name="menu" className="size-[22px]" />
-          </button>
-        </div>
-      </div>
-
-      {menuMounted && (
-        <React.Suspense fallback={null}>
-          <SiteMenu open={menuOpen} onOpenChange={setMenuOpen} links={[...NAV_START, ...end, { label: "Contact", to: "/contact" }, ...(signedIn ? [] : [{ label: "Sign in", to: "/account" } as const])]} signedIn={signedIn} />
-        </React.Suspense>
-      )}
+    <header className="twc-header">
+      <Link to="/" activeOptions={{ exact: true }} className="twc-logo" aria-label="The Women’s Collective home"><Lockup /></Link>
+      <nav aria-label="Main" className="twc-nav">
+        {NAV.map((l) => <Link key={l.to} to={l.to}>{l.label}</Link>)}
+        {signedIn
+          ? <Link to="/account" className={cn(JOIN_CLASS, "twc-btn--sm")}>Account</Link>
+          : <><Link to="/auth">Log in</Link><JoinButton className="twc-btn--sm">Join</JoinButton></>}
+      </nav>
     </header>
   );
 }
 
+// The canvas's "The Collective" column, plus the pages the canvas doesn't draw (About, FAQ, Fellowship, Contact).
 const FOOTER: SiteLink[] = [
-  { label: "About", to: "/about" },
+  { label: "Membership", to: "/membership" },
   { label: "Events", to: "/events" },
-  { label: "Neighborhoods", to: "/neighborhoods" },
+  { label: "Leadership", to: "/leadership" },
+  { label: "Partner with us", to: "/partnerships" },
+  { label: "About", to: "/about" },
   { label: "FAQ", to: "/faq" },
   { label: "Fellowship", to: "/fellowship" },
-  { label: "Partnerships", to: "/partnerships" },
-  { label: "Join", to: "/join" },
   { label: "Contact", to: "/contact" },
-  { label: "Sign in", to: "/account" },
 ];
-/** Site footer, the canvas's: a giant "find your people." over Plex Mono columns (the name, the two live
- *  constellations, the site links). No legal links until the pages exist again (docs/LEGAL-PAGES-REQUIRED.md). */
+const PHOTOGRAPHERS = "Pavel Danilyuk, Natalia S, Katrin Bolovtsova, cottonbro studio, Henri Mathieu-Saint-Laurent, RDNE Stock project, Rachel Claire, Jimme Deknatel, Sasha Zilov, Antonio López, Alistair Freeman, Phil Evenden, Mateusz Pielech, Bilguun Gantumur, Yan Krukau, Roman Odintsov and Camilo Ospina";
+
+/** Site footer, the canvas's `.twc-footer`: a giant "find your people." over four Plex Mono columns (the serif wordmark,
+ *  the five constellations, the Collective's pages, the small print). No legal links until the pages exist again
+ *  (docs/LEGAL-PAGES-REQUIRED.md); `bare` drops the links on the pre-launch form pages. */
 export function AppFooter({ bare = false }: { bare?: boolean }) {
   return (
     <footer className="twc-footer">
-      <div className="px-5 lg:px-10">
-        <p className="twc-footer__big">find your people.</p>
-        <div className="twc-footer__cols">
+      <p className="twc-footer__big">find your people.</p>
+      <div className="twc-footer__cols">
+        <div>
+          <p className="twc-footer__wm">The Women’s <i>Collective</i></p>
+          <p className="mt-2">A local-first network of women in business, one neighborhood at a time.</p>
+        </div>
+        <div>
+          <p>Constellations</p>
+          <p>North Brooklyn · Western Queens · Brownstone Brooklyn · Uptown Manhattan · Downtown Manhattan</p>
+        </div>
+        {!bare && (
           <div>
-            <p className="twc-footer__wm">The Women’s Collective</p>
-            <p className="mt-2">Share what you do &amp; help someone else shine.</p>
+            <p>The Collective</p>
+            <nav aria-label="Footer">{FOOTER.map((l) => <Link key={l.to} to={l.to}>{l.label}</Link>)}</nav>
           </div>
-          <div>
-            <p>Constellations</p>
-            <p>North Brooklyn · Queens</p>
-          </div>
-          {!bare && (
-            <nav aria-label="Footer" className="col-span-2 max-[1100px]:col-span-1">
-              {FOOTER.map((l) => <Link key={l.to} to={l.to}>{l.label}</Link>)}
-            </nav>
-          )}
+        )}
+        <div>
+          <p>Small print</p>
+          <details className="twc-footer__credits"><summary>Photo credits</summary><p>Photos from Pexels by {PHOTOGRAPHERS}.</p></details>
         </div>
       </div>
     </footer>

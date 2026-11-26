@@ -5,7 +5,6 @@ import { cn } from "@/index";
 import { getAuthClient } from "@/app/auth-client";
 import { emitAuthEvent } from "@/app/auth-events";
 import { AuthFrame, authAlert, authCard, authEyebrow, authH, slink } from "@/app/auth-ui";
-import { Icon } from "@/app/layout/twc";
 
 type Mode = "signin" | "signup" | "forgot";
 const MODES: readonly string[] = ["signin", "signup", "forgot"];
@@ -40,11 +39,11 @@ const ALREADY_EXISTS = ["USER_ALREADY_EXISTS", "USER_ALREADY_EXISTS_USE_ANOTHER_
 const PASSWORD_RULES = ["PASSWORD_TOO_SHORT", "PASSWORD_TOO_LONG"];
 
 const COPY: Record<Mode, { script: string; title: string; lede: string; submit: string }> = {
-  signin: { script: "good to see you", title: "Welcome back, neighbor.", lede: "Sign in to update your profile and see what’s happening nearby.", submit: "Sign in" },
+  signin: { script: "Members", title: "Log in to your constellation", lede: "", submit: "Log in" }, // the canvas's login()
   signup: { script: "hello, neighbor", title: "Open your member account", lede: "Create your login now; your profile unlocks once the collective approves your application.", submit: "Create account" },
   forgot: { script: "it happens", title: "Reset your password", lede: "We’ll send a link to choose a new password.", submit: "Send reset link" },
 };
-const TABS = [["signin", "Sign in"], ["signup", "Create account"]] as const;
+const TABS = [["signin", "Log in"], ["signup", "Create account"]] as const;
 
 function AuthPage() {
   const navigate = useNavigate();
@@ -129,7 +128,7 @@ function AuthPage() {
       <div className={authCard}>
         {showTabs && (
           <Tabs value={mode} onValueChange={(next) => { if (next) setMode(next as typeof mode); }}>
-            <TabsList aria-label="Sign in or create an account" className="flex gap-2">
+            <TabsList aria-label="Log in or create an account" className="flex gap-2">
               {TABS.map(([m, label]) => (
                 <TabsTab key={m} value={m} id={`tab-${m}`} aria-controls="auth-panel" className="twc-ftab">
                   {label}
@@ -142,9 +141,9 @@ function AuthPage() {
         <div id="auth-panel" role={showTabs ? "tabpanel" : undefined} aria-labelledby={showTabs ? `tab-${mode}` : undefined} className="flex flex-col gap-[18px]">
           <div className="flex flex-col gap-3 pt-2">
             <p className={authEyebrow}>{copy.script}</p>
-            <h1 className={authH}>{copy.title}</h1>
+            <h1 className={authH}>{mode === "signin" ? <>Log in to your <i>constellation</i></> : copy.title}</h1>
           </div>
-          <p className="twc-lede">{copy.lede}</p>
+          {copy.lede && <p className="twc-lede">{copy.lede}</p>}
 
           {/* Off unless the server has GOOGLE_CLIENT_ID/SECRET: a dead button is worse than none. */}
           {showTabs && import.meta.env.VITE_GOOGLE_AUTH === "true" && (
@@ -173,21 +172,13 @@ function AuthPage() {
                 <p className="text-[15px]">{notice.text}</p>
               </div>
             )}
-            <button type="submit" disabled={busy} aria-busy={busy || undefined} className="twc-btn mt-1 w-full">
-              {copy.submit} <Icon name="arrow" className="twc-arrow" />
-            </button>
+            <button type="submit" disabled={busy} aria-busy={busy || undefined} className="twc-btn mt-1 self-start">{copy.submit}</button>
           </form>
 
           <p className="flex flex-col items-center gap-2 text-center text-sm">
             {mode === "forgot" && <button type="button" onClick={() => switchTo("signin")} className={slink}>Back to sign in</button>}
             <Link to="/join" className={slink}>Not a member yet? Apply</Link>
           </p>
-        </div>
-
-        <div className="mt-4 flex flex-col gap-2.5 border-t border-sb-ink pt-5">
-          <span className="twc-chip twc-chip--ring self-start">Members only</span>
-          <p className="font-display text-2xl font-extrabold leading-[1.1] font-stretch-condensed">Your profile, your events, your introductions.</p>
-          <p className="text-sm leading-normal text-sb-muted">Accounts open fully once your membership application is approved.</p>
         </div>
       </div>
     </AuthFrame>

@@ -123,7 +123,7 @@ function AboutPage() {
                 {hoods.map((n) => <span key={n.slug} title={n.name} className="twc-dot size-5 bg-(--hood) shadow-[inset_0_0_0_1px_var(--color-sb-ink)]" style={{ "--hood": n.color } as React.CSSProperties} />)}
               </div>
             </div>
-            <Link to="/neighborhoods" className="twc-btn twc-btn--outline">Explore the neighborhoods <Icon name="arrow" className="twc-arrow" /></Link>
+            <Link to="/constellations" className="twc-btn twc-btn--outline">Explore the constellations <Icon name="arrow" className="twc-arrow" /></Link>
           </div>
         </section>
 

@@ -69,7 +69,7 @@ describe("/auth", () => {
       renderWithQueries(<Page />);
       fill(/email/i, "a@x.test");
       fill(/password/i, "wrongpass");
-      submit(/^sign in$/i);
+      submit(/^log in$/i);
       const alert = await screen.findByRole("alert");
       expect(alert.textContent).toMatch(/email or password didn’t match/i);
       expect(alert.textContent).not.toContain(raw);
@@ -81,7 +81,7 @@ describe("/auth", () => {
     renderWithQueries(<Page />);
     fill(/email/i, "a@x.test");
     fill(/password/i, "rightpass");
-    submit(/^sign in$/i);
+    submit(/^log in$/i);
     await vi.waitFor(() => expect(emitted).toEqual(["SIGNED_IN"]));
     expect(auth.signIn.email).toHaveBeenCalledWith({ email: "a@x.test", password: "rightpass" });
   });
@@ -91,7 +91,7 @@ describe("/auth", () => {
     renderWithQueries(<Page />);
     fill(/email/i, "a@x.test");
     fill(/password/i, "wrongpass");
-    submit(/^sign in$/i);
+    submit(/^log in$/i);
     await screen.findByRole("alert");
     fireEvent.click(screen.getByRole("button", { name: /forgot password/i }));
     expect(screen.queryByRole("alert")).toBeNull();
@@ -128,7 +128,7 @@ describe("/auth", () => {
 
   it("switches sign-in / create-account with ARIA tabs: arrows move and select, one tab stop, inside the site chrome", () => {
     renderWithQueries(<Page />);
-    const list = screen.getByRole("tablist", { name: /sign in or create an account/i });
+    const list = screen.getByRole("tablist", { name: /log in or create an account/i });
     const [signIn, create] = within(list).getAllByRole("tab");
     const panel = screen.getByRole("tabpanel");
     expect([signIn.getAttribute("aria-selected"), create.getAttribute("aria-selected")]).toEqual(["true", "false"]);
@@ -148,7 +148,7 @@ describe("/auth", () => {
     fireEvent.keyDown(signIn, { key: "End" });
     expect(document.activeElement).toBe(create);
     fireEvent.keyDown(create, { key: "Home" });
-    expect(screen.getByRole("heading", { level: 1, name: "Welcome back, neighbor." })).toBeTruthy();
+    expect(screen.getByRole("heading", { level: 1, name: "Log in to your constellation" })).toBeTruthy();
     fireEvent.click(create);
     expect(create.getAttribute("aria-selected")).toBe("true");
 
@@ -184,7 +184,7 @@ describe("/auth", () => {
     renderWithQueries(<Page />);
     fill(/email/i, "a@x.test");
     fill(/password/i, "wrongpass");
-    submit(/^sign in$/i);
+    submit(/^log in$/i);
     const alert = await screen.findByRole("alert");
     expect(screen.getByLabelText(/email/i).getAttribute("aria-describedby")).toBe(alert.id);
     expect(screen.getByLabelText(/password/i).getAttribute("aria-invalid")).toBe("true");
@@ -248,7 +248,7 @@ describe("/auth after a password reset", () => {
     const note = screen.getByRole("status");
     expect(within(note).getByRole("heading", { name: "Password changed" })).toBeTruthy();
     expect(note.textContent).toContain("Your password is changed. Sign in with your new one.");
-    expect(screen.getByRole("tab", { name: "Sign in" }).getAttribute("aria-selected")).toBe("true");
+    expect(screen.getByRole("tab", { name: "Log in" }).getAttribute("aria-selected")).toBe("true");
   });
 
   it("goes when she switches tabs, and never shows without the flag", () => {

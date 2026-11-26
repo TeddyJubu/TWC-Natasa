@@ -1,6 +1,4 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import gatheringCeramics from "@/assets/photography/site/gathering-ceramics.webp";
-import { gatheringCeramicsSizes, gatheringCeramicsSrcSet } from "@/app/responsive-images";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import { Icon } from "@/app/layout/twc";
 import { PartnershipForm } from "@/features/contact/PartnershipForm";
@@ -8,7 +6,7 @@ import { FormCopyProvider } from "@/features/form-copy/FormCopy";
 import { loadFormCopy } from "@/features/form-copy/queries";
 
 const TITLE = "Partnerships — The Women’s Collective";
-const DESCRIPTION = "Host, teach, supply or support: partner with The Women’s Collective in North Brooklyn and Queens. Neither of us is buying anything.";
+const DESCRIPTION = "Sponsor, collaborate or support: ways to partner with The Women’s Collective that fit your goals and budget.";
 
 export const Route = createFileRoute("/partnerships")({
   head: () => ({
@@ -25,78 +23,94 @@ export const Route = createFileRoute("/partnerships")({
   component: PartnershipsPage,
 });
 
-// No "who we work with now" block and no prices: partner facts have not been re-supplied (SITE-043/157).
-// Each way is a colour field (canvas partner page), ink text on every one.
+// The design canvas's partner page (docs/design-canvas/, partner()), its words and packages as drawn. Its "Partnership in
+// action" stories are flagged there as examples to replace with real ones, so they are left out until real ones exist.
 const WAYS = [
-  { field: "twc-c-butter", kind: "Host", title: "Open your space", text: "A studio, a shop floor, a back room, a rooftop. You provide the room; we handle invitations, RSVPs, and everything on the night. Most partnerships start here." },
-  { field: "twc-c-lilac", kind: "Teach", title: "Share what you know", text: "A class, a workshop, a demonstration, or forty minutes on the thing you’re genuinely expert in. Not a pitch with a discount code at the end: the actual knowledge." },
-  { field: "twc-c-lime", kind: "Supply", title: "Feed the room", text: "Food, coffee, flowers, wine. Paid at cost or contributed, whichever works for you. We’d rather you stayed in business than gave us things for free." },
-  { field: "twc-c-sky", kind: "Support", title: "Underwrite something", text: "Backing a series rather than a single night. This is still being shaped: tell us what you had in mind and we’ll build it around that." },
+  { title: "Sponsor", field: "twc-c-butter", text: "Put your brand in front of women who run businesses and households in our neighborhoods.",
+    items: ["Logo on events, pages and the letter", "Speaking slot and reserved seats", "Packages shaped around your goals"] },
+  { title: "Collaborator", field: "twc-c-lilac", text: "Bring a space, product, expertise or audience and co-create an event with us.",
+    items: ["Co-host a coffee, panel or workshop", "In-kind: venue, catering, product", "Meet members in person, not through an ad"] },
+  { title: "Supporter", field: "twc-c-lime", text: "Fund a seat for a woman who could not otherwise join, or a prize at the Collective Awards.",
+    items: ["$200 funds one year of membership", "$395 funds an Incubator seat", "Thanked by name at the event"] },
+];
+const PACKAGES = [
+  ["Event sponsor", "$500–1,500", "One panel or workshop: welcome the room, take a table, attendee opt-in list."],
+  ["Newsletter sponsor", "$150–500 an issue", "One slot in the weekly Collective letter."],
+  ["Constellation partner", "$3,000 a year", "One neighborhood page, one event a quarter, a member perk."],
+  ["Founding partner", "$7,500–10,000 a year", "Homepage slot, Awards night naming, every constellation, Incubator scholarships."],
+];
+const QUESTIONS = [
+  ["What does partnering mean?", "You support the Collective with money, space or expertise, and reach our members in a way that fits your goals."],
+  ["Can I support without sponsoring?", "Yes. Fund a membership or Incubator seat as a Supporter."],
+  ["Is my support tax-deductible?", "Not at this time. The Collective is a business, not a registered nonprofit."],
 ];
 
 function PartnershipsPage() {
   const copy = Route.useLoaderData();
   const t = (text: string) => copy?.[text] ?? text;
+  // The canvas sets one word of each headline in italic; an admin's own wording shows as written.
+  const title = t("Ways to partner");
+  const talk = t("Talk to us");
   return (
     <FormCopyProvider copy={copy}>
     <AppPage>
       <AppNav bare />
       <main id="main" tabIndex={-1} className="outline-none">
-        <div className="twc-phd">
-          <div className="twc-fhead">
-            <span className="twc-eyebrow">{t("for businesses")}</span>
-            <h1 className="twc-display">{t("Partners, not vendors.")}</h1>
-            <p className="twc-lede">{t("Every event happens because someone opens their doors and shares what they know. That’s a collaboration, and we treat it like one.")}</p>
-            <p className="twc-chip twc-chip--ring self-start"><Icon name="pin" />North Brooklyn and Queens, New York</p>
-          </div>
-          <img src={gatheringCeramics} srcSet={gatheringCeramicsSrcSet} sizes={gatheringCeramicsSizes} alt="Two women painting ceramics together at a creative workshop" width={1600} height={1067} fetchPriority="high" className="twc-hardphoto aspect-[5/6] w-[min(340px,100%)] object-[30%_center]" />
-        </div>
-
-        <section aria-labelledby="means-title" className="twc-sec twc-fsplit">
-          <div className="flex flex-col gap-4">
-            <span className="twc-eyebrow">What partnering means</span>
-            <h2 id="means-title" className="twc-h2">Neither of us is buying anything.</h2>
-          </div>
-          <div className="flex max-w-[62ch] flex-col gap-4 text-[17px] leading-[1.6]">
-            <p>We don’t sell access to our members and we don’t book venues. What we do is put a room full of women who run things in front of a business run by someone doing the same, and let that be useful in whichever direction it goes.</p>
-            <p>In practice that usually means you host something. We bring the people, handle the sign-ups, and credit you properly, on the site and in the room.</p>
-            <p>What we ask in return is that you show up as yourself rather than as a brand activation. The members can tell the difference within about four minutes, and so can we.</p>
+        <section className="twc-phd">
+          <div className="min-w-0">
+            <span className="twc-eyebrow">{t("Work with us")}</span>
+            <h1 className="twc-display">{title === "Ways to partner" ? <>Ways to <i>partner</i></> : title}</h1>
+            <p className="twc-lede">{t("Whether you’re a neighborhood business, a global brand or someone who wants to give back, there is a way to partner that fits your goals and budget.")}</p>
           </div>
         </section>
 
-        <section aria-labelledby="ways-title">
-          <div className="twc-sec twc-sec--tight">
-            <span className="twc-eyebrow">ways in</span>
-            <h2 id="ways-title" className="twc-h2 mt-3">Four kinds of collaboration.</h2>
-          </div>
-          <ul className="twc-fways">
-            {WAYS.map((w, i) => (
-              <li key={w.kind} className={`twc-fieldc ${w.field}`}>
-                <span className="twc-fmono">{String(i + 1).padStart(2, "0")} — {w.kind}</span>
-                <div className="flex flex-col gap-3">
-                  <h3>{w.title}</h3>
-                  <p>{w.text}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section aria-labelledby="inquiry-title" className="twc-sec twc-fsplit">
-          <div className="flex min-w-0 flex-col gap-[18px]">
-            <span className="twc-eyebrow">{t("start the conversation")}</span>
-            <h2 id="inquiry-title" className="twc-h2">{t("Tell us what you had in mind.")}</h2>
-            <p className="twc-lede">{t("A couple of sentences is plenty. We answer every one of these, and we’ll say no clearly if it isn’t a fit rather than going quiet on you.")}</p>
-            <div className="twc-fieldc twc-c-blush mt-2">
-              <h3>Before you write</h3>
-              <p>
-                If you’re a woman running a business in North Brooklyn or Queens, you may want membership rather than a partnership, or both. They’re separate things and one doesn’t require the other.{" "}
-                <Link to="/join" className="twc-inlink">Apply to join</Link>.
-              </p>
+        <section aria-label="Ways to partner" className="twc-fieldcs">
+          {WAYS.map((w) => (
+            <div key={w.title} className={`twc-field-c ${w.field}`}>
+              <h2>{w.title}</h2>
+              <p>{w.text}</p>
+              <ul>{w.items.map((x) => <li key={x}>{x}</li>)}</ul>
             </div>
-            <p className="text-[15px]">Rather write in your own words? Use the <Link to="/contact" className="twc-inlink">contact page</Link>.</p>
+          ))}
+        </section>
+
+        <section id="packages" aria-labelledby="packages-title" className="twc-sec">
+          <div className="twc-shead"><h2 id="packages-title" className="twc-h2">Sponsor <i>packages</i></h2></div>
+          {PACKAGES.map(([name, amount, text]) => (
+            <div key={name} className="twc-pkg"><h3>{name}</h3><span className="twc-pkg__amt">{amount}</span><p>{text}</p></div>
+          ))}
+        </section>
+
+        <section aria-labelledby="questions-title" className="twc-sec">
+          <div className="twc-twocol">
+            <div>
+              <h2 id="questions-title" className="twc-h3">Common <i>questions</i></h2>
+              <ul className="twc-qlist">
+                {QUESTIONS.map(([q, a]) => <li key={q}><span>Q</span><div><em>{q}</em>{a}</div></li>)}
+              </ul>
+            </div>
+            <div className="twc-partnerform bg-sb-cream">
+              <h2 className="twc-h3">{talk === "Talk to us" ? <>Talk to <i>us</i></> : talk}</h2>
+              <PartnershipForm />
+            </div>
           </div>
-          <PartnershipForm />
+        </section>
+
+        <section className="twc-duo" aria-label="Lead or partner">
+          <div className="twc-panel twc-c-sky">
+            <span className="twc-eyebrow text-sb-ink!">Ambassadors</span>
+            <h2>Lead a <i>constellation</i></h2>
+            <p className="copy">Every neighborhood is led by two or three women who live there. Uptown and Downtown Manhattan are waiting for theirs.</p>
+            <Link to="/contact" className="twc-btn">Apply to be an ambassador <Icon name="arrow" className="twc-arrow" /></Link>
+            <div className="twc-panel__info"><p>Uptown<br />Two seats open</p><p>Downtown<br />Two seats open</p><p>Term<br />One year</p></div>
+          </div>
+          <div className="twc-panel twc-c-blush">
+            <span className="twc-eyebrow text-sb-ink!">Partners</span>
+            <h2>Partner <i>with</i> us</h2>
+            <p className="copy">Bring a space, a product or a budget, and meet the women who run businesses and households in our neighborhoods.</p>
+            <a href="#packages" className="twc-btn twc-btn--outline">Ways to partner <Icon name="arrow" className="twc-arrow" /></a>
+            <div className="twc-panel__info"><p>Event<br />$500–1,500</p><p>Letter<br />$150–500 an issue</p><p>Founding<br />$7,500–10,000 a year</p></div>
+          </div>
         </section>
       </main>
       <AppFooter bare />

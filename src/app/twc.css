@@ -68,9 +68,9 @@
 .twc-index { font: 500 11px/1.55 var(--font-plex); letter-spacing: 0.08em; color: var(--color-sb-muted); }
 
 /* Headings: sentence case in Instrument Serif, on the canvas's fluid scale (.d1/.d2/.d3/.s3) */
-.twc-display { font: 400 clamp(3rem, 7.4vw, 6.4rem)/0.92 var(--font-serif); letter-spacing: -0.025em; margin: 0; text-wrap: balance; }
-.twc-h2 { font: 400 clamp(2.4rem, 5vw, 4rem)/0.95 var(--font-serif); letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
-.twc-h3 { font: 400 clamp(1.8rem, 3vw, 2.75rem)/1 var(--font-serif); letter-spacing: 0; margin: 0; text-wrap: balance; }
+.twc-display { font: 400 clamp(3rem, 7.4vw, 6.4rem)/0.92 var(--font-serif); letter-spacing: -0.025em; margin: 0; }
+.twc-h2 { font: 400 clamp(2.4rem, 5vw, 4rem)/0.95 var(--font-serif); letter-spacing: -0.02em; margin: 0; }
+.twc-h3 { font: 400 clamp(1.8rem, 3vw, 2.75rem)/1 var(--font-serif); letter-spacing: 0; margin: 0; }
 .twc-s3 { font: 400 26px/1.05 var(--font-serif); margin: 0; }
 .twc-display i, .twc-h2 i, .twc-h3 i, .twc-s3 i { font-style: italic; }
 .twc-lede { font: 400 17px/1.45 var(--font-sans); color: var(--color-sb-muted); max-width: 52ch; margin: 0; }
@@ -118,17 +118,36 @@ textarea.twc-input { min-height: 132px; padding: 12px 14px; border-radius: 0; re
 .twc-card { box-sizing: border-box; min-width: 0; padding: var(--twc-space-30) var(--twc-space-30) var(--twc-space-28); background: var(--color-sb-paper); border-radius: var(--twc-radius-card); box-shadow: inset 0 0 0 1px var(--color-sb-ink); }
 @media (max-width: 720px) { .twc-card { padding: 24px 20px; border-radius: var(--twc-radius-image); } }
 
+/* Site header (canvas .twc-header, Programme): the club lockup left, the links right; sticky above 1100px. Below it the
+   header is one column and the links wrap under the lockup, as the canvas draws it. */
+.twc-header { position: sticky; top: 0; z-index: 40; display: grid; grid-template-columns: auto 1fr; gap: var(--twc-space-24); align-items: center; padding: 18px var(--twc-gut, 40px) 16px; background: var(--color-sb-ground); color: var(--color-sb-ink); }
+.twc-header--bare { grid-template-columns: auto; }
+.twc-logo { display: inline-flex; align-items: center; color: inherit; text-decoration: none; }
+.twc-header__lockup { display: block; width: auto; height: 81px; margin: 0; }
+.twc-nav { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 8px 20px; font-size: 14px; }
+.twc-nav a:not(.twc-btn) { color: inherit; text-decoration: none; white-space: nowrap; }
+.twc-nav a:not(.twc-btn):hover, .twc-nav a[aria-current="page"]:not(.twc-btn) { text-decoration: underline; text-underline-offset: 4px; }
+.twc-nav .twc-btn { min-height: 0; }
+@media (max-width: 1100px) {
+  .twc-header { position: static; grid-template-columns: 1fr; align-items: start; }
+  .twc-header__lockup { height: 61px; }
+  .twc-nav { justify-content: flex-start; }
+}
+
 /* Site footer (canvas .twc-footer): a giant line over Plex Mono columns, white under a thin ink rule */
-.twc-footer { background: var(--color-sb-paper); color: var(--color-sb-ink); border-top: 1px solid var(--color-sb-ink); padding: var(--twc-space-60) 0 26px; }
-.twc-footer__big { margin: 0; font: 900 clamp(2.7rem, 7.95vw, 7.65rem)/0.82 var(--font-display); letter-spacing: -0.055em; }
-.twc-footer__cols { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; gap: var(--twc-space-24); margin-top: 70px; font: 500 11px/1.55 var(--font-plex); }
+.twc-footer { background: var(--color-sb-paper); color: var(--color-sb-ink); border-top: 1px solid var(--color-sb-ink); padding: var(--twc-space-60) var(--twc-gut, 40px) 26px; }
+.twc-footer__big { margin: 0; font: 900 clamp(2.7rem, 7.95vw, 7.65rem)/0.82 var(--font-display); letter-spacing: -0.055em; white-space: nowrap; }
+.twc-footer__cols { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; gap: var(--twc-space-24); margin-top: 70px; font: 400 11px/1.55 var(--font-plex); }
 .twc-footer__cols p { margin: 0; }
+.twc-footer__cols .mt-2 { margin-top: 8px; }
 .twc-footer__wm { font: 400 22px/1.1 var(--font-serif); }
 .twc-footer__cols nav { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: var(--twc-space-8); }
-.twc-footer__cols a { text-decoration: none; }
+.twc-footer__cols a { color: inherit; text-decoration: none; }
 .twc-footer__cols a:hover, .twc-footer__cols a:focus-visible { text-decoration: underline; text-underline-offset: 3px; }
-@media (max-width: 1100px) { .twc-footer__cols { grid-template-columns: 1fr 1fr; } }
-@media (max-width: 600px) { .twc-footer__cols { grid-template-columns: 1fr; margin-top: 40px; } }
+.twc-footer__credits { margin-top: var(--twc-space-8); }
+.twc-footer__credits summary { cursor: pointer; }
+.twc-footer__credits p { margin-top: 6px; }
+@media (max-width: 1100px) { .twc-footer__cols { grid-template-columns: 1fr 1fr; } .twc-footer__big { white-space: normal; } }
 
 /* Paper texture on coloured cards (canvas, verbatim): a fine tooth over a soft mottle, tiled. Not on white or ink fields. */
 .twc-cband, .twc-tile:not(.twc-tile--photo), .twc-ev, .twc-panel, .twc-card, [class*="twc-c-"]:not(.twc-c-white, .twc-c-ink) {

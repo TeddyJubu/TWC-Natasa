@@ -81,7 +81,7 @@ describe("AppNav and AppFooter under a real router", () => {
 
   it("an internal footer link navigates client-side", async () => {
     const router = await renderApp();
-    expect(await click(within(screen.getByRole("navigation", { name: "Footer" })).getByRole("link", { name: "Join" }))).toBe(true);
-    await waitFor(() => expect(router.state.location.pathname).toBe("/join"));
+    expect(await click(within(screen.getByRole("navigation", { name: "Footer" })).getByRole("link", { name: "Events" }))).toBe(true);
+    await waitFor(() => expect(router.state.location.pathname).toBe("/events"));
   });
 });

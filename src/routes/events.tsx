@@ -4,9 +4,10 @@ import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import { jsonLdScript, parseSiteUrl } from "@/app/seo";
 import { MonthCalendar } from "@/features/cal/calendar";
 import {
-  CategoryFilter, EmptyState, EventGrid, EventList, EventsPageHeader, EventsSearch, EventsSkeleton, EventsTabs, EventsViewToggle,
-  LoadMore,
+  CategoryFilter, EmptyState, EventList, EventsSearch, EventsSkeleton, EventsTabs, EventsViewToggle, LoadMore,
 } from "@/features/cal/events-ui";
+import { Experiences } from "@/app/canvas/Experiences";
+import { Icon } from "@/app/layout/twc";
 import { parseGatheringsSearch, type GatheringsSearch, type GatheringsView } from "@/features/cal/event-state";
 import { calEventsFn } from "@/features/cal/fns";
 import { calEventsQuery, type EventsParams } from "@/features/cal/queries";
@@ -84,13 +85,25 @@ function GatheringsPage() {
   const error = view === "calendar" ? calendar.isError : list.isError;
   const retry = () => void (view === "calendar" ? calendar.refetch() : list.refetch());
   const filtered = !!(search.category || search.q || search.month);
+  // The program's month, from its first event in the collective's zone; none while the calendar is empty.
+  const firstEvent = view === "calendar" ? undefined : events[0];
+  const month = firstEvent && {
+    name: new Intl.DateTimeFormat("en-US", { month: "long", timeZone: firstEvent.timeZone }).format(new Date(firstEvent.startTime)),
+    full: new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric", timeZone: firstEvent.timeZone }).format(new Date(firstEvent.startTime)),
+  };
 
   return (
     <AppPage>
       <AppNav />
       <main id="main" tabIndex={-1} className="outline-none">
-        <EventsPageHeader host={first?.host} />
-        <section aria-label="Find an event" className="twc-sec twc-sec--tight flex flex-col gap-6">
+        <Experiences heading="h1" />
+
+        <section aria-labelledby="program-title" className="twc-sec flex flex-col gap-6">
+          <div className="twc-shead twc-shead--meta mb-0">
+            <h2 id="program-title" className="twc-h2">Program{month && <>, <i>{month.name}</i></>}</h2>
+            <p className="twc-meta">Month<br />{month?.full ?? "New dates posted as they’re announced"}</p>
+            <p className="twc-meta">Members<br />Zooms, coffees and happy hours included</p>
+          </div>
           <div className="flex flex-wrap items-end justify-between gap-4">
             {view === "calendar" ? <span /> : <EventsTabs tab={tab} onChange={(t) => update({ tab: t === "past" ? "past" : undefined })} />}
             <EventsViewToggle view={view} onChange={(v) => update({ view: v === "grid" ? undefined : v, ...(v === "calendar" ? { tab: undefined } : { month: undefined }) })} />
@@ -113,23 +126,23 @@ function GatheringsPage() {
               </EmptyState>
             ) : (
               <>
-                {view === "list" ? <EventList events={events} business={search.business} /> : <EventGrid events={events} business={search.business} />}
+                <EventList events={events} business={search.business} />
                 <LoadMore shown={events.length} total={first?.total ?? 0} busy={list.isFetchingNextPage} onClick={() => void list.fetchNextPage()} />
               </>
             )}
           {list.isFetchNextPageError && <ErrorBanner message="We couldn’t load more events." onRetry={() => void list.fetchNextPage()} />}
         </section>
 
-        <section className="twc-duo border-t border-sb-ink">
-          <div className="twc-panel twc-c-lilac">
-            <h2 id="host">Want to host one?</h2>
-            <p className="copy">Members host, sponsor and collaborate on events in their own neighborhoods. Tell us what you have in mind.</p>
-            <Link to="/contact" className="twc-btn">Pitch an event <span className="twc-arrow" aria-hidden>→</span></Link>
+        <section className="twc-duo" aria-label="Guests and hosts">
+          <div className="twc-panel twc-panel--short twc-c-ev-mint">
+            <h2>Bring a <i>guest</i></h2>
+            <p className="copy">Members can invite a friend to her first Coffee Connection or Happy Hour, free with an RSVP. After that she can join, or buy a ticket to an event that’s open to guests.</p>
+            <Link to="/membership" className="twc-btn self-start">See membership <Icon name="arrow" className="twc-arrow" /></Link>
           </div>
-          <div className="twc-panel twc-c-sky">
-            <h2>Close to home</h2>
-            <p className="copy">Each neighborhood has its own identity and color. Find yours.</p>
-            <Link to="/neighborhoods" className="twc-btn twc-btn--outline">See the neighborhoods <span className="twc-arrow" aria-hidden>→</span></Link>
+          <div className="twc-panel twc-panel--short twc-c-lilac">
+            <h2 id="host">Host <i>one</i></h2>
+            <p className="copy">Have a space or a skill to share? Co-create a coffee, panel or workshop with us.</p>
+            <Link to="/partnerships" className="twc-btn twc-btn--outline self-start">Partner with us <Icon name="arrow" className="twc-arrow" /></Link>
           </div>
         </section>
       </main>

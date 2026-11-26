@@ -59,3 +59,4 @@ export function constellationLogoSrcSet(src: string | null | undefined): string 
 
 /** The wordmark lockup: the three stars beside "The Women's Collective" (docs/design-canvas/logos/twc-ink.webp). */
 export const LOCKUP = { src: lockupInk, width: 770, height: 400 } as const;
+
