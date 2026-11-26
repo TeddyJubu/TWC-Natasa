@@ -88,6 +88,17 @@ describe("/ (home) structure", () => {
     for (const d of bands.slice(2)) expect(within(d).getByRole("link", { name: /Lead this constellation/ }).getAttribute("href")).toBe("/contact");
   });
 
+  it("each band's star chart names its neighborhoods and never a member count", () => {
+    const { container } = renderWithQueries(<Page />);
+    const charts = [...container.querySelectorAll("svg.twc-starchart")];
+    expect(charts.map((s) => s.getAttribute("aria-label"))[0]).toBe("North Brooklyn constellation: Greenpoint, Williamsburg, Bushwick");
+    expect(charts).toHaveLength(5);
+    for (const s of charts) expect(s.textContent).not.toMatch(/member/i);
+    // Live bands have no open seats; a band with no members yet shows them.
+    expect(charts[0].textContent).not.toMatch(/open seat|Your star here/);
+    expect(charts[4].textContent).toMatch(/Your star here/);
+  });
+
   it("seven experience tiles link to the calendar, with five captioned photos between them", () => {
     const { container } = renderWithQueries(<Page />);
     const grid = container.querySelector(".twc-grid6")!;

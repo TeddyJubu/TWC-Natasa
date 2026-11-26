@@ -10,6 +10,7 @@ import xpWorkshop from "@/assets/photography/home/xp-workshop.webp";
 import xpEvening from "@/assets/photography/home/xp-evening.webp";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import { Icon, JoinButton } from "@/app/layout/twc";
+import { StarChart } from "@/app/StarChart";
 import { jsonLdScript, organizationLd, parseSiteUrl } from "@/app/seo";
 
 export const Route = createFileRoute("/")({
@@ -39,10 +40,11 @@ export const Route = createFileRoute("/")({
 
 /* ── data: the design canvas's homepage ("01 Programme", docs/design-canvas/), its own copy ─────────────────────────── */
 
-// The five constellations. No member appears: the canvas's star charts and profile strips are members-only data.
+// The five constellations. No member appears: the star chart draws no member or count, and the canvas's profile
+// strips are members-only data.
 const CONSTELLATIONS = [
   { short: "NB", name: "North Brooklyn", status: "Live · Founding 50", live: true, field: "twc-c-band-lime", hoods: "Greenpoint — Williamsburg — Bushwick",
-    led: "Founder: Nataša Tuohy", head: "The women behind the Collective", body: "A constellation of talent, ambition, and local connections. Meet the women shaping our community." },
+    led: "Nataša Tuohy", head: "The women behind the Collective", body: "A constellation of talent, ambition, and local connections. Meet the women shaping our community." },
   { short: "WQ", name: "Western Queens", status: "Live", live: true, field: "twc-c-band-purple", hoods: "Astoria — Long Island City — Hunters Point — Sunnyside — Woodside — Jackson Heights",
     led: "Ambassador-led", body: "Sunday coffees in Astoria, headshot days and a growing table of makers, agents and teachers." },
   { short: "SB", name: "Brownstone Brooklyn", status: "Launching", live: false, field: "twc-c-sky", hoods: "Red Hook — Carroll Gardens — Cobble Hill — Boerum Hill — Park Slope",
@@ -125,7 +127,10 @@ function Constellations() {
                 )}
                 <p className="twc-meta mt-8">Led by<br />{c.led}</p>
               </div>
-              <p className="twc-cband__outline"><span className="sr-only">Neighborhoods: </span>{c.hoods}</p>
+              <div>
+                <StarChart id={c.short} name={c.name} hoods={c.hoods} />
+                <p className="twc-cband__outline" aria-hidden="true">{c.hoods}</p>
+              </div>
             </div>
           </details>
         ))}
