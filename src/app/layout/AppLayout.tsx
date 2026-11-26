@@ -118,6 +118,8 @@ export function AppFooter({ bare = false }: { bare?: boolean }) {
         <div>
           <p>Small print</p>
           <details className="twc-footer__credits"><summary>Photo credits</summary><p>Photos from Pexels by {PHOTOGRAPHERS}.</p></details>
+          {/* Owner's request, 2026-11-27 */}
+          <p className="mt-2">Member headshots are the property of The Women’s Collective and may not be copied or used on any other platform without our written permission.</p>
         </div>
       </div>
     </footer>
