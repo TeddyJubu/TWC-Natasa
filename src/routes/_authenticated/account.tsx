@@ -150,7 +150,7 @@ function ProfileEditorPage({ userId, profile, avatar, logoUrl, hoodList, applied
   const preview = () => setPassOpen(true);
 
   return (
-    <main id="main" tabIndex={-1} className="outline-none">
+    <main id="main" tabIndex={-1} className="air-sec outline-none">
       {children}
       <AccountHeader userId={userId} profile={profile} avatar={avatar} onPreview={preview} />
       {approved && !profile.directory_visible && <YoureIn userId={userId} />}

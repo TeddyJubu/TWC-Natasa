@@ -1,10 +1,12 @@
-// The members' frame for /account, /feed and /directory (DESIGN.md "Member profile"): a canvas top bar over a hairline
-// whose name and avatar open the account menu (the account sections, plus Admin for admins), and the page. The admin
-// pages keep AppShell's sidebar.
+// The members' frame for /feed, /directory, /calendar and /account (DESIGN.md "Member pages"): the canvas's member
+// header — the lockup on the left; Feed, Directory, Calendar and My profile on the right, then her round avatar and
+// her flag (Member, or Admin) opening the account menu — the page, and the canvas footer. The admin pages keep
+// AppShell's sidebar.
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
 import { Popover, PopoverContent, PopoverTrigger } from "@ui-sdk/react/popover";
-import { ConstellationLogo, cn, formatCatalogueNumber, initials } from "@/index";
+import { LOCKUP, cn, initials } from "@/index";
+import { AppFooter } from "@/app/layout/AppLayout";
 import { MY_ACCOUNT, useActiveSection } from "@/app/layout/shell-nav";
 import { ring } from "@/app/layout/app-classes";
 import { Icon } from "@/app/layout/icons";
@@ -13,7 +15,15 @@ import { useButtonSparkles } from "@/app/layout/sparkles";
 import { ConfirmHost } from "@/app/layout/ConfirmHost";
 
 /** The signed-in pages on this frame. */
-export type AirPage = "/account" | "/feed" | "/directory";
+export type AirPage = "/account" | "/feed" | "/directory" | "/calendar";
+
+/** The canvas's member nav. Rooms and Upgrade are left out: there is no chat and no paid tier behind them. */
+const NAV: { to: AirPage; label: string }[] = [
+  { to: "/feed", label: "Feed" },
+  { to: "/directory", label: "Directory" },
+  { to: "/calendar", label: "Calendar" },
+  { to: "/account", label: "My profile" },
+];
 
 /** `page` is where she is: the menu's sections are in-page anchors on /account and links back to it elsewhere. */
 export function AirShell({ page = "/account", admin, name, avatar, catalogueNumber, children }: {
@@ -22,34 +32,38 @@ export function AirShell({ page = "/account", admin, name, avatar, catalogueNumb
   const { signOut, error } = useSignOut();
   const active = useActiveSection("/account");
   useButtonSparkles();
+  // Her flag says only what is true: an admin, or an approved member (who has a number). Nothing otherwise.
+  const flag = admin ? "Admin" : catalogueNumber !== null ? "Member" : null;
   return (
     <div className="app-ground air min-h-screen">
       <ConfirmHost />
-      <div className="air-wrap">
-        <header className="air-top">
-          <Link to="/" aria-label="The Women’s Collective home" className={cn("air-brand", ring)}>
-            <ConstellationLogo variant="ink" alt="" sizes="30px" className="w-6.5 lg:w-7.5" />The Women’s Collective
-          </Link>
-          <div className="air-who">
-            <AccountMenu page={page} admin={admin} active={page === "/account" ? active : null} name={name} avatar={avatar} catalogueNumber={catalogueNumber} />
-            <button type="button" onClick={signOut} aria-label="Sign out" className={cn("air-icon-btn", ring)}>
-              <Icon name="log-out" className="size-4" />
-            </button>
-          </div>
-        </header>
-        {error && <p role="alert" className="mt-3 px-4 py-3 text-sm text-danger shadow-[inset_0_0_0_1.5px_currentColor]">{error}</p>}
-        {children}
-      </div>
+      <header className="air-top">
+        <Link to="/" aria-label="The Women’s Collective home" className={cn("air-brand", ring)}>
+          <img src={LOCKUP.src} width={LOCKUP.width} height={LOCKUP.height} alt="" />
+        </Link>
+        <nav aria-label="Members" className="air-nav">
+          {NAV.map((l) => (
+            <Link key={l.to} to={l.to} aria-current={l.to === page ? "page" : undefined} className={ring}>{l.label}</Link>
+          ))}
+          <AccountMenu
+            page={page} admin={admin} active={page === "/account" ? active : null} name={name} avatar={avatar} flag={flag}
+            onSignOut={signOut}
+          />
+        </nav>
+      </header>
+      {error && <p role="alert" className="mx-4 mb-3 px-4 py-3 text-sm text-danger shadow-[inset_0_0_0_1.5px_currentColor] lg:mx-10">{error}</p>}
+      {children}
+      <AppFooter />
     </div>
   );
 }
 
 /**
- * Her name and avatar open the account menu: on hover with a mouse, and on click or Enter for touch and keyboard.
- * Escape, a click outside or picking a section closes it.
+ * Her avatar and flag open the account menu: on hover with a mouse, and on click or Enter for touch and keyboard.
+ * Escape, a click outside or picking an item closes it.
  */
-function AccountMenu({ page, admin, active, name, avatar, catalogueNumber }: {
-  page: AirPage; admin: boolean; active: string | null; name: string; avatar?: string; catalogueNumber: number | null;
+function AccountMenu({ page, admin, active, name, avatar, flag, onSignOut }: {
+  page: AirPage; admin: boolean; active: string | null; name: string; avatar?: string; flag: string | null; onSignOut: () => void;
 }) {
   const [open, setOpen] = React.useState(false);
   const close = () => setOpen(false);
@@ -58,11 +72,7 @@ function AccountMenu({ page, admin, active, name, avatar, catalogueNumber }: {
     <div className="air-me" data-open={open || undefined}>
       <PopoverTrigger aria-label={`${name || "Your account"}, account menu`} className={cn("air-me-btn", ring)}>
         <span className="air-avatar" aria-hidden>{avatar ? <img src={avatar} alt="" /> : initials(name)}</span>
-        <span className="hidden min-w-0 text-left lg:block" aria-hidden>
-          <b className="block max-w-44 truncate text-sm font-semibold">{name}</b>
-          {catalogueNumber !== null && <small className="air-lbl mb-0 text-[9.5px]">Member No. {formatCatalogueNumber(catalogueNumber)}</small>}
-        </span>
-        <Icon name="chevron-down" className="air-me-chev size-4" />
+        {flag && <span aria-hidden className="twc-flag">{flag}</span>}
       </PopoverTrigger>
       <PopoverContent keepMounted side="bottom" align="end" sideOffset={8} className="air-menu">
       <nav aria-label="My account">
@@ -78,18 +88,9 @@ function AccountMenu({ page, admin, active, name, avatar, catalogueNumber }: {
               )}
             </li>
           ))}
-          <li>
-            <Link to="/feed" aria-current={page === "/feed" ? "page" : undefined} onClick={close} className={ring}>
-              <Icon name="newspaper" className="size-4" />Newsfeed
-            </Link>
-          </li>
-          <li>
-            <Link to="/directory" aria-current={page === "/directory" ? "page" : undefined} onClick={close} className={ring}>
-              <Icon name="users" className="size-4" />Member directory
-            </Link>
-          </li>
           {/* UX only: /admin's guard and every admin server function check again. */}
           {admin && <li><Link to="/admin" onClick={close} className={ring}><Icon name="shield-check" className="size-4" />Admin</Link></li>}
+          <li><button type="button" onClick={() => { close(); onSignOut(); }} className={ring}><Icon name="log-out" className="size-4" />Sign out</button></li>
         </ul>
       </nav>
       </PopoverContent>

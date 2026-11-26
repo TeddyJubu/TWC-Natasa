@@ -105,12 +105,12 @@ describe("security headers", () => {
   });
 
   it("mark the client-rendered signed-in pages noindex, and no public page", async () => {
-    for (const path of ["/account", "/directory", "/feed", "/admin", "/admin/forms", "/admin/forms/application", "/Account", "/ADMIN/forms"]) {
+    for (const path of ["/account", "/directory", "/feed", "/calendar", "/admin", "/admin/forms", "/admin/forms/application", "/Account", "/ADMIN/forms"]) {
       expect(isSignedInPage(path), path).toBe(true);
       const res = responseOf(await run(securityHeadersMiddleware, new Request(`https://example.com${path}`), "router"));
       expect(res.headers.get("X-Robots-Tag"), path).toBe("noindex");
     }
-    for (const path of ["/", "/membership", "/administer", "/feeds", "/accounts", "/faq"]) {
+    for (const path of ["/", "/membership", "/administer", "/feeds", "/accounts", "/faq", "/calendars"]) {
       expect(isSignedInPage(path), path).toBe(false);
       const res = responseOf(await run(securityHeadersMiddleware, new Request(`https://example.com${path}`), "router"));
       expect(res.headers.get("X-Robots-Tag"), path).toBeNull();

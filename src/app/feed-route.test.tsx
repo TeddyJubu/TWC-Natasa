@@ -80,7 +80,7 @@ describe("/feed", () => {
     expect(within(offer).getByText("Wholesale is open again.")).toBeTruthy();
     expect(within(offer).getByRole("img", { name: "Loaves on a shelf" })).toBeTruthy();
     expect(within(offer).getByRole("link", { name: "Yuna Park" }).getAttribute("href")).toBe("/members/yuna-park-12");
-    expect(within(offer).getByText("Lucía Ferreira, Aiko Tanaka and 21 others loved this")).toBeTruthy();
+    expect(within(offer).getByText("Lucía Ferreira, Aiko Tanaka and 21 others liked this")).toBeTruthy();
     expect(within(offer).queryByRole("button", { name: "Delete this post" })).toBeNull();
     expect(within(post(/^Ask from Rosa/)).getByRole("button", { name: "Delete this post" })).toBeTruthy();
   });
@@ -88,9 +88,9 @@ describe("/feed", () => {
   it("loves a post at once and sends it", async () => {
     renderWithQueries(<Page />, seed());
     fake.results = [new Promise(() => {})];
-    const love = within(post(/^Offer from Yuna Park/)).getByRole("button", { name: "Love (23)" });
+    const love = within(post(/^Offer from Yuna Park/)).getByRole("button", { name: "Like (23)" });
     fireEvent.click(love);
-    await waitFor(() => expect(within(post(/^Offer from Yuna Park/)).getByRole("button", { name: "Love (24)" }).getAttribute("aria-pressed")).toBe("true"));
+    await waitFor(() => expect(within(post(/^Offer from Yuna Park/)).getByRole("button", { name: "Like (24)" }).getAttribute("aria-pressed")).toBe("true"));
     expect(fake.calls).toContainEqual(["loveFn", { postId: "p1", on: true }]);
   });
 
@@ -98,7 +98,7 @@ describe("/feed", () => {
     renderWithQueries(<Page />, seed());
     const ask = post(/^Ask from Rosa/);
     expect(within(ask).getByText("Tagging Rosa")).toBeTruthy();
-    fireEvent.click(within(ask).getByRole("button", { name: "Reply (1)" }));
+    fireEvent.click(within(ask).getByRole("button", { name: "Comment (1)" }));
     const box = within(ask).getByRole("textbox", { name: "Reply to Rosa" });
     fireEvent.change(box, { target: { value: "Yes please" } });
     fake.results = [[]];
@@ -110,7 +110,7 @@ describe("/feed", () => {
     renderWithQueries(<Page />, seed());
     const send = screen.getByRole("button", { name: "Post" });
     expect((send as HTMLButtonElement).disabled).toBe(true);
-    fireEvent.change(screen.getByRole("textbox", { name: "What’s new, Rosa?" }), { target: { value: "  Kiln night Thursday  " } });
+    fireEvent.change(screen.getByRole("textbox", { name: "Post to every member" }), { target: { value: "  Kiln night Thursday  " } });
     fireEvent.click(screen.getByRole("radio", { name: "Event" }));
     fake.results = [{ id: "p3" }, page]; // the post, then the feed's refetch
     fireEvent.click(send);
@@ -142,7 +142,7 @@ describe("/feed", () => {
     resize.calls = [];
     resize.gate = new Promise((done) => { open = done; });
     const { container } = renderWithQueries(<Page />, seed());
-    fireEvent.change(screen.getByRole("textbox", { name: "What’s new, Rosa?" }), { target: { value: "Market day" } });
+    fireEvent.change(screen.getByRole("textbox", { name: "Post to every member" }), { target: { value: "Market day" } });
     const input = container.querySelector<HTMLInputElement>("input[type=file]")!;
     const three = (n: number) => [1, 2, 3].map((i) => new File(["x"], `p${n}-${i}.jpg`, { type: "image/jpeg" }));
     fireEvent.change(input, { target: { files: three(1) } });

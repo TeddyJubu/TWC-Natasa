@@ -83,9 +83,9 @@
      Light in both modes. Utilities: `bg-air-*`, `border-air-*`, `rounded-air-*`, `shadow-air-*`. */
   --bl-air-sky: #f1f3f6; /* a lighter stone: hovers */
   --bl-air-paper: #ffffff; /* white: sections, menus, the sidebar */
-  --bl-air-navy: #111111; /* ink: text, rules, switches, the current nav item, primary pills */
+  --bl-air-navy: #151414; /* ink: text, rules, switches, the current nav item, primary pills */
   --bl-air-red: #93313a; /* wine: destructive buttons, refusals, errors (white text 8.6:1) */
-  --bl-air-muted: #5c5751; /* labels and secondary text */
+  --bl-air-muted: #525a66; /* labels and secondary text */
   --bl-air-rule: #d9d9d9; /* hairlines inside a section */
   --bl-air-line: #c8d0da; /* stone rule: row dividers, dashed slots */
   --bl-air-tint: #e7ecf2; /* stone: notices, wide cells, reply threads */
@@ -97,7 +97,7 @@
   --bl-air-shadow-card: none;
   --bl-air-ground: none;
   --bl-air-ground-hover: none;
-  --bl-air-shadow-menu: 0 0 0 1.5px #111111, 6px 6px 0 #111111;
+  --bl-air-shadow-menu: 0 0 0 1.5px #151414, 6px 6px 0 #151414;
   --bl-air-shadow-lift: none;
 }
 

@@ -65,7 +65,7 @@ export function withSecurityHeaders(response: Response): Response {
 // The signed-in pages render client-side only (`_authenticated` is ssr: false), so their own robots meta never
 // reaches a crawler; the header does. Not a robots.txt Disallow, which would hide this header from Google.
 // Case-insensitive like the router, so /Account is noindex too.
-const SIGNED_IN_PAGES = /^\/(account|directory|feed|admin)(\/|$)/i;
+const SIGNED_IN_PAGES = /^\/(account|directory|feed|calendar|admin)(\/|$)/i;
 export const isSignedInPage = (pathname: string) => SIGNED_IN_PAGES.test(pathname);
 
 // A manage link holds a private booking id, and member pages are members-only (owner decision, 2026-11-24): never indexed.

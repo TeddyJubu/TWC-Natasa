@@ -1,10 +1,9 @@
 // One post on the feed (DESIGN.md "Newsfeed"): the canvas's .post under a hairline ink rule — the author's round avatar,
-// the kind as a badge, her words and photos, who loved it, and the replies. Everything shown is something a member wrote.
+// the kind as a dashed flag, her words and photos, Like and Comment (the canvas's words; stored as loves and replies). Everything shown is something a member wrote.
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
 import { askConfirm } from "@/app/layout/confirm";
 import { cn, initials } from "@/index";
-import { Chip } from "@/app/layout/app-ui";
 import { fieldClass, ring } from "@/app/layout/app-classes";
 import { Icon } from "@/app/layout/icons";
 import { errorMessage } from "@/features/account/helpers";
@@ -57,7 +56,7 @@ export function FeedPost({ post }: { post: Post }) {
     requestAnimationFrame(() => replyField.current?.focus());
   }
   async function deletePost() {
-    if (!(await askConfirm("Delete this post? Its loves and replies go with it.", "Delete post", true))) return;
+    if (!(await askConfirm("Delete this post? Its likes and comments go with it.", "Delete post", true))) return;
     // The post and its focused button go away: hand focus to the next post (else the one before, else the page), not <body>.
     const posts = [...document.querySelectorAll<HTMLElement>("article.air-entry")];
     const i = posts.indexOf(self.current!);
@@ -76,7 +75,7 @@ export function FeedPost({ post }: { post: Post }) {
             {[post.author.line, post.author.neighborhood].filter(Boolean).map((s) => `${s} · `).join("")}<When iso={post.createdAt} />
           </p>
         </div>
-        <Chip><Icon name={kind.icon} className="size-3" />{kind.label}</Chip>
+        <span className="twc-flag">{kind.label}</span>
         {post.canDelete && (
           <button type="button" onClick={deletePost} disabled={remove.isPending} aria-label="Delete this post" className={cn("air-icon-btn air-icon-btn--sm", ring)}>
             <Icon name="trash" className="size-4" />
@@ -89,12 +88,12 @@ export function FeedPost({ post }: { post: Post }) {
       {loves > 0 && <p className="air-entry-loved">{lovedLine(loves, loved, post.lovedBy)}</p>}
       <footer className="air-entry-act">
         <button type="button" aria-pressed={loved} onClick={() => { if (!loved) setPop(Date.now()); love.mutate(!loved); }} disabled={love.isPending}
-          aria-label={`Love (${loves})`} className={cn("air-act", pop > 0 && "is-popping", ring)}>
-          <Icon name="heart" />{loves}
+          aria-label={`Like (${loves})`} className={cn("air-act", pop > 0 && "is-popping", ring)}>
+          <Icon name="heart" />Like · {loves}
           {pop > 0 && <span aria-hidden key={pop} className="air-like-dots">{[0, 1, 2, 3, 4, 5].map((i) => <i key={i} />)}</span>}
         </button>
-        <button type="button" onClick={startReply} aria-label={`Reply (${post.replies.length})`} className={cn("air-act", ring)}>
-          <Icon name="message-circle" />{post.replies.length}
+        <button type="button" onClick={startReply} aria-label={`Comment (${post.replies.length})`} className={cn("air-act", ring)}>
+          Comment{post.replies.length > 0 && ` · ${post.replies.length}`}
         </button>
         {love.isError && <p role="alert" className="air-entry-err ml-auto">{errorMessage(love.error)}</p>}
       </footer>

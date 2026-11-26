@@ -173,8 +173,9 @@ describe("/account", () => {
     renderAccount();
     const cover = screen.getByRole("region", { name: "Rosa Diaz" });
     expect(within(cover).getByText("Verified member")).toBeTruthy();
-    expect(within(cover).getByText("Food")).toBeTruthy();
-    expect(within(cover).getByText("Founder · Diaz Bakery")).toBeTruthy();
+    // The canvas's line under her name: specialty, then role · business; the surname set in italic.
+    expect(within(cover).getByText("Food · Founder · Diaz Bakery")).toBeTruthy();
+    expect(within(cover).getByRole("heading", { level: 1 }).querySelector("i")?.textContent).toBe("Diaz");
     expect(within(cover).getByText("Astoria")).toBeTruthy();
     const stat = (label: string) => within(cover).getByText(label).nextElementSibling?.textContent;
     expect([stat("Member"), stat("Joined")]).toEqual(["No. 27", "Jan 2026"]);
@@ -500,6 +501,12 @@ describe("/account", () => {
       expect(within(nav).getByRole("link", { name: "Profile" }).getAttribute("aria-current")).toBe("location");
       expect(screen.getByRole("button", { name: "Sign out" })).toBeTruthy();
       expect(screen.queryByRole("button", { name: "Open menu" })).toBeNull();
+      // The canvas's member header: its four pages (no Rooms or Upgrade: nothing stands behind them), her flag.
+      const pages = within(screen.getByRole("navigation", { name: "Members" })).getAllByRole("link").filter((a) => !a.closest("[aria-label='My account']"));
+      expect(pages.map((a) => [a.textContent, a.getAttribute("href"), a.getAttribute("aria-current")])).toEqual([
+        ["Feed", "/feed", null], ["Directory", "/directory", null], ["Calendar", "/calendar", null], ["My profile", "/account", "page"],
+      ]);
+      expect(screen.getByText("Member", { selector: ".twc-flag" })).toBeTruthy();
       expect(document.getElementById("events")).toBeTruthy();
       expect(document.getElementById("introductions")).toBeTruthy();
     });
