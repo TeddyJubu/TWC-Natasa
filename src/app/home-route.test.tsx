@@ -220,8 +220,12 @@ describe("/ (home) structure", () => {
     expect(within(section).getByRole("link", { name: "See the calendar" }).getAttribute("href")).toBe("/events");
   });
 
-  it("lead or partner: ambassadors write through /contact, partners see /partnerships, with no partner prices", () => {
-    renderWithQueries(<Page />);
+  it("lead or partner: ambassadors write through /contact, partners see /partnerships and the canvas's price ranges", () => {
+    const { container } = renderWithQueries(<Page />);
+    const partner = screen.getByRole("heading", { name: "Partner with us" }).closest(".twc-panel")!;
+    expect([...partner.querySelectorAll(".twc-panel__info p")].map((p) => p.textContent)).toEqual(
+      ["Event$500–1,500", "Letter$150–500 an issue", "Founding$7,500–10,000 a year"]);
+    expect(container.textContent).toMatch(/Uptown.?Two seats open/);
     expect(screen.getByRole("link", { name: "Apply to be an ambassador" }).getAttribute("href")).toBe("/contact");
     expect(screen.getByRole("link", { name: /Ways to partner/ }).getAttribute("href")).toBe("/partnerships");
     expect(screen.getByRole("link", { name: /See packages/ }).getAttribute("href")).toBe("/partnerships");
@@ -239,8 +243,9 @@ describe("/ (home) structure", () => {
     expect(screen.queryByRole("button", { name: /Pause/ })).toBeNull();
   });
 
-  it("shows no price: membership pricing is undecided", () => {
+  it("the only prices outside the membership section are the partner ranges", () => {
     const { container } = renderWithQueries(<Page />);
-    expect(container.textContent).not.toMatch(/\$\d|per (month|year)|\bfree\b/i);
+    const outside = [...container.querySelectorAll("main > *")].filter((el) => !el.closest(".twc-duo, .twc-arches"));
+    for (const el of outside) expect(el.textContent).not.toMatch(/\$\d/);
   });
 });

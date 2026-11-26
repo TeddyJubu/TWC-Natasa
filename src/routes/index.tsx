@@ -341,6 +341,11 @@ function Duo() {
         <h2>Partner <i>with</i> us</h2>
         <p className="copy">Bring a space, a product or a budget, and meet the women who run businesses and households in our neighborhoods.</p>
         <Link to="/partnerships" className="twc-btn twc-btn--outline">Ways to partner <span aria-hidden>→</span></Link>
+        <div className="twc-panel__info">
+          <p>Event<br />$500–1,500</p>
+          <p>Letter<br />$150–500 an issue</p>
+          <p>Founding<br />$7,500–10,000 a year</p>
+        </div>
       </div>
     </section>
   );

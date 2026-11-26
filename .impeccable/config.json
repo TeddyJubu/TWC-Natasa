@@ -20,6 +20,12 @@
         ],
         "createdAt": "2026-11-24T12:20:19.699Z",
         "reason": "Claude verified: .tile has padding clamp(.9rem,1.4vw,1.25rem); rendered screenshots at 1366px and 390px show ~18-20px inset on every side"
+      },
+      {
+        "rule": "overused-font",
+        "value": "instrument serif",
+        "createdAt": "2026-11-26T10:55:43.990Z",
+        "reason": "user confirmed 2026-11-26: 'make everything like the canvas'; Instrument Serif is the design canvas's own headline face (docs/design-canvas)"
       }
     ]
   }
