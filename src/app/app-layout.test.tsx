@@ -284,7 +284,8 @@ describe("join buttons", () => {
   const joinish = /\bjoin\b|\bappl(y|ication)\b|introduce yourself/i;
   const check = (container: HTMLElement) => {
     const buttons = [...container.querySelectorAll<HTMLAnchorElement>("a.twc-btn, a.sb-pill")]
-      .filter((a) => (a.getAttribute("href") ?? "").startsWith("/join") || joinish.test(a.textContent ?? ""));
+      // An ambassador's application ("Apply to lead it", "Apply to be an ambassador") goes to /contact: it is no join.
+      .filter((a) => (a.getAttribute("href") ?? "").startsWith("/join") || (joinish.test(a.textContent ?? "") && a.getAttribute("href") !== "/contact"));
     for (const a of buttons) {
       expect(a.getAttribute("href")).toBe("/join");
       expect(a.className.split(" ")).toEqual(expect.arrayContaining(JOIN_CLASS.split(" ")));

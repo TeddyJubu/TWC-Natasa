@@ -1,15 +1,17 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
+import { useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { calEventsQuery } from "@/features/cal/queries";
 import { kindClass } from "@/features/cal/event-state";
 import { formatRange } from "@/features/cal/time";
+import { rosterQuery, type RosterMember } from "@/features/roster/queries";
 import xpZoom from "@/assets/photography/home/xp-zoom.webp";
 import xpCoffee from "@/assets/photography/home/xp-coffee.webp";
 import xpPanel from "@/assets/photography/home/xp-panel.webp";
 import xpWorkshop from "@/assets/photography/home/xp-workshop.webp";
 import xpEvening from "@/assets/photography/home/xp-evening.webp";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
-import { Icon, JoinButton } from "@/app/layout/twc";
+import { JoinButton } from "@/app/layout/twc";
 import { StarChart } from "@/app/StarChart";
 import { jsonLdScript, organizationLd, parseSiteUrl } from "@/app/seo";
 
@@ -40,8 +42,8 @@ export const Route = createFileRoute("/")({
 
 /* ── data: the design canvas's homepage ("01 Programme", docs/design-canvas/), its own copy ─────────────────────────── */
 
-// The five constellations. No member appears: the star chart draws no member or count, and the canvas's profile
-// strips are members-only data.
+// The five constellations. Members, their counts and the leads' names come only from rosterQuery (real data that
+// never enters this public repository); `led` is the words shown when the roster names no lead.
 const CONSTELLATIONS = [
   { short: "NB", name: "North Brooklyn", status: "Live · Founding 50", live: true, field: "twc-c-band-lime", hoods: "Greenpoint — Williamsburg — Bushwick",
     led: "Nataša Tuohy", head: "The women behind the Collective", body: "A constellation of talent, ambition, and local connections. Meet the women shaping our community." },
@@ -54,6 +56,7 @@ const CONSTELLATIONS = [
   { short: "DT", name: "Downtown Manhattan", status: "Ambassador wanted", live: false, field: "twc-c-band-red", hoods: "West Village — Greenwich Village — SoHo — Hudson Square — Tribeca",
     led: "Looking for 2 ambassadors", body: "Every neighborhood is led by two or three women who live there. This one is waiting for its leads." },
 ] as const;
+type Con = (typeof CONSTELLATIONS)[number];
 
 // The seven ways to take part, as colour tiles; photos sit between them (12 cells: 6 / 3 / 2 across).
 const XP = [
@@ -90,9 +93,11 @@ function HomePage() {
         {/* The canvas's Programme variation hides its hero; its headline stays for screen readers and route focus. */}
         <h1 className="sr-only">Find your people. Build what comes next.</h1>
         <Constellations />
+        <Members />
         <Experiences />
         <Program />
         <Cards />
+        {/* <Arches /> — the membership section lands with the /membership page */}
         <Duo />
       </main>
       <AppFooter />
@@ -101,6 +106,7 @@ function HomePage() {
 }
 
 function Constellations() {
+  const roster = useQuery(rosterQuery).data;
   return (
     <section id="constellations" aria-labelledby="constellations-title">
       <div className="twc-sec twc-sec--tight">
@@ -112,28 +118,118 @@ function Constellations() {
       </div>
       <div className="twc-cbands">
         {CONSTELLATIONS.map((c, i) => (
-          <details key={c.short} className={`twc-cband ${c.field}`}>
-            <summary>
-              <span className="twc-cband__no">Nº{i + 1}<b>{c.short}</b></span>
-              <span className="twc-cband__name">{c.name}</span>
-              <span className="twc-cband__st">{c.status}</span>
-            </summary>
-            <div className="twc-cband__more">
-              <div>
-                {"head" in c && <p className="twc-home-bandhead">{c.head}</p>}
-                <p className="body">{c.body}</p>
-                {c.live ? <JoinButton /> : (
-                  <Link to="/contact" className="twc-btn">Lead this constellation <Icon name="arrow" className="twc-arrow size-3.5" /></Link>
-                )}
-                <p className="twc-meta mt-8">Led by<br />{c.led}</p>
-              </div>
-              <div>
-                <StarChart id={c.short} name={c.name} hoods={c.hoods} />
-                <p className="twc-cband__outline" aria-hidden="true">{c.hoods}</p>
-              </div>
-            </div>
-          </details>
+          <Band key={c.short} c={c} no={i + 1} lead={roster?.leads[c.short]}
+            members={(roster?.members ?? []).filter((m) => m.constellation === c.short)} />
         ))}
+      </div>
+    </section>
+  );
+}
+
+const reduced = () => typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/** One constellation (canvas bands()): a native <details> folder whose sheet holds the words, the star chart and the
+ *  sliding profile cards; a member's spark and card light up together (data-m), and a spark shows her card. */
+function Band({ c, no, lead, members }: { c: Con; no: number; lead?: string; members: RosterMember[] }) {
+  const [hl, setHl] = useState<string | null>(null);
+  const slider = useRef<HTMLDivElement>(null);
+  const ids = members.map((_, i) => `${c.short.toLowerCase()}-${String(i + 1).padStart(2, "0")}`);
+  const behavior = (): ScrollBehavior => (reduced() ? "auto" : "smooth");
+  const show = (id: string) => {
+    const el = slider.current, card = el?.querySelector<HTMLElement>(`[data-m="${id}"]`);
+    if (el && card) el.scrollTo({ left: card.offsetLeft - el.offsetLeft - 8, behavior: behavior() });
+    setHl(id);
+  };
+  return (
+    <details className={`twc-cband ${c.field}`}>
+      <summary>
+        <span className="twc-cband__no">Nº{no}<b>{c.short}</b></span>
+        <span className="twc-cband__name">{c.name}</span>
+        <span className="twc-cband__st">{c.status}</span>
+      </summary>
+      <div className="twc-cband__more" onMouseOver={(e) => setHl((e.target as Element).closest<HTMLElement>("[data-m]")?.dataset.m ?? null)} onMouseLeave={() => setHl(null)}>
+        <div>
+          {"head" in c && <p className="twc-home-bandhead">{c.head}</p>}
+          <p className="body">{c.body}</p>
+          {c.live
+            ? <JoinButton className="[&_.twc-arrow]:hidden">Join {c.name}</JoinButton>
+            : <Link to="/contact" className="twc-btn">Apply to lead it</Link>}
+        </div>
+        <div className="twc-cband__chart">
+          <StarChart id={c.short} name={c.name} hoods={c.hoods} live={c.live} hl={hl} onPick={show}
+            members={members.map((m, i) => ({ id: ids[i], name: m.name, hood: m.hood, job: [m.role, m.business].filter(Boolean).join(" · ") }))} />
+        </div>
+        <div className="twc-pf">
+          <div className="twc-pf__head">
+            <button type="button" className="twc-pf__btn" aria-label="Previous profiles" onClick={() => slider.current?.scrollBy({ left: -slider.current.clientWidth * 0.8, behavior: behavior() })}>←</button>
+            <button type="button" className="twc-pf__btn" aria-label="Next profiles" onClick={() => slider.current?.scrollBy({ left: slider.current.clientWidth * 0.8, behavior: behavior() })}>→</button>
+          </div>
+          <div ref={slider} className="twc-pslide" tabIndex={0} role="region" aria-label={`${c.name} member profiles`} {...dragScroll}>
+            {members.length ? members.map((m, i) => (
+              <article key={ids[i]} data-m={ids[i]} className={`twc-pf-card${hl === ids[i] ? " is-hl" : ""}`}>
+                <h3 className="twc-pf-card__name">{breakFirst(m.name)}<sup>{String(i + 1).padStart(2, "0")}</sup></h3>
+                <figure className="twc-pf-card__ph"><img src={m.photo} alt={m.name} loading="lazy" decoding="async" draggable={false} /></figure>
+                {m.role && <p className="twc-pf-card__job">{m.role}{m.business && <span>{m.business}</span>}</p>}
+                <span className="twc-pf-card__tag">{m.hood}</span>
+              </article>
+            )) : [1, 2].map((n) => (
+              <article key={n} className="twc-pf-card is-open">
+                <h3 className="twc-pf-card__name">Your<br />name here<sup>0{n}</sup></h3>
+                <figure className="twc-pf-card__ph" aria-hidden><span>☆</span></figure>
+                <p className="twc-pf-card__line">Every constellation is led by two or three women who live there. This seat is open.</p>
+                <span className="twc-pf-card__tag">Ambassador</span>
+              </article>
+            ))}
+          </div>
+        </div>
+        <p className="twc-meta twc-cband__facts">Led by<br />{lead ?? c.led}</p>
+      </div>
+    </details>
+  );
+}
+
+// The canvas sets a card's name on two lines: the first name, then the rest.
+const breakFirst = (name: string) => { const i = name.indexOf(" "); return i < 0 ? name : <>{name.slice(0, i)}<br />{name.slice(i + 1)}</>; };
+
+// Drag the profile slider with a mouse, as the canvas does (touch scrolls natively; the arrows and keys still work).
+const drag = { el: null as HTMLElement | null, x0: 0, s0: 0, moved: false };
+const dragScroll = {
+  onPointerDown: (e: React.PointerEvent<HTMLElement>) => {
+    if (e.pointerType !== "mouse" || e.button !== 0) return;
+    Object.assign(drag, { el: e.currentTarget, x0: e.clientX, s0: e.currentTarget.scrollLeft, moved: false });
+  },
+  onPointerMove: (e: React.PointerEvent<HTMLElement>) => {
+    const el = drag.el, dx = e.clientX - drag.x0;
+    if (!el) return;
+    if (!drag.moved && Math.abs(dx) > 4) { drag.moved = true; el.classList.add("is-drag"); }
+    if (drag.moved) el.scrollLeft = drag.s0 - dx;
+  },
+  onPointerUp: () => { drag.el?.classList.remove("is-drag"); drag.el = null; },
+  onPointerLeave: () => { drag.el?.classList.remove("is-drag"); drag.el = null; },
+};
+
+/** The canvas's member strip (.twc-members): real roster portraits only, so there is none without a roster. */
+function Members() {
+  const members = useQuery(rosterQuery).data?.members ?? [];
+  if (!members.length) return null;
+  return (
+    <section className="twc-members" aria-labelledby="members-title">
+      <div className="twc-strip">
+        {members.slice(0, 8).map((m) => (
+          <Link key={m.photo} to="/directory" className="twc-strip__item">
+            <div className="twc-strip__ph twc-film"><img src={m.photo} alt="" loading="lazy" decoding="async" /></div>
+            <p className="twc-strip__n">{m.name}</p>
+            <span className="twc-strip__who">{[m.role, m.hood].filter(Boolean).join(" · ")}</span>
+          </Link>
+        ))}
+      </div>
+      <div className="twc-members__words">
+        <h2 id="members-title" className="twc-members__title">
+          <span className="twc-members__stagger">The women behind the</span>
+          <span className="twc-members__giant">collective</span>
+        </h2>
+        <p className="twc-members__aside">A constellation of talent, ambition, and local connections. Meet the women shaping our community.<br />
+          <Link to="/directory">Open the directory <span aria-hidden>→</span></Link></p>
       </div>
     </section>
   );
@@ -150,7 +246,7 @@ function Experiences() {
           if ("photo" in cell) {
             const p = PHOTOS[cell.photo];
             return (
-              <figure key={cell.photo} className="twc-tile twc-tile--photo twc-c-stone m-0">
+              <figure key={cell.photo} className="twc-tile twc-tile--photo twc-film m-0">
                 <img src={p.src} alt={p.alt} loading="lazy" decoding="async" />
                 <figcaption>{p.caption}</figcaption>
               </figure>
@@ -219,7 +315,7 @@ function Cards() {
         <p className="twc-eyebrow text-sb-paper!">Spotlight partner</p>
         <h2 className="twc-card__title">Your brand here</h2>
         <p className="max-w-[30ch]">One partner per season on the homepage, in the letter and at every event.</p>
-        <Link to="/partnerships" className="twc-btn twc-btn--paper self-start">See packages <Icon name="arrow" className="twc-arrow size-3.5" /></Link>
+        <Link to="/partnerships" className="twc-btn twc-home-onink self-start">See packages</Link>
         <p aria-hidden className="twc-home-strip">Partner</p>
       </article>
     </section>
@@ -233,7 +329,7 @@ function Duo() {
         <span className="twc-eyebrow text-sb-ink!">Ambassadors</span>
         <h2>Lead a <i>constellation</i></h2>
         <p className="copy">Every neighborhood is led by two or three women who live there. Uptown and Downtown Manhattan are waiting for theirs.</p>
-        <Link to="/contact" className="twc-btn">Become an ambassador <Icon name="arrow" className="twc-arrow size-3.5" /></Link>
+        <Link to="/contact" className="twc-btn">Apply to be an ambassador</Link>
         <div className="twc-panel__info">
           <p>Uptown<br />Two seats open</p>
           <p>Downtown<br />Two seats open</p>
@@ -244,7 +340,7 @@ function Duo() {
         <span className="twc-eyebrow text-sb-ink!">Partners</span>
         <h2>Partner <i>with</i> us</h2>
         <p className="copy">Bring a space, a product or a budget, and meet the women who run businesses and households in our neighborhoods.</p>
-        <Link to="/partnerships" className="twc-btn twc-btn--outline">Ways to partner <Icon name="arrow" className="twc-arrow size-3.5" /></Link>
+        <Link to="/partnerships" className="twc-btn twc-btn--outline">Ways to partner <span aria-hidden>→</span></Link>
       </div>
     </section>
   );

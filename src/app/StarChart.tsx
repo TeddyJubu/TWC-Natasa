@@ -1,7 +1,7 @@
 /* The design canvas's constellation chart (docs/design-canvas/, starChart()): each neighborhood a hub star on a
-   dashed route. The canvas scatters one spark per member and labels member counts; those are members-only data
-   (and invented), so a live band gets unlabelled decorative sparks and no counts, and a band with no members
-   yet gets the canvas's open seats ("Your star here"). Seeded, so the server and the browser draw the same SVG. */
+   dashed route, one spark per real roster member in her neighborhood (rosterQuery; never a member in this public
+   repository), each hub labelled with its count, and an open seat ("Your star here") where a neighborhood has none.
+   Every spark is a named member, so nothing twinkles. Seeded, so the server and the browser draw the same SVG. */
 
 // Hub positions (0–1 of the chart) and label sides from the canvas; label colours darkened to AA on white.
 const HOOD_POS: Record<string, Record<string, [number, number, string, ("l" | "r" | "b")?]>> = {
@@ -12,7 +12,9 @@ const HOOD_POS: Record<string, Record<string, [number, number, string, ("l" | "r
   UP: { "Lincoln Square": [0.1, 0.84, "#b25185", "b"], "Upper West Side": [0.12, 0.4, "#2b823a"], "Central Park West / West 80s–90s": [0.4, 0.12, "#238173"], "Carnegie Hill": [0.84, 0.1, "#ac613a"], "Upper East Side": [0.66, 0.62, "#2778b4", "b"] },
   DT: { "West Village": [0.12, 0.08, "#2b823a"], "Greenwich Village": [0.48, 0.06, "#7f5bd5"], SoHo: [0.54, 0.5, "#b25185", "r"], "Hudson Square": [0.16, 0.5, "#147d98"], Tribeca: [0.3, 0.86, "#da3029", "b"] },
 };
-const SPARKS: Record<string, number> = { NB: 50, WQ: 24 }; // the canvas's star counts, drawn as decoration only
+
+/** A member as the chart draws her: `id` is shared with her profile card (`data-m`) for the hover highlight. */
+export type ChartMember = { id: string; name: string; hood: string; job?: string };
 
 function rng(seed: string) {
   let h = 2166136261;
@@ -29,23 +31,29 @@ function spark(x: number, y: number, r: number) {
   const k = r * 0.16;
   return `M${f(x)} ${f(y - r)}Q${f(x + k)} ${f(y - k)} ${f(x + r)} ${f(y)}Q${f(x + k)} ${f(y + k)} ${f(x)} ${f(y + r)}Q${f(x - k)} ${f(y + k)} ${f(x - r)} ${f(y)}Q${f(x - k)} ${f(y - k)} ${f(x)} ${f(y - r)}Z`;
 }
+const hoodsOf = (hoods: string) => hoods.split(/\s+—\s+/).map((s) => s.trim()).filter(Boolean);
 
 const W = 960, H = 420;
+type Pt = { x: number; y: number; m: ChartMember };
 
-export function StarChart({ id, name, hoods }: { id: string; name: string; hoods: string }) {
-  const rnd = rng(id), names = hoods.split(/\s+—\s+/), pos = HOOD_POS[id] ?? {};
+export function StarChart({ id, name, hoods, live, members, hl, onPick }: {
+  id: string; name: string; hoods: string; live: boolean; members: ChartMember[];
+  /** The highlighted member's id (her spark grows in her neighborhood's colour). */ hl?: string | null;
+  /** A spark was clicked: show her card. */ onPick?: (id: string) => void;
+}) {
+  const rnd = rng(id), names = hoodsOf(hoods), pos = HOOD_POS[id] ?? {};
   const hubs = names.map((n, i) => {
-    const p = pos[n] ?? [0.2 + (0.6 * i) / Math.max(1, names.length - 1), 0.3, "#111111"];
-    return { name: n, x: 70 + p[0] * (W - 140), y: 60 + p[1] * (H - 120), col: p[2], side: p[3] ?? "t", pts: [] as { x: number; y: number }[] };
+    const p = pos[n] ?? [0.2 + (0.6 * i) / Math.max(1, names.length - 1), 0.3, "#151414"];
+    return { name: n, x: 70 + p[0] * (W - 140), y: 60 + p[1] * (H - 120), col: p[2], side: p[3] ?? "t", pts: [] as Pt[], count: 0 };
   });
   const placed = hubs.map((h) => ({ x: h.x, y: h.y, r: 26 }));
-  const total = SPARKS[id] ?? 0;
-  // Same placement as the canvas: a spot near its hub, clear of the label, nearer its own hub than any other, spread out.
-  for (let m = 0; m < total; m++) {
-    const h = hubs[m % hubs.length];
+  // The canvas's placement: near her hub, clear of its label, nearer her own hub than any other, spread out.
+  for (const m of members) {
+    const h = hubs.find((x) => x.name === m.hood) ?? hubs[0];
+    h.count++;
     let best: { x: number; y: number; d: number } | null = null;
     for (let t = 0; t < 60; t++) {
-      const a = rnd() * Math.PI * 2, rad = 44 + rnd() * (70 + Math.sqrt(total) * 10);
+      const a = rnd() * Math.PI * 2, rad = 44 + rnd() * (70 + Math.sqrt(members.length) * 10);
       const p = { x: h.x + Math.cos(a) * rad * 1.35, y: h.y + Math.sin(a) * rad * 0.85 };
       if (p.x < 16 || p.x > W - 16 || p.y < 16 || p.y > H - 30) continue;
       const onLabel = h.side === "t" ? p.y < h.y - 8 && Math.abs(p.x - h.x) < 80 && p.y > h.y - 58
@@ -59,45 +67,49 @@ export function StarChart({ id, name, hoods }: { id: string; name: string; hoods
       if (!best || d > best.d) best = { ...p, d };
       if (d > 22) break;
     }
-    if (best) { placed.push({ x: best.x, y: best.y, r: 4 }); h.pts.push(best); }
+    if (best) { placed.push({ x: best.x, y: best.y, r: 4 }); h.pts.push({ x: best.x, y: best.y, m }); }
   }
 
-  const links: string[] = [], ties: string[] = [], sparks: string[] = [], seats: string[] = [];
+  const links: string[] = [], ties: string[] = [], seats: string[] = [];
   for (let i = 1; i < hubs.length; i++) links.push(`M${f(hubs[i - 1].x)} ${f(hubs[i - 1].y)}L${f(hubs[i].x)} ${f(hubs[i].y)}`);
   for (const h of hubs) {
     // Prim's tree from the hub through its sparks, as the canvas draws its dotted ties.
-    const nodes = [h, ...h.pts], inT = nodes.map((_, i) => i === 0);
+    const nodes: { x: number; y: number }[] = [h, ...h.pts], inT = nodes.map((_, i) => i === 0);
     for (let e = 1; e < nodes.length; e++) {
       let bi = -1, bj = -1, bd = 1e9;
       nodes.forEach((a, i) => { if (inT[i]) nodes.forEach((b, j) => { if (!inT[j]) { const d = Math.hypot(a.x - b.x, a.y - b.y); if (d < bd) { bd = d; bi = i; bj = j; } } }); });
       inT[bj] = true; ties.push(`M${f(nodes[bi].x)} ${f(nodes[bi].y)}L${f(nodes[bj].x)} ${f(nodes[bj].y)}`);
     }
-    for (const p of h.pts) sparks.push(spark(p.x, p.y, 4.2 + rnd() * 2.8));
     if (!h.pts.length) {
       const x = Math.min(W - 20, h.x + (h.side === "b" ? 80 : 56)), y = h.y + (h.side === "b" ? 0 : 62);
       ties.push(`M${f(h.x)} ${f(h.y)}L${f(x)} ${f(y)}`); seats.push(star(x, y, 9));
     }
   }
-  const open = seats.length > 0;
   return (
-    <svg className="twc-starchart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${name} constellation: ${names.join(", ")}`}>
+    <svg className="twc-starchart" viewBox={`0 0 ${W} ${H}`} role="img"
+      aria-label={`${name} constellation: ${names.join(", ")}${members.length ? `, ${members.length} members` : ""}`}>
       <path className="sc-link" d={links.join("")} />
       <path className="sc-tie" d={ties.join("")} />
-      <path className="sc-mem" d={sparks.join("")} />
       <path className="sc-open" d={seats.join("")} />
       {hubs.map((h) => {
         const lx = h.side === "l" ? h.x - 24 : h.side === "r" ? h.x + 24 : h.x;
         const ly = h.side === "l" || h.side === "r" ? h.y - 2 : h.side === "b" ? h.y + 34 : h.y - 36;
         const anchor = h.side === "l" ? "end" : h.side === "r" ? "start" : "middle";
         return (
-          <g key={h.name}>
+          // --hood: the neighborhood's colour a highlighted spark takes (DESIGN.md's one inline-style exception).
+          <g key={h.name} style={{ "--hood": h.col } as React.CSSProperties}>
+            {h.pts.map((p) => (
+              <path key={p.m.id} d={spark(p.x, p.y, 7.5)} data-m={p.m.id} className={`sc-mem${hl === p.m.id ? " is-hl" : ""}`} onClick={() => onPick?.(p.m.id)}>
+                <title>{`${p.m.name}${p.m.job ? ` · ${p.m.job}` : ""}, ${h.name}`}</title>
+              </path>
+            ))}
             <path className="sc-hub" d={star(h.x, h.y, 15)} />
             <text x={lx} y={ly} textAnchor={anchor} className="sc-name" fill={h.col}>{h.name.toUpperCase().replace(/(\d)S\b/g, "$1s")}</text>
-            {!h.pts.length && <text x={lx} y={ly + 14} textAnchor={anchor} className="sc-sub">Your star here</text>}
+            <text x={lx} y={ly + 14} textAnchor={anchor} className="sc-sub">{h.count ? `${h.count} ${h.count === 1 ? "member" : "members"}` : "Your star here"}</text>
           </g>
         );
       })}
-      <text x={W - 4} y={H - 6} textAnchor="end" className="sc-sub">★ neighborhood{open ? " · ☆ open seat" : ""}</text>
+      <text x={W - 4} y={H - 6} textAnchor="end" className="sc-sub">★ neighborhood · ✦ member{live ? "" : " · ☆ open seat"}</text>
     </svg>
   );
 }

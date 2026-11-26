@@ -8,19 +8,71 @@
 
 /* A constellation band's sheet: the lead line above its words */
 .twc-home-bandhead { margin: 0 0 8px; font: 700 13px/1.3 var(--font-sans); letter-spacing: 0.08em; text-transform: uppercase; }
-.twc-cband__more .twc-btn { margin-top: var(--twc-space-8); }
 
-/* The constellation chart (StarChart.tsx); too small to read on a phone, so the outlined names stand in there */
+/* The constellation chart (StarChart.tsx, canvas .starchart): one spark per real member; hovering a spark or her card
+   lights both (.is-hl), the spark in her neighborhood's colour (--hood). Drawn at every width, as on the canvas. */
 .twc-starchart { display: block; width: 100%; max-width: 820px; height: auto; overflow: visible; color: var(--color-sb-ink); }
-.twc-starchart + .twc-cband__outline { display: none; }
-@media (max-width: 720px) { .twc-starchart { display: none; } .twc-starchart + .twc-cband__outline { display: block; } }
 .twc-starchart .sc-link { fill: none; stroke: currentColor; stroke-width: 1.2; stroke-dasharray: 5 5; }
 .twc-starchart .sc-tie { fill: none; stroke: currentColor; stroke-width: 0.8; stroke-dasharray: 2 4; opacity: 0.5; }
 .twc-starchart .sc-hub { fill: var(--color-sb-ink); stroke: var(--color-sb-ink); stroke-width: 1.2; stroke-linejoin: round; }
-.twc-starchart .sc-mem { fill: currentColor; opacity: 0.85; }
+.twc-starchart .sc-mem { fill: currentColor; cursor: pointer; transform-box: fill-box; transform-origin: center; transition: transform 0.25s cubic-bezier(.34, 1.56, .64, 1), fill 0.2s; }
+.twc-starchart .sc-mem:hover, .twc-starchart .sc-mem.is-hl { transform: scale(2.2); fill: var(--hood, var(--color-sb-ink)); stroke: var(--color-sb-ink); stroke-width: 0.6px; }
 .twc-starchart .sc-open { fill: none; stroke: currentColor; stroke-width: 1.3; stroke-dasharray: 3 2; }
 .twc-starchart .sc-name { font: 700 14px var(--font-sans); letter-spacing: 0.06em; }
-.twc-starchart .sc-sub { font: 500 10px var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; fill: currentColor; opacity: 0.8; }
+.twc-starchart .sc-sub { font: 500 10px var(--font-plex); letter-spacing: 0.06em; text-transform: uppercase; fill: currentColor; opacity: 0.8; }
+
+/* Sliding member profiles (canvas .pf / .pslide / .pf-card): ←/→ pills, a scroll-snapped row a mouse can drag */
+.twc-pf { min-width: 0; }
+.twc-pf__head { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 14px; }
+.twc-pf__btn { width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid var(--color-sb-ink); background: transparent; color: var(--color-sb-ink); font: 500 16px var(--font-sans); cursor: pointer; transition: background-color .2s, color .2s, transform .15s; }
+.twc-pf__btn:hover { background: var(--color-sb-ink); color: var(--color-sb-paper); }
+.twc-pf__btn:active { transform: scale(.94); }
+.twc-pslide { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; padding: 8px 2px 14px; scrollbar-width: none; cursor: grab; overscroll-behavior-x: contain; outline: none; }
+.twc-pslide::-webkit-scrollbar { display: none; }
+.twc-pslide.is-drag { cursor: grabbing; scroll-snap-type: none; scroll-behavior: auto; }
+.twc-pslide.is-drag .twc-pf-card { pointer-events: none; }
+.twc-pslide:focus-visible { box-shadow: 0 0 0 2px var(--color-sb-ink); }
+.twc-pf-card { flex: 0 0 236px; height: 430px; box-sizing: border-box; border: 1px solid var(--color-sb-ink); display: flex; flex-direction: column; gap: 10px; padding: 16px 14px 14px; scroll-snap-align: start; user-select: none; color: var(--color-sb-ink);
+  transition: transform .35s cubic-bezier(.34, 1.56, .64, 1), box-shadow .35s cubic-bezier(.22, 1, .36, 1); }
+.twc-pf-card:hover, .twc-pf-card.is-hl { transform: translateY(-6px); box-shadow: 5px 6px 0 var(--color-sb-ink); }
+.twc-pf-card__name { margin: 0; min-height: 2em; text-align: center; text-transform: uppercase; font: 400 25px/.98 var(--font-serif); letter-spacing: -.005em; text-wrap: balance; }
+.twc-pf-card__name sup { margin-left: 3px; vertical-align: top; font: 500 9px var(--font-plex); letter-spacing: .04em; }
+.twc-pf-card__ph { flex: none; height: 250px; min-height: 0; margin: 0; overflow: hidden; display: grid; place-items: center; background: rgb(0 0 0 / .08); }
+.twc-pf-card__ph img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .5s cubic-bezier(.22, 1, .36, 1); }
+.twc-pf-card:hover .twc-pf-card__ph img { transform: scale(1.05); }
+.twc-pf-card__line, .twc-pf-card__job { margin: 0; }
+.twc-pf-card__line { max-width: 30ch; font: 400 10.5px/1.35 var(--font-sans); }
+.twc-pf-card__job { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font: 500 13px/1.3 var(--font-sans); }
+.twc-pf-card__job span { display: block; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; font-size: 11.5px; font-weight: 400; color: var(--color-sb-muted); }
+.twc-pf-card__tag { margin-top: auto; align-self: flex-start; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 5px 12px 4px; border-radius: var(--twc-radius-pill); background: var(--color-sb-ink); color: var(--color-sb-paper); font: 500 12px/1 var(--font-serif); text-transform: uppercase; letter-spacing: .02em; }
+.twc-pf-card.is-open { border-style: dashed; }
+.twc-pf-card.is-open .twc-pf-card__ph { background: transparent; border: 1px dashed var(--color-sb-ink); font-size: 40px; }
+
+/* The member strip (canvas .twc-members): eight portraits, then "The women behind the / collective" */
+.twc-members { padding: var(--twc-space-90) var(--twc-gut) 70px; border-top: var(--twc-border-hairline) solid var(--color-sb-ink); }
+.twc-strip { display: grid; grid-template-columns: repeat(8, 1fr); align-items: start; }
+.twc-strip__item { display: block; color: inherit; text-decoration: none; }
+.twc-strip__item:focus-visible { outline: 2px solid var(--color-sb-ink); outline-offset: 2px; }
+.twc-strip__ph { aspect-ratio: 4 / 5; width: 100%; }
+.twc-strip__ph > img { object-position: 50% 22%; }
+.twc-strip__n { margin: 10px 0 0; font-size: 12px; }
+.twc-strip__who { display: block; margin: 0; padding-right: 12px; font-size: 12px; line-height: 1.3; color: var(--color-sb-muted); }
+.twc-members__words { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: var(--twc-space-24); margin-top: var(--twc-space-60); }
+.twc-members__title { margin: 0; font: inherit; }
+.twc-members__stagger { display: block; font: 400 30px/1.15 var(--font-serif); }
+.twc-members__giant { display: block; margin: 18px 0 0; font: 900 clamp(5rem, 15.5vw, 15rem)/.78 var(--font-sans); letter-spacing: -.055em; }
+.twc-members__aside { margin: 0; padding-bottom: var(--twc-space-22); text-align: right; font: 400 20px/1.2 var(--font-serif); }
+.twc-members__aside a { display: inline-block; margin-top: 12px; color: inherit; font: 600 14px var(--font-sans); text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 1100px) {
+  .twc-strip { grid-template-columns: repeat(4, 1fr); row-gap: var(--twc-space-24); }
+  .twc-members__words { grid-template-columns: 1fr; }
+  .twc-members__aside { text-align: left; }
+}
+@media (max-width: 600px) { .twc-strip { grid-template-columns: repeat(2, 1fr); } }
+@media (prefers-reduced-motion: reduce) {
+  .twc-starchart .sc-mem, .twc-pf-card, .twc-pf-card__ph img, .twc-pf__btn { transition: none; }
+  .twc-pslide { scroll-behavior: auto; }
+}
 
 /* The inline headline's one chip: a green pill between words */
 .twc-home-chip { border-radius: var(--twc-radius-pill); background: var(--color-sb-ev-green); }
@@ -29,7 +81,7 @@
 .twc-grid6 > a.twc-tile:focus-visible { outline: 2px solid var(--color-sb-ink); outline-offset: -4px; }
 .twc-tile.twc-home-tile--dark { color: var(--color-sb-paper); }
 .twc-tile.twc-home-tile--dark .p { font-size: 13px; font-weight: 600; }
-.twc-tile--photo > figcaption { position: relative; z-index: 1; padding: 3px 7px; background: var(--color-sb-paper); color: var(--color-sb-ink); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
+.twc-tile--photo > figcaption { position: relative; z-index: 3; padding: 3px 7px; background: var(--color-sb-paper); color: var(--color-sb-ink); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
 
 /* Stepped cards: a column of kicker, title, copy and action; the letter's two short columns; the partner strip */
 .twc-home-card { display: flex; flex-direction: column; gap: var(--twc-space-18); }
@@ -39,4 +91,7 @@
 .twc-home-card--strip { padding-bottom: 0; }
 .twc-home-strip { display: grid; place-items: center; height: 140px; margin: 10px calc(-1 * var(--twc-space-30)) 0 !important; background: var(--color-sb-tomato); color: var(--color-sb-ink); font: 800 64px/1 var(--font-display); font-stretch: 62%; text-transform: uppercase; }
 @media (max-width: 720px) { .twc-home-strip { margin-inline: -20px !important; } }
+/* The canvas's pill on ink: an outline in paper */
+.twc-btn.twc-home-onink { background: transparent; border-color: var(--color-sb-paper); color: var(--color-sb-paper); }
+.twc-btn.twc-home-onink:hover { background: var(--color-sb-paper); color: var(--color-sb-ink); }
 }

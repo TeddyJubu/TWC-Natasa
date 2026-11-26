@@ -1,13 +1,16 @@
 // @vitest-environment jsdom
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { act, cleanup, screen, within } from "@testing-library/react";
-import { demoMembers } from "@/showcase/demo-members";
+import { act, cleanup, fireEvent, screen, within } from "@testing-library/react";
+import type { RosterMember } from "@/features/roster/queries";
 import { renderWithQueries } from "@/test/dom";
 import { expectNoSkippedHeadings } from "@/test/headings";
 import { fake } from "@/test/fake-fns";
 
 vi.mock("@/features/members/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 vi.mock("@/features/cal/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
+vi.mock("@/features/roster/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs }));
 
 import { Route } from "@/routes/index";
@@ -18,16 +21,105 @@ afterEach(() => {
   fake.reset();
 });
 
-describe("/ (home) and the members-only directory", () => {
-  it("loads no member data: no loader, no client fetch, no member section and no directory link", async () => {
+// Invented people: the real roster never enters this public repository (see the last test).
+const person = (name: string, hood: string, constellation: RosterMember["constellation"], extra: Partial<RosterMember> = {}): RosterMember =>
+  ({ name, hood, constellation, photo: `/media/roster/${name.toLowerCase().replace(/ /g, "-")}.webp`, ...extra });
+const ROSTER = {
+  members: [
+    person("Ada Example", "Greenpoint", "NB", { role: "Potter", business: "Clay Co" }),
+    person("Bea Sample", "Greenpoint", "NB"),
+    person("Cy Placeholder", "Williamsburg", "NB", { role: "Florist" }),
+    person("Dee Fixture", "Astoria", "WQ", { role: "Baker" }),
+  ],
+  leads: { WQ: "Eve Testcase" },
+};
+const withRoster = (roster: unknown) => [[["roster"], roster]] as [readonly unknown[], unknown][];
+const bandsOf = (container: HTMLElement) => [...container.querySelectorAll<HTMLDetailsElement>("details.twc-cband")];
+const subLabels = (svg: Element) => [...svg.querySelectorAll("text.sc-sub")].map((t) => t.textContent);
+
+describe("/ (home): members come only from the roster", () => {
+  it("has no loader, and asks only the roster for members (never the directory)", async () => {
     expect(Route.options.loader).toBeUndefined();
     renderWithQueries(<Page />);
     await act(() => new Promise((r) => setTimeout(r, 20)));
+    expect(fake.calls).toContainEqual(["rosterFn"]);
     expect(fake.calls).not.toContainEqual(["directoryFn"]);
-    expect(screen.queryByRole("heading", { name: "Women doing remarkable work nearby." })).toBeNull();
-    expect(screen.queryByRole("link", { name: /member directory|meet the members/i })).toBeNull();
-    for (const a of screen.getAllByRole("link")) expect(a.getAttribute("href"), a.textContent ?? "").not.toMatch(/^\/(members|directory)(\/|$)/);
-    for (const m of demoMembers) expect(screen.queryByAltText(new RegExp(m.name))).toBeNull();
+  });
+
+  it("an empty roster: no member strip, open seats in every chart and two open profile cards per band", () => {
+    const { container } = renderWithQueries(<Page />, withRoster({ members: [], leads: {} }));
+    expect(container.querySelector(".twc-members")).toBeNull();
+    expect(container.querySelectorAll(".sc-mem")).toHaveLength(0);
+    for (const d of bandsOf(container)) {
+      const svg = d.querySelector("svg.twc-starchart")!;
+      expect(subLabels(svg).slice(0, -1).every((t) => t === "Your star here")).toBe(true);
+      expect(svg.querySelectorAll(".sc-open path, path.sc-open")).toHaveLength(1);
+      expect([...d.querySelectorAll(".twc-pf-card")].map((c) => c.classList.contains("is-open"))).toEqual([true, true]);
+      expect(within(d).queryAllByRole("img", { name: /Example|Sample/ })).toHaveLength(0);
+    }
+    // No lead named: the canvas's words for who leads it.
+    expect(bandsOf(container)[1].querySelector(".twc-cband__facts")!.textContent).toBe("Led byAmbassador-led");
+  });
+
+  it("a roster: one spark per member in her neighborhood, hub counts equal the roster's, her card has her photo and name", () => {
+    const { container } = renderWithQueries(<Page />, withRoster(ROSTER));
+    const [nb, wq, sb] = bandsOf(container);
+    const nbChart = nb.querySelector("svg.twc-starchart")!;
+    expect(nbChart.querySelectorAll("path.sc-mem")).toHaveLength(3);
+    expect(subLabels(nbChart)).toEqual(["2 members", "1 member", "Your star here", "★ neighborhood · ✦ member"]);
+    expect(nbChart.getAttribute("aria-label")).toBe("North Brooklyn constellation: Greenpoint, Williamsburg, Bushwick, 3 members");
+    expect(subLabels(wq.querySelector("svg.twc-starchart")!).slice(0, 2)).toEqual(["1 member", "Your star here"]);
+    expect(sb.querySelectorAll("path.sc-mem")).toHaveLength(0);
+    expect(sb.querySelectorAll(".twc-pf-card.is-open")).toHaveLength(2);
+
+    const cards = [...nb.querySelectorAll(".twc-pf-card")];
+    expect(cards.map((c) => c.querySelector("img")!.getAttribute("alt"))).toEqual(["Ada Example", "Bea Sample", "Cy Placeholder"]);
+    expect(cards[0].querySelector("img")!.getAttribute("src")).toBe("/media/roster/ada-example.webp");
+    expect(cards[0].textContent).toBe("AdaExample01Potter" + "Clay Co" + "Greenpoint");
+    expect(wq.querySelector(".twc-cband__facts")!.textContent).toBe("Led byEve Testcase");
+  });
+
+  it("hovering a member's spark lights her card, and her card lights her spark", () => {
+    const { container } = renderWithQueries(<Page />, withRoster(ROSTER));
+    const nb = bandsOf(container)[0];
+    const spark = nb.querySelector<SVGPathElement>("path.sc-mem")!, id = spark.dataset.m!;
+    fireEvent.mouseOver(spark);
+    expect(nb.querySelector(`.twc-pf-card[data-m="${id}"]`)!.classList.contains("is-hl")).toBe(true);
+    fireEvent.mouseOver(nb.querySelectorAll(".twc-pf-card")[2]);
+    expect(spark.classList.contains("is-hl")).toBe(false);
+    expect(nb.querySelectorAll("path.sc-mem")[2].classList.contains("is-hl")).toBe(true);
+  });
+
+  it("the profile slider is keyboard reachable, with labelled previous and next buttons", () => {
+    renderWithQueries(<Page />, withRoster(ROSTER));
+    const region = screen.getByRole("region", { name: "North Brooklyn member profiles" });
+    expect(region.tabIndex).toBe(0);
+    expect(screen.getAllByRole("button", { name: "Next profiles" })).toHaveLength(5);
+    expect(screen.getAllByRole("button", { name: "Previous profiles" })).toHaveLength(5);
+  });
+
+  it("the member strip shows roster portraits with name and role · neighborhood, and opens the directory", () => {
+    const { container } = renderWithQueries(<Page />, withRoster(ROSTER));
+    const strip = screen.getByRole("heading", { name: "The women behind the collective", level: 2 }).closest("section")!;
+    const items = [...strip.querySelectorAll<HTMLAnchorElement>(".twc-strip__item")];
+    expect(items.map((a) => a.textContent)).toEqual(["Ada ExamplePotter · Greenpoint", "Bea SampleGreenpoint", "Cy PlaceholderFlorist · Williamsburg", "Dee FixtureBaker · Astoria"]);
+    for (const a of items) expect(a.getAttribute("href")).toBe("/directory");
+    expect(within(strip).getByRole("link", { name: /Open the directory/ }).getAttribute("href")).toBe("/directory");
+    expect(container.textContent).not.toMatch(/demo/i);
+  });
+
+  it("no real member's name is in the source: the roster lives only on the server", () => {
+    // Checked wherever a roster folder is at hand (a dev data dir); the repository itself must never hold one.
+    const files = [process.env.DATA_DIR, "data", ".dev-data"].filter(Boolean).map((d) => join(d!, "roster", "roster.json")).filter((f) => existsSync(f));
+    const stored = files.flatMap((f) => {
+      const r = JSON.parse(readFileSync(f, "utf8")) as { members?: { name: string; founder?: boolean }[]; leads?: Record<string, string> };
+      const founders = (r.members ?? []).filter((m) => m.founder).map((m) => m.name);
+      return [...(r.members ?? []).filter((m) => !m.founder).map((m) => m.name), ...Object.values(r.leads ?? {}).filter((n) => !founders.includes(n))];
+    });
+    const walk = (dir: string): string[] => readdirSync(dir).flatMap((n) => { const p = join(dir, n); return statSync(p).isDirectory() ? walk(p) : /\.(tsx?|css|json|md)$/.test(n) ? [p] : []; });
+    const source = walk("src").map((p) => readFileSync(p, "utf8")).join("\n");
+    for (const name of stored) expect(source.includes(name), name).toBe(false);
+    expect(existsSync(join("src", "roster.json")) || existsSync(join("public", "roster"))).toBe(false);
   });
 });
 
@@ -84,18 +176,18 @@ describe("/ (home) structure", () => {
     expect(bands.map((d) => d.querySelector(".twc-cband__st")!.textContent)).toEqual(
       ["Live · Founding 50", "Live", "Launching", "Ambassador wanted", "Ambassador wanted"]);
     expect(bands.every((d) => !d.open)).toBe(true);
-    for (const d of bands.slice(0, 2)) expect(within(d).getByRole("link", { name: /^Join us/ }).getAttribute("href")).toBe("/join");
-    for (const d of bands.slice(2)) expect(within(d).getByRole("link", { name: /Lead this constellation/ }).getAttribute("href")).toBe("/contact");
+    expect(within(bands[0]).getByRole("link", { name: "Join North Brooklyn" }).getAttribute("href")).toBe("/join");
+    expect(within(bands[1]).getByRole("link", { name: "Join Western Queens" }).getAttribute("href")).toBe("/join");
+    for (const d of bands.slice(2)) expect(within(d).getByRole("link", { name: "Apply to lead it" }).getAttribute("href")).toBe("/contact");
   });
 
-  it("each band's star chart names its neighborhoods and never a member count", () => {
+  it("each band's star chart names its neighborhoods, with a legend; open seats only where no member lives", () => {
     const { container } = renderWithQueries(<Page />);
     const charts = [...container.querySelectorAll("svg.twc-starchart")];
     expect(charts.map((s) => s.getAttribute("aria-label"))[0]).toBe("North Brooklyn constellation: Greenpoint, Williamsburg, Bushwick");
     expect(charts).toHaveLength(5);
-    for (const s of charts) expect(s.textContent).not.toMatch(/member/i);
-    // Live bands have no open seats; a band with no members yet shows them.
-    expect(charts[0].textContent).not.toMatch(/open seat|Your star here/);
+    expect(subLabels(charts[0]).at(-1)).toBe("★ neighborhood · ✦ member");
+    expect(subLabels(charts[4]).at(-1)).toBe("★ neighborhood · ✦ member · ☆ open seat");
     expect(charts[4].textContent).toMatch(/Your star here/);
   });
 
@@ -130,12 +222,12 @@ describe("/ (home) structure", () => {
 
   it("lead or partner: ambassadors write through /contact, partners see /partnerships, with no partner prices", () => {
     renderWithQueries(<Page />);
-    expect(screen.getByRole("link", { name: /Become an ambassador/ }).getAttribute("href")).toBe("/contact");
+    expect(screen.getByRole("link", { name: "Apply to be an ambassador" }).getAttribute("href")).toBe("/contact");
     expect(screen.getByRole("link", { name: /Ways to partner/ }).getAttribute("href")).toBe("/partnerships");
     expect(screen.getByRole("link", { name: /See packages/ }).getAttribute("href")).toBe("/partnerships");
   });
 
-  it("never says gathering (the word is events) and names no member beyond the founder", () => {
+  it("never says gathering (the word is events) and, without a roster, names no member beyond the founder", () => {
     const { container } = renderWithQueries(<Page />);
     expect(container.textContent).not.toMatch(/gathering/i);
     expect(container.textContent).not.toMatch(/Shauna/);

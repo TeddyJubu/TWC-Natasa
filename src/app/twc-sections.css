@@ -15,28 +15,39 @@
 .twc-meta { font-size: 14px; line-height: 1.3; margin: 0; }
 @media (max-width: 1100px) { .twc-shead, .twc-phd { grid-template-columns: 1fr; } }
 
-/* ---- Constellation band (canvas .twc-band): a coloured tab — number, name, status — that opens onto a white sheet.
-   Markup: <details class="twc-cband twc-c-band-lime"><summary>…no / .name / .st…</summary><div class="twc-cband__more">…
-   Opens on click/Enter (native details); a fine pointer may also preview it on hover. ---- */
+/* ---- Constellation band (canvas .twc-band, 01 Programme "folders"): a coloured tab — number, name, status — that
+   opens onto a white sheet. Markup: <details class="twc-cband twc-c-band-lime"><summary>…no / .name / .st…</summary>
+   <div class="twc-cband__more">…intro, .twc-cband__chart, .twc-pf, .twc-cband__facts…</div></details>. Opens on
+   click/Enter (native details). On a wide screen the open folder is the canvas's 1050px. ---- */
 .twc-cbands { border-top: var(--twc-border-hairline) solid var(--color-sb-ink); }
-.twc-cband { position: relative; color: var(--color-sb-ink); box-shadow: var(--twc-shadow-band); border-top: 1px solid var(--color-sb-ink); interpolate-size: allow-keywords; }
+.twc-cband { position: relative; color: var(--color-sb-ink); box-shadow: var(--twc-shadow-band); border: 1px solid var(--color-sb-ink); interpolate-size: allow-keywords; }
+.twc-cband + .twc-cband { border-top: 0; }
 .twc-cband > summary { list-style: none; display: grid; grid-template-columns: 150px 1fr 230px; align-items: start; gap: var(--twc-space-16); min-height: 74px; padding: var(--twc-space-16) var(--twc-gut) 0; cursor: pointer; }
 .twc-cband > summary::-webkit-details-marker { display: none; }
 .twc-cband > summary:focus-visible { outline: 2px solid var(--color-sb-ink); outline-offset: -4px; }
 .twc-cband__no { font-size: 20px; font-weight: 500; white-space: nowrap; }
 .twc-cband__no b { margin-left: 10px; font-weight: 700; font-stretch: 80%; text-transform: uppercase; }
-.twc-cband__name { min-width: 0; overflow: hidden; margin: -4px 0 0; text-align: center; white-space: nowrap; font: 800 clamp(40px, 4.4vw, 68px)/0.84 var(--font-display); font-stretch: 62%; letter-spacing: -0.01em; text-transform: uppercase; }
+.twc-cband__name { min-width: 0; min-height: 1lh; overflow: hidden; margin: -4px 0 0; text-align: center; white-space: nowrap; font: 800 clamp(40px, 4.4vw, 68px)/0.84 var(--font-display); font-stretch: 62%; letter-spacing: -0.01em; text-transform: uppercase; }
 .twc-cband__st { text-align: right; font-size: 20px; font-weight: 500; white-space: nowrap; }
-.twc-cband__more { display: grid; grid-template-columns: minmax(0, 380px) 1fr; gap: var(--twc-space-40); margin-top: var(--twc-space-16); padding: var(--twc-space-40) var(--twc-gut) var(--twc-space-60); background: var(--color-sb-paper); border-top: 1px solid var(--color-sb-ink); }
+.twc-cband__more { display: grid; grid-template-columns: minmax(0, 380px) 1fr; grid-template-rows: auto 1fr auto; column-gap: var(--twc-space-40); row-gap: var(--twc-space-40); align-items: start;
+  margin: 2px 0 0; padding: var(--twc-space-40) var(--twc-gut); background: var(--color-sb-paper); border-top: 1px solid var(--color-sb-ink); cursor: auto; }
+.twc-cband__more > :first-child { grid-column: 1; grid-row: 1; }
+.twc-cband__facts { grid-column: 1; grid-row: 2; align-self: start; margin-top: calc(-1 * var(--twc-space-16)) !important; }
+.twc-cband__chart { grid-column: 2; grid-row: 1 / 3; min-width: 0; }
+.twc-cband__more > .twc-pf { grid-column: 1 / -1; grid-row: 3; }
 .twc-cband__more p.body { font-size: 16px; max-width: 34ch; margin: 0 0 var(--twc-space-16); }
-.twc-cband__outline { margin: 0; font: 800 clamp(40px, 5vw, 74px)/0.92 var(--font-display); font-stretch: 62%; text-transform: uppercase; color: transparent; -webkit-text-stroke: 1.4px var(--color-sb-ink); }
 .twc-cband::details-content { block-size: 0; overflow: clip; transition: block-size 0.45s cubic-bezier(0.2, 0.7, 0.2, 1), content-visibility 0.45s allow-discrete; }
 .twc-cband[open]::details-content { block-size: auto; }
+@media (min-width: 1101px) { .twc-cband__more { min-height: calc(1050px - 76px); } }
 @media (max-width: 1100px) {
   .twc-cband > summary { grid-template-columns: 1fr auto; padding: 14px var(--twc-gut) 16px; }
   .twc-cband__no, .twc-cband__st { font-size: 15px; }
   .twc-cband__name { grid-row: 2; grid-column: 1 / -1; text-align: left; font-size: 46px; margin-top: 8px; white-space: normal; }
-  .twc-cband__more { grid-template-columns: 1fr; gap: 20px; padding: 24px var(--twc-gut) 28px; }
+  .twc-cband__more { grid-template-columns: 1fr; grid-template-rows: none; row-gap: 28px; margin-top: 0; padding: 24px var(--twc-gut) 28px; }
+  .twc-cband__more > *, .twc-cband__more > :first-child, .twc-cband__more > .twc-pf { grid-column: 1; grid-row: auto; }
+  .twc-cband__facts { order: 1; margin-top: 0 !important; }
+  .twc-cband__chart { order: 2; }
+  .twc-cband__more > .twc-pf { order: 3; }
 }
 
 /* Colour fields (any section, tile, card or band): ink text on every one */
@@ -58,14 +69,14 @@
 
 /* ---- Inline headline + tiles (canvas .twc-inline, .twc-grid6, .twc-tile) ---- */
 .twc-inline { margin: 0; padding: var(--twc-space-120) var(--twc-gut) var(--twc-space-60); border-top: var(--twc-border-hairline) solid var(--color-sb-ink); text-align: center; text-transform: uppercase; font: 800 clamp(2.2rem, 4.8vw, 4.6rem)/1.16 var(--font-display); letter-spacing: -0.02em; text-wrap: balance; }
-.twc-inline em { font: italic 400 1.04em/1 var(--font-sans); text-transform: none; letter-spacing: -0.01em; white-space: nowrap; }
+.twc-inline em { font: italic 400 1.12em/1 var(--font-serif); text-transform: none; letter-spacing: 0; white-space: nowrap; }
 .twc-inline .twc-chipmark { display: inline-block; width: 1.5em; height: 0.78em; margin: 0 0.1em; vertical-align: -0.04em; }
 .twc-grid6 { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); }
 .twc-tile { aspect-ratio: 3 / 4.1; display: flex; flex-direction: column; justify-content: space-between; padding: var(--twc-space-22) var(--twc-space-18) var(--twc-space-18); text-align: center; text-decoration: none; color: var(--color-sb-ink); }
 .twc-tile .no { font: 500 11px var(--font-plex); letter-spacing: 0.08em; }
 .twc-tile h3 { margin: 8px 0 0; font: 500 22px/1.15 var(--font-sans); }
-.twc-tile .h { margin: 10px 0 0; font: italic 400 17px/1.2 var(--font-sans); }
-.twc-tile .p { margin: 0; font-size: 12px; line-height: 1.35; }
+.twc-tile .h { margin: 10px 0 0; font: italic 400 17px/1.2 var(--font-serif); }
+.twc-tile .p { margin: 0; font-size: 11.5px; line-height: 1.35; }
 .twc-tile--photo { position: relative; overflow: hidden; justify-content: flex-end; align-items: flex-start; padding: 14px; }
 .twc-tile--photo > img { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; object-fit: cover; }
 .twc-tile--photo > span { position: relative; z-index: 1; padding: 3px 7px; background: var(--color-sb-paper); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
@@ -89,14 +100,14 @@
 .twc-cards > :nth-child(2) { margin-top: 60px; }
 .twc-cards > :nth-child(3) { margin-top: 120px; }
 .twc-cards .twc-card { box-shadow: none; overflow: hidden; }
-.twc-card__title { margin: 0; font: 800 condensed clamp(46px, 4.4vw, 66px)/0.86 var(--font-display); letter-spacing: -0.03em; text-transform: uppercase; }
+.twc-card__title { margin: 0; font: 400 clamp(46px, 4.4vw, 66px)/0.86 var(--font-serif); letter-spacing: -0.03em; text-transform: uppercase; }
 .twc-card--dark { background: var(--color-sb-ink); color: var(--color-sb-paper); }
 @media (max-width: 1100px) { .twc-cards { grid-template-columns: 1fr; } .twc-cards > * { margin-top: 0 !important; } }
 
 /* ---- Panel pair (canvas .twc-duo / .twc-panel) ---- */
 .twc-duo { display: grid; grid-template-columns: 1fr 1fr; }
 .twc-panel { display: flex; flex-direction: column; gap: var(--twc-space-18); min-height: 380px; padding: 70px var(--twc-gut) var(--twc-space-60); color: var(--color-sb-ink); }
-.twc-panel h2 { margin: 0; font: 800 condensed clamp(40px, 4.4vw, 58px)/0.95 var(--font-display); letter-spacing: -0.02em; }
+.twc-panel h2 { margin: 0; font: 400 clamp(40px, 4.4vw, 58px)/0.95 var(--font-serif); letter-spacing: -0.02em; }
 .twc-panel .copy { max-width: 44ch; margin: 0; font-size: 16px; }
 .twc-panel .twc-btn { align-self: flex-start; }
 .twc-panel__info { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: auto; padding-top: 20px; border-top: var(--twc-border-hairline) solid currentColor; font-size: 13px; }
