@@ -1,13 +1,13 @@
 import * as React from "react";
 import { createPortal } from "react-dom";
-import sun from "../assets/illustrations/trail-star-sun.svg";
-import blue from "../assets/illustrations/trail-star-blue.svg";
-import gold from "../assets/illustrations/trail-star-gold.svg";
-import rose from "../assets/illustrations/trail-star-rose.svg";
-import lilac from "../assets/illustrations/trail-star-lilac.svg";
 import { cn } from "../lib/utils";
 
-const starImages = [sun, blue, gold, rose, lilac];
+// The four-point star, inline (img-src allows data:): mostly ink, every third one a constellation band colour
+// (lime, purple, sky, butter, red; owner's request, 2026-11-27).
+const star = (fill: string) =>
+  `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><path fill="${fill}" d="M48 4C52 30 66 44 92 48 66 52 52 66 48 92 44 66 30 52 4 48 30 44 44 30 48 4Z"/></svg>`)}`;
+const INK = star("#151414");
+const starImages = ["#63d873", "#a685e2", "#4fa6de", "#f8de6e", "#ec4a43"].flatMap((c) => [INK, INK, star(c)]);
 
 /** Intrinsic pixel size of the bundled stars (2x the `small` 3rem display size). */
 const TRAIL_IMAGE_SIZE = 96;
