@@ -32,7 +32,7 @@ export function Bands() {
                 {c.live ? <JoinButton>Join {c.name}</JoinButton> : (
                   <Link to="/partnerships" className="twc-btn">Apply to lead it <Icon name="arrow" className="twc-arrow" /></Link>
                 )}
-                {led && <p className="twc-meta mt-8">Led by<br />{led}</p>}
+                {led && <p className="twc-meta mt-6">Led by<br />{led}</p>}
               </div>
               <div>
                 <StarChart id={c.short} name={c.name} hoods={c.hoods} />

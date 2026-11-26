@@ -65,7 +65,7 @@
 .twc-inline em { font: italic 400 1.12em/1 var(--font-serif); text-transform: none; letter-spacing: 0; white-space: nowrap; }
 .twc-inline .twc-chipmark { display: inline-block; width: 1.5em; height: 0.78em; margin: 0 0.1em; vertical-align: -0.04em; }
 .twc-inline__star { font-size: 0.8em; vertical-align: 0.04em; }
-.twc-chipmark--green { border-radius: var(--twc-radius-pill); background: var(--color-sb-ev-green); }
+.twc-chipmark--green { background: var(--color-sb-ev-green); }
 .twc-tile.twc-tile--dark { color: var(--color-sb-paper); }
 .twc-tile.twc-tile--dark .p { font-size: 13px; font-weight: 600; }
 a.twc-tile:focus-visible { outline: 2px solid var(--color-sb-ink); outline-offset: -4px; }
@@ -134,7 +134,7 @@ a.twc-tile:focus-visible { outline: 2px solid var(--color-sb-ink); outline-offse
 /* ---- Membership arches (canvas .twc-arches, src/app/canvas/Arches.tsx): four arched tiers on the stone shelf ---- */
 @layer components {
 .twc-arches { padding: var(--twc-space-60) var(--twc-gut) 0; background: var(--color-sb-cream); border-top: var(--twc-border-hairline) solid var(--color-sb-stone-rule); color: var(--color-sb-ink); }
-.twc-arches__head { margin-bottom: var(--twc-space-60); }
+.twc-arches__head { margin-bottom: var(--twc-space-60); grid-template-columns: 1fr auto; } /* the canvas's .shead.wide never stacks */
 .twc-bill { display: inline-flex; align-items: center; gap: 14px; font-size: 14px; }
 .twc-bill button { padding: 0; border: 0; background: none; color: var(--color-sb-muted); cursor: pointer; font: inherit; }
 .twc-bill button[aria-pressed="true"] { color: var(--color-sb-ink); font-weight: 600; text-decoration: underline; text-underline-offset: 4px; }
@@ -150,7 +150,7 @@ a.twc-tile:focus-visible { outline: 2px solid var(--color-sb-ink); outline-offse
 .twc-arch__per { margin: 0; font: italic 400 20px var(--font-serif); }
 .twc-arch ul { display: grid; gap: var(--twc-space-8); margin: 26px 0 30px; padding: 0; list-style: none; font-size: 14px; line-height: 1.35; }
 .twc-arch .twc-btn { margin-top: auto; }
-.twc-arch .twc-arrow, .twc-nav .twc-arrow { display: none; }
+.twc-arch .twc-arrow, .twc-nav .twc-arrow, .twc-cband__more .twc-btn .twc-arrow { display: none; } /* canvas pills carry no arrow */
 /* Pill on the cobalt arch (canvas .twc-pill.on-cobalt.is-solid): white with cobalt words */
 .twc-btn--on-cobalt { background: var(--color-sb-paper); border-color: var(--color-sb-paper); color: var(--color-sb-cobalt); }
 @media (max-width: 1100px) { .twc-arch-row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; padding: 0; } }

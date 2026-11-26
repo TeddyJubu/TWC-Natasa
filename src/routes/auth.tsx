@@ -5,7 +5,6 @@ import { cn } from "@/index";
 import { getAuthClient } from "@/app/auth-client";
 import { emitAuthEvent } from "@/app/auth-events";
 import { AuthFrame, authAlert, authCard, authEyebrow, authH, slink } from "@/app/auth-ui";
-import { Icon } from "@/app/layout/twc";
 
 type Mode = "signin" | "signup" | "forgot";
 const MODES: readonly string[] = ["signin", "signup", "forgot"];
@@ -173,21 +172,13 @@ function AuthPage() {
                 <p className="text-[15px]">{notice.text}</p>
               </div>
             )}
-            <button type="submit" disabled={busy} aria-busy={busy || undefined} className="twc-btn mt-1 w-full">
-              {copy.submit} <Icon name="arrow" className="twc-arrow" />
-            </button>
+            <button type="submit" disabled={busy} aria-busy={busy || undefined} className="twc-btn mt-1 self-start">{copy.submit}</button>
           </form>
 
           <p className="flex flex-col items-center gap-2 text-center text-sm">
             {mode === "forgot" && <button type="button" onClick={() => switchTo("signin")} className={slink}>Back to sign in</button>}
             <Link to="/join" className={slink}>Not a member yet? Apply</Link>
           </p>
-        </div>
-
-        <div className="mt-4 flex flex-col gap-2.5 border-t border-sb-ink pt-5">
-          <span className="twc-chip twc-chip--ring self-start">Members only</span>
-          <p className="font-display text-2xl font-extrabold leading-[1.1] font-stretch-condensed">Your profile, your events, your introductions.</p>
-          <p className="text-sm leading-normal text-sb-muted">Accounts open fully once your membership application is approved.</p>
         </div>
       </div>
     </AuthFrame>

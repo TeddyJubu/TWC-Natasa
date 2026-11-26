@@ -89,7 +89,7 @@ function PartnershipsPage() {
                 {QUESTIONS.map(([q, a]) => <li key={q}><span>Q</span><div><em>{q}</em>{a}</div></li>)}
               </ul>
             </div>
-            <div className="twc-c-stone twc-partnerform">
+            <div className="twc-partnerform bg-sb-cream">
               <h2 className="twc-h3">{talk === "Talk to us" ? <>Talk to <i>us</i></> : talk}</h2>
               <PartnershipForm />
             </div>

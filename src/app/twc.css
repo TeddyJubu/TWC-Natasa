@@ -68,9 +68,9 @@
 .twc-index { font: 500 11px/1.55 var(--font-plex); letter-spacing: 0.08em; color: var(--color-sb-muted); }
 
 /* Headings: sentence case in Instrument Serif, on the canvas's fluid scale (.d1/.d2/.d3/.s3) */
-.twc-display { font: 400 clamp(3rem, 7.4vw, 6.4rem)/0.92 var(--font-serif); letter-spacing: -0.025em; margin: 0; text-wrap: balance; }
-.twc-h2 { font: 400 clamp(2.4rem, 5vw, 4rem)/0.95 var(--font-serif); letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
-.twc-h3 { font: 400 clamp(1.8rem, 3vw, 2.75rem)/1 var(--font-serif); letter-spacing: 0; margin: 0; text-wrap: balance; }
+.twc-display { font: 400 clamp(3rem, 7.4vw, 6.4rem)/0.92 var(--font-serif); letter-spacing: -0.025em; margin: 0; }
+.twc-h2 { font: 400 clamp(2.4rem, 5vw, 4rem)/0.95 var(--font-serif); letter-spacing: -0.02em; margin: 0; }
+.twc-h3 { font: 400 clamp(1.8rem, 3vw, 2.75rem)/1 var(--font-serif); letter-spacing: 0; margin: 0; }
 .twc-s3 { font: 400 26px/1.05 var(--font-serif); margin: 0; }
 .twc-display i, .twc-h2 i, .twc-h3 i, .twc-s3 i { font-style: italic; }
 .twc-lede { font: 400 17px/1.45 var(--font-sans); color: var(--color-sb-muted); max-width: 52ch; margin: 0; }

@@ -19,7 +19,7 @@ export function AuthFrame({ children }: { children: React.ReactNode }) {
     <AppPage>
       <AppNav bare />
       <main id="main" tabIndex={-1} className="outline-none">
-        <section className="twc-fauth twc-c-stone">{children}</section>
+        <section className="twc-fauth bg-sb-cream">{children}</section>
       </main>
       <AppFooter bare />
     </AppPage>

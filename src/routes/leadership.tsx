@@ -50,7 +50,8 @@ function groups(roster: Roster | undefined): Record<string, Group> {
 }
 
 // The canvas's portrait fields, chosen from the name so a person keeps her colour.
-const FIELDS = ["twc-c-tomato", "twc-c-sky", "twc-c-blush", "twc-c-butter", "twc-c-lime", "twc-c-khaki", "twc-c-lilac", "twc-c-band-butter", "twc-c-band-lime"];
+// Plain fills: the canvas grains its colour cards, not its portraits.
+const FIELDS = ["bg-sb-tomato", "bg-sb-sky", "bg-sb-blush", "bg-sb-butter", "bg-sb-lime", "bg-sb-khaki", "bg-sb-lilac", "bg-sb-band-butter", "bg-sb-band-lime"];
 const fieldOf = (n: string) => FIELDS[[...n].reduce((a, c) => a + c.charCodeAt(0), 0) % FIELDS.length];
 const initials = (n: string) => n.split(" ").map((w) => w[0]).join("").slice(0, 2);
 
@@ -81,7 +82,7 @@ function LeadershipPage() {
                   const open = !p.name || p.name.startsWith("Ambassador ");
                   return (
                     <figure key={`${p.role}-${i}`} className="twc-port">
-                      <div className={cn("twc-port__ph", open ? "twc-c-stone" : fieldOf(p.name!))} aria-hidden="true">{open ? "+" : initials(p.name!)}</div>
+                      <div className={cn("twc-port__ph", open ? "bg-sb-cream" : fieldOf(p.name!))} aria-hidden="true">{open ? "+" : initials(p.name!)}</div>
                       <figcaption className="twc-port__cap">{p.role}{p.note && ` · ${p.note}`}</figcaption>
                       <h3>{p.name ?? "Open seat"}</h3>
                       {open && <Link to="/contact" className="twc-btn twc-btn--outline twc-btn--sm mt-2.5 self-start">Apply for this seat</Link>}
