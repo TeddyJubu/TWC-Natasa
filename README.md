@@ -81,7 +81,7 @@ In a sandbox, bun may need writable temp and cache directories, e.g.
 | `HOST`, `PORT` | No | Where `bun run start` listens; default `127.0.0.1:8788`. |
 | `CF_EMAIL_ACCOUNT_ID` | For email | Cloudflare account id for the Email Sending API. |
 | `CF_EMAIL_API_TOKEN` | For email | **Secret.** Cloudflare API token with email sending permission. |
-| `BEEHIIV_API_KEY`, `BEEHIIV_PUBLICATION_ID` | For the newsletter | **Secret** (the first). Both set lets an application that ticked the newsletter and email-consent boxes subscribe the applicant. Without them nothing is sent. |
+| `BEEHIIV_API_KEY`, `BEEHIIV_PUBLICATION_ID` | For the newsletter | **Secret** (the first; Beehiiv → Settings → API). The second is the publication's `pub_…` id. Both set lets the home page's letter sign-up (`POST /api/newsletter`) and an application that ticked the newsletter and email-consent boxes subscribe the person. Without them nothing is sent or recorded: the sign-up answers 503 ("We couldn't add you just now") and an application's opt-in goes nowhere — after adding them, `scripts/newsletter-backfill.ts` sends those applicants on (a count without `--confirm`). |
 | `EMAIL_FROM` | No | Sender address; defaults to `info@thewomenscollective.club`. |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | For Google | **Secret** (the second). Both set turns on Google sign-in. In Google Cloud, allow the redirect URI `${APP_URL}/api/auth/callback/google`. |
 | `CAL_API_KEY` | For gatherings and booking | **Secret.** The Cal owner's API key. Server-only. |
@@ -151,7 +151,7 @@ Layout on the VPS:
 ```
 /opt/twc-natasa                  checkout of main (the service's working directory)
 /etc/twc-natasa/app.env          server env: APP_URL, DATA_DIR, BETTER_AUTH_SECRET, CF_EMAIL_*, EMAIL_FROM, HOST,
-                                 PORT, NODE_ENV, SITE_PIN, ADMIN_ALERT_TO, CAL_* (root:www-data, 640)
+                                 PORT, NODE_ENV, SITE_PIN, ADMIN_ALERT_TO, CAL_*, GOOGLE_*, BEEHIIV_* (root:www-data, 640)
 /var/lib/twc-natasa/data/twc.db  the database (+ -wal/-shm while running); uploads/ beside it
 /var/backups/twc-natasa/         pre-deploy snapshots, nightly-*.db and uploads-*.tgz (30 days)
 ```
@@ -162,6 +162,20 @@ proxies to it; only the CRM's embeddable forms (`/embed.js`, `/f/*`, their asset
 `/terms`, `/code-of-conduct`) are still served from the old static site there. `new.` and `join.…/join` redirect here. Traffic arrives through Cloudflare, then Caddy, so rate limits (Better Auth's and the per-IP limit on
 applications) key on `CF-Connecting-IP`, falling back to `X-Forwarded-For`. Someone who reaches Caddy directly
 (bypassing Cloudflare) can spoof that header, which only lets them dodge the rate limits.
+
+### Rollback
+
+- **A bad deploy:** `git revert` the commit on `main` and push; the timer deploys the revert like any commit (a
+  revert is a fast-forward). While it builds, the old build keeps running, since a failed deploy never restarts.
+- **Faster, on the VPS:** `cd /opt/twc-natasa && git reset --hard <good sha> && bun install --frozen-lockfile && bun
+  run build && systemctl restart twc-natasa`, then push the matching revert to `main` — otherwise the next deploy
+  puts the bad commit back.
+- **Data:** every deploy snapshots the database first (`/var/backups/twc-natasa/pre-deploy-*.db`, newest 20) and
+  there are nightly copies. Migrations only add, so older code runs on a newer database; restore a snapshot only to
+  undo bad data: stop `twc-natasa`, keep the current file aside, copy the snapshot to `twc.db` (remove `-wal`/`-shm`),
+  then start it again.
+- **Back behind the PIN:** put the `SITE_PIN` line back in `app.env` (the `app.env.before-*` copies keep the old
+  one) and `systemctl restart twc-natasa`.
 
 ### Private preview (site PIN)
 

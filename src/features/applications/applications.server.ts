@@ -75,6 +75,26 @@ export async function optInApplicant(db: DB, { email, fullName, answers }: Store
   }).catch(() => console.warn("[newsletter] application stored, but the newsletter opt-in failed"));
 }
 
+/**
+ * Site applications (never imported ones) that opted in but whose address is not in `newsletter_subscribers`: the
+ * opt-ins that went nowhere while the Beehiiv keys were missing. Oldest first, one per address. Read-only; the
+ * backfill script sends them through optInApplicant(), so consent and the already-known check still apply.
+ */
+export function missedOptIns(db: DB): Stored[] {
+  const rows = db.prepare(`select email, full_name, answers from applications
+    where json_extract(answers, '$.legacy') is null
+      and lower(email) not in (select lower(email) from newsletter_subscribers)
+    order by created_at, rowid`).all() as { email: string; full_name: string; answers: string }[];
+  const seen = new Set<string>();
+  return rows.flatMap(({ email, full_name, answers }) => {
+    const parsed = JSON.parse(answers) as Record<string, unknown>;
+    const key = email.trim().toLowerCase();
+    if (!newsletterConsent(parsed) || seen.has(key)) return [];
+    seen.add(key);
+    return [{ email, fullName: full_name, answers: parsed }];
+  });
+}
+
 /** The signed-in applicant's name and email for prefilling /join; null when signed out. */
 export function applicant({ db, actor }: Ctx): Applicant | null {
   if (!actor) return null;

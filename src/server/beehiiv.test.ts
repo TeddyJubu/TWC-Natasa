@@ -3,7 +3,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { openDb, type DB } from "./db";
 import { subscribeIfConsented, type Optin } from "./beehiiv";
-import { newsletterConsent, optInApplicant, submitApplication } from "@/features/applications/applications.server";
+import { missedOptIns, newsletterConsent, optInApplicant, submitApplication } from "@/features/applications/applications.server";
 
 const utm = { source: "nbwc.site", medium: "membership", campaign: "membership-optin" };
 const optin = (extra: Partial<Optin> = {}): Optin => ({ email: "Rosa@X.test ", name: "Rosa Diaz", consent: true, utm, ...extra });
@@ -138,5 +138,26 @@ describe("applying", () => {
     db.prepare("insert into newsletter_subscribers (legacy_id, email, source, consent) values ('newsletter-9', 'new@x.test', 'beehiiv', null)").run();
     await apply({ newsletter: { subscribe: true, emailConsent: true } });
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("missedOptIns (backfill after the keys were missing)", () => {
+  const yes = { newsletter: { subscribe: true, emailConsent: true } };
+  const store = (email: string, answers: Record<string, unknown>) => submitApplication({ db, actor: null }, { email, fullName: email, answers });
+
+  it("lists site opt-ins never recorded, once per address; skips no-consent, imported and already-known rows", async () => {
+    vi.stubEnv("BEEHIIV_API_KEY", ""); // the keys were missing: the opt-in went nowhere and recorded nothing
+    await optInApplicant(db, store("Lost@x.test", yes));
+    store("lost@x.test", yes);
+    store("no@x.test", { newsletter: { subscribe: true } });
+    store("old@x.test", { ...yes, legacy: { id: "crm-1" } });
+    store("known@x.test", yes);
+    db.prepare("insert into newsletter_subscribers (legacy_id, email, source, consent) values ('newsletter-1', 'known@x.test', 'beehiiv', null)").run();
+    expect(missedOptIns(db).map((s) => s.email)).toEqual(["Lost@x.test"]);
+
+    vi.stubEnv("BEEHIIV_API_KEY", "test-key-not-a-secret");
+    for (const missed of missedOptIns(db)) await optInApplicant(db, missed);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(missedOptIns(db)).toEqual([]); // sent once: a second run sends nothing
   });
 });
