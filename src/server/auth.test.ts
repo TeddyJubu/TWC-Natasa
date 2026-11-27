@@ -320,3 +320,47 @@ describe("delete my account (POST /api/auth/delete-user)", () => {
     expect(users(rosa.id)).toBe(0);
   });
 });
+
+describe("account settings: password, and no self-serve email change", () => {
+  async function signedIn(email: string, ip = `203.0.113.${testIp}`) {
+    await signUp(email);
+    await auth.api.verifyEmail({ query: { token: tokenIn(linkIn(sent.at(-1)!.text)) } });
+    const res = await signIn(email, "correct horse", ip);
+    return res.headers.getSetCookie().map((c) => c.split(";")[0]).join("; ");
+  }
+  const post = async (path: string, cookie: string, body: Record<string, unknown>) => {
+    const res = await auth.handler(new Request(`${APP}/api/auth${path}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Origin: APP, Cookie: cookie, "X-Forwarded-For": `203.0.113.${testIp}` },
+      body: JSON.stringify(body),
+    }));
+    return { status: res.status, body: (await res.json().catch(() => null)) as { code?: string } | null };
+  };
+  const sessions = () => (db.prepare(`select count(*) as n from session`).get() as { n: number }).n;
+
+  it("changes her password only with the current one, and signs her other devices out", async () => {
+    const here = await signedIn("rosa@x.test");
+    await signIn("rosa@x.test", "correct horse"); // a second device
+    expect(sessions()).toBeGreaterThan(1); // verifying signs in too
+    const change = (currentPassword: string) => post("/change-password", here, { currentPassword, newPassword: "a brand new one", revokeOtherSessions: true });
+    expect(await change("wrong password")).toMatchObject({ status: 400, body: { code: "INVALID_PASSWORD" } });
+    expect((await change("correct horse")).status).toBe(200);
+    expect(sessions()).toBe(1);
+    expect((await signIn("rosa@x.test", "correct horse")).status).toBe(401);
+    expect((await signIn("rosa@x.test", "a brand new one")).status).toBe(200);
+  }, 30_000); // every attempt hashes a password
+
+  it("allows 5 password changes per IP per 10 minutes, so it can't be used to guess her password", async () => {
+    const here = await signedIn("rosa@x.test");
+    const statuses: number[] = [];
+    for (let i = 0; i < 6; i++) statuses.push((await post("/change-password", here, { currentPassword: `wrong ${i}`, newPassword: "a brand new one" })).status);
+    expect(statuses).toEqual([400, 400, 400, 400, 400, 429]);
+  }, 30_000);
+
+  it("has no change-email: an address links her applications, imported record, RSVPs and newsletter", async () => {
+    const here = await signedIn("rosa@x.test");
+    expect((await post("/change-email", here, { newEmail: "new@x.test" })).status).toBe(400);
+    expect(db.prepare(`select email from "user"`).all().map((r) => ({ ...r }))).toEqual([{ email: "rosa@x.test" }]);
+    expect(sent.filter((m) => m.to === "new@x.test")).toEqual([]);
+  });
+});

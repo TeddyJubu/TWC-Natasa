@@ -5,6 +5,7 @@ import type { GatheringRow } from "@/features/cal/cal.server";
 import { requireMember } from "@/server/guard";
 import { bad, isObject, str } from "@/server/validate";
 
+export type { MemberPlan } from "@/features/cal/cal.server";
 export type EventRow = GatheringRow;
 /** What anyone may see of a gathering: no RSVPs, no member data. */
 export type PublicEvent = GatheringRow;
