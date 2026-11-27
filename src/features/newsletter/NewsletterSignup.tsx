@@ -68,7 +68,8 @@ export function NewsletterSignup({ id, className, send = sendSignup }: Newslette
               aria-invalid={errors.email ? true : undefined} aria-describedby={describe("email")} />
             {error("email")}
           </div>
-          <div className="twc-field">
+          {/* Not .twc-field: its label style (small caps) is for field names, and this is a sentence. */}
+          <div className="flex flex-col gap-2">
             <label className="twc-check">
               <input type="checkbox" name="consent" required aria-invalid={errors.consent ? true : undefined} aria-describedby={describe("consent")} />
               <span>Send me the Collective letter. One email a week; unsubscribe any time.</span>
