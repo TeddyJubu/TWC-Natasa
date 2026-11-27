@@ -8,6 +8,7 @@ const auth = vi.hoisted(() => ({
   signIn: { email: vi.fn(), social: vi.fn() },
   signUp: { email: vi.fn() },
   requestPasswordReset: vi.fn(),
+  sendVerificationEmail: vi.fn(),
 }));
 const emitted = vi.hoisted(() => [] as string[]);
 vi.mock("@/app/auth-client", () => ({ getAuthClient: async () => auth }));
@@ -179,6 +180,47 @@ describe("/auth", () => {
     expect(validate({ mode: "admin" })).toEqual({});
   });
 
+  it("keeps ?email= only as a string of at most 254 characters", () => {
+    const validate = Route.options.validateSearch as (s: Record<string, unknown>) => unknown;
+    expect(validate({ mode: "signup", email: "rosa@x.test" })).toEqual({ mode: "signup", email: "rosa@x.test" });
+    expect(validate({ email: ` ${"a".repeat(242)}@example.com ` })).toEqual({ email: `${"a".repeat(242)}@example.com` });
+    for (const email of [`${"a".repeat(243)}@example.com`, "", "  ", 42, ["rosa@x.test"], { a: 1 }, null]) {
+      expect(validate({ email })).toEqual({});
+    }
+  });
+
+  describe("email prefill", () => {
+    afterEach(() => window.history.replaceState(null, ""));
+    const email = () => screen.getByLabelText(/email/i) as HTMLInputElement;
+
+    it("fills the Email field from ?email= (the welcome email's link), on Create account, and nothing else", async () => {
+      search.mockReturnValue({ mode: "signup", email: "rosa@x.test" });
+      const { container } = renderWithQueries(<Page />);
+      await vi.waitFor(() => expect(email().value).toBe("rosa@x.test"));
+      expect(screen.getByRole("tab", { name: "Create account" }).getAttribute("aria-selected")).toBe("true");
+      expect((screen.getByLabelText(/full name/i) as HTMLInputElement).value).toBe("");
+      // Only the field's value: the address isn't written anywhere on the page.
+      expect(container.textContent).not.toContain("rosa@x.test");
+      // Switching to Log in keeps it.
+      fireEvent.click(screen.getByRole("tab", { name: "Log in" }));
+      expect(email().value).toBe("rosa@x.test");
+    });
+
+    it("fills it from the history state handed on by /join/thanks", async () => {
+      window.history.replaceState({ applicantEmail: "bea@x.test" }, "");
+      search.mockReturnValue({ mode: "signup" });
+      renderWithQueries(<Page />);
+      await vi.waitFor(() => expect(email().value).toBe("bea@x.test"));
+    });
+
+    it("ignores a handed-on value that isn't a short string", async () => {
+      window.history.replaceState({ applicantEmail: `${"a".repeat(260)}@x.test` }, "");
+      renderWithQueries(<Page />);
+      await new Promise((r) => setTimeout(r, 10));
+      expect(email().value).toBe("");
+    });
+  });
+
   it("ties a sign-in error to the fields it is about", async () => {
     auth.signIn.email.mockResolvedValue({ data: null, error: { message: "Invalid email or password", status: 401 } });
     renderWithQueries(<Page />);
@@ -213,6 +255,59 @@ describe("/auth", () => {
       expect(auth.signUp.email).toHaveBeenCalledWith({ email: "rosa@x.test", password: "longenough", name: "Rosa", callbackURL: "/verified" });
       expect(await neutral()).toMatch(/check your inbox.*already have an account/i);
       expect(screen.queryByRole("alert")).toBeNull();
+    });
+
+    it("then moves focus to the notice, puts the filled form away and offers to send the link again", async () => {
+      auth.signUp.email.mockResolvedValue({ data: { token: null, user: { id: "u1" } }, error: null });
+      renderWithQueries(<Page />);
+      await signUp();
+      const note = await screen.findByRole("status");
+      await vi.waitFor(() => expect(document.activeElement).toBe(note));
+      expect(within(note).getByRole("heading", { name: "Almost there" })).toBeTruthy();
+      expect(screen.queryByLabelText(/password/i)).toBeNull();
+      expect(screen.queryByRole("button", { name: /^create account$/i })).toBeNull();
+      expect(screen.getByRole("button", { name: "Send the link again" })).toBeTruthy();
+    });
+
+    it.each([
+      ["sent", { data: { status: true }, error: null }],
+      ["rate-limited", { data: null, error: { message: "Too many requests", status: 429 } }],
+    ])("Send the link again (%s) answers the same for every address, and focuses it", async (_label, result) => {
+      auth.signUp.email.mockResolvedValue({ data: null, error: { message: "x", code: "USER_ALREADY_EXISTS", status: 422 } });
+      auth.sendVerificationEmail.mockResolvedValue(result);
+      renderWithQueries(<Page />);
+      await signUp();
+      await screen.findByRole("status");
+      (document.activeElement as HTMLElement).blur();
+      fireEvent.click(screen.getByRole("button", { name: "Send the link again" }));
+      await vi.waitFor(() => expect(screen.getByRole("status").textContent).toMatch(/sent again: if this email is waiting to be confirmed, a fresh link is on its way/i));
+      expect(auth.sendVerificationEmail).toHaveBeenCalledWith({ email: "rosa@x.test", callbackURL: "/verified" });
+      expect(document.activeElement).toBe(screen.getByRole("status"));
+      expect(screen.queryByRole("alert")).toBeNull();
+    });
+
+    it("Send the link again: a failure reads generic, never the upstream words", async () => {
+      auth.signUp.email.mockResolvedValue({ data: { token: null, user: { id: "u1" } }, error: null });
+      auth.sendVerificationEmail.mockResolvedValue({ data: null, error: { message: "smtp down", status: 500 } });
+      renderWithQueries(<Page />);
+      await signUp();
+      await screen.findByRole("status");
+      fireEvent.click(screen.getByRole("button", { name: "Send the link again" }));
+      const alert = await screen.findByRole("alert");
+      expect(alert.textContent).toMatch(/couldn’t send a link right now/i);
+      expect(alert.textContent).not.toContain("smtp down");
+    });
+
+    it("Use a different email brings the form back, empty, with focus on Email", async () => {
+      auth.signUp.email.mockResolvedValue({ data: { token: null, user: { id: "u1" } }, error: null });
+      renderWithQueries(<Page />);
+      await signUp();
+      await screen.findByRole("status");
+      fireEvent.click(screen.getByRole("button", { name: "Use a different email" }));
+      expect(screen.queryByRole("status")).toBeNull();
+      await vi.waitFor(() => expect(document.activeElement).toBe(screen.getByLabelText(/email/i)));
+      expect((screen.getByLabelText(/email/i) as HTMLInputElement).value).toBe("");
+      expect(screen.getByRole("button", { name: /^create account$/i })).toBeTruthy();
     });
 
     it("shows the password rule for a weak password, and generic copy for anything else", async () => {

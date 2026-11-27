@@ -1,6 +1,6 @@
 // Server-only: the approval welcome email. Callers check the admin first (admin.server.ts approvalEmail).
 import type { DB } from "@/server/db";
-import { appUrl, sendEmail, type EmailResult } from "@/server/email";
+import { sendEmail, signupUrl, type EmailResult } from "@/server/email";
 
 /** Reasons are fixed codes, never upstream text, so no secret or provider message reaches the browser. */
 export type ApprovalEmailResult = { sent: true } | { sent: false; reason: "not-approved" | Exclude<EmailResult, { sent: true }>["reason"] };
@@ -11,7 +11,8 @@ export async function sendApprovalEmail(db: DB, applicationId: string): Promise<
     | { email: string; full_name: string; status: string }
     | undefined;
   if (app?.status !== "approved") return { sent: false, reason: "not-approved" };
-  return sendEmail({ to: app.email, subject: "Welcome to The Women’s Collective", text: welcomeText(app.full_name, `${appUrl()}/auth`) });
+  // Create account, her address filled in: most approved applicants have no account yet.
+  return sendEmail({ to: app.email, subject: "Welcome to The Women’s Collective", text: welcomeText(app.full_name, signupUrl(app.email)) });
 }
 
 const welcomeText = (name: string, signIn: string) => `Dear ${name},
