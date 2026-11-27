@@ -5,7 +5,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { cn, SelectControl } from "@/index";
 import { fieldClass, linkClass, primaryButton, mainButton, secondaryButton } from "@/app/layout/app-classes";
 import { Card, Chip, EmptySlot, InlineError, Toggle, type ChipTone } from "@/app/layout/app-ui";
-import { rsvpCsv, rsvpTotals, STATUS_LABEL, useAdminBusiness } from "./admin-state";
+import { matchCategory, nextWeekly, rsvpCsv, rsvpTotals, STATUS_LABEL, useAdminBusiness } from "./admin-state";
 import { addCalRsvpFn, cancelCalEventFn, saveCalEventFn, saveCalEventTypeFn } from "./fns";
 import {
   adminBusinessesQuery, adminCalBookingsQuery, adminCalEventsQuery, adminCalEventTypesQuery, adminCalRsvpsQuery, adminCalWaitlistQuery, invalidateCal,
@@ -124,18 +124,31 @@ export function GatheringsPanel() {
   );
 }
 
-export function EventEditorForm({ event, business }: { event?: AdminCalEvent; business?: string }) {
+/**
+ * Create, edit or duplicate an event. A new event starts unlisted (a draft: only its link opens it) until an admin
+ * publishes it; a duplicate (`template`) takes everything but the web address, a week on from the original.
+ */
+export function EventEditorForm({ event, template, business }: { event?: AdminCalEvent; template?: AdminCalEvent; business?: string }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { toast, toastNode } = useToast();
-  const zone = event?.timeZone ?? "America/New_York";
-  const [d, setD] = React.useState({
-    title: event?.title ?? "", slug: event?.slug ?? "", description: event?.description ?? "", category: event?.category ?? "",
-    coverImageUrl: event?.coverImageUrl ?? "", location: event?.location ?? "", timeZone: zone,
-    start: event ? isoToWall(event.startTime, zone) : "", end: event ? isoToWall(event.endTime, zone) : "",
-    capacity: event?.capacity === null || event?.capacity === undefined ? "" : String(event.capacity),
-    hidden: event?.hidden ?? false, showAttendees: event?.showAttendees ?? true,
+  const source = event ?? template;
+  const zone = source?.timeZone ?? "America/New_York";
+  const [d, setD] = React.useState(() => {
+    const start = source ? isoToWall(source.startTime, zone) : "";
+    const end = source ? isoToWall(source.endTime, zone) : "";
+    const times = template && !event ? nextWeekly(start, end, isoToWall(new Date().toISOString(), zone)) : { start, end };
+    return {
+      title: source?.title ?? "", slug: event?.slug ?? "", description: source?.description ?? "", category: source?.category ?? "",
+      coverImageUrl: source?.coverImageUrl ?? "", location: source?.location ?? "", timeZone: zone, ...times,
+      capacity: source?.capacity === null || source?.capacity === undefined ? "" : String(source.capacity),
+      // A new event (or copy) is a draft until it is published.
+      hidden: event ? event.hidden : true, showAttendees: source?.showAttendees ?? true,
+    };
   });
+  // The categories in use, offered as the field's suggestions; one typed in another case takes the used spelling.
+  const known = useQuery({ ...adminCalEventsQuery({ tab: "upcoming", skip: 0, ...(business ? { business } : {}) }), retry: false }).data?.categories ?? [];
+  const listId = React.useId();
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const zones = React.useMemo(() => timeZones(d.timeZone), [d.timeZone]);
   const set = <K extends keyof typeof d>(key: K, value: (typeof d)[K]) => setD((v) => ({ ...v, [key]: value }));
@@ -148,8 +161,10 @@ export function EventEditorForm({ event, business }: { event?: AdminCalEvent; bu
     },
   });
   const submit = () => {
+    // A copy keeps its title, so its web address gets the new date unless the admin typed one.
+    const slug = d.slug || (template && !event ? `${d.title} ${d.start.slice(0, 10)}` : "");
     const raw = {
-      title: d.title, slug: d.slug, description: d.description, category: d.category, coverImageUrl: d.coverImageUrl, location: d.location,
+      title: d.title, slug, description: d.description, category: matchCategory(d.category, known), coverImageUrl: d.coverImageUrl, location: d.location,
       timeZone: d.timeZone, capacity: d.capacity, hidden: d.hidden, showAttendees: d.showAttendees,
       startTime: wallToIso(d.start, d.timeZone) ?? "", endTime: wallToIso(d.end, d.timeZone) ?? "",
     };
@@ -158,15 +173,16 @@ export function EventEditorForm({ event, business }: { event?: AdminCalEvent; bu
     setErrors({});
     return save.mutate(checked.value);
   };
-  const text = (key: "title" | "slug" | "category" | "coverImageUrl" | "location", label: string, hint?: string, required?: boolean) => (
+  const text = (key: "title" | "slug" | "coverImageUrl" | "location", label: string, hint?: string, required?: boolean) => (
     <FormField label={label} hint={hint} error={errors[key]} required={required}>
       {(p) => <input {...p} className={fieldClass} value={d[key]} onChange={(e) => set(key, e.target.value)} />}
     </FormField>
   );
   return (
-    <form noValidate aria-label={event ? `Edit ${event.title}` : "New event"} className="flex flex-col gap-5 p-4" onSubmit={(e) => { e.preventDefault(); submit(); }}>
+    <form noValidate aria-label={event ? `Edit ${event.title}` : template ? `Copy of ${template.title}` : "New event"} className="flex flex-col gap-5 p-4" onSubmit={(e) => { e.preventDefault(); submit(); }}>
+      {template && !event && <p className="text-sm">A copy of <strong>{template.title}</strong>, a week on. Check the date, then create it; its RSVPs and waitlist stay with the original.</p>}
       {text("title", "Title", undefined, true)}
-      {text("slug", "Web address", d.slug ? `/events/${slugify(d.slug)}` : "Made from the title when left blank.")}
+      {text("slug", "Web address", d.slug ? `/events/${slugify(d.slug)}` : template && !event ? "Made from the title and date when left blank." : "Made from the title when left blank.")}
       <FormField label="Description" hint="Plain text. Line breaks are kept." error={errors.description}>
         {(p) => <textarea {...p} className={fieldClass} maxLength={10_000} value={d.description} onChange={(e) => set("description", e.target.value)} />}
       </FormField>
@@ -183,18 +199,57 @@ export function EventEditorForm({ event, business }: { event?: AdminCalEvent; bu
       </FormField>
       {text("location", "Location")}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        {text("category", "Category")}
+        <FormField label="Category" hint={known.length ? "Pick one in use, or type a new one." : undefined} error={errors.category}>
+          {(p) => (
+            <>
+              <input {...p} list={listId} autoComplete="off" className={fieldClass} value={d.category} onChange={(e) => set("category", e.target.value)} />
+              <datalist id={listId}>{known.map((c) => <option key={c} value={c} />)}</datalist>
+            </>
+          )}
+        </FormField>
         <FormField label="Capacity" hint="Blank means unlimited." error={errors.capacity}>
           {(p) => <input {...p} type="number" min={1} className={fieldClass} value={d.capacity} onChange={(e) => set("capacity", e.target.value)} />}
         </FormField>
       </div>
       {text("coverImageUrl", "Cover image address", "An https:// image link.")}
-      <Toggle label="Unlisted" description="Left out of lists and search; anyone with the link can still open it." checked={d.hidden} onCheckedChange={(on) => set("hidden", on)} />
+      <Toggle
+        label={event ? "Unlisted" : "Draft"}
+        description={event ? "Left out of lists and search; anyone with the link can still open it." : "Stays off the calendar until you publish it; only its link opens it."}
+        checked={d.hidden} onCheckedChange={(on) => set("hidden", on)}
+      />
       <Toggle label="Show who’s coming" description="First names on the public page." checked={d.showAttendees} onCheckedChange={(on) => set("showAttendees", on)} />
       {save.isError && <p role="alert" className="twc-error">{messageOf(save.error)}</p>}
-      <button type="submit" className={cn(mainButton, "w-fit")} disabled={save.isPending}>{save.isPending ? "Saving…" : event ? "Save changes" : "Create event"}</button>
+      <button type="submit" className={cn(mainButton, "w-fit")} disabled={save.isPending}>{save.isPending ? "Saving…" : event ? "Save changes" : d.hidden ? "Save draft" : "Create and publish"}</button>
       {toastNode}
     </form>
+  );
+}
+
+/** The event as the editor would send it, for one-field changes (publish) that must not touch the rest. */
+const asInput = (e: AdminCalEvent) => ({
+  title: e.title, slug: e.slug, description: e.description ?? "", category: e.category ?? "", coverImageUrl: e.coverImageUrl ?? "",
+  location: e.location ?? "", timeZone: e.timeZone, capacity: e.capacity, hidden: e.hidden, showAttendees: e.showAttendees,
+  startTime: e.startTime, endTime: e.endTime,
+});
+
+/** An unlisted, scheduled event is a draft: this says so above the editor and puts it on the calendar in one press. */
+export function PublishBar({ event, business }: { event: AdminCalEvent; business?: string }) {
+  const queryClient = useQueryClient();
+  const publish = useMutation({
+    mutationFn: () => {
+      const checked = checkEvent({ ...asInput(event), hidden: false });
+      if (!checked.ok) throw new Error(Object.values(checked.errors)[0]);
+      return saveCalEventFn({ data: { uid: event.uid, event: checked.value, ...(business ? { business } : {}) } });
+    },
+    onSuccess: () => invalidateCal(queryClient),
+  });
+  if (!event.hidden || event.status === "CANCELLED") return null;
+  return (
+    <div role="status" className="flex flex-wrap items-center justify-between gap-3 border border-ink bg-app-pending px-4 py-3 text-ink">
+      <p className="text-sm"><strong>Not published.</strong> It isn’t on the calendar or in search; only people with its link can open it.</p>
+      <button type="button" className={mainButton} disabled={publish.isPending} onClick={() => publish.mutate()}>{publish.isPending ? "Publishing…" : "Publish"}</button>
+      {publish.isError && <p role="alert" className="w-full text-sm text-danger">{messageOf(publish.error)}</p>}
+    </div>
   );
 }
 

@@ -2,10 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AppPage } from "@/app/layout/AppLayout";
 import { AppShell, TopBar } from "@/app/layout/AppShell";
-import { linkClass } from "@/app/layout/app-classes";
+import { linkClass, secondaryButton } from "@/app/layout/app-classes";
 import { Card, InlineError } from "@/app/layout/app-ui";
 import { useAdminBusiness } from "@/features/cal/admin-state";
-import { CancelEventDialog, EventEditorForm, PublicLinkCopy, RsvpTable, WaitlistCard } from "@/features/cal/admin-ui";
+import { CancelEventDialog, EventEditorForm, PublicLinkCopy, PublishBar, RsvpTable, WaitlistCard } from "@/features/cal/admin-ui";
 import { adminCalEventQuery } from "@/features/cal/queries";
 
 export const Route = createFileRoute("/_authenticated/_admin/admin_/events/$uid")({
@@ -30,7 +30,12 @@ function EditGathering() {
               : !event ? <p role="status" className="text-sm text-app-muted">Loading…</p>
               : (
                 <>
-                  <div className="flex flex-wrap gap-2"><PublicLinkCopy slug={event.slug} /><CancelEventDialog event={event} business={business} /></div>
+                  <PublishBar event={event} business={business} />
+                  <div className="flex flex-wrap gap-2">
+                    <PublicLinkCopy slug={event.slug} />
+                    <Link to="/admin/events/new" search={{ from: event.uid }} className={secondaryButton}>Duplicate</Link>
+                    <CancelEventDialog event={event} business={business} />
+                  </div>
                   <RsvpTable event={event} business={business} />
                   <WaitlistCard event={event} business={business} />
                   <Card title="Details"><EventEditorForm key={`${event.uid}:${event.slug}`} event={event} business={business} /></Card>

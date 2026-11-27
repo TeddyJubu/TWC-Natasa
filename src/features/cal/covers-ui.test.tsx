@@ -8,7 +8,7 @@ import { CoverImage } from "./events-ui";
 import type { AdminCalEvent } from "./types";
 
 const { save } = vi.hoisted(() => ({ save: vi.fn() }));
-vi.mock("./fns", async (original) => ({ ...(await original<typeof import("./fns")>()), saveCalEventFn: save }));
+vi.mock("./fns", async (original) => ({ ...(await original<typeof import("./fns")>()), saveCalEventFn: save, adminCalEventsFn: vi.fn().mockResolvedValue({ events: [], total: 0, categories: [] }) }));
 vi.mock("@tanstack/react-router", async (original) => ({
   ...(await original<typeof import("@tanstack/react-router")>()), useNavigate: () => vi.fn(),
 }));
