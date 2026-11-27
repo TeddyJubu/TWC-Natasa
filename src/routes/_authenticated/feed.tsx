@@ -56,7 +56,7 @@ function FeedPage() {
   return (
     <AppPage trail={false}>
       <AirShell
-        page="/feed" admin={viewer.data?.admin === true} name={name} avatar={own?.avatarUrl}
+        page="/feed" admin={viewer.data?.admin === true} declined={own?.profile.status === "declined"} name={name} avatar={own?.avatarUrl}
         catalogueNumber={own?.profile.status === "approved" ? own.profile.catalogue_number : null}
       >
         <main id="main" tabIndex={-1} className="outline-none">

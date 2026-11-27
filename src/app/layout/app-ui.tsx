@@ -37,11 +37,14 @@ export function Card({ children, ...letter }: Omit<React.ComponentProps<typeof L
   return <Letter {...letter} rule><div className="air-rows">{children}</div></Letter>;
 }
 
-/** "Edit" / "Done" in a card head; the accessible name carries the card ("Edit public card"). */
+/**
+ * "Edit" / "Done editing" in a card head; the accessible name carries the card ("Edit directory card"). "Done editing"
+ * only closes the fields — the page's save bar saves — so it never reads like Save.
+ */
 export function EditButton({ card, editing, onClick }: { card: string; editing: boolean; onClick: () => void }) {
   return (
     <button type="button" onClick={onClick} className={cn(secondaryButton, "shrink-0")}>
-      <Icon name={editing ? "check" : "pencil"} />{editing ? "Done" : "Edit"}<span className="sr-only"> {card}</span>
+      <Icon name={editing ? "check" : "pencil"} />{editing ? "Done editing" : "Edit"}<span className="sr-only"> {card}</span>
     </button>
   );
 }
@@ -77,7 +80,7 @@ export function Row({ label, htmlFor, icon, empty, add, top, children }: {
 }
 
 /**
- * One cell of a label/value grid (the public card): a mono label over the value. `htmlFor` makes the label a real <label> (edit
+ * One cell of a label/value grid (the directory card):a mono label over the value. `htmlFor` makes the label a real <label> (edit
  * mode); `empty` greys the value; `add` puts a trailing "Add" whose name includes the field.
  */
 export function Field({ label, htmlFor, icon, empty, add, className, children }: {

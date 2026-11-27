@@ -1,21 +1,22 @@
 import * as React from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useBlocker, type ShouldBlockFn } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Button, MemberDialog, type MemberProfile } from "@/index";
 import { AppPage } from "@/app/layout/AppLayout";
 import { InlineError } from "@/app/layout/app-ui";
+import { askConfirm } from "@/app/layout/confirm";
 import { useSignOut } from "@/app/layout/sign-out";
 import { useNeighborhoods, type Neighborhood } from "@/features/neighborhoods/queries";
 import { profileQuery, viewerQuery, type Profile } from "@/features/members/queries";
 import { useSaveProfile, type ProfilePatch } from "@/features/members/mutations";
 import { AccountHeader } from "@/features/account/AccountHeader";
+import { AccountSettings } from "@/features/account/AccountSettings";
 import { AirShell } from "@/features/account/AirShell";
-import { MembershipCard, PublicCard, VisibilityCard, WordsCard } from "@/features/account/ProfileCards";
+import { DirectoryCard, MembershipCard, VisibilityCard, WordsCard } from "@/features/account/ProfileCards";
 import { GatheringsList } from "@/features/account/GatheringsList";
 import { HeadshotBooking } from "@/features/account/HeadshotBooking";
 import { IntroductionsSection } from "@/features/account/IntroductionsSection";
 import { WhereCard } from "@/features/account/WhereCard";
-import { DeleteAccount } from "@/features/account/DeleteAccount";
 import { SaveActions } from "@/features/account/SaveActions";
 import { PassDialog } from "@/features/account/MemberPass";
 import { YoureIn } from "@/features/account/YoureIn";
@@ -25,7 +26,7 @@ export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
     meta: [
       { title: "Your Member Profile — The Women’s Collective" },
-      { name: "description", content: "Manage your public card, membership, events, headshot session, and introductions." },
+      { name: "description", content: "Manage your directory card, membership, events, headshot session, and introductions." },
       { property: "og:title", content: "Your Member Profile — The Women’s Collective" },
       { property: "og:description", content: "Your corner of the constellation." },
       { property: "og:type", content: "website" },
@@ -74,9 +75,12 @@ function AccountPage() {
 
   return (
     <AppPage trail={false}>
-      <AirShell admin={admin} name={profile.full_name} avatar={avatar} catalogueNumber={profile.status === "approved" ? profile.catalogue_number : null}>
+      <AirShell
+        admin={admin} declined={profile.status === "declined"} name={profile.full_name} avatar={avatar}
+        catalogueNumber={profile.status === "approved" ? profile.catalogue_number : null}
+      >
         <ProfileEditorPage
-          userId={user.id} profile={profile} avatar={avatar} logoUrl={profileState.data?.logoUrl} hoodList={hoodList}
+          userId={user.id} email={user.email} profile={profile} avatar={avatar} logoUrl={profileState.data?.logoUrl} hoodList={hoodList}
           applied={profileState.data?.hasApplication === true}
         >
           {profileState.isError && <InlineError message="We couldn’t refresh your profile. What you see may be out of date." onRetry={() => void profileState.refetch()} />}
@@ -87,11 +91,20 @@ function AccountPage() {
 }
 
 /**
+ * The unsaved-changes question, for the router's blocker: only a move to another page asks, and blocks unless she
+ * chooses Leave (Stay, Escape or a click outside keep her here with her draft).
+ */
+const confirmLeave: ShouldBlockFn = async ({ current, next }) => {
+  if (current.pathname === next.pathname) return false;
+  return !(await askConfirm("Leave this page? Your unsaved changes to your profile will be lost.", "Leave", true, "Stay"));
+};
+
+/**
  * The page column. Edits collect in one draft over the saved profile; Save sends only the fields that changed
  * (edits go live at once, as before). Portrait, logo and headshot requests save on their own, as they always have.
  */
-function ProfileEditorPage({ userId, profile, avatar, logoUrl, hoodList, applied, children }: {
-  userId: string; profile: Profile; avatar?: string; logoUrl?: string; hoodList: Neighborhood[]; applied: boolean;
+function ProfileEditorPage({ userId, email, profile, avatar, logoUrl, hoodList, applied, children }: {
+  userId: string; email?: string; profile: Profile; avatar?: string; logoUrl?: string; hoodList: Neighborhood[]; applied: boolean;
   children: React.ReactNode;
 }) {
   const save = useSaveProfile(userId);
@@ -109,13 +122,10 @@ function ProfileEditorPage({ userId, profile, avatar, logoUrl, hoodList, applied
   const changes = changedFields(profile, draft);
   const dirty = Object.keys(changes).length > 0;
 
-  // Leaving with unsaved edits asks first (the browser's own prompt), as the forms editor does.
-  React.useEffect(() => {
-    if (!dirty) return;
-    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
-    window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, [dirty]);
+  // Leaving with unsaved edits asks first: a link inside the app (the header, the menu's other pages) asks in the shell's
+  // confirm dialog, closing or reloading the tab gets the browser's own prompt. "Done editing" only closes a card's
+  // fields, so the draft (and this question) stays until Save or Discard. Moving between this page's own cards never asks.
+  useBlocker({ shouldBlockFn: confirmLeave, enableBeforeUnload: dirty, disabled: !dirty });
 
   // "Add" opens a card and focuses its field once it has rendered.
   React.useLayoutEffect(() => {
@@ -146,8 +156,22 @@ function ProfileEditorPage({ userId, profile, avatar, logoUrl, hoodList, applied
     });
   }
 
-  // "View public card" (and the save bar's Preview, which shows unsaved edits too) opens her member pass.
+  // "View directory card" (and the save bar's Preview, which shows unsaved edits too) opens her member pass.
   const preview = () => setPassOpen(true);
+
+  // A declined account: the head (its honest message and the Contact link) and Account settings, nothing to fill in
+  // for a directory she isn't in. Words only, as everywhere: what she may read is the server's to decide.
+  if (profile.status === "declined") {
+    return (
+      <main id="main" tabIndex={-1} className="air-sec outline-none">
+        {children}
+        <AccountHeader userId={userId} profile={profile} avatar={avatar} onPreview={preview} />
+        <div className="air-grid">
+          <AccountSettings email={email} no={1} />
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main id="main" tabIndex={-1} className="air-sec outline-none">
@@ -155,14 +179,16 @@ function ProfileEditorPage({ userId, profile, avatar, logoUrl, hoodList, applied
       <AccountHeader userId={userId} profile={profile} avatar={avatar} onPreview={preview} />
       {approved && !profile.directory_visible && <YoureIn userId={userId} />}
       <div className="air-grid">
-        <WhereCard editor={editor} userId={userId} hood={profile.neighborhood || null} approved={approved} avatar={avatar} hoodList={hoodList} />
-        <PublicCard editor={editor} userId={userId} logoPath={profile.business_logo_url} logoUrl={logoUrl} hoodList={hoodList} />
-        <WordsCard editor={editor} />
-        <MembershipCard profile={profile}><DeleteAccount /></MembershipCard>
+        {/* Visibility first: turning it on is the step that makes her findable. */}
         <VisibilityCard editor={editor} profile={profile} />
-        <HeadshotBooking userId={userId} approved={approved} applied={applied} declined={profile.status === "declined"} />
-        <GatheringsList userId={userId} approved={approved} applied={applied} declined={profile.status === "declined"} hoodList={hoodList} />
-        <IntroductionsSection userId={userId} approved={approved} applied={applied} declined={profile.status === "declined"} neighborhood={profile.neighborhood || null} onOpen={setOpenMember} />
+        <WhereCard editor={editor} userId={userId} hood={profile.neighborhood || null} approved={approved} avatar={avatar} hoodList={hoodList} />
+        <DirectoryCard editor={editor} userId={userId} logoPath={profile.business_logo_url} logoUrl={logoUrl} hoodList={hoodList} />
+        <WordsCard editor={editor} />
+        <MembershipCard profile={profile} />
+        <HeadshotBooking userId={userId} approved={approved} applied={applied} declined={false} />
+        <GatheringsList userId={userId} approved={approved} applied={applied} declined={false} hoodList={hoodList} />
+        <IntroductionsSection userId={userId} approved={approved} applied={applied} declined={false} neighborhood={profile.neighborhood || null} onOpen={setOpenMember} />
+        <AccountSettings email={email} no={9} />
         <SaveActions
           formId={PROFILE_FORM} dirty={dirty} pending={save.isPending} saved={saved} error={save.isError ? errorMessage(save.error) : null}
           onSubmit={submit} onPreview={preview}

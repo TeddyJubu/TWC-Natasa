@@ -15,7 +15,7 @@ type TextRow = {
   placeholder?: string; type?: string; required?: boolean;
 };
 const WEBSITE: TextRow = { key: "website", label: "Website", icon: "globe", empty: "Optional", max: 200, placeholder: "https://", type: "url" };
-const PUBLIC_ROWS: TextRow[] = [
+const CARD_ROWS: TextRow[] = [
   { key: "full_name", label: "Full name", empty: "Add your name", max: 80, required: true },
   { key: "role_title", label: "Role", empty: "No role added", max: 80, placeholder: "Founder & Designer" },
   { key: "business", label: "Business", icon: "briefcase", empty: "No business added", max: 80 },
@@ -23,11 +23,11 @@ const PUBLIC_ROWS: TextRow[] = [
 ];
 
 /** Name, work, neighborhood, website and logo: how neighbors see her in the directory. */
-export function PublicCard({ editor, userId, logoPath, logoUrl, hoodList }: {
+export function DirectoryCard({ editor, userId, logoPath, logoUrl, hoodList }: {
   editor: ProfileEditor; userId: string; logoPath: string | null; logoUrl?: string; hoodList: Neighborhood[];
 }) {
   const { card, set, add } = editor;
-  const editing = editor.isEditing("public");
+  const editing = editor.isEditing("directory");
   const text = (row: TextRow) => {
     const value = card[row.key];
     return (
@@ -37,7 +37,7 @@ export function PublicCard({ editor, userId, logoPath, logoUrl, hoodList }: {
         htmlFor={editing ? fieldId(row.key) : undefined}
         icon={row.icon}
         empty={!editing && !value.trim()}
-        add={!editing && !value.trim() && row.key !== "full_name" ? { field: row.label.toLowerCase(), onClick: () => add("public", row.key) } : undefined}
+        add={!editing && !value.trim() && row.key !== "full_name" ? { field: row.label.toLowerCase(), onClick: () => add("directory", row.key) } : undefined}
       >
         {editing ? (
           <input
@@ -54,12 +54,14 @@ export function PublicCard({ editor, userId, logoPath, logoUrl, hoodList }: {
   const options = pickerNames(hoodList, hood ?? []);
 
   return (
-    <Letter id="public-card" no={2} title="Public card" subtitle={card.status === "declined" ? "Your details, kept private" : "How neighbors see you in the member directory"} action={<EditButton card="public card" editing={editing} onClick={() => editor.toggle("public")} />}>
+    // Named for where it shows: the members-only directory. Nothing here is public. An old #public-card link lands
+    // here too (LEGACY_ANCHORS in shell-nav.ts).
+    <Letter id="directory-card" no={3} title="Directory card" subtitle="How neighbors see you in the member directory" action={<EditButton card="directory card" editing={editing} onClick={() => editor.toggle("directory")} />}>
       <dl className="air-form">
-      {PUBLIC_ROWS.map(text)}
+      {CARD_ROWS.map(text)}
       <Field
         label="Neighborhood" htmlFor={editing ? fieldId("neighborhood") : undefined} icon="map-pin" empty={!editing && !hood}
-        add={!editing && !hood ? { field: "neighborhood", onClick: () => add("public", "neighborhood") } : undefined}
+        add={!editing && !hood ? { field: "neighborhood", onClick: () => add("directory", "neighborhood") } : undefined}
       >
         {editing ? (
           <SelectControl id={fieldId("neighborhood")} form={PROFILE_FORM} value={hood ?? ""} className={fieldClass} onValueChange={(next) => set({ neighborhood: next || null })}>
@@ -120,7 +122,7 @@ export function WordsCard({ editor }: { editor: ProfileEditor }) {
   const { card, set } = editor;
   const editing = editor.isEditing("words");
   return (
-    <Letter span={7} no={3} title="In your words" subtitle="Short and warm beats long and formal" action={<EditButton card="in your words" editing={editing} onClick={() => editor.toggle("words")} />}>
+    <Letter span={7} no={4} title="In your words" subtitle="Short and warm beats long and formal" action={<EditButton card="in your words" editing={editing} onClick={() => editor.toggle("words")} />}>
       <div className="air-letter air-rule">
         <div className="min-w-0">
           {editing ? (
@@ -132,9 +134,9 @@ export function WordsCard({ editor }: { editor: ProfileEditor }) {
           ) : (
             <>
               <span className="air-lbl">Bio</span>
-              <p className={cn("air-ruled-serif", !card.bio.trim() && "text-app-muted")}>
-                {card.bio.trim() || "Tell neighbors what you make, who you make it for, and what brought you to the collective. Up to 400 characters."}
-              </p>
+              {card.bio.trim()
+                ? <p className="air-ruled-serif">{card.bio.trim()}</p>
+                : <EmptyWords field="bio" onAdd={() => editor.add("words", "bio")}>No bio added. Tell neighbors what you make, who you make it for, and what brought you to the collective.</EmptyWords>}
             </>
           )}
         </div>
@@ -147,7 +149,9 @@ export function WordsCard({ editor }: { editor: ProfileEditor }) {
           ) : (
             <>
               <span className="air-lbl">Looking to meet</span>
-              <p className={cn("air-ruled", !card.looking_for.trim() && "font-medium text-app-muted")}>{card.looking_for.trim() || "Who you’d love an introduction to"}</p>
+              {card.looking_for.trim()
+                ? <p className="air-ruled">{card.looking_for.trim()}</p>
+                : <EmptyWords field="looking to meet" onAdd={() => editor.add("words", "looking_for")}>No one named yet. Who would you love an introduction to?</EmptyWords>}
             </>
           )}
         </div>
@@ -156,13 +160,23 @@ export function WordsCard({ editor }: { editor: ProfileEditor }) {
   );
 }
 
+/** An empty bio or ask: a muted line with a trailing Add, like the Directory card's empty rows, never set like her words. */
+function EmptyWords({ field, onAdd, children }: { field: string; onAdd: () => void; children: React.ReactNode }) {
+  return (
+    <div className="air-val air-val--empty items-start">
+      <p className="min-w-0 flex-1">{children}</p>
+      <button type="button" onClick={onAdd} className={cn("air-link shrink-0", ring)}>Add<span className="sr-only"> {field}</span></button>
+    </div>
+  );
+}
+
 /** Status, catalogue number and member since: read-only, set by admins. */
-export function MembershipCard({ profile, children }: { profile: Profile; children?: React.ReactNode }) {
+export function MembershipCard({ profile }: { profile: Profile }) {
   const approved = profile.status === "approved";
   const declined = profile.status === "declined";
   const since = approved ? monthYear(profile.member_since) : null;
   return (
-    <Letter span={5} no={4} title="Membership" subtitle="Your standing in the collective">
+    <Letter id="membership" span={5} no={5} title="Membership" subtitle="Your standing in the collective">
       <dl className="air-rule">
         <div className="air-catno">
           <dt className="air-lbl">Catalogue number</dt>
@@ -183,7 +197,6 @@ export function MembershipCard({ profile, children }: { profile: Profile; childr
           <dd className={cn(!since && "text-app-muted")}>{since || "—"}</dd>
         </div>
       </dl>
-      {children}
     </Letter>
   );
 }
@@ -206,7 +219,8 @@ export function VisibilityCard({ editor, profile }: { editor: ProfileEditor; pro
         ? "Only members of the collective can see your card."
         : "Only you and the collective’s admins can see your card.";
   return (
-    <Letter id="visibility" span={7} no={5} title="Visibility" subtitle={audience}>
+    // First after the head: turning this on is the step that makes her findable.
+    <Letter id="visibility" no={1} title="Visibility" subtitle={audience}>
       <div className="air-opts air-rule">
       <Toggle
         label="Show me in the member directory"

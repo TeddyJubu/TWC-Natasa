@@ -26,7 +26,7 @@ export const monthYear = (iso: string | null) =>
 export const PROFILE_FORM = "account-profile";
 export const fieldId = (key: keyof Profile) => `account-${key}`;
 
-export type CardKey = "public" | "words";
+export type CardKey = "directory" | "words";
 
 /** Page-level edit state the editable cards share. `card` is the saved profile with the draft on top. */
 export interface ProfileEditor {

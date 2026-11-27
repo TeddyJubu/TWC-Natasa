@@ -93,6 +93,10 @@
   .air-brand img { height: 61px; }
   .air-nav { justify-content: flex-start; gap: 6px 18px; }
 }
+/* Phones: each header link is a 44px tap target, as the public header's are. */
+@media (max-width: 640px) {
+  .air-nav > a { min-width: 44px; min-height: 44px; justify-content: center; }
+}
 .air-me { position: relative; }
 .air-me-btn { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; border-radius: var(--twc-radius-pill); }
 .air-me-btn .air-avatar { width: 40px; height: 40px; font-size: 17px; transition: box-shadow var(--twc-press-dur) var(--twc-ease); }
@@ -171,7 +175,7 @@
 .air-addr dd { overflow: hidden; font: 400 24px/1.1 var(--font-serif); text-overflow: ellipsis; white-space: nowrap; }
 .air-waiting { margin-top: 16px; max-width: 52ch; font-size: 15px; line-height: 1.5; color: var(--bl-air-muted); }
 
-/* Public card: label/value cells on hairlines, three across from lg */
+/* Directory card: label/value cells on hairlines, three across from lg */
 .air-form { display: grid; border-top: 1px solid var(--bl-air-navy); }
 .air-cell { min-width: 0; padding: 12px 0 13px; border-bottom: 1px solid var(--bl-air-line); }
 .air-cell--wide { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
@@ -204,7 +208,7 @@
 .air-t-date small { font: 500 9.5px var(--font-plex); letter-spacing: 0.1em; }
 .air-t-date b { font: 400 34px/0.85 var(--font-serif); letter-spacing: -0.02em; }
 .air-t-body { min-width: 0; }
-.air-t-body h3 { font: 400 24px/1.05 var(--font-serif); letter-spacing: -0.01em; }
+.air-t-body :is(h3, h4) { font: 400 24px/1.05 var(--font-serif); letter-spacing: -0.01em; }
 .air-t-body p { margin-top: 4px; font-size: 13.5px; line-height: 1.5; color: var(--bl-air-muted); }
 .air-t-body .air-meta { display: flex; align-items: flex-start; gap: 6px; font-size: 13px; font-weight: 500; line-height: 1.45; color: var(--bl-air-navy); }
 .air-t-body .air-meta svg { width: 14px; height: 14px; margin-top: 2px; }
@@ -450,7 +454,7 @@ a.air-entry-name:hover { text-decoration: underline; }
 .air-feed-date.is-going { background: var(--color-sb-lime); }
 
 
-/* ---- The member card ("View public card"): the canvas's profile dialog (.dprof): her colour, a 1.5px ink edge and a
+/* ---- The member card ("View directory card"): the canvas's profile dialog (.dprof): her colour, a 1.5px ink edge and a
    hard shadow; portrait (or initials, never a stand-in photo) beside her name and facts from 880px, above them below. */
 .pass-dialog { max-width: none; max-height: none; width: 100%; height: 100%; margin: 0; padding: 0; border: 0; background: transparent; overflow-y: auto; }
 .pass-dialog::backdrop { background: rgb(17 17 17 / 0.45); }

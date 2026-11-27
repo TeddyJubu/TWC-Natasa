@@ -5,14 +5,25 @@ import type { IconName } from "./icons";
 
 /** The internal pages. `/admin/forms/edit` stands for any one form's edit page. */
 export type ShellPage = "/account" | "/admin" | "/admin/forms" | "/admin/forms/edit" | `/admin/${AdminSection}`;
-export type NavItem = { label: string; icon: IconName; to: "/account"; hash?: string };
+/** `members`: a card a declined account doesn't get (/account shows her only the head and Account settings). */
+export type NavItem = { label: string; icon: IconName; to: "/account"; hash?: string; members?: true };
 
+/** /account's cards, in page order. */
 export const MY_ACCOUNT: NavItem[] = [
   { label: "Profile", icon: "circle-user-round", to: "/account", hash: "profile" },
-  { label: "Public card", icon: "id-card", to: "/account", hash: "public-card" },
-  { label: "Visibility", icon: "eye", to: "/account", hash: "visibility" },
-  { label: "Headshot session", icon: "camera", to: "/account", hash: "headshot" },
+  { label: "Visibility", icon: "eye", to: "/account", hash: "visibility", members: true },
+  { label: "Directory card", icon: "id-card", to: "/account", hash: "directory-card", members: true },
+  { label: "Membership", icon: "badge-check", to: "/account", hash: "membership", members: true },
+  { label: "Headshot session", icon: "camera", to: "/account", hash: "headshot", members: true },
+  { label: "Events", icon: "calendar-days", to: "/account", hash: "events", members: true },
+  { label: "Account settings", icon: "lock", to: "/account", hash: "settings" },
 ];
+/** The account menu's items for her: a declined account gets only the cards she is shown. */
+export const accountItems = (declined: boolean) => (declined ? MY_ACCOUNT.filter((i) => !i.members) : MY_ACCOUNT);
+
+/** Renamed /account anchors: an old link (in a sent email, a bookmark) still lands on its card. */
+export const LEGACY_ANCHORS: Record<string, string> = { "public-card": "directory-card" };
+const canonical = (hash: string) => LEGACY_ANCHORS[hash] ?? hash;
 /**
  * Each section has its own page at /admin/<section>. A section's slug is also its card's id, so an old /admin#<slug>
  * link (in sent emails) forwards there.
@@ -59,13 +70,16 @@ export function useActiveSection(page: ShellPage) {
   React.useEffect(() => {
     const ids = key.split(" ");
     const fromHash = () => {
-      const id = window.location.hash.slice(1);
+      const id = canonical(window.location.hash.slice(1));
       if (ids.includes(id)) setActive(id);
     };
+    // An old anchor's link: the address bar shows the card's current one.
+    const old = window.location.hash.slice(1);
+    if (old !== canonical(old) && ids.includes(canonical(old))) window.history.replaceState(window.history.state, "", `#${canonical(old)}`);
     fromHash();
     // Arriving at a card from the other internal page (or a fresh load): it rendered after the router's hash scroll,
     // and useRouteFocus leaves hash URLs alone, so scroll to it and, unless something already has focus, focus its heading.
-    const hash = window.location.hash.slice(1);
+    const hash = canonical(window.location.hash.slice(1));
     const target = ids.includes(hash) ? document.getElementById(hash) : null;
     if (target) {
       target.scrollIntoView?.();
