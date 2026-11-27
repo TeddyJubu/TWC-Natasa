@@ -7,6 +7,7 @@ import { coverPath } from "@/server/covers";
 import { requireAdmin, requireMember } from "@/server/guard";
 import { checkSize, clientIp, HttpError, publicError, rateLimit } from "@/server/request";
 import { bad, isObject, str } from "@/server/validate";
+import { cancelledMail, changedFacts, changedMail, cleanNote, sendAll, uniqueRecipients, type Recipient } from "./event-mail.server";
 import { monthKey } from "./time";
 import {
   checkBooking, checkEvent, checkEventType, checkRsvp, isEmail, isTimeZone, MAX_GUESTS, RSVP_STATUSES,
@@ -397,26 +398,52 @@ export async function adminEvent({ db, actor }: Ctx, input: unknown): Promise<Ad
   return toAdminEvent(await call<RawEvent>(acc, "community-events", { path: `/${encodeURIComponent(uid)}` }), acc.name);
 }
 
-export async function saveAdminEvent({ db, actor }: Ctx, input: unknown): Promise<AdminCalEvent> {
+/** Everyone with a stake in an event: Going and Maybe from Cal (read fresh), then the waitlist. */
+async function peopleOn(db: DB, acc: Account, uid: string): Promise<Recipient[]> {
+  const rsvps = await call<OwnerRsvp[]>(acc, "community-events", { path: `/${encodeURIComponent(uid)}/rsvps` });
+  const waiting = db.prepare("select name, email from event_waitlist where event_uid = ? order by created_at, id").all(uid) as Recipient[];
+  return uniqueRecipients([...rsvps.filter((r) => r.status !== "NOT_GOING"), ...waiting]);
+}
+
+/**
+ * Saves an event. When an upcoming, scheduled event moves (time or place), everyone on it is emailed the new details;
+ * `notified` says how many, for the admin's toast.
+ */
+export async function saveAdminEvent({ db, actor }: Ctx, input: unknown): Promise<AdminCalEvent & { notified: number }> {
   requireAdmin(db, actor);
   if (!isObject(input)) throw bad("event");
   const body = checked(checkEvent(input.event));
   const acc = account(businessOf(input));
   const uid = input.uid === undefined ? null : uidOf(input.uid);
+  const before = uid ? await call<RawEvent>(acc, "community-events", { path: `/${encodeURIComponent(uid)}` }) : null;
   const saved = uid
     ? await call<RawEvent>(acc, "community-events", { path: `/${encodeURIComponent(uid)}`, method: "PATCH", body })
     : await call<RawEvent>(acc, "community-events", { body });
   invalidate(acc);
   // Create and update answer without counts, so read the full owner view back.
-  return toAdminEvent(await call<RawEvent>(acc, "community-events", { path: `/${encodeURIComponent(saved.uid)}` }), acc.name);
+  const after = toAdminEvent(await call<RawEvent>(acc, "community-events", { path: `/${encodeURIComponent(saved.uid)}` }), acc.name);
+  let notified = 0;
+  if (before && before.status === "SCHEDULED" && after.status === "SCHEDULED" && !isPast(before) && changedFacts(before, after)) {
+    const people = await peopleOn(db, acc, after.uid).catch(() => []);
+    sendAll(people.map((p) => changedMail(before, after, p)), "event change");
+    notified = people.length;
+  }
+  return { ...after, notified };
 }
 
-export async function cancelAdminEvent({ db, actor }: Ctx, input: unknown): Promise<void> {
+/** Cancels an event, emails everyone on it (with the admin's note, if any) and clears its waitlist. */
+export async function cancelAdminEvent({ db, actor }: Ctx, input: unknown): Promise<{ notified: number }> {
   requireAdmin(db, actor);
   const uid = uidOf(isObject(input) ? input.uid : undefined);
+  const note = cleanNote(isObject(input) ? input.note : undefined);
   const acc = account(businessOf(input));
+  const event = await call<RawEvent>(acc, "community-events", { path: `/${encodeURIComponent(uid)}` });
+  const people = event.status === "SCHEDULED" && !isPast(event) ? await peopleOn(db, acc, uid).catch(() => []) : [];
   await call(acc, "community-events", { path: `/${encodeURIComponent(uid)}/cancel`, method: "POST", body: {} });
   invalidate(acc);
+  db.prepare("delete from event_waitlist where event_uid = ?").run(uid);
+  sendAll(people.map((p) => cancelledMail(event, p, note)), "event cancel");
+  return { notified: people.length };
 }
 
 export async function adminRsvps({ db, actor }: Ctx, input: unknown): Promise<OwnerRsvp[]> {

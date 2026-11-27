@@ -156,7 +156,7 @@ export function EventEditorForm({ event, template, business }: { event?: AdminCa
     mutationFn: (body: unknown) => saveCalEventFn({ data: { ...(event ? { uid: event.uid } : {}), event: body, ...(business ? { business } : {}) } }),
     onSuccess: async (saved) => {
       await invalidateCal(queryClient);
-      toast("Saved");
+      toast(saved.notified ? `Saved. Emailed the new details to ${saved.notified} ${saved.notified === 1 ? "person" : "people"}.` : "Saved");
       if (!event) void navigate({ to: "/admin/events/$uid", params: { uid: saved.uid } });
     },
   });
@@ -255,22 +255,35 @@ export function PublishBar({ event, business }: { event: AdminCalEvent; business
 
 export function CancelEventDialog({ event, business }: { event: AdminCalEvent; business?: string }) {
   const queryClient = useQueryClient();
+  const { toast, toastNode } = useToast();
   const [open, setOpen] = React.useState(false);
+  const [note, setNote] = React.useState("");
   const cancel = useMutation({
-    mutationFn: () => cancelCalEventFn({ data: { uid: event.uid, ...(business ? { business } : {}) } }),
-    onSuccess: async () => { await invalidateCal(queryClient); setOpen(false); },
+    mutationFn: () => cancelCalEventFn({ data: { uid: event.uid, ...(note.trim() ? { note } : {}), ...(business ? { business } : {}) } }),
+    onSuccess: async ({ notified }) => {
+      await invalidateCal(queryClient);
+      setOpen(false);
+      toast(notified ? `Cancelled. Emailed ${notified} ${notified === 1 ? "person" : "people"}.` : "Cancelled.");
+    },
   });
-  if (event.status === "CANCELLED") return null;
+  if (event.status === "CANCELLED") return toastNode;
+  const ended = Date.parse(event.endTime) <= Date.now();
   return (
     <>
       <button type="button" className={secondaryButton} onClick={() => setOpen(true)}>Cancel event</button>
       <ConfirmDialog
-        open={open} title={`Cancel ${event.title}?`} confirmLabel="Cancel event" cancelLabel="Keep it" danger busy={cancel.isPending}
+        form open={open} title={`Cancel ${event.title}?`} confirmLabel={ended ? "Cancel event" : "Cancel and email"} cancelLabel="Keep it" danger busy={cancel.isPending}
         onClose={() => setOpen(false)} onConfirm={() => cancel.mutate()}
       >
         <p>It stays on the calendar marked cancelled, and no one can RSVP. {event.goingCount} {event.goingCount === 1 ? "person is" : "people are"} going.</p>
+        {!ended && (
+          <FormField label="A note for them (optional)" hint="Everyone going, maybe or on the waitlist gets an email saying it’s cancelled, with this note.">
+            {(p) => <textarea {...p} className={fieldClass} maxLength={1000} value={note} onChange={(e) => setNote(e.target.value)} />}
+          </FormField>
+        )}
         {cancel.isError && <p role="alert" className="twc-error">{messageOf(cancel.error)}</p>}
       </ConfirmDialog>
+      {toastNode}
     </>
   );
 }

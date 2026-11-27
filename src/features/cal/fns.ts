@@ -77,7 +77,7 @@ export const saveCalEventFn = createServerFn({ method: "POST" })
   });
 
 export const cancelCalEventFn = createServerFn({ method: "POST" })
-  .validator(pass<{ uid: string } & Business>)
+  .validator(pass<{ uid: string; note?: string } & Business>)
   .handler(async ({ data }) => {
     const [{ serve }, m] = await load();
     return serve((c) => m.cancelAdminEvent(c, data));
