@@ -59,9 +59,9 @@ describe("/constellations", () => {
     expect(within(bands[1] as HTMLElement).getByText(/Wren Example/)).toBeTruthy(); // "Led by", from roster.leads
   });
 
-  it("with no roster draws open seats and names nobody", () => {
+  it("with no roster draws open seats only where a constellation isn't live, and names nobody", () => {
     show(Constellations);
-    expect(main().querySelectorAll(".twc-pf-card.is-open")).toHaveLength(10);
+    expect(main().querySelectorAll(".twc-pf-card.is-open")).toHaveLength(6);
     expect(main().querySelector(".twc-pf-card:not(.is-open)")).toBeNull();
     expect(main().querySelector("img[src^='/media/roster/']")).toBeNull();
   });

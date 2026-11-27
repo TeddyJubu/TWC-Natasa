@@ -1,7 +1,8 @@
 // The design canvas's five constellation bands (docs/design-canvas/, bands()), shared by `/` and `/constellations`: a
-// native <details> folder whose white sheet holds the words, the star chart and the sliding profile cards. Members,
-// their counts and the leads' names come only from the roster (rosterQuery: real data that never enters this public
-// repository, empty for a visitor once the PIN is lifted); a band with no members draws the canvas's open seats.
+// native <details> folder whose white sheet holds the words, the star chart and the sliding profile cards. Members and
+// the leads' names come only from the roster (rosterQuery: real data that never enters this public repository, empty
+// for a visitor once the PIN is lifted). Only a constellation not yet live draws open seats; a live one with no members
+// to show (the roster loading, hidden, or naming nobody there) has no card row at all.
 import { useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -18,7 +19,7 @@ export function Bands({ cardHeading = "h3" }: { cardHeading?: "h2" | "h3" }) {
   return (
     <div className="twc-cbands">
       {CONSTELLATIONS.map((c, i) => (
-        <Band key={c.short} c={c} no={i + 1} H={cardHeading} lead={roster?.leads[c.short]} stars={roster?.members.length ? c.stars : 0}
+        <Band key={c.short} c={c} no={i + 1} H={cardHeading} lead={roster?.leads[c.short]}
           members={(roster?.members ?? []).filter((m) => m.constellation === c.short && !m.founder)} />
       ))}
     </div>
@@ -29,37 +30,43 @@ const reduced = () => typeof matchMedia === "function" && matchMedia("(prefers-r
 
 /** One constellation (canvas bands()): a native <details> folder whose sheet holds the words, the star chart and the
  *  sliding profile cards; a member's spark and card light up together (data-m), and a spark shows her card. */
-/** `stars`: the chart's star count, 0 while the roster is hidden (a visitor after launch sees only open seats). */
-function Band({ c, no, lead, members, stars, H }: { c: Con; no: number; H: "h2" | "h3"; lead?: string; members: RosterMember[]; stars: number }) {
+function Band({ c, no, lead, members, H }: { c: Con; no: number; H: "h2" | "h3"; lead?: string; members: RosterMember[] }) {
   const [hl, setHl] = useState<string | null>(null);
   const slider = useRef<HTMLDivElement>(null);
   const ids = members.map((_, i) => `${c.short.toLowerCase()}-${String(i + 1).padStart(2, "0")}`);
   const behavior = (): ScrollBehavior => (reduced() ? "auto" : "smooth");
+  // A star shows her card: the slider turns to it and the page brings it into view (it sits below the chart).
   const show = (id: string) => {
-    const el = slider.current, card = el?.querySelector<HTMLElement>(`[data-m="${id}"]`);
-    if (el && card) el.scrollTo({ left: card.offsetLeft - el.offsetLeft - 8, behavior: behavior() });
     setHl(id);
+    const el = slider.current, card = el?.querySelector<HTMLElement>(`[data-m="${id}"]`);
+    if (el && card) {
+      el.scrollTo?.({ left: card.offsetLeft - el.offsetLeft - 8, behavior: behavior() });
+      el.scrollIntoView?.({ block: "nearest", behavior: behavior() });
+    }
   };
+  const by = lead ?? c.led;
   return (
     <details className={`twc-cband ${c.field}`}>
       <summary>
         <span className="twc-cband__no">Nº{no}<b>{c.short}</b></span>
         <span className="twc-cband__name">{c.name}</span>
-        <span className="twc-cband__st">{c.status}</span>
+        <span className="twc-cband__st">{c.status}<span className="twc-cband__cue" aria-hidden /></span>
       </summary>
       <div className="twc-cband__more" onMouseOver={(e) => setHl((e.target as Element).closest<HTMLElement>("[data-m]")?.dataset.m ?? null)} onMouseLeave={() => setHl(null)}>
         <div>
-          {c.head && <p className="twc-home-bandhead">{c.head}</p>}
           <p className="body">{c.body}</p>
           {c.live
             ? <JoinButton className="[&_.twc-arrow]:hidden">Join {c.name}</JoinButton>
-            : <Link to="/contact" className="twc-btn">Apply to lead it</Link>}
+            : <span className="twc-cband__acts">
+                {c.news && <Link to="/" hash="letter" className="twc-btn">Get launch news</Link>}
+                <Link to="/contact" className={c.news ? "twc-btn twc-btn--outline" : "twc-btn"}>Apply to lead it</Link>
+              </span>}
         </div>
         <div className="twc-cband__chart">
-          <StarChart id={c.short} name={c.name} hoods={c.hoods} live={c.live} total={stars} hl={hl} onPick={show}
+          <StarChart id={c.short} name={c.name} hoods={c.hoods} live={c.live} hl={hl} onPick={show}
             members={members.map((m, i) => ({ id: ids[i], name: m.name, hood: m.hood, job: [m.role, m.business].filter(Boolean).join(" · ") }))} />
         </div>
-        <div className="twc-pf">
+        {(members.length > 0 || !c.live) && <div className="twc-pf">
           <div className="twc-pf__head">
             <button type="button" className="twc-pf__btn" aria-label="Previous profiles" onClick={() => slider.current?.scrollBy({ left: -slider.current.clientWidth * 0.8, behavior: behavior() })}>←</button>
             <button type="button" className="twc-pf__btn" aria-label="Next profiles" onClick={() => slider.current?.scrollBy({ left: slider.current.clientWidth * 0.8, behavior: behavior() })}>→</button>
@@ -81,8 +88,8 @@ function Band({ c, no, lead, members, stars, H }: { c: Con; no: number; H: "h2" 
               </article>
             ))}
           </div>
-        </div>
-        <p className="twc-meta twc-cband__facts">Led by<br />{lead ?? c.led}</p>
+        </div>}
+        {by && <p className="twc-meta twc-cband__facts">Led by<br />{by}</p>}
       </div>
     </details>
   );

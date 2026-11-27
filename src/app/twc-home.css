@@ -6,23 +6,28 @@
 @media (max-width: 1100px) { .twc-home-shead { grid-template-columns: 1fr 1fr; } .twc-home-shead > h2 { grid-column: 1 / -1; } }
 .twc-home-shead i, .twc-panel h2 i { font-style: italic; }
 
-/* A constellation band's sheet: the lead line above its words */
-.twc-home-bandhead { margin: 0 0 8px; font: 700 13px/1.3 var(--font-sans); letter-spacing: 0.08em; text-transform: uppercase; }
-
 /* The constellation chart (StarChart.tsx, canvas .starchart): one spark per real member; hovering a spark or her card
-   lights both (.is-hl), the spark in her neighborhood's colour (--hood). Drawn at every width, as on the canvas. */
+   lights both (.is-hl), the spark in her neighborhood's colour (--hood). Each spark is a button (.sc-pick) with a
+   wider invisible tap area (.sc-hit). On phones the chart keeps a readable size and scrolls sideways. */
 .twc-starchart { display: block; width: 100%; max-width: 820px; height: auto; overflow: visible; color: var(--color-sb-ink); }
 .twc-starchart .sc-link { fill: none; stroke: currentColor; stroke-width: 1.2; stroke-dasharray: 5 5; }
 .twc-starchart .sc-tie { fill: none; stroke: currentColor; stroke-width: 0.8; stroke-dasharray: 2 4; opacity: 0.5; }
 .twc-starchart .sc-hub { fill: var(--color-sb-ink); stroke: var(--color-sb-ink); stroke-width: 1.2; stroke-linejoin: round; }
-.twc-starchart .sc-mem { fill: currentColor; opacity: .85; cursor: pointer; transform-box: fill-box; transform-origin: center; transition: transform 0.25s cubic-bezier(.34, 1.56, .64, 1), fill 0.2s; }
-.twc-starchart .sc-mem:hover, .twc-starchart .sc-mem.is-hl { transform: scale(2.2); fill: var(--hood, var(--color-sb-ink)); stroke: var(--color-sb-ink); stroke-width: 0.6px; opacity: 1; animation: none; }
-/* One in five unnamed stars twinkles once (the canvas loops it; WCAG 2.2.2 wants it done within 5 s) */
-.twc-starchart .sc-tw { animation: twc-sc-tw 3.2s ease-in-out 1; }
-@keyframes twc-sc-tw { 0%, 100% { opacity: .85; } 50% { opacity: .2; } }
+.twc-starchart .sc-pick { cursor: pointer; outline: none; }
+.twc-starchart .sc-hit { fill: transparent; }
+.twc-starchart .sc-pick:focus-visible .sc-hit { stroke: var(--color-sb-ink); stroke-width: 2; }
+.twc-starchart .sc-mem { fill: currentColor; opacity: .85; pointer-events: none; transform-box: fill-box; transform-origin: center; transition: transform 0.25s cubic-bezier(.34, 1.56, .64, 1), fill 0.2s; }
+.twc-starchart .sc-pick:hover .sc-mem, .twc-starchart .sc-pick:focus-visible .sc-mem, .twc-starchart .sc-mem.is-hl { transform: scale(2.2); fill: var(--hood, var(--color-sb-ink)); stroke: var(--color-sb-ink); stroke-width: 0.6px; opacity: 1; }
 .twc-starchart .sc-open { fill: none; stroke: currentColor; stroke-width: 1.3; stroke-dasharray: 3 2; }
 .twc-starchart .sc-name { font: 700 14px var(--font-sans); letter-spacing: 0.06em; }
 .twc-starchart .sc-sub { font: 500 10px var(--font-plex); letter-spacing: 0.06em; text-transform: uppercase; fill: currentColor; opacity: 0.8; }
+/* At 390px the whole chart would be a third of its size (4.5px labels): keep it at 720px with larger type, scrolled */
+@media (max-width: 760px) {
+  .twc-cband__chart { overflow-x: auto; overscroll-behavior-x: contain; margin-inline: calc(-1 * var(--twc-gut)); padding-inline: var(--twc-gut); }
+  .twc-starchart { width: 720px; max-width: none; }
+  .twc-starchart .sc-name { font-size: 18px; }
+  .twc-starchart .sc-sub { font-size: 14px; }
+}
 
 /* Sliding member profiles (canvas .pf / .pslide / .pf-card): ←/→ pills, a scroll-snapped row a mouse can drag */
 .twc-pf { min-width: 0; }
@@ -80,7 +85,6 @@
 .twc-members--pending { min-height: 560px; }
 @media (max-width: 600px) { .twc-members--pending { min-height: 1300px; } }
 @media (prefers-reduced-motion: reduce) {
-  .twc-starchart .sc-tw { animation: none; }
   .twc-starchart .sc-mem, .twc-pf-card, .twc-pf-card__ph img, .twc-pf__btn { transition: none; }
   .twc-pslide { scroll-behavior: auto; }
 }

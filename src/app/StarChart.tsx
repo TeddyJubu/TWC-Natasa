@@ -1,8 +1,8 @@
 /* The design canvas's constellation chart (docs/design-canvas/, starChart()): each neighborhood a hub star on a
-   dashed route, one spark per real roster member in her neighborhood (rosterQuery; never a member in this public
-   repository), then unnamed "Member N" sparks up to the constellation's count (`total`, the canvas's star counts),
-   each hub labelled with its count, and an open seat ("Your star here") where a neighborhood has none. Seeded with the
-   canvas's own ids and drawing in its order, so it lays out the canvas's chart, the same on the server and the browser. */
+   dashed route and one spark per real roster member in her neighborhood (rosterQuery; never a member in this public
+   repository). No invented stars and no counts: the roster is not the whole membership. A constellation
+   not yet live draws an open seat ("Your star here") where a neighborhood has nobody. Each spark is a button that shows
+   her card. Seeded with the canvas's own ids, so it lays out the same on the server and the browser. */
 
 // Hub positions (0–1 of the chart) and label sides from the canvas; label colours darkened to AA on white.
 const HOOD_POS: Record<string, Record<string, [number, number, string, ("l" | "r" | "b")?]>> = {
@@ -16,7 +16,6 @@ const HOOD_POS: Record<string, Record<string, [number, number, string, ("l" | "r
 
 /** A member as the chart draws her: `id` is shared with her profile card (`data-m`) for the hover highlight. */
 export type ChartMember = { id: string; name: string; hood: string; job?: string };
-type Star = ChartMember & { no: number; named: boolean };
 
 // The canvas's constellation ids, which seed its charts.
 const SEED: Record<string, string> = { NB: "nb", WQ: "wq", SB: "sb", UP: "uptown", DT: "downtown" };
@@ -39,30 +38,22 @@ function spark(x: number, y: number, r: number) {
 const hoodsOf = (hoods: string) => hoods.split(/\s+—\s+/).map((s) => s.trim()).filter(Boolean);
 
 const W = 960, H = 420;
-type Pt = { x: number; y: number; m: Star; r?: number; tw?: string };
+type Pt = { x: number; y: number; m: ChartMember };
 
-export function StarChart({ id, name, hoods, live, members: named, total = 0, hl, onPick }: {
+export function StarChart({ id, name, hoods, live, members, hl, onPick }: {
   id: string; name: string; hoods: string; live: boolean; members: ChartMember[];
-  /** How many stars the constellation shows: the named members, then unnamed ones up to this count. */ total?: number;
   /** The highlighted member's id (her spark grows in her neighborhood's colour). */ hl?: string | null;
   /** A spark was clicked: show her card. */ onPick?: (id: string) => void;
 }) {
   const rnd = rng(SEED[id] ?? id), names = hoodsOf(hoods), pos = HOOD_POS[id] ?? {};
-  const members: Star[] = named.map((m, i) => ({ ...m, no: i + 1, named: true }));
-  // ponytail: the canvas's filler order, neighborhoods in turn by list position.
-  while (members.length < total) {
-    const n = members.length;
-    members.push({ id: `${(SEED[id] ?? id)}-${String(n + 1).padStart(2, "0")}`, name: `Member ${n + 1}`, hood: names[n % names.length], no: n + 1, named: false });
-  }
   const hubs = names.map((n, i) => {
     const p = pos[n] ?? [0.2 + (0.6 * i) / Math.max(1, names.length - 1), 0.3, "#151414"];
-    return { name: n, x: 70 + p[0] * (W - 140), y: 60 + p[1] * (H - 120), col: p[2], side: p[3] ?? "t", pts: [] as Pt[], count: 0 };
+    return { name: n, x: 70 + p[0] * (W - 140), y: 60 + p[1] * (H - 120), col: p[2], side: p[3] ?? "t", pts: [] as Pt[] };
   });
   const placed = hubs.map((h) => ({ x: h.x, y: h.y, r: 26 }));
   // The canvas's placement: near her hub, clear of its label, nearer her own hub than any other, spread out.
   for (const m of members) {
     const h = hubs.find((x) => x.name === m.hood) ?? hubs[0];
-    h.count++;
     let best: { x: number; y: number; d: number } | null = null;
     for (let t = 0; t < 60; t++) {
       const a = rnd() * Math.PI * 2, rad = 44 + rnd() * (70 + Math.sqrt(members.length) * 10);
@@ -92,20 +83,13 @@ export function StarChart({ id, name, hoods, live, members: named, total = 0, hl
       nodes.forEach((a, i) => { if (inT[i]) nodes.forEach((b, j) => { if (!inT[j]) { const d = Math.hypot(a.x - b.x, a.y - b.y); if (d < bd) { bd = d; bi = i; bj = j; } } }); });
       inT[bj] = true; ties.push(`M${f(nodes[bi].x)} ${f(nodes[bi].y)}L${f(nodes[bj].x)} ${f(nodes[bj].y)}`);
     }
-    // Sizes and twinkles after the hub's ties, in the canvas's order (unnamed: 4.2–7, one in five twinkles once).
-    for (const p of h.pts) {
-      if (p.m.named) continue;
-      p.r = 4.2 + rnd() * 2.8;
-      if (rnd() < 0.2) p.tw = (rnd() * 1.5).toFixed(2); // the canvas's 0–3 s delay halved: done within 5 s
-    }
-    if (!h.pts.length) {
+    if (!h.pts.length && !live) {
       const x = Math.min(W - 20, h.x + (h.side === "b" ? 80 : 56)), y = h.y + (h.side === "b" ? 0 : 62);
       ties.push(`M${f(h.x)} ${f(h.y)}L${f(x)} ${f(y)}`); seats.push(star(x, y, 9));
     }
   }
   return (
-    <svg className="twc-starchart" viewBox={`0 0 ${W} ${H}`} role="img"
-      aria-label={`${name} constellation: ${names.join(", ")}${members.length ? `, ${members.length} members` : ""}`}>
+    <svg className="twc-starchart" viewBox={`0 0 ${W} ${H}`} role="group" aria-label={`${name} constellation: ${names.join(", ")}`}>
       <path className="sc-link" d={links.join("")} />
       <path className="sc-tie" d={ties.join("")} />
       <path className="sc-open" d={seats.join("")} />
@@ -116,19 +100,21 @@ export function StarChart({ id, name, hoods, live, members: named, total = 0, hl
         return (
           // --hood: the neighborhood's colour a highlighted spark takes (DESIGN.md's one inline-style exception).
           <g key={h.name} style={{ "--hood": h.col } as React.CSSProperties}>
-            {h.pts.map((p) => p.m.named ? (
-              <path key={p.m.id} d={spark(p.x, p.y, 7.5)} data-m={p.m.id} className={`sc-mem sc-named${hl === p.m.id ? " is-hl" : ""}`} onClick={() => onPick?.(p.m.id)}>
-                <title>{`${p.m.name}${p.m.job ? ` · ${p.m.job}` : ""}, ${h.name}`}</title>
-              </path>
-            ) : (
-              <path key={p.m.id} d={spark(p.x, p.y, p.r ?? 5)} className={`sc-mem${p.tw ? " sc-tw" : ""}`}
-                style={p.tw ? { animationDelay: `${p.tw}s` } : undefined}>
-                <title>{`${p.m.name}, ${h.name}`}</title>
-              </path>
-            ))}
+            {h.pts.map((p) => {
+              const who = `${p.m.name}${p.m.job ? ` · ${p.m.job}` : ""}, ${h.name}`;
+              return (
+                // A button with a tap area wider than its spark; Enter or Space shows her card, as a click does.
+                <g key={p.m.id} data-m={p.m.id} className="sc-pick" role="button" tabIndex={0} aria-label={`${who}: show her card`}
+                  onClick={() => onPick?.(p.m.id)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onPick?.(p.m.id); } }}>
+                  <title>{who}</title>
+                  <circle className="sc-hit" cx={f(p.x)} cy={f(p.y)} r={18} />
+                  <path d={spark(p.x, p.y, 7.5)} className={`sc-mem${hl === p.m.id ? " is-hl" : ""}`} />
+                </g>
+              );
+            })}
             <path className="sc-hub" d={star(h.x, h.y, 15)} />
             <text x={lx} y={ly} textAnchor={anchor} className="sc-name" fill={h.col}>{h.name.toUpperCase().replace(/(\d)S\b/g, "$1s")}</text>
-            <text x={lx} y={ly + 14} textAnchor={anchor} className="sc-sub">{h.count ? `${h.count} ${h.count === 1 ? "member" : "members"}` : "Your star here"}</text>
+            {!live && !h.pts.length && <text x={lx} y={ly + 16} textAnchor={anchor} className="sc-sub">Your star here</text>}
           </g>
         );
       })}

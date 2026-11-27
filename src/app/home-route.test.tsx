@@ -46,35 +46,47 @@ describe("/ (home): members come only from the roster", () => {
     expect(fake.calls).not.toContainEqual(["directoryFn"]);
   });
 
-  it("an empty roster: no member strip, open seats in every chart and two open profile cards per band", () => {
+  it("an empty roster: no member strip; open seats only where a constellation isn't live, and no card row or placeholder lead on a live one", () => {
     const { container } = renderWithQueries(<Page />, withRoster({ members: [], leads: {} }));
     expect(container.querySelector(".twc-members")).toBeNull();
-    expect(container.querySelectorAll(".sc-mem")).toHaveLength(0);
-    for (const d of bandsOf(container)) {
+    expect(container.querySelectorAll(".sc-pick")).toHaveLength(0);
+    const bands = bandsOf(container);
+    for (const d of bands.slice(0, 2)) { // North Brooklyn and Western Queens are live
+      const svg = d.querySelector("svg.twc-starchart")!;
+      expect(subLabels(svg)).toEqual(["★ neighborhood · ✦ member"]);
+      expect(svg.querySelector("path.sc-open")!.getAttribute("d")).toBe("");
+      expect(d.querySelector(".twc-pf")).toBeNull();
+    }
+    for (const d of bands.slice(2)) {
       const svg = d.querySelector("svg.twc-starchart")!;
       expect(subLabels(svg).slice(0, -1).every((t) => t === "Your star here")).toBe(true);
-      expect(svg.querySelectorAll(".sc-open path, path.sc-open")).toHaveLength(1);
       expect([...d.querySelectorAll(".twc-pf-card")].map((c) => c.classList.contains("is-open"))).toEqual([true, true]);
-      expect(within(d).queryAllByRole("img", { name: /Example|Sample/ })).toHaveLength(0);
     }
-    // No lead named: the canvas's words for who leads it.
-    expect(bandsOf(container)[1].querySelector(".twc-cband__facts")!.textContent).toBe("Led byAmbassador-led");
+    // No lead named for Western Queens: no "Led by" placeholder; North Brooklyn keeps its founder.
+    expect(bands[1].querySelector(".twc-cband__facts")).toBeNull();
+    expect(bands[0].querySelector(".twc-cband__facts")!.textContent).toBe("Led byNataša Tuohy");
   });
 
-  it("a roster: a named spark per member in her neighborhood, unnamed ones up to the canvas's count, her card has her photo and name", () => {
+  it("while the roster loads: no open-seat cards on a live band and no placeholder lead", () => {
+    const { container } = renderWithQueries(<Page />);
+    const [nb, wq] = bandsOf(container);
+    expect(nb.querySelector(".twc-pf")).toBeNull();
+    expect(wq.querySelector(".twc-pf")).toBeNull();
+    expect(wq.querySelector(".twc-cband__facts")).toBeNull();
+  });
+
+  it("a roster: one star per member in her neighborhood and nothing invented (no counts), her card has her photo and name", () => {
     const { container } = renderWithQueries(<Page />, withRoster(ROSTER));
     const [nb, wq, sb] = bandsOf(container);
     const nbChart = nb.querySelector("svg.twc-starchart")!;
-    expect([...nbChart.querySelectorAll("path.sc-named")].map((p) => p.querySelector("title")!.textContent)).toEqual(
+    expect([...nbChart.querySelectorAll("g.sc-pick")].map((p) => p.querySelector("title")!.textContent)).toEqual(
       ["Ada Example · Potter · Clay Co, Greenpoint", "Bea Sample, Greenpoint", "Cy Placeholder · Florist, Williamsburg"]);
-    expect(nbChart.querySelectorAll("path.sc-mem")).toHaveLength(50);
-    // The unnamed stars take the neighborhoods in turn after the named ones (the canvas's order): 2+16, 1+16, 0+15.
-    expect(subLabels(nbChart)).toEqual(["18 members", "17 members", "15 members", "★ neighborhood · ✦ member"]);
-    expect(nbChart.getAttribute("aria-label")).toBe("North Brooklyn constellation: Greenpoint, Williamsburg, Bushwick, 50 members");
-    expect(nbChart.querySelector("path.sc-mem:not(.sc-named) title")!.textContent).toMatch(/^Member \d+, /);
-    expect(subLabels(wq.querySelector("svg.twc-starchart")!).slice(0, 2)).toEqual(["4 members", "4 members"]);
-    expect(sb.querySelectorAll("path.sc-mem")).toHaveLength(15);
-    expect(sb.querySelectorAll("path.sc-named")).toHaveLength(0);
+    expect(nbChart.querySelectorAll("path.sc-mem")).toHaveLength(3);
+    expect(subLabels(nbChart)).toEqual(["★ neighborhood · ✦ member"]);
+    expect(nbChart.getAttribute("aria-label")).toBe("North Brooklyn constellation: Greenpoint, Williamsburg, Bushwick");
+    expect(nbChart.textContent).not.toMatch(/\d+ members?/);
+    expect(wq.querySelectorAll("path.sc-mem")).toHaveLength(1);
+    expect(sb.querySelectorAll("path.sc-mem")).toHaveLength(0);
     expect(sb.querySelectorAll(".twc-pf-card.is-open")).toHaveLength(2);
 
     const cards = [...nb.querySelectorAll(".twc-pf-card")];
@@ -84,15 +96,33 @@ describe("/ (home): members come only from the roster", () => {
     expect(wq.querySelector(".twc-cband__facts")!.textContent).toBe("Led byEve Testcase");
   });
 
-  it("hovering a member's spark lights her card, and her card lights her spark", () => {
+  it("hovering a member's star lights her card, and her card lights her star", () => {
     const { container } = renderWithQueries(<Page />, withRoster(ROSTER));
     const nb = bandsOf(container)[0];
-    const spark = nb.querySelector<SVGPathElement>("path.sc-named")!, id = spark.dataset.m!;
-    fireEvent.mouseOver(spark);
+    const star = nb.querySelector<SVGGElement>("g.sc-pick")!, id = star.dataset.m!;
+    fireEvent.mouseOver(star.querySelector("circle")!);
     expect(nb.querySelector(`.twc-pf-card[data-m="${id}"]`)!.classList.contains("is-hl")).toBe(true);
     fireEvent.mouseOver(nb.querySelectorAll(".twc-pf-card")[2]);
-    expect(spark.classList.contains("is-hl")).toBe(false);
-    expect(nb.querySelectorAll("path.sc-named")[2].classList.contains("is-hl")).toBe(true);
+    expect(star.querySelector("path")!.classList.contains("is-hl")).toBe(false);
+    expect(nb.querySelectorAll("g.sc-pick path")[2].classList.contains("is-hl")).toBe(true);
+  });
+
+  it("each star is a keyboard button: Enter shows her card", () => {
+    renderWithQueries(<Page />, withRoster(ROSTER));
+    const star = screen.getByRole("button", { name: "Cy Placeholder · Florist, Williamsburg: show her card" });
+    expect(star.getAttribute("tabindex")).toBe("0");
+    fireEvent.keyDown(star, { key: "Enter" });
+    const card = screen.getByRole("region", { name: "North Brooklyn member profiles" }).querySelector(`[data-m="${star.dataset.m}"]`)!;
+    expect(card.classList.contains("is-hl")).toBe(true);
+  });
+
+  it("Brownstone Brooklyn promises no date and offers launch news from the letter; North Brooklyn has its own words", () => {
+    const { container } = renderWithQueries(<Page />, withRoster(ROSTER));
+    const [nb, , sb] = bandsOf(container);
+    expect(sb.textContent).not.toMatch(/December|calendar/);
+    expect(within(sb).getByRole("link", { name: "Get launch news" }).getAttribute("href")).toBe("/#letter");
+    expect(nb.textContent).not.toMatch(/Meet the women shaping our community|The women behind the Collective/i);
+    for (const d of bandsOf(container)) expect(d.querySelector("summary .twc-cband__cue[aria-hidden]")).toBeTruthy();
   });
 
   it("the profile slider is keyboard reachable, with labelled previous and next buttons", () => {

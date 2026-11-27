@@ -32,6 +32,11 @@
 .twc-cband__no b { margin-left: 10px; font-weight: 700; font-stretch: 80%; text-transform: uppercase; }
 .twc-cband__name { min-width: 0; min-height: 1lh; overflow: hidden; margin: -4px 0 0; text-align: center; white-space: nowrap; font: 800 clamp(40px, 4.4vw, 68px)/0.84 var(--font-display); font-stretch: 62%; letter-spacing: -0.01em; text-transform: uppercase; }
 .twc-cband__st { text-align: right; font-size: 20px; font-weight: 500; white-space: nowrap; }
+/* The open/close cue: a + that turns to × while the band is open (the summary already tells screen readers) */
+.twc-cband__cue { display: inline-block; margin-left: 12px; font-size: 1.3em; line-height: 0.8; vertical-align: -0.06em; transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.twc-cband__cue::before { content: "+"; }
+.twc-cband[open] .twc-cband__cue { transform: rotate(45deg); }
+.twc-cband__acts { display: flex; flex-wrap: wrap; gap: var(--twc-space-8); }
 .twc-cband__more { display: grid; grid-template-columns: minmax(0, 380px) 1fr; grid-template-rows: auto 1fr auto; column-gap: var(--twc-space-40); row-gap: var(--twc-space-40); align-items: start;
   margin: 2px 0 0; padding: var(--twc-space-40) var(--twc-gut); background: var(--color-sb-paper); border-top: 1px solid var(--color-sb-ink); cursor: auto; }
 .twc-cband__more > :first-child { grid-column: 1; grid-row: 1; }
@@ -41,7 +46,7 @@
 .twc-cband__more p.body { font-size: 16px; max-width: 34ch; margin: 0 0 var(--twc-space-16); }
 .twc-cband::details-content { block-size: 0; overflow: clip; transition: block-size 0.45s cubic-bezier(0.2, 0.7, 0.2, 1), content-visibility 0.45s allow-discrete; }
 .twc-cband[open]::details-content { block-size: auto; }
-@media (min-width: 1101px) { .twc-cband__more { min-height: calc(1050px - 76px); } }
+@media (min-width: 1101px) { .twc-cband__more:has(> .twc-pf) { min-height: calc(1050px - 76px); } } /* no card row (a live band with no one to show): no empty sheet */
 @media (max-width: 1100px) {
   .twc-cband > summary { grid-template-columns: 1fr auto; padding: 14px var(--twc-gut) 16px; }
   .twc-cband__no, .twc-cband__st { font-size: 15px; }
@@ -136,7 +141,7 @@
 .twc-toast[data-open] { --toast-y: 0; opacity: 1; transition-duration: var(--twc-toast-open); }
 
 @media (prefers-reduced-motion: reduce) {
-  .twc-cband::details-content, .twc-toast { transition: none; }
+  .twc-cband::details-content, .twc-cband__cue, .twc-toast { transition: none; }
 }
 }
 
