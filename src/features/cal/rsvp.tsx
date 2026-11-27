@@ -3,6 +3,7 @@
 // offers its waitlist (event_waitlist, 0021), since Cal has none.
 import * as React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { cn } from "@/index";
 import { setRsvpFn } from "@/features/events/fns";
 import { isEnded, isFull } from "./event-state";
@@ -22,7 +23,10 @@ const CONFIRMED: Record<RsvpStatus, string> = {
   NOT_GOING: "Thanks for letting us know.",
 };
 
-export function RsvpStatusSelector({ value, onChange, disabled }: { value: RsvpStatus; onChange: (status: RsvpStatus) => void; disabled?: boolean }) {
+/** `closed`: answers that can't be taken now (Going, on a full event), shown but disabled. */
+export function RsvpStatusSelector({ value, onChange, disabled, closed = [] }: {
+  value: RsvpStatus; onChange: (status: RsvpStatus) => void; disabled?: boolean; closed?: readonly RsvpStatus[];
+}) {
   const name = React.useId();
   return (
     <fieldset className="flex flex-col gap-2.5" disabled={disabled}>
@@ -30,7 +34,7 @@ export function RsvpStatusSelector({ value, onChange, disabled }: { value: RsvpS
       <div className="flex flex-wrap gap-2">
         {RSVP_STATUSES.map((s) => (
           <label key={s} className="twc-choice">
-            <input type="radio" name={name} value={s} checked={value === s} onChange={() => onChange(s)} className="sr-only" />
+            <input type="radio" name={name} value={s} checked={value === s} disabled={closed.includes(s)} onChange={() => onChange(s)} className="sr-only" />
             {STATUS_LABEL[s]}
           </label>
         ))}
@@ -40,6 +44,16 @@ export function RsvpStatusSelector({ value, onChange, disabled }: { value: RsvpS
 }
 
 const WAITLISTED = "You’re on the waitlist.";
+/** What happens next, as it does: a freed spot alerts the admins at once (alertOpenSpot), who add people first come first. */
+const WAITLIST_NEXT = "If a spot opens, the host hears right away and adds people from the waitlist, first come, first served.";
+
+/** Brings an outcome into view and puts focus on it, so a phone reader isn't left below a panel that just shrank. */
+function reveal(el: HTMLElement | null) {
+  if (!el) return;
+  const still = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  el.scrollIntoView?.({ behavior: still ? "auto" : "smooth", block: "nearest" });
+  el.focus({ preventScroll: true });
+}
 const calendarEntry = (event: CalEvent) => ({
   uid: event.uid, title: event.title, description: event.description, location: event.location,
   startTime: event.startTime, endTime: event.endTime,
@@ -76,6 +90,15 @@ export function RsvpForm({ event, initial, business, onSaved, onWaitlisted }: {
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [problem, setProblem] = React.useState<Problem | null>(null);
   const [busy, setBusy] = React.useState(false);
+  // Each refused check moves focus to the first field it marked, instead of leaving it on the button.
+  const form = React.useRef<HTMLFormElement>(null);
+  const [checks, setChecks] = React.useState(0);
+  React.useEffect(() => {
+    if (checks) form.current?.querySelector<HTMLElement>("[aria-invalid='true']")?.focus();
+  }, [checks]);
+  // Someone already going can still change her answer; anyone else can't take Going on a full event.
+  const fullForNew = isFull(event) && initial?.status !== "GOING";
+  const raceFull = problem?.code === "EVENT_FULL";
 
   const submit = async (answer: RsvpStatus) => {
     if (busy) return;
@@ -84,6 +107,7 @@ export function RsvpForm({ event, initial, business, onSaved, onWaitlisted }: {
     if (!checked.ok) {
       setErrors(checked.errors);
       setProblem({ code: "VALIDATION", message: "Please fix the highlighted fields." });
+      setChecks((n) => n + 1);
       return;
     }
     setErrors({});
@@ -98,7 +122,8 @@ export function RsvpForm({ event, initial, business, onSaved, onWaitlisted }: {
       onSaved(rsvp, CONFIRMED[saved.status]);
     } catch (error) {
       const failure = error instanceof CalRequestError ? error : new CalRequestError("Something went wrong. Please try again.", "UNAVAILABLE", 0);
-      setStatus(answer);
+      // A seat taken in the meantime closes Going, so the answer moves to Maybe, with the waitlist offered beside it.
+      setStatus(failure.code === "EVENT_FULL" ? "MAYBE" : answer);
       setProblem({ code: failure.code, message: failure.message });
     } finally {
       setBusy(false);
@@ -112,6 +137,7 @@ export function RsvpForm({ event, initial, business, onSaved, onWaitlisted }: {
     if (!checked.ok) {
       setErrors({ ...(checked.errors.name ? { name: checked.errors.name } : {}), ...(checked.errors.email ? { email: checked.errors.email } : {}) });
       setProblem({ code: "VALIDATION", message: "Add your name and email to join the waitlist." });
+      setChecks((n) => n + 1);
       return;
     }
     setErrors({});
@@ -129,11 +155,14 @@ export function RsvpForm({ event, initial, business, onSaved, onWaitlisted }: {
       setBusy(false);
     }
   };
-  const full = isFull(event) || problem?.code === "EVENT_FULL";
+  const offerWaitlist = !!onWaitlisted;
+  const sendLabel = busy ? "Sending…" : initial ? "Update my RSVP" : "Send my RSVP";
 
   return (
-    <form noValidate className="flex flex-col gap-5" aria-label={`RSVP to ${event.title}`} onSubmit={(e) => { e.preventDefault(); void submit(status); }}>
-      <RsvpStatusSelector value={status} onChange={(s) => { setStatus(s); setProblem(null); }} disabled={busy} />
+    <form ref={form} noValidate className="flex flex-col gap-5" aria-label={`RSVP to ${event.title}`} onSubmit={(e) => { e.preventDefault(); void submit(status); }}>
+      <RsvpStatusSelector
+        value={status} onChange={(s) => { setStatus(s); setProblem(null); }} disabled={busy} closed={fullForNew || raceFull ? ["GOING"] : []}
+      />
       <FormField label="Your name" required error={errors.name}>
         {(p) => <input {...p} className="twc-input" autoComplete="name" maxLength={120} value={name} onChange={(e) => setName(e.target.value)} />}
       </FormField>
@@ -152,7 +181,10 @@ export function RsvpForm({ event, initial, business, onSaved, onWaitlisted }: {
         <div className="twc-notice twc-notice--danger flex flex-col items-start gap-3">
           <p>{problem.code === "RSVP_EXISTS" ? "This email has already RSVP’d from another device. Open the page there to change it, or use a different email." : problem.message}</p>
           {problem.code === "EVENT_FULL" && (
-            <button type="button" className="twc-btn twc-btn--outline twc-btn--sm" disabled={busy} onClick={() => void submit("MAYBE")}>Put me down as a maybe</button>
+            <div className="flex flex-wrap gap-2">
+              {offerWaitlist && <button type="button" className="twc-btn twc-btn--sm" disabled={busy} onClick={() => void waitlist()}>Join the waitlist</button>}
+              <button type="button" className="twc-btn twc-btn--outline twc-btn--sm" disabled={busy} onClick={() => void submit("MAYBE")}>Put me down as a maybe</button>
+            </div>
           )}
           {problem.code === "SPOTS_OPEN" && (
             <button type="button" className="twc-btn twc-btn--outline twc-btn--sm" disabled={busy} onClick={() => void submit("GOING")}>RSVP as going</button>
@@ -162,9 +194,14 @@ export function RsvpForm({ event, initial, business, onSaved, onWaitlisted }: {
           )}
         </div>
       )}
+      {/* On a full event the waitlist is the main way in, as on the member's panel; the RSVP (a maybe) comes second. */}
       <div className="flex flex-wrap gap-3">
-        <button type="submit" className="twc-btn w-fit" disabled={busy}>{busy ? "Sending…" : initial ? "Update my RSVP" : "Send my RSVP"}</button>
-        {full && onWaitlisted && <button type="button" className="twc-btn twc-btn--outline w-fit" disabled={busy} onClick={() => void waitlist()}>Join the waitlist</button>}
+        {fullForNew && offerWaitlist && !raceFull ? (
+          <>
+            <button type="button" className="twc-btn w-fit" disabled={busy} onClick={() => void waitlist()}>Join the waitlist</button>
+            <button type="submit" className="twc-btn twc-btn--outline w-fit" disabled={busy}>{sendLabel}</button>
+          </>
+        ) : <button type="submit" className="twc-btn w-fit" disabled={busy}>{sendLabel}</button>}
       </div>
       {/* Announces every outcome, including refusals, without moving focus. */}
       <p role="status" aria-live="polite" className="sr-only">{busy ? "Sending your RSVP" : problem?.message ?? ""}</p>
@@ -172,8 +209,13 @@ export function RsvpForm({ event, initial, business, onSaved, onWaitlisted }: {
   );
 }
 
-/** `checking` while the page still asks who is looking, so a member never sees the guest form flash first. */
-export function RsvpPanel({ event, business, member = false, checking = false }: { event: CalEvent; business?: string; member?: boolean; checking?: boolean }) {
+/**
+ * `checking` while the page still asks who is looking, so a member never sees the guest form flash first. `signedIn`
+ * false (known to be signed out) adds a way in for a member who hasn't logged in.
+ */
+export function RsvpPanel({ event, business, member = false, checking = false, signedIn }: {
+  event: CalEvent; business?: string; member?: boolean; checking?: boolean; signedIn?: boolean;
+}) {
   const closed = event.status === "CANCELLED" ? "This event has been cancelled." : isEnded(event) ? "This event has ended." : null;
   return (
     // tabIndex: the page's early "RSVP" button on small screens moves focus here.
@@ -181,16 +223,21 @@ export function RsvpPanel({ event, business, member = false, checking = false }:
       <h2 id="rsvp-title" className="twc-h3">Are you coming?</h2>
       <CapacityBar event={event} />
       {/* Members answer through her account on the club's own calendar; another business's event takes the form. */}
-      {closed ? <p>{closed}</p> : checking ? <p role="status" className="text-sm">Loading…</p> : member && !business ? <MemberRsvp event={event} /> : <GuestRsvp event={event} business={business} />}
+      {closed ? <p>{closed}</p> : checking ? <p role="status" className="text-sm">Loading…</p> : member && !business ? <MemberRsvp event={event} />
+        : <GuestRsvp event={event} business={business} memberHint={signedIn === false && !business} />}
     </aside>
   );
 }
 
-function GuestRsvp({ event, business }: { event: CalEvent; business?: string }) {
+function GuestRsvp({ event, business, memberHint = false }: { event: CalEvent; business?: string; memberHint?: boolean }) {
   const [saved, setSaved] = React.useState<LastRsvp | undefined>(undefined);
   const [waiting, setWaiting] = React.useState<string | undefined>(undefined);
   const [editing, setEditing] = React.useState(false);
   const [announce, setAnnounce] = React.useState("");
+  // After a send the form gives way to a short outcome; focus (and, on a phone, the screen) follows it there.
+  const outcome = React.useRef<HTMLDivElement>(null);
+  const [sent, setSent] = React.useState(0);
+  React.useEffect(() => { if (sent) reveal(outcome.current); }, [sent]);
   React.useEffect(() => {
     setSaved(lastRsvp(event.uid));
     setWaiting(waitlistedHere(event.uid));
@@ -199,20 +246,24 @@ function GuestRsvp({ event, business }: { event: CalEvent; business?: string }) 
   return (
     <>
       {waiting && !editing && saved?.status !== "GOING" ? (
-        <div className="flex flex-col gap-4">
+        <div ref={outcome} tabIndex={-1} className="flex flex-col gap-4 outline-none">
           <p className="font-display text-[32px] font-extrabold leading-none [font-stretch:75%]">{WAITLISTED}</p>
-          <p className="text-sm">{waiting} · The host sees your place in line.</p>
+          <p className="text-sm">{waiting}</p>
+          <p className="text-sm">{WAITLIST_NEXT}</p>
           <button type="button" className="twc-btn twc-btn--outline twc-btn--sm w-fit" onClick={() => { setEditing(true); setAnnounce(""); }}>Change my RSVP</button>
         </div>
       ) : saved && !editing ? (
-        <RsvpConfirmation event={event} rsvp={saved} onChange={() => { setEditing(true); setAnnounce(""); }} />
+        <div ref={outcome} tabIndex={-1} className="outline-none">
+          <RsvpConfirmation event={event} rsvp={saved} onChange={() => { setEditing(true); setAnnounce(""); }} />
+        </div>
       ) : (
         <>
+          {memberHint && <p className="text-sm">Member? <Link to="/auth" className="twc-link">Log in</Link> to answer in one tap.</p>}
           {full && !saved && <p className="text-sm">This event is full. Join the waitlist, or say maybe.</p>}
           <RsvpForm
             key={saved ? `${saved.email}-${saved.status}` : "new"} event={event} initial={saved} business={business}
-            onSaved={(rsvp, message) => { setSaved(rsvp); setEditing(false); setAnnounce(message); }}
-            onWaitlisted={(email) => { setWaiting(email); setEditing(false); setAnnounce(WAITLISTED); }}
+            onSaved={(rsvp, message) => { setSaved(rsvp); setEditing(false); setAnnounce(message); setSent((n) => n + 1); }}
+            onWaitlisted={(email) => { setWaiting(email); setEditing(false); setAnnounce(WAITLISTED); setSent((n) => n + 1); }}
           />
         </>
       )}
@@ -265,6 +316,7 @@ function MemberRsvp({ event }: { event: CalEvent }) {
         {status && status !== "NOT_GOING" ? CONFIRMED[status] : waitlisted ? WAITLISTED : status ? CONFIRMED[status] : full ? "This event is full." : "Tap your answer."}
       </p>
       {status === "GOING" && plusOnes > 0 && <p className="text-sm">Bringing {plusOnes}</p>}
+      {waitlisted && status !== "GOING" && <p className="text-sm">{WAITLIST_NEXT}</p>}
       <div role="group" aria-label="Your answer" className="flex flex-wrap gap-2">
         {RSVP_STATUSES.map((s) => (
           <button

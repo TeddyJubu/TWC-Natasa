@@ -8,6 +8,7 @@ import type { CalEvent } from "./types";
 
 vi.mock("./fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 vi.mock("@/features/events/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
+vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs }));
 
 const future = (days: number) => new Date(Date.now() + days * 86_400_000).toISOString();
 const event: CalEvent = {
@@ -111,6 +112,35 @@ describe("RsvpPanel", () => {
     await waitFor(() => expect(posts).toHaveLength(2));
   });
 
+  it("moves focus to the first field it marked, not the button", async () => {
+    renderWithQueries(<RsvpPanel event={event} />);
+    fireEvent.change(screen.getByLabelText(/Your name/), { target: { value: "Rosa" } });
+    send();
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByLabelText(/Email/)));
+  });
+
+  it("after sending, focus follows the confirmation that replaced the form", async () => {
+    replies = [saved("GOING")];
+    renderWithQueries(<RsvpPanel event={event} />);
+    fill();
+    send();
+    await screen.findByText("You’re going. See you there!", { selector: "p.font-display" });
+    await waitFor(() => expect(document.activeElement?.textContent).toContain("You’re going. See you there!"));
+  });
+
+  it("tells a signed-out visitor that members answer in one tap, after logging in", () => {
+    const { unmount } = renderWithQueries(<RsvpPanel event={event} signedIn={false} />);
+    expect(screen.getByRole("link", { name: "Log in" }).getAttribute("href")).toBe("/auth");
+    expect(screen.getByText(/to answer in one tap/)).toBeTruthy();
+    unmount();
+    // Signed in but not (yet) a member, or another business's event: no such promise.
+    const again = renderWithQueries(<RsvpPanel event={event} signedIn />);
+    expect(screen.queryByRole("link", { name: "Log in" })).toBeNull();
+    again.unmount();
+    renderWithQueries(<RsvpPanel event={event} signedIn={false} business="other" />);
+    expect(screen.queryByRole("link", { name: "Log in" })).toBeNull();
+  });
+
   it("offers no form on a cancelled or ended event", () => {
     const { unmount } = renderWithQueries(<RsvpPanel event={{ ...event, status: "CANCELLED" }} />);
     expect(screen.getByText("This event has been cancelled.")).toBeTruthy();
@@ -135,9 +165,29 @@ describe("a full event's waitlist (guests)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Join the waitlist" }));
     expect(await screen.findByText("You’re on the waitlist.", { selector: "p.font-display" })).toBeTruthy();
     expect(posts[0]).toEqual({ url: "/api/gatherings/evt1/waitlist", body: { name: "Rosa", email: "rosa@x.test" } });
+    // What happens next, as it does: a freed spot alerts the admins (alertOpenSpot), who add people first come first.
+    expect(screen.getByText(/If a spot opens, the host hears right away/)).toBeTruthy();
     unmount();
     renderWithQueries(<RsvpPanel event={full} />);
     expect(await screen.findByText("You’re on the waitlist.", { selector: "p.font-display" })).toBeTruthy();
+  });
+
+  it("closes Going and makes the waitlist the main action, the RSVP the second, as on the member's panel", () => {
+    renderWithQueries(<RsvpPanel event={full} />);
+    expect((screen.getByRole("radio", { name: "Going" }) as HTMLInputElement).disabled).toBe(true);
+    const waitlist = screen.getByRole("button", { name: "Join the waitlist" });
+    const rsvp = screen.getByRole("button", { name: "Send my RSVP" });
+    expect(waitlist.className).not.toContain("twc-btn--outline");
+    expect(rsvp.className).toContain("twc-btn--outline");
+    expect(waitlist.compareDocumentPosition(rsvp) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("someone already going can still keep Going on an event she filled", () => {
+    window.localStorage.setItem("twc-rsvp-last:evt1", JSON.stringify({ email: "rosa@x.test", name: "Rosa", status: "GOING", plusOnes: 0 }));
+    renderWithQueries(<RsvpPanel event={full} />);
+    fireEvent.click(screen.getByRole("button", { name: "Change my RSVP" }));
+    expect((screen.getByRole("radio", { name: "Going" }) as HTMLInputElement).disabled).toBe(false);
+    expect(screen.getByRole("button", { name: "Update my RSVP" }).className).not.toContain("twc-btn--outline");
   });
 
   it("asks for name and email before joining, and sends nothing", async () => {
@@ -153,7 +203,12 @@ describe("a full event's waitlist (guests)", () => {
     expect(screen.queryByRole("button", { name: "Join the waitlist" })).toBeNull();
     fill();
     send();
-    fireEvent.click(await screen.findByRole("button", { name: "Join the waitlist" }));
+    const join = await screen.findByRole("button", { name: "Join the waitlist" });
+    // The refusal offers the waitlist and a maybe, and Going closes, since the seat is gone.
+    expect(screen.getByRole("button", { name: "Put me down as a maybe" })).toBeTruthy();
+    expect((screen.getByRole("radio", { name: "Going" }) as HTMLInputElement).disabled).toBe(true);
+    expect((screen.getByRole("radio", { name: "Maybe" }) as HTMLInputElement).checked).toBe(true);
+    fireEvent.click(join);
     expect(await screen.findByText("You’re on the waitlist.", { selector: "p.font-display" })).toBeTruthy();
   });
 });
@@ -187,6 +242,7 @@ describe("a signed-in member", () => {
     unmount();
     renderWithQueries(<RsvpPanel event={full} member />, [mine(null, true)]);
     expect(screen.getByText("You’re on the waitlist.", { selector: "p.font-display" })).toBeTruthy();
+    expect(screen.getByText(/If a spot opens, the host hears right away/)).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Leave the waitlist" }));
     await waitFor(() => expect(fake.calls).toContainEqual(["setMemberWaitlistFn", { eventId: "evt1", on: false }]));
   });

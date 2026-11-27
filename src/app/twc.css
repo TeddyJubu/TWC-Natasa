@@ -109,6 +109,8 @@ textarea.twc-input { min-height: 132px; padding: 12px 14px; border-radius: 0; re
 .twc-choice:has(input:checked) { background: var(--color-sb-ink); color: var(--color-sb-paper); }
 .twc-choice:has(input:focus-visible) { outline: 2px solid var(--color-sb-ink); outline-offset: 3px; }
 .twc-choice input { position: absolute; opacity: 0; pointer-events: none; }
+.twc-choice:has(input:disabled) { opacity: 0.45; cursor: not-allowed; }
+.twc-choice:has(input:disabled):active { scale: 1; }
 /* Boxed notice ("One more thing", success, error) */
 .twc-notice { display: flex; flex-direction: column; gap: 6px; padding: 18px 20px; border-radius: var(--twc-radius-flag); background: var(--color-sb-cream); }
 .twc-notice--mint { background: var(--color-sb-lime); }
