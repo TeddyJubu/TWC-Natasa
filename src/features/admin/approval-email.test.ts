@@ -47,7 +47,7 @@ describe("approvalEmail", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("sends one plain-text welcome email linking to APP_URL/auth", async () => {
+  it("sends one plain-text welcome email linking to Create account at APP_URL/auth, her address filled in", async () => {
     fetchMock.mockResolvedValue(new Response(JSON.stringify({ success: true, result: {} })));
     expect(await approvalEmail(as(ADMIN), addApp("approved"))).toEqual({ sent: true });
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -55,6 +55,7 @@ describe("approvalEmail", () => {
     expect(body.to).toEqual(["rosa@x.test"]);
     expect(body.subject).toBe("Welcome to The Women’s Collective");
     expect(body.text).toContain("Dear Rosa Diaz,");
-    expect(body.text).toContain("https://thewomenscollective.club/auth");
+    // The wording stays; only the link opens Create account, since most approved applicants have no account yet.
+    expect(body.text).toContain("Sign in (or create your account with this email address) to set up your member card, see upcoming events and meet other members:\nhttps://thewomenscollective.club/auth?mode=signup&email=rosa%40x.test\n");
   });
 });

@@ -91,11 +91,6 @@
 
 
 
-/* The letter: one card, its words beside the signup (stacked on phones) */
-.twc-home-card { display: flex; flex-direction: column; gap: var(--twc-space-18); }
-.twc-home-card p { margin: 0; }
-.twc-home-big { font-size: 19px; line-height: 1.2; }
-
 /* What this is, before the bands: the page's h1 and one plain line */
 .twc-home-intro { padding-bottom: var(--twc-space-40); }
 .twc-home-intro__h { margin: 0; max-width: 22ch; font: 400 clamp(2.4rem, 5vw, 4.4rem)/0.95 var(--font-serif); letter-spacing: -0.02em; }
@@ -104,10 +99,4 @@
 
 /* No dates yet: one line under the tiles */
 .twc-home-next { margin: 0; font-size: 17px; color: var(--color-sb-ink); }
-
-/* The letter: one card, its words beside the signup (stacked below 900px) */
-.twc-letter { scroll-margin-top: 120px; padding: var(--twc-space-90) var(--twc-gut); border-top: var(--twc-border-hairline) solid var(--color-sb-ink); }
-.twc-letter__card { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--twc-space-40); align-items: end; }
-.twc-letter__words { display: flex; flex-direction: column; gap: var(--twc-space-18); }
-@media (max-width: 900px) { .twc-letter__card { grid-template-columns: 1fr; } }
 }

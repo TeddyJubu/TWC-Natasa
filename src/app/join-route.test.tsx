@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { readFileSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { renderWithQueries } from "@/test/dom";
@@ -55,7 +56,8 @@ const submitButton = () => screen.getByRole("button", { name: /submit applicatio
 const inserts = () => fake.calls.filter(([name]) => name === "/api/applications");
 /** The live /join moves on to its own thank-you page once the application is in. */
 const thanks = () => (navigate.mock.calls.length ? navigate : null);
-const sentToThanks = () => waitFor(() => expect(navigate).toHaveBeenCalledWith({ to: "/join/thanks" }));
+/** Her email rides along in the history state (for the thanks page's login button), never in the URL. */
+const sentToThanks = () => waitFor(() => expect(navigate).toHaveBeenCalledWith({ to: "/join/thanks", state: { applicantEmail: "rosa@x.test" } }));
 // Mutations call their server function asynchronously; let that settle.
 const settle = () => act(() => new Promise((r) => setTimeout(r, 20)));
 
@@ -96,17 +98,48 @@ describe("/join", () => {
 
     await act(async () => insert.resolve(ok));
     await sentToThanks();
-    // Pre-launch an applicant isn't sent on to make a login.
+    expect(navigate.mock.calls[0]![0]).not.toHaveProperty("search"); // the address never goes in the URL
+    // The login is offered on the thanks page, not on /join.
     expect(screen.queryByRole("link", { name: /create your login/i })).toBeNull();
   });
 
-  it("the thank-you page says the application is in and links nowhere", async () => {
-    const { Route: Thanks } = await import("@/routes/join_.thanks");
-    const ThanksPage = Thanks.options.component as React.ComponentType;
-    renderWithQueries(<ThanksPage />);
-    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Thank you for applying.");
-    expect(screen.getByText("We’ve received your application and we’ll be in touch.")).toBeTruthy();
-    expect(screen.queryAllByRole("link").map((a) => a.getAttribute("href"))).toEqual(["#main"]);
+  describe("the thank-you page", () => {
+    const showThanks = async () => {
+      const { Route: Thanks } = await import("@/routes/join_.thanks");
+      const ThanksPage = Thanks.options.component as React.ComponentType;
+      return renderWithQueries(<ThanksPage />);
+    };
+    afterEach(() => window.history.replaceState(null, ""));
+
+    it("says the application is in, then what happens next, true facts only", async () => {
+      await showThanks();
+      expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Thank you for applying.");
+      expect(screen.getByText("We’ve received your application and we’ll be in touch.")).toBeTruthy();
+      const next = screen.getByRole("region", { name: "What happens next" });
+      expect(within(next).getAllByRole("listitem").map((li) => li.textContent)).toEqual([
+        "01The collective reads every application and replies by email.",
+        "02Once you’re approved, we send a welcome email, and your member card, events and the members’ directory open to you.",
+        "03You can create your login now, with the email you applied with.",
+      ]);
+      // Nothing undecided: no review time, price or payment.
+      expect(next.textContent).not.toMatch(/\bdays?\b|\bweeks?\b|\$|\bpa(y|id)|\bfees?\b|\bprices?\b|\bfree\b/i);
+    });
+
+    it("links only to Create account (bare chrome otherwise), with her email in the history state, not the URL", async () => {
+      window.history.replaceState({ applicantEmail: "rosa@x.test" }, "");
+      await showThanks();
+      const login = screen.getByRole("link", { name: /create your login/i });
+      await waitFor(() => expect(login.getAttribute("data-state")).toBe(JSON.stringify({ applicantEmail: "rosa@x.test" })));
+      expect(login.getAttribute("href")).toBe("/auth?mode=signup");
+      expect(screen.queryAllByRole("link").map((a) => a.getAttribute("href"))).toEqual(["#main", "/auth?mode=signup"]);
+    });
+
+    it("without a handed-on email still offers Create account, with nothing to prefill", async () => {
+      await showThanks();
+      const login = screen.getByRole("link", { name: /create your login/i });
+      expect(login.getAttribute("href")).toBe("/auth?mode=signup");
+      expect(login.hasAttribute("data-state")).toBe(false);
+    });
   });
 
   it("an insert error shows an alert, keeps the form and its values, and Retry resubmits", async () => {
@@ -197,7 +230,8 @@ describe("/join", () => {
     expect(trap.closest("[aria-hidden='true']")).not.toBeNull();
     fireEvent.change(trap, { target: { value: "555-0199" } });
     fireEvent.click(submitButton());
-    await sentToThanks();
+    // A bot's "success" carries no address on.
+    await waitFor(() => expect(navigate).toHaveBeenCalledWith({ to: "/join/thanks" }));
     expect(fake.calls).toEqual([]);
   });
 
@@ -393,6 +427,41 @@ describe("/join structure", () => {
     expect(screen.getByRole("heading", { level: 1 })).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Start with you.", level: 2 })).toBeTruthy();
     expect(screen.getByRole("group", { name: "Start with you." })).toBeTruthy();
+  });
+
+  it("says how long it is, in true words, under the intro", () => {
+    renderSignedOut();
+    expect(screen.getByText("Seven short sections. Your answers save on this device as you go.")).toBeTruthy();
+    expect(document.querySelectorAll("[data-step]")).toHaveLength(7);
+  });
+
+  it("the progress bar counts required answers as they are given, follow-ups included", async () => {
+    renderSignedOut();
+    const bar = document.querySelector(".twc-fprogress")!;
+    const count = () => within(bar as HTMLElement).queryByText(/required answered$/)?.textContent;
+    // 9 fields, 4 choice groups, 6 guidelines and the final confirmation; the date starts on today.
+    await waitFor(() => expect(count()).toBe("1 of 20 required answered"));
+    type(/^full name$/i, "Rosa Diaz");
+    await waitFor(() => expect(count()).toBe("2 of 20 required answered"));
+    type(/^email address$/i, "rosa@"); // not an address yet
+    await waitFor(() => expect(count()).toBe("2 of 20 required answered"));
+    type(/^email address$/i, "rosa@x.test");
+    await waitFor(() => expect(count()).toBe("3 of 20 required answered"));
+    fillMinimum();
+    await waitFor(() => expect(count()).toBe("All 20 required answered"));
+    fireEvent.click(within(screen.getByRole("group", { name: /sponsor or community partner/i })).getByRole("radio", { name: "Yes" }));
+    await waitFor(() => expect(count()).toBe("20 of 21 required answered"));
+  });
+
+  it("the progress bar sits flush under the sticky header above 1100px, and at the top below it, where the header scrolls away", () => {
+    const forms = readFileSync("src/app/twc-forms.css", "utf8");
+    const twc = readFileSync("src/app/twc.css", "utf8");
+    expect(forms).toMatch(/\.twc-fprogress \{ position: sticky; top: 0;/);
+    expect(forms).toMatch(/@media \(min-width: 1101px\) \{ \.twc-fprogress \{ top: 115px; \} \}/);
+    // 115px = the 81px lockup + the header's 18px and 16px padding; the header stops sticking at 1100px.
+    expect(twc).toMatch(/\.twc-header \{ position: sticky; top: 0;[^}]*padding: 18px var\(--twc-gut, 40px\) 16px;/);
+    expect(twc).toMatch(/\.twc-header__lockup \{[^}]*height: 81px;/);
+    expect(twc).toMatch(/@media \(max-width: 1100px\) \{\s*\.twc-header \{ position: static;/);
   });
 
   it("shows closed words instead of the form when applications are closed", () => {

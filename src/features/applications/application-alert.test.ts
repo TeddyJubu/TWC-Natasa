@@ -94,6 +94,20 @@ describe("application confirmation to the applicant", () => {
     expect(confirm!.text).not.toContain("private notes");
   });
 
+  it("says what happens next, true facts only, and links Create account at APP_URL with her address filled in", async () => {
+    await post(apply(), "203.0.113.15");
+    const { text } = sent.mails.find((m) => m.to === "bea@x.test")!;
+    expect(text).toContain([
+      "What happens next:",
+      "1. The collective reads every application and replies by email.",
+      "2. Once you're approved, we send a welcome email, and your member card, events and the members' directory open to you.",
+      "3. You can create your login now, with this email address:",
+      "https://new.example/auth?mode=signup&email=bea%40x.test",
+    ].join("\n"));
+    // Nothing undecided: no review time, price or payment.
+    expect(text).not.toMatch(/\bdays?\b|\bweeks?\b|\$|\bpa(y|id)|\bfees?\b|\bprices?\b/i);
+  });
+
   it("uses 'there' when the name is not a plain greeting", async () => {
     await post(apply({ fullName: "https://evil.test" }), "203.0.113.13");
     const confirm = sent.mails.find((m) => m.to === "bea@x.test");
