@@ -156,8 +156,11 @@ describe("missedOptIns (backfill after the keys were missing)", () => {
     expect(missedOptIns(db).map((s) => s.email)).toEqual(["Lost@x.test"]);
 
     vi.stubEnv("BEEHIIV_API_KEY", "test-key-not-a-secret");
-    for (const missed of missedOptIns(db)) await optInApplicant(db, missed);
+    for (const missed of missedOptIns(db)) await optInApplicant(db, missed, true);
     expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(JSON.parse((fetchMock.mock.calls[0] as [string, RequestInit])[1].body as string)).toMatchObject({
+      email: "lost@x.test", send_welcome_email: false, double_opt_override: "off", reactivate_existing: false,
+    });
     expect(missedOptIns(db)).toEqual([]); // sent once: a second run sends nothing
   });
 });

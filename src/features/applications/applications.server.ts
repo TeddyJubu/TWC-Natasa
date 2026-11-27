@@ -69,16 +69,17 @@ export function newsletterConsent(answers: Record<string, unknown>): boolean {
 }
 
 /** After the application is stored: the opt-in goes to Beehiiv only with consent. A failure never touches the application. */
-export async function optInApplicant(db: DB, { email, fullName, answers }: Stored): Promise<void> {
+export async function optInApplicant(db: DB, { email, fullName, answers }: Stored, quiet = false): Promise<void> {
   await subscribeIfConsented(db, {
-    email, name: fullName, consent: newsletterConsent(answers), utm: { source: "nbwc.site", medium: "membership", campaign: "membership-optin" },
+    email, name: fullName, consent: newsletterConsent(answers), quiet, utm: { source: "nbwc.site", medium: "membership", campaign: "membership-optin" },
   }).catch(() => console.warn("[newsletter] application stored, but the newsletter opt-in failed"));
 }
 
 /**
  * Site applications (never imported ones) that opted in but whose address is not in `newsletter_subscribers`: the
  * opt-ins that went nowhere while the Beehiiv keys were missing. Oldest first, one per address. Read-only; the
- * backfill script sends them through optInApplicant(), so consent and the already-known check still apply.
+ * backfill script sends them through optInApplicant() (quiet: no Beehiiv confirmation), so consent and the
+ * already-known check still apply.
  */
 export function missedOptIns(db: DB): Stored[] {
   const rows = db.prepare(`select email, full_name, answers from applications

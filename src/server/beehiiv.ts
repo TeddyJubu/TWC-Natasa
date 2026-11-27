@@ -15,6 +15,8 @@ export type Optin = {
   consent: unknown;
   /** Beehiiv's utm fields, e.g. { source: "nbwc.site", medium: "membership", campaign: "membership-optin" }. */
   utm: { source: string; medium: string; campaign: string };
+  /** Add to the list without Beehiiv's confirmation or welcome email: only for a backfill of consent already given. */
+  quiet?: boolean;
 };
 export type SubscribeResult =
   | { subscribed: true }
@@ -30,7 +32,7 @@ const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
  * (the unique email makes two racing sends one), then sent; a failed send releases the claim so a later opt-in can
  * retry. Fixed reason codes only — no key or upstream text is ever returned or logged.
  */
-export async function subscribeIfConsented(db: DB, { email, name = "", consent, utm }: Optin): Promise<SubscribeResult> {
+export async function subscribeIfConsented(db: DB, { email, name = "", consent, utm, quiet = false }: Optin): Promise<SubscribeResult> {
   if (consent !== true) return { subscribed: false, reason: "no-consent" };
   const address = email.trim().toLowerCase();
   if (address.length > 254 || !EMAIL.test(address)) return { subscribed: false, reason: "invalid-email" };
@@ -48,7 +50,7 @@ export async function subscribeIfConsented(db: DB, { email, name = "", consent, 
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        email: address, reactivate_existing: false, send_welcome_email: true, double_opt_override: "on",
+        email: address, reactivate_existing: false, send_welcome_email: !quiet, double_opt_override: quiet ? "off" : "on",
         utm_source: utm.source, utm_medium: utm.medium, utm_campaign: utm.campaign,
       }),
       signal: AbortSignal.timeout(8_000),
