@@ -33,6 +33,14 @@ describe("MonthCalendar", () => {
     expect(within(cell("2026-12-01")).queryByRole("link", { name: /ny/ })).toBeNull();
   });
 
+  it("ticks the events she is going to, in words for screen readers too", () => {
+    const at = "2026-12-05T23:00:00.000Z";
+    renderWithQueries(<MonthCalendar month="2026-12" events={[event("mine", at, "UTC"), event("other", at, "UTC")]} onMonthChange={() => {}} locale="en-US" going={new Set(["mine"])} />);
+    const links = within(cell("2026-12-05")).getAllByRole("link");
+    expect(links.find((l) => /mine/.test(l.textContent ?? ""))?.textContent).toContain("You’re going");
+    expect(links.find((l) => /other/.test(l.textContent ?? ""))?.textContent).not.toContain("going");
+  });
+
   it("shows the time in the event's zone", () => {
     renderWithQueries(<Harness events={[event("ny", "2026-12-05T23:00:00.000Z", "America/New_York")]} />);
     expect(within(cell("2026-12-05")).getByRole("link").textContent).toContain("6:00");

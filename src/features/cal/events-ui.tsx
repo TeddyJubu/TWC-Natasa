@@ -116,7 +116,7 @@ export function SpotsLeft({ event }: { event: CalEvent }) {
 }
 
 /** The canvas programme: one lifted, gently tilted colour strip per event, its field from its category. */
-export function EventList({ events, business }: { events: CalEvent[]; business?: string }) {
+export function EventList({ events, business, going }: { events: CalEvent[]; business?: string; going?: ReadonlySet<string> }) {
   return (
     <ol className="twc-evs twc-evs--list twc-bleed">
       {events.map((e) => (
@@ -127,8 +127,9 @@ export function EventList({ events, business }: { events: CalEvent[]; business?:
                 {e.title}
               </Link>
             </h3>
-            {(e.category || e.status === "CANCELLED" || isEnded(e) || isFull(e) || spotsLeft(e) !== null) && (
+            {(e.category || e.status === "CANCELLED" || isEnded(e) || isFull(e) || spotsLeft(e) !== null || going?.has(e.uid)) && (
               <div className="twc-ev__tags">
+                {going?.has(e.uid) && <span className="twc-chip bg-sb-ink text-sb-paper">You’re going</span>}
                 {e.category && <CategoryChip category={e.category} />}
                 <EventStatus event={e} />
                 <SpotsLeft event={e} />

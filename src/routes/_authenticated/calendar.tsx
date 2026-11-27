@@ -8,18 +8,21 @@ import { useQuery } from "@tanstack/react-query";
 import { AppPage } from "@/app/layout/AppLayout";
 import { AirShell } from "@/features/account/AirShell";
 import { MonthCalendar } from "@/features/cal/calendar";
-import { EventList, KindLegend } from "@/features/cal/events-ui";
+import { CategoryFilter, EventList } from "@/features/cal/events-ui";
 import { calEventsQuery } from "@/features/cal/queries";
 import { monthKey } from "@/features/cal/time";
 import { ErrorBanner } from "@/features/cal/ui";
+import { rsvpsQuery } from "@/features/events/queries";
 import { profileQuery, viewerQuery } from "@/features/members/queries";
 
-type CalendarSearch = { month?: string };
+type CalendarSearch = { month?: string; category?: string };
 const MONTH = /^\d{4}-(0[1-9]|1[0-2])$/;
 
 export const Route = createFileRoute("/_authenticated/calendar")({
-  validateSearch: (raw: Record<string, unknown>): CalendarSearch =>
-    typeof raw.month === "string" && MONTH.test(raw.month) ? { month: raw.month } : {},
+  validateSearch: (raw: Record<string, unknown>): CalendarSearch => ({
+    ...(typeof raw.month === "string" && MONTH.test(raw.month) ? { month: raw.month } : {}),
+    ...(typeof raw.category === "string" && raw.category.trim() ? { category: raw.category.trim().slice(0, 80) } : {}),
+  }),
   head: () => ({
     meta: [
       { title: "Calendar — The Women’s Collective" },
@@ -41,13 +44,20 @@ function CalendarPage() {
   const navigate = Route.useNavigate();
   // The collective's own zone decides "this month", as on /events.
   const month = search.month ?? monthKey(new Date().toISOString(), "America/New_York");
-  const cal = useQuery(calEventsQuery({ tab: "all", month, take: MONTH_LIMIT }));
+  const { category } = search;
+  const cal = useQuery(calEventsQuery({ tab: "all", month, category, take: MONTH_LIMIT }));
   const events = cal.data?.events ?? [];
+  // Her own RSVPs (approved members and admins only): the events she is going to get a tick.
+  const canRsvp = viewer.data?.member === true || viewer.data?.admin === true;
+  const mine = useQuery({ ...rsvpsQuery(user.id), enabled: canRsvp, retry: false });
+  const going = React.useMemo(() => new Set(mine.data ?? []), [mine.data]);
   const [name, year] = React.useMemo(() => {
     const d = new Date(Date.UTC(+month.slice(0, 4), +month.slice(5) - 1, 15));
     return [d.toLocaleDateString("en-US", { month: "long", timeZone: "UTC" }), month.slice(0, 4)];
   }, [month]);
-  const setMonth = (m: string) => void navigate({ search: { month: m }, replace: true, resetScroll: false });
+  const setMonth = (m: string) => void navigate({ search: (prev: CalendarSearch) => ({ ...prev, month: m }), replace: true, resetScroll: false });
+  const setCategory = (c?: string) =>
+    void navigate({ search: (prev: CalendarSearch) => ({ ...prev, category: c }), replace: true, resetScroll: false });
 
   return (
     <AppPage trail={false}>
@@ -64,10 +74,10 @@ function CalendarPage() {
           </section>
           <section className="air-sec air-cal">
             {cal.isError && <ErrorBanner message="We couldn’t load the calendar right now." onRetry={() => void cal.refetch()} className="mb-6" />}
-            <MonthCalendar month={month} events={events} onMonthChange={setMonth} />
-            <KindLegend events={events} />
+            <div className="mb-6"><CategoryFilter categories={cal.data?.categories ?? []} value={category} onChange={setCategory} /></div>
+            <MonthCalendar month={month} events={events} onMonthChange={setMonth} going={going} />
             {cal.isPending ? <p role="status" className="mt-8 text-sm text-app-muted">Loading events…</p>
-              : events.length > 0 && <div className="mt-10"><h2 className="sr-only">This month’s events</h2><EventList events={events} /></div>}
+              : events.length > 0 && <div className="mt-10"><h2 className="sr-only">This month’s events</h2><EventList events={events} going={going} /></div>}
           </section>
         </main>
       </AirShell>

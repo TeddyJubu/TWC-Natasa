@@ -12,21 +12,21 @@ const MAX_PILLS = 2;
 const utc = (day: string) => Date.parse(`${day}T12:00:00Z`);
 const addDays = (day: string, by: number) => new Date(utc(day) + by * 86_400_000).toISOString().slice(0, 10);
 
-export function CalendarEventPill({ event, locale, tabbable, business }: { event: CalEvent; locale: string; tabbable: boolean; business?: string }) {
+export function CalendarEventPill({ event, locale, tabbable, business, going }: { event: CalEvent; locale: string; tabbable: boolean; business?: string; going?: boolean }) {
   const time = formatTime({ iso: event.startTime, timeZone: event.timeZone, locale });
   return (
     <Link
       to="/events/$slug" params={{ slug: event.slug }} {...(business ? { search: { business } } : {})} tabIndex={tabbable ? 0 : -1}
       className={cn("twc-e", kindClass(event.category), event.status === "CANCELLED" && "line-through")}
     >
-      <span className="sr-only">{event.status === "CANCELLED" ? "Cancelled: " : ""}</span>{time} {event.title}
+      <span className="sr-only">{event.status === "CANCELLED" ? "Cancelled: " : ""}{going ? "You’re going: " : ""}</span>{going && <span aria-hidden>✓ </span>}{time} {event.title}
     </Link>
   );
 }
 
-export function CalendarDayCell({ day, month, events, locale, today, active, onFocusDay, onMore, business }: {
+export function CalendarDayCell({ day, month, events, locale, today, active, onFocusDay, onMore, business, going }: {
   day: string; month: string; events: CalEvent[]; locale: string; today: boolean; active: boolean;
-  onFocusDay: (day: string) => void; onMore: (day: string) => void; business?: string;
+  onFocusDay: (day: string) => void; onMore: (day: string) => void; business?: string; going?: ReadonlySet<string>;
 }) {
   const outside = day.slice(0, 7) !== month;
   const label = new Intl.DateTimeFormat(locale, { timeZone: "UTC", weekday: "long", month: "long", day: "numeric" }).format(utc(day));
@@ -42,7 +42,7 @@ export function CalendarDayCell({ day, month, events, locale, today, active, onF
         {Number(day.slice(8))}
       </span>
       <div className="hidden flex-col gap-1 sm:flex">
-        {events.slice(0, MAX_PILLS).map((e) => <CalendarEventPill key={e.uid} event={e} locale={locale} tabbable={active} business={business} />)}
+        {events.slice(0, MAX_PILLS).map((e) => <CalendarEventPill key={e.uid} event={e} locale={locale} tabbable={active} business={business} going={going?.has(e.uid)} />)}
       </div>
       {/* Phones have no room for titles: any day with events opens its list, and the whole cell is the tap target. */}
       {events.length > 0 && (
@@ -63,8 +63,10 @@ export function CalendarDayCell({ day, month, events, locale, today, active, onF
  * A WAI-ARIA grid with one tab stop: arrows move by day and week, Home/End to the week's ends, PageUp/PageDown by
  * month. Tab then reaches the focused day's events.
  */
-export function MonthCalendar({ month, events, onMonthChange, locale: localeProp, business }: {
+export function MonthCalendar({ month, events, onMonthChange, locale: localeProp, business, going }: {
   month: string; events: CalEvent[]; onMonthChange: (month: string) => void; locale?: string; business?: string;
+  /** Uids of the events the signed-in member is going to, marked with a tick. */
+  going?: ReadonlySet<string>;
 }) {
   const visitor = useVisitorLocale();
   const locale = localeProp ?? visitor;
@@ -150,7 +152,7 @@ export function MonthCalendar({ month, events, onMonthChange, locale: localeProp
               {week.map((day) => (
                 <CalendarDayCell
                   key={day} day={day} month={month} events={days.get(day) ?? []} locale={locale} today={day === today} active={day === active}
-                  onFocusDay={setCursor} onMore={setOpenDay} business={business}
+                  onFocusDay={setCursor} onMore={setOpenDay} business={business} going={going}
                 />
               ))}
             </tr>
@@ -173,7 +175,7 @@ export function MonthCalendar({ month, events, onMonthChange, locale: localeProp
             {openEvents.map((e) => (
               <li key={e.uid}>
                 <Link to="/events/$slug" params={{ slug: e.slug }} {...(business ? { search: { business } } : {})} className="twc-link">
-                  {formatTime({ iso: e.startTime, timeZone: e.timeZone, locale })} · {e.title}{e.status === "CANCELLED" ? " (cancelled)" : ""}
+                  {going?.has(e.uid) && <span aria-hidden>✓ </span>}{formatTime({ iso: e.startTime, timeZone: e.timeZone, locale })} · {e.title}{e.status === "CANCELLED" ? " (cancelled)" : ""}{going?.has(e.uid) ? " (you’re going)" : ""}
                 </Link>
               </li>
             ))}
