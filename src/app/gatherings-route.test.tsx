@@ -68,6 +68,9 @@ describe("/events", () => {
     expect(h1().textContent).toBe(`Program, ${monthOf(future(3))}`);
     const row = screen.getByRole("link", { name: "Supper club" });
     expect(row.getAttribute("href")).toBe("/events/e1");
+    // The whole strip is the target: one link per row, stretched over it (twc-ev__link), which wears the focus ring.
+    expect(row.closest("li")!.querySelectorAll("a")).toHaveLength(1);
+    expect(row.className).toContain("twc-ev__link");
     // The tiles are a secondary section under the list, one level down.
     const tiles = screen.getByRole("heading", { level: 2, name: /Zooms/ });
     expect(row.compareDocumentPosition(tiles) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
