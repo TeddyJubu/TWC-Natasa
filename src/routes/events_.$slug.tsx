@@ -5,11 +5,13 @@ import { absoluteHttps, canonicalTags, parseSiteUrl } from "@/app/seo";
 import {
   AttendanceSummary, AttendeeList, EventDateTime, EventDescription, EventHero, EventLocation, EventsSkeleton, HostCard, ShareButton,
 } from "@/features/cal/events-ui";
+import { isEnded, isFull, spotsLeft } from "@/features/cal/event-state";
 import { calEventQuery } from "@/features/cal/queries";
 import { RsvpPanel } from "@/features/cal/rsvp";
 import { formatRange } from "@/features/cal/time";
 import type { CalEventDetail } from "@/features/cal/types";
 import { ErrorBanner } from "@/features/cal/ui";
+import { viewerQuery } from "@/features/members/queries";
 
 type Search = { business?: string };
 const SITE = "The Women’s Collective";
@@ -57,6 +59,9 @@ function GatheringPage() {
   const loaded = Route.useLoaderData();
   const query = useQuery({ ...calEventQuery(slug, business), initialData: loaded ?? undefined });
   const event = query.data;
+  // Approved members (and admins) answer as themselves; a failed check falls back to the guest form.
+  const viewer = useQuery({ ...viewerQuery, retry: false });
+  const member = !!(viewer.data?.member || viewer.data?.admin);
   return (
     <AppPage>
       <AppNav />
@@ -75,18 +80,41 @@ function GatheringPage() {
                   <EventDateTime event={event} className="text-base" />
                   {event.location && <EventLocation location={event.location} />}
                 </div>
+                <EarlyRsvp event={event} />
                 <EventDescription text={event.description} />
                 <HostCard host={event.host} />
                 <AttendanceSummary event={event} />
                 <AttendeeList names={event.attendees} />
                 <div><ShareButton title={event.title} path={`/events/${encodeURIComponent(event.slug)}`} /></div>
               </div>
-              <RsvpPanel event={event} business={business} />
+              <RsvpPanel event={event} business={business} member={member} checking={viewer.isPending} />
             </div>
           </>
         )}
       </main>
       <AppFooter />
     </AppPage>
+  );
+}
+
+/**
+ * Below lg the RSVP panel comes after the description, host and guests, so the answer is one tap away up here: it
+ * scrolls to the panel and moves focus into it (a button, not a #hash link, so the router's route focus stays out).
+ */
+function EarlyRsvp({ event }: { event: CalEventDetail }) {
+  if (event.status === "CANCELLED" || isEnded(event)) return null;
+  const left = spotsLeft(event);
+  const go = () => {
+    const panel = document.getElementById("rsvp");
+    if (!panel) return;
+    const still = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    panel.scrollIntoView({ behavior: still ? "auto" : "smooth", block: "start" });
+    panel.focus({ preventScroll: true });
+  };
+  return (
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 lg:hidden">
+      <button type="button" className="twc-btn" onClick={go}>{isFull(event) ? "Join the waitlist" : "RSVP"}</button>
+      {left !== null && <span className="text-sm">{left === 1 ? "1 spot left" : `${left} spots left`}</span>}
+    </div>
   );
 }

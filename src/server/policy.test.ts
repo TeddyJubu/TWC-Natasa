@@ -13,8 +13,8 @@ import { directory, intros, memberPage, ownProfile, removeLogo, saveProfile, upl
 import { viewer } from "@/features/auth/viewer.server";
 import { bookHeadshot } from "@/features/events/events.server";
 import {
-  addAdminRsvp, adminBookings, adminBusinesses, adminEvent, adminEvents, adminEventTypes, adminRsvps, cancelAdminEvent, clearCalCache,
-  memberGatherings, memberRsvps, saveAdminEvent, saveEventType, setMemberRsvp,
+  addAdminRsvp, adminBookings, adminBusinesses, adminEvent, adminEvents, adminEventTypes, adminRsvps, adminWaitlist, cancelAdminEvent, clearCalCache,
+  memberEventRsvp, memberGatherings, memberRsvps, saveAdminEvent, saveEventType, setMemberRsvp, setMemberWaitlist,
 } from "@/features/cal/cal.server";
 import { submitApplication } from "@/features/applications/applications.server";
 import { listNeighborhoods } from "@/features/neighborhoods/neighborhoods.server";
@@ -529,6 +529,7 @@ describe("access rules (ported from the RLS checks)", () => {
     ["cancel an event", (c) => cancelAdminEvent(c, { uid: "evt1" })],
     ["read RSVPs", (c) => adminRsvps(c, { uid: "evt1" })],
     ["add an RSVP", (c) => addAdminRsvp(c, { uid: "evt1", rsvp: { name: "X", email: "x@x.test", status: "GOING" } })],
+    ["read a waitlist", (c) => adminWaitlist(c, { uid: "evt1" })],
     ["list bookings", (c) => adminBookings(c, {})],
     ["list appointment types", (c) => adminEventTypes(c, {})],
     ["save an appointment type", (c) => saveEventType(c, { eventType: { title: "X", lengthInMinutes: 30 } })],
@@ -540,6 +541,14 @@ describe("access rules (ported from the RLS checks)", () => {
     await refusedBeforeCal(() => memberGatherings(anon()));
     await refusedBeforeCal(() => memberRsvps(anon()));
     await refusedBeforeCal(() => setMemberRsvp(anon(), { eventId: "evt1", going: true }));
+    await refusedBeforeCal(() => setMemberRsvp(anon(), { eventId: "evt1", status: "MAYBE" }));
+    await refusedBeforeCal(() => memberEventRsvp(anon(), { eventId: "evt1" }));
+    await refusedBeforeCal(() => setMemberWaitlist(anon(), { eventId: "evt1", on: true }));
+  });
+  it("a pending member cannot read or change her event answer or waitlist place", async () => {
+    await refusedBeforeCal(() => memberEventRsvp(as(C), { eventId: "evt1" }));
+    await refusedBeforeCal(() => setMemberRsvp(as(C), { eventId: "evt1", status: "GOING" }));
+    await refusedBeforeCal(() => setMemberWaitlist(as(C), { eventId: "evt1", on: true }));
   });
   it("admin reaches Cal (the control for the refusals above)", () => reachesCal(() => adminEvents(as(A), {})));
   // ---------- Inbox (0002): anyone writes through the two forms; only admins read or archive ----------

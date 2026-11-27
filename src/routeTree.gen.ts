@@ -69,6 +69,7 @@ import { Route as ApiFormsSlugRouteImport } from './routes/api/forms.$slug'
 import { Route as FSlugThanksRouteImport } from './routes/f.$slug_.thanks'
 import { Route as AuthenticatedAdminAdminSectionRouteImport } from './routes/_authenticated/_admin/admin_.$section'
 import { Route as ApiGatheringsUidRsvpRouteImport } from './routes/api/gatherings.$uid.rsvp'
+import { Route as ApiGatheringsUidWaitlistRouteImport } from './routes/api/gatherings.$uid.waitlist'
 import { Route as AuthenticatedAdminAdminEventsUidRouteImport } from './routes/_authenticated/_admin/admin_.events.$uid'
 import { Route as AuthenticatedAdminAdminEventsNewRouteImport } from './routes/_authenticated/_admin/admin_.events.new'
 import { Route as AuthenticatedAdminAdminFormsIndexRouteImport } from './routes/_authenticated/_admin/admin_.forms.index'
@@ -374,6 +375,12 @@ const ApiGatheringsUidRsvpRoute = ApiGatheringsUidRsvpRouteImport.update({
   path: '/api/gatherings/$uid/rsvp',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiGatheringsUidWaitlistRoute =
+  ApiGatheringsUidWaitlistRouteImport.update({
+    id: '/api/gatherings/$uid/waitlist',
+    path: '/api/gatherings/$uid/waitlist',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedAdminAdminEventsUidRoute =
   AuthenticatedAdminAdminEventsUidRouteImport.update({
     id: '/admin_/events/$uid',
@@ -458,6 +465,7 @@ export interface FileRoutesByFullPath {
   '/f/$slug/thanks': typeof FSlugThanksRoute
   '/admin/$section': typeof AuthenticatedAdminAdminSectionRoute
   '/api/gatherings/$uid/rsvp': typeof ApiGatheringsUidRsvpRoute
+  '/api/gatherings/$uid/waitlist': typeof ApiGatheringsUidWaitlistRoute
   '/admin/events/$uid': typeof AuthenticatedAdminAdminEventsUidRoute
   '/admin/events/new': typeof AuthenticatedAdminAdminEventsNewRoute
   '/admin/forms/$formId': typeof AuthenticatedAdminAdminFormsFormIdRoute
@@ -522,6 +530,7 @@ export interface FileRoutesByTo {
   '/f/$slug/thanks': typeof FSlugThanksRoute
   '/admin/$section': typeof AuthenticatedAdminAdminSectionRoute
   '/api/gatherings/$uid/rsvp': typeof ApiGatheringsUidRsvpRoute
+  '/api/gatherings/$uid/waitlist': typeof ApiGatheringsUidWaitlistRoute
   '/admin/events/$uid': typeof AuthenticatedAdminAdminEventsUidRoute
   '/admin/events/new': typeof AuthenticatedAdminAdminEventsNewRoute
   '/admin/forms/$formId': typeof AuthenticatedAdminAdminFormsFormIdRoute
@@ -589,6 +598,7 @@ export interface FileRoutesById {
   '/f/$slug_/thanks': typeof FSlugThanksRoute
   '/_authenticated/_admin/admin_/$section': typeof AuthenticatedAdminAdminSectionRoute
   '/api/gatherings/$uid/rsvp': typeof ApiGatheringsUidRsvpRoute
+  '/api/gatherings/$uid/waitlist': typeof ApiGatheringsUidWaitlistRoute
   '/_authenticated/_admin/admin_/events/$uid': typeof AuthenticatedAdminAdminEventsUidRoute
   '/_authenticated/_admin/admin_/events/new': typeof AuthenticatedAdminAdminEventsNewRoute
   '/_authenticated/_admin/admin_/forms/$formId': typeof AuthenticatedAdminAdminFormsFormIdRoute
@@ -655,6 +665,7 @@ export interface FileRouteTypes {
     | '/f/$slug/thanks'
     | '/admin/$section'
     | '/api/gatherings/$uid/rsvp'
+    | '/api/gatherings/$uid/waitlist'
     | '/admin/events/$uid'
     | '/admin/events/new'
     | '/admin/forms/$formId'
@@ -719,6 +730,7 @@ export interface FileRouteTypes {
     | '/f/$slug/thanks'
     | '/admin/$section'
     | '/api/gatherings/$uid/rsvp'
+    | '/api/gatherings/$uid/waitlist'
     | '/admin/events/$uid'
     | '/admin/events/new'
     | '/admin/forms/$formId'
@@ -785,6 +797,7 @@ export interface FileRouteTypes {
     | '/f/$slug_/thanks'
     | '/_authenticated/_admin/admin_/$section'
     | '/api/gatherings/$uid/rsvp'
+    | '/api/gatherings/$uid/waitlist'
     | '/_authenticated/_admin/admin_/events/$uid'
     | '/_authenticated/_admin/admin_/events/new'
     | '/_authenticated/_admin/admin_/forms/$formId'
@@ -845,6 +858,7 @@ export interface RootRouteChildren {
   ApiFormsSlugRoute: typeof ApiFormsSlugRoute
   FSlugThanksRoute: typeof FSlugThanksRoute
   ApiGatheringsUidRsvpRoute: typeof ApiGatheringsUidRsvpRoute
+  ApiGatheringsUidWaitlistRoute: typeof ApiGatheringsUidWaitlistRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1269,6 +1283,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiGatheringsUidRsvpRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/gatherings/$uid/waitlist': {
+      id: '/api/gatherings/$uid/waitlist'
+      path: '/api/gatherings/$uid/waitlist'
+      fullPath: '/api/gatherings/$uid/waitlist'
+      preLoaderRoute: typeof ApiGatheringsUidWaitlistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/_admin/admin_/events/$uid': {
       id: '/_authenticated/_admin/admin_/events/$uid'
       path: '/admin/events/$uid'
@@ -1401,6 +1422,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiFormsSlugRoute: ApiFormsSlugRoute,
   FSlugThanksRoute: FSlugThanksRoute,
   ApiGatheringsUidRsvpRoute: ApiGatheringsUidRsvpRoute,
+  ApiGatheringsUidWaitlistRoute: ApiGatheringsUidWaitlistRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

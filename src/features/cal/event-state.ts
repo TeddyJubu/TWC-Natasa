@@ -22,6 +22,9 @@ export function parseGatheringsSearch(raw: Record<string, unknown>): GatheringsS
 
 export const isEnded = (e: Pick<CalEvent, "endTime">) => Date.parse(e.endTime) <= Date.now();
 export const isFull = (e: Pick<CalEvent, "spotsLeft" | "capacity">) => e.capacity !== null && e.spotsLeft !== null && e.spotsLeft <= 0;
+/** Open spots on a capped, upcoming event that isn't full yet; null when there is nothing to count. */
+export const spotsLeft = (e: Pick<CalEvent, "capacity" | "spotsLeft" | "status" | "endTime">) =>
+  e.capacity !== null && e.spotsLeft !== null && e.spotsLeft > 0 && e.status !== "CANCELLED" && !isEnded(e) ? e.spotsLeft : null;
 
 /** Group a page of events by the day they happen where they happen. */
 export function byEventDay<T extends Pick<CalEvent, "startTime" | "timeZone">>(events: T[]): Map<string, T[]> {

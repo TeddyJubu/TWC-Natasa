@@ -2,8 +2,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { renderWithQueries } from "@/test/dom";
+import { fake } from "@/test/fake-fns";
 import { RsvpPanel } from "./rsvp";
 import type { CalEvent } from "./types";
+
+vi.mock("./fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
+vi.mock("@/features/events/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 
 const future = (days: number) => new Date(Date.now() + days * 86_400_000).toISOString();
 const event: CalEvent = {
@@ -16,6 +20,7 @@ let replies: (Response | Error)[] = [];
 beforeEach(() => {
   posts.length = 0;
   replies = [];
+  fake.reset();
   window.localStorage.clear();
   vi.stubGlobal("fetch", vi.fn(async (url: string, init: RequestInit) => {
     posts.push({ url, body: JSON.parse(String(init.body)) });
@@ -113,5 +118,91 @@ describe("RsvpPanel", () => {
     unmount();
     renderWithQueries(<RsvpPanel event={{ ...event, startTime: future(-3), endTime: future(-2) }} />);
     expect(screen.getByText("This event has ended.")).toBeTruthy();
+  });
+});
+
+describe("a full event's waitlist (guests)", () => {
+  const full: CalEvent = { ...event, goingCount: 10, spotsLeft: 0 };
+  const joined = () => Response.json({ waitlisted: true });
+
+  it("offers the waitlist next to Send, posts only name and email, and says so on return", async () => {
+    replies = [joined()];
+    const { unmount } = renderWithQueries(<RsvpPanel event={full} />);
+    expect(screen.getByText(/This event is full\. Join the waitlist, or say maybe\./)).toBeTruthy();
+    fill();
+    fireEvent.click(screen.getByRole("button", { name: "Join the waitlist" }));
+    expect(await screen.findByText("You’re on the waitlist.", { selector: "p.font-display" })).toBeTruthy();
+    expect(posts[0]).toEqual({ url: "/api/gatherings/evt1/waitlist", body: { name: "Rosa", email: "rosa@x.test" } });
+    unmount();
+    renderWithQueries(<RsvpPanel event={full} />);
+    expect(await screen.findByText("You’re on the waitlist.", { selector: "p.font-display" })).toBeTruthy();
+  });
+
+  it("asks for name and email before joining, and sends nothing", async () => {
+    renderWithQueries(<RsvpPanel event={full} />);
+    fireEvent.click(screen.getByRole("button", { name: "Join the waitlist" }));
+    expect((await screen.findAllByText(/Add your name and email to join the waitlist/)).length).toBeGreaterThan(0);
+    expect(posts).toEqual([]);
+  });
+
+  it("EVENT_FULL from Cal on an event that looked open offers the waitlist too", async () => {
+    replies = [refused(409, "EVENT_FULL", "This event is full."), joined()];
+    renderWithQueries(<RsvpPanel event={event} />);
+    expect(screen.queryByRole("button", { name: "Join the waitlist" })).toBeNull();
+    fill();
+    send();
+    fireEvent.click(await screen.findByRole("button", { name: "Join the waitlist" }));
+    expect(await screen.findByText("You’re on the waitlist.", { selector: "p.font-display" })).toBeTruthy();
+  });
+});
+
+describe("a signed-in member", () => {
+  // The seeded answer, and the same answer for every later read (her refetch after a tap); a write's result is unused.
+  const mine = (status: string | null, waitlisted = false, plusOnes = 0) => {
+    const data = { status, plusOnes, waitlisted };
+    fake.results = Array.from({ length: 6 }, () => data);
+    return [["rsvps", "event", "evt1"], data] as [unknown[], unknown];
+  };
+
+  it("sees her answer from the server, not a form, and changes it in one tap as herself", async () => {
+    renderWithQueries(<RsvpPanel event={event} member />, [mine("GOING", false, 2)]);
+    expect(screen.getByText("You’re going. See you there!", { selector: "p.font-display" })).toBeTruthy();
+    expect(screen.getByText("Bringing 2")).toBeTruthy();
+    expect(screen.queryByLabelText(/Email/)).toBeNull();
+    expect(screen.getByRole("button", { name: "Going" }).getAttribute("aria-pressed")).toBe("true");
+    fireEvent.click(screen.getByRole("button", { name: "Maybe" }));
+    await waitFor(() => expect(fake.calls).toContainEqual(["setRsvpFn", { eventId: "evt1", status: "MAYBE" }]));
+    expect(posts).toEqual([]);
+    await waitFor(() => expect(statusText()).toMatch(/down as a maybe/));
+  });
+
+  it("can't tap Going on a full event; joins and leaves the waitlist instead", async () => {
+    const full: CalEvent = { ...event, spotsLeft: 0 };
+    const { unmount } = renderWithQueries(<RsvpPanel event={full} member />, [mine(null)]);
+    expect((screen.getByRole("button", { name: "Going" }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(screen.getByRole("button", { name: "Join the waitlist" }));
+    await waitFor(() => expect(fake.calls).toContainEqual(["setMemberWaitlistFn", { eventId: "evt1", on: true }]));
+    unmount();
+    renderWithQueries(<RsvpPanel event={full} member />, [mine(null, true)]);
+    expect(screen.getByText("You’re on the waitlist.", { selector: "p.font-display" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Leave the waitlist" }));
+    await waitFor(() => expect(fake.calls).toContainEqual(["setMemberWaitlistFn", { eventId: "evt1", on: false }]));
+  });
+
+  it("shows a refusal, such as a seat taken in the meantime", async () => {
+    const seeded = mine(null);
+    fake.results = [new Error("This event is full."), ...fake.results];
+    renderWithQueries(<RsvpPanel event={event} member />, [seeded]);
+    fireEvent.click(screen.getByRole("button", { name: "Going" }));
+    expect((await screen.findByRole("alert")).textContent).toBe("This event is full.");
+  });
+
+  it("another business's event, or the check still running, never shows her the member path", () => {
+    const { unmount } = renderWithQueries(<RsvpPanel event={event} member business="other" />, [mine("GOING")]);
+    expect(screen.getByLabelText(/Email/)).toBeTruthy();
+    unmount();
+    renderWithQueries(<RsvpPanel event={event} member checking />, [mine("GOING")]);
+    expect(screen.queryByLabelText(/Email/)).toBeNull();
+    expect(screen.queryByRole("button", { name: "Going" })).toBeNull();
   });
 });

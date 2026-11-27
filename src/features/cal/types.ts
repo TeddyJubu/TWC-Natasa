@@ -28,7 +28,11 @@ export type OwnerRsvp = {
   createdAt: string; updatedAt: string;
 };
 export type RsvpResult = { uid: string; status: RsvpStatus; plusOnes: number };
-export type RsvpCode = "EVENT_FULL" | "RSVP_EXISTS" | "RATE_LIMITED" | "NOT_FOUND" | "BAD_REQUEST" | "UNAVAILABLE";
+export type RsvpCode = "EVENT_FULL" | "SPOTS_OPEN" | "RSVP_EXISTS" | "RATE_LIMITED" | "NOT_FOUND" | "BAD_REQUEST" | "UNAVAILABLE";
+/** A signed-in member's own answer for one event, and whether she is waiting for a place (event_waitlist, 0021). */
+export type MemberEventRsvp = { status: RsvpStatus | null; plusOnes: number; waitlisted: boolean };
+/** One person waiting for a place at a full event, for the admin only. */
+export type WaitlistEntry = { id: number; name: string; email: string; member: boolean; createdAt: string };
 
 export type BookingField = {
   slug: string; type: string; label: string; required: boolean; placeholder: string | null; options: string[];

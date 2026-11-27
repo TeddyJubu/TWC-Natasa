@@ -5,7 +5,7 @@ import { AppShell, TopBar } from "@/app/layout/AppShell";
 import { linkClass } from "@/app/layout/app-classes";
 import { Card, InlineError } from "@/app/layout/app-ui";
 import { useAdminBusiness } from "@/features/cal/admin-state";
-import { CancelEventDialog, EventEditorForm, PublicLinkCopy, RsvpTable } from "@/features/cal/admin-ui";
+import { CancelEventDialog, EventEditorForm, PublicLinkCopy, RsvpTable, WaitlistCard } from "@/features/cal/admin-ui";
 import { adminCalEventQuery } from "@/features/cal/queries";
 
 export const Route = createFileRoute("/_authenticated/_admin/admin_/events/$uid")({
@@ -32,6 +32,7 @@ function EditGathering() {
                 <>
                   <div className="flex flex-wrap gap-2"><PublicLinkCopy slug={event.slug} /><CancelEventDialog event={event} business={business} /></div>
                   <RsvpTable event={event} business={business} />
+                  <WaitlistCard event={event} business={business} />
                   <Card title="Details"><EventEditorForm key={`${event.uid}:${event.slug}`} event={event} business={business} /></Card>
                 </>
               )}

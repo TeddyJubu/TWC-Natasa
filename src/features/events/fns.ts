@@ -27,7 +27,7 @@ export const rsvpsFn = createServerFn().handler(async () => {
 });
 
 export const setRsvpFn = createServerFn({ method: "POST" })
-  .validator(pass<{ eventId: string; going: boolean }>)
+  .validator(pass<{ eventId: string } & ({ going: boolean } | { status: "GOING" | "MAYBE" | "NOT_GOING" })>)
   .handler(async ({ data }) => {
     const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("@/features/cal/cal.server")]);
     return serve((c) => m.setMemberRsvp(c, data));

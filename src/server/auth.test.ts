@@ -258,6 +258,17 @@ describe("delete my account (POST /api/auth/delete-user)", () => {
     expect(row(`select status, bio, member_since from profiles where id = ?`, again.id)).toEqual({ status: "pending", bio: "", member_since: null });
   });
 
+  it("deletes her waitlist places, as a member and any she joined as a guest with her email (0021)", async () => {
+    const rosa = await signedIn("rosa@x.test");
+    const wait = (uid: string, email: string, user: string | null) =>
+      db.prepare(`insert into event_waitlist (event_uid, email, name, user_id) values (?, ?, 'R', ?)`).run(uid, email, user);
+    wait("evt1", "rosa@x.test", rosa.id);
+    wait("evt2", "rosa@x.test", null);
+    wait("evt1", "lena@x.test", null);
+    expect((await del(rosa.cookie, { password: "correct horse" })).status).toBe(200);
+    expect(db.prepare(`select event_uid, email from event_waitlist`).all().map((r) => ({ ...r }))).toEqual([{ event_uid: "evt1", email: "lena@x.test" }]);
+  });
+
   it("a password account needs its password: none or a wrong one deletes nothing", async () => {
     const rosa = await signedIn("rosa@x.test");
     db.prepare(`insert into applications (email, full_name) values ('rosa@x.test', 'Rosa')`).run();

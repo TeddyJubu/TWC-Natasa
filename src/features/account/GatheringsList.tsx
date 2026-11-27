@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { cn } from "@/index";
 import type { Neighborhood } from "@/features/neighborhoods/queries";
 import { toneFor } from "@/features/neighborhoods/tone";
@@ -50,7 +51,10 @@ function Events({ userId, hoodList }: { userId: string; hoodList: Neighborhood[]
               <li key={ev.id} className="air-ticket">
                 <TicketDate when={when} />
                 <div className="air-t-body">
-                  <h3>{ev.title}</h3>
+                  {/* The event page takes a slug or a uid, so a row without a slug still opens its page. */}
+                  <h3>
+                    <Link to="/events/$slug" params={{ slug: ev.slug || ev.id }} className={cn("no-underline hover:underline", ring)}>{ev.title}</Link>
+                  </h3>
                   <p className="air-meta">
                     <Icon name="map-pin" />
                     <span><span className="sr-only">{when.weekday}, {when.month} {when.day} · </span>{ev.location} · <span className="inline-flex items-center gap-1.5">{color && <span aria-hidden className="size-2 rounded-full bg-(--hood)" style={hoodStyle(color)} />}{ev.neighborhood}</span> · {when.time}</span>

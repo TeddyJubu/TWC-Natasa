@@ -22,6 +22,8 @@ export function beforeAccountDelete(db: DB, user: DeletedUser): void {
   }
   db.prepare("delete from applications where user_id = ? or lower(email) = lower(?)").run(user.id, user.email);
   db.prepare("delete from legacy_members where user_id = ? or email = lower(?)").run(user.id, user.email);
+  // Her own waitlist places cascade; one she joined as a guest with the same email goes too.
+  db.prepare("delete from event_waitlist where email = lower(?)").run(user.email);
 }
 
 /** After the row is gone: her upload folders (portraits and logos, newsfeed photos). */

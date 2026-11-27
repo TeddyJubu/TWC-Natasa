@@ -1,8 +1,8 @@
 // The browser's side of Cal: cached reads, and the posts that keep Cal's error codes for the forms.
 import { queryOptions, type QueryClient } from "@tanstack/react-query";
 import {
-  adminBusinessesFn, adminCalBookingsFn, adminCalEventFn, adminCalEventsFn, adminCalEventTypesFn, adminCalRsvpsFn, calBookingFn,
-  calEventFn, calEventsFn, calEventTypeFn, calEventTypesFn, calSlotsFn,
+  adminBusinessesFn, adminCalBookingsFn, adminCalEventFn, adminCalEventsFn, adminCalEventTypesFn, adminCalRsvpsFn, adminCalWaitlistFn, calBookingFn,
+  calEventFn, calEventsFn, calEventTypeFn, calEventTypesFn, calSlotsFn, memberEventRsvpFn,
 } from "./fns";
 import type { BookingStatusFilter, EventTab, RsvpInput, RsvpResult, RsvpStatus } from "./types";
 
@@ -31,6 +31,11 @@ export const adminCalEventQuery = (uid: string, business?: string) =>
   queryOptions({ queryKey: ["cal", "admin", "event", uid, business ?? null], queryFn: () => adminCalEventFn({ data: { uid, business } }) });
 export const adminCalRsvpsQuery = (uid: string, business?: string) =>
   queryOptions({ queryKey: ["cal", "admin", "rsvps", uid, business ?? null], queryFn: () => adminCalRsvpsFn({ data: { uid, business } }) });
+export const adminCalWaitlistQuery = (uid: string) =>
+  queryOptions({ queryKey: ["cal", "admin", "waitlist", uid], queryFn: () => adminCalWaitlistFn({ data: { uid } }) });
+/** A signed-in member's own answer on the event page. Under ["rsvps"], so every RSVP change refreshes it. */
+export const memberEventRsvpQuery = (eventUid: string) =>
+  queryOptions({ queryKey: ["rsvps", "event", eventUid], queryFn: () => memberEventRsvpFn({ data: { eventId: eventUid } }) });
 export const adminCalBookingsQuery = (params: { status: BookingStatusFilter; skip: number; business?: string }) =>
   queryOptions({ queryKey: ["cal", "admin", "bookings", params], queryFn: () => adminCalBookingsFn({ data: params }) });
 export const adminCalEventTypesQuery = (business?: string) =>
@@ -71,6 +76,8 @@ export async function postCal<T>(path: string, body: object): Promise<T> {
 
 export const sendRsvp = (eventUid: string, input: RsvpInput & { business?: string }) =>
   postCal<RsvpResult>(`/api/gatherings/${encodeURIComponent(eventUid)}/rsvp`, input);
+export const joinWaitlist = (eventUid: string, input: { name: string; email: string; business?: string }) =>
+  postCal<{ waitlisted: true }>(`/api/gatherings/${encodeURIComponent(eventUid)}/waitlist`, input);
 export const sendBooking = (input: object) => postCal<{ uid: string; seatUid: string | null }>("/api/book", input);
 export const manageBooking = (uid: string, input: object) =>
   postCal<{ uid: string; seatUid: string | null }>(`/api/booking/${encodeURIComponent(uid)}`, input);
@@ -102,5 +109,21 @@ export function lastRsvp(eventUid: string): LastRsvp | undefined {
     return value?.email && value.status ? { email: value.email, name: value.name ?? "", status: value.status, plusOnes: value.plusOnes ?? 0 } : undefined;
   } catch {
     return undefined;
+  }
+}
+
+/** The email this device put on an event's waitlist, to say so again on the next visit. */
+export function waitlistedHere(eventUid: string): string | undefined {
+  try {
+    return window.localStorage.getItem(`twc-waitlist:${eventUid}`) ?? undefined;
+  } catch {
+    return undefined;
+  }
+}
+export function rememberWaitlist(eventUid: string, email: string) {
+  try {
+    window.localStorage.setItem(`twc-waitlist:${eventUid}`, email.trim().toLowerCase());
+  } catch {
+    // Private windows can refuse; the place itself is saved.
   }
 }

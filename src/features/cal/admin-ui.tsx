@@ -8,7 +8,7 @@ import { Card, Chip, EmptySlot, InlineError, Toggle, type ChipTone } from "@/app
 import { rsvpCsv, rsvpTotals, STATUS_LABEL, useAdminBusiness } from "./admin-state";
 import { addCalRsvpFn, cancelCalEventFn, saveCalEventFn, saveCalEventTypeFn } from "./fns";
 import {
-  adminBusinessesQuery, adminCalBookingsQuery, adminCalEventsQuery, adminCalEventTypesQuery, adminCalRsvpsQuery, invalidateCal,
+  adminBusinessesQuery, adminCalBookingsQuery, adminCalEventsQuery, adminCalEventTypesQuery, adminCalRsvpsQuery, adminCalWaitlistQuery, invalidateCal,
 } from "./queries";
 import { formatRange, isoToWall, timeZones, wallToIso } from "./time";
 import {
@@ -310,6 +310,47 @@ export function RsvpTable({ event, business }: { event: AdminCalEvent; business?
               </tbody>
             </table>
           </div>
+        )}
+    </Card>
+  );
+}
+
+/**
+ * Who waits for a place at a full event (event_waitlist, 0021; Cal has no waitlist), first come first. "Add as going"
+ * is the admin's RSVP for that person; once Cal takes it, the server drops her from the list.
+ */
+export function WaitlistCard({ event, business }: { event: AdminCalEvent; business?: string }) {
+  const queryClient = useQueryClient();
+  const list = useQuery({ ...adminCalWaitlistQuery(event.uid), retry: false });
+  const add = useMutation({
+    mutationFn: (person: { name: string; email: string }) =>
+      addCalRsvpFn({ data: { uid: event.uid, rsvp: { ...person, status: "GOING" }, ...(business ? { business } : {}) } }),
+    onSuccess: () => invalidateCal(queryClient),
+  });
+  const rows = list.data ?? [];
+  return (
+    <Card title="Waitlist" subtitle={rows.length ? `${rows.length} waiting, first come first` : "Nobody is waiting"}>
+      {add.isError && <p role="alert" className="px-4 pt-3 text-sm text-danger">{messageOf(add.error)}</p>}
+      {list.isError ? <div className="p-4"><InlineError message={messageOf(list.error)} onRetry={() => void list.refetch()} /></div>
+        : list.isPending ? <p role="status" className="p-4 text-sm text-app-muted">Loading the waitlist…</p>
+        : !rows.length ? <div className="p-4"><EmptySlot>When the event is full, people can join the waitlist from its page.</EmptySlot></div>
+        : (
+          <ol className="flex flex-col">
+            {rows.map((r, i) => (
+              <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 border-b border-app-rule px-4 py-2.5 last:border-0">
+                <span className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                  <span className="tabular-nums text-app-muted">{i + 1}.</span>
+                  <span className="font-medium">{r.name}</span>
+                  <a className={linkClass} href={`mailto:${encodeURIComponent(r.email)}`}>{r.email}</a>
+                  {r.member && <Chip tone="ok">Member</Chip>}
+                  <span className="text-sm text-app-muted">{new Date(r.createdAt).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}</span>
+                </span>
+                <button type="button" className={secondaryButton} disabled={add.isPending} onClick={() => add.mutate({ name: r.name, email: r.email })}>
+                  Add as going<span className="sr-only">: {r.name}</span>
+                </button>
+              </li>
+            ))}
+          </ol>
         )}
     </Card>
   );

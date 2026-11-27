@@ -117,3 +117,25 @@ export const saveCalEventTypeFn = createServerFn({ method: "POST" })
     const [{ serve }, m] = await load();
     return serve((c) => m.saveEventType(c, data));
   });
+
+/** The event page's member path: her own answer and waitlist place (requireMember in cal.server.ts). */
+export const memberEventRsvpFn = createServerFn()
+  .validator(pass<{ eventId: string }>)
+  .handler(async ({ data }) => {
+    const [{ serve }, m] = await load();
+    return serve((c) => m.memberEventRsvp(c, data));
+  });
+
+export const setMemberWaitlistFn = createServerFn({ method: "POST" })
+  .validator(pass<{ eventId: string; on: boolean }>)
+  .handler(async ({ data }) => {
+    const [{ serve }, m] = await load();
+    return serve((c) => m.setMemberWaitlist(c, data));
+  });
+
+export const adminCalWaitlistFn = createServerFn()
+  .validator(pass<{ uid: string }>)
+  .handler(async ({ data }) => {
+    const [{ serve }, m] = await load();
+    return serve((c) => m.adminWaitlist(c, data));
+  });

@@ -548,6 +548,8 @@ describe("/account", () => {
       ];
       renderWithQueries(<Page />, queries([]));
       expect(button("Save my seat at Supper Club")).toBeTruthy();
+      // The ticket opens the event's page (Cal's slug, or its uid on a row without one: the page takes either).
+      expect(screen.getByRole("link", { name: "Supper Club" }).getAttribute("href")).toBe("/events/e1");
       expect(screen.queryByText("You’re going")).toBeNull();
       cleanup();
       renderWithQueries(<Page />, queries(["e1"]));

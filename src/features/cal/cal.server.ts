@@ -2,6 +2,7 @@
 // toPublicBooking), so attendee emails, notes and hidden events can't reach a public page by accident.
 import { CalAccounts, clientFromEnv, type CalClient } from "@teddyjubu/cal-agent-tools";
 import type { Ctx } from "@/server/context.server";
+import type { DB } from "@/server/db";
 import { coverPath } from "@/server/covers";
 import { requireAdmin, requireMember } from "@/server/guard";
 import { checkSize, clientIp, HttpError, publicError, rateLimit } from "@/server/request";
@@ -10,7 +11,7 @@ import { monthKey } from "./time";
 import {
   checkBooking, checkEvent, checkEventType, checkRsvp, isEmail, isTimeZone, MAX_GUESTS, RSVP_STATUSES,
   type AdminBooking, type AdminCalEvent, type AdminEventList, type BookingField, type BookingStatusFilter, type CalEvent,
-  type CalEventDetail, type CalSlot, type CheckResult, type EditableEventType, type EventList, type EventTab, type OwnerRsvp,
+  type CalEventDetail, type CalSlot, type MemberEventRsvp, type WaitlistEntry, type CheckResult, type EditableEventType, type EventList, type EventTab, type OwnerRsvp,
   type PublicBooking, type PublicEventType, type RsvpCode, type RsvpResult, type RsvpStatus, type SlotsByDay,
 } from "./types";
 
@@ -243,10 +244,10 @@ export async function sitemapEvents(): Promise<{ slug: string; updated: string }
 
 // ---- The gatherings cards on /account, /feed and the neighborhood pages ----
 
-export type GatheringRow = { id: string; title: string; description: string; location: string; neighborhood: string; starts_at: string; kind: string };
+export type GatheringRow = { id: string; slug: string; title: string; description: string; location: string; neighborhood: string; starts_at: string; kind: string };
 
 const toGathering = (e: RawEvent): GatheringRow => ({
-  id: e.uid, title: e.title, description: e.description ?? "", location: e.location ?? "",
+  id: e.uid, slug: e.slug, title: e.title, description: e.description ?? "", location: e.location ?? "",
   // ponytail: a Cal event's category doubles as its neighborhood; add a real field if the two ever need to differ.
   neighborhood: e.category ?? "", starts_at: e.startTime, kind: "gathering",
 });
@@ -262,33 +263,101 @@ export async function memberGatherings({ db, actor }: Ctx, from?: string): Promi
   return (await upcomingListed(account(), from ?? new Date().toISOString())).map(toGathering);
 }
 
+const rsvpsOf = (acc: Account, uid: string) =>
+  cached(`${acc.name ?? ""}:rsvps:${uid}`, () => call<OwnerRsvp[]>(acc, "community-events", { path: `/${encodeURIComponent(uid)}/rsvps` }));
+const ownRsvp = async (acc: Account, uid: string, email: string) =>
+  (await rsvpsOf(acc, uid)).find((r) => r.email.toLowerCase() === email.toLowerCase());
+const memberName = (db: DB, who: { id: string; email: string }) => {
+  const profile = db.prepare("select full_name from profiles where id = ?").get(who.id) as { full_name?: string } | undefined;
+  return profile?.full_name?.trim() || who.email.split("@")[0];
+};
+
 /** Uids of the upcoming events she is going to. Her email is matched here; other guests never leave the server. */
 export async function memberRsvps({ db, actor }: Ctx): Promise<string[]> {
   const who = requireMember(db, actor);
   const acc = account();
-  const email = who.email.toLowerCase();
   // ponytail: one read per event, cached a minute; the next 20 are all these cards show.
   const events = (await upcomingListed(acc, new Date().toISOString())).slice(0, 20).filter((e) => (e.goingCount ?? 0) > 0);
-  const going = await Promise.all(events.map(async (e) => {
-    const rsvps = await cached(`${acc.name ?? ""}:rsvps:${e.uid}`, () => call<OwnerRsvp[]>(acc, "community-events", { path: `/${encodeURIComponent(e.uid)}/rsvps` }));
-    return rsvps.some((r) => r.status === "GOING" && r.email.toLowerCase() === email) ? e.uid : null;
-  }));
+  const going = await Promise.all(events.map(async (e) => ((await ownRsvp(acc, e.uid, who.email))?.status === "GOING" ? e.uid : null)));
   return going.filter((uid): uid is string => uid !== null);
 }
 
-/** A signed-in member saves or gives up her own seat: always her own email, so she can't change anyone else's RSVP. */
+/** Her own answer for one event (the event page): only her row leaves the server, never anyone else's. */
+export async function memberEventRsvp({ db, actor }: Ctx, input: unknown): Promise<MemberEventRsvp> {
+  const who = requireMember(db, actor);
+  const uid = uidOf(isObject(input) ? input.eventId : undefined);
+  const mine = await ownRsvp(account(), uid, who.email);
+  return { status: mine?.status ?? null, plusOnes: mine?.plusOnes ?? 0, waitlisted: onWaitlist(db, uid, who.email) };
+}
+
+/**
+ * A signed-in member answers for herself: always her own email, so she can't change anyone else's RSVP. `going` is
+ * the /account cards' yes/no; `status` is the event page's three answers. The owner endpoint overwrites the whole
+ * RSVP, so her guests and note are sent again as she left them. Going takes her off the waitlist.
+ */
 export async function setMemberRsvp({ db, actor }: Ctx, input: unknown): Promise<void> {
   const who = requireMember(db, actor);
-  if (!isObject(input) || typeof input.going !== "boolean") throw bad("RSVP");
+  if (!isObject(input)) throw bad("RSVP");
+  const status = typeof input.going === "boolean" ? (input.going ? "GOING" : "NOT_GOING") : input.status;
+  if (!RSVP_STATUSES.includes(status as RsvpStatus)) throw bad("RSVP");
   const uid = uidOf(input.eventId);
-  const profile = db.prepare("select full_name from profiles where id = ?").get(who.id) as { full_name?: string } | undefined;
-  const name = profile?.full_name?.trim() || who.email.split("@")[0];
   const acc = account();
+  const mine = await ownRsvp(acc, uid, who.email);
   await call(acc, "community-events", {
     path: `/${encodeURIComponent(uid)}/rsvps`,
-    body: { name, email: who.email, status: input.going ? "GOING" : "NOT_GOING" },
+    body: {
+      name: memberName(db, who), email: who.email, status,
+      ...(status === "GOING" && mine?.plusOnes ? { plusOnes: mine.plusOnes } : {}), ...(mine?.note ? { note: mine.note } : {}),
+    },
   });
   invalidate(acc);
+  if (status === "GOING") leaveWaitlist(db, uid, who.email);
+}
+
+// ---- Waitlists (event_waitlist, 0021): Cal has no waitlist status, so who waits for a full event is kept here ----
+
+const onWaitlist = (db: DB, uid: string, email: string) =>
+  !!db.prepare("select 1 from event_waitlist where event_uid = ? and email = ?").get(uid, email.trim().toLowerCase());
+function leaveWaitlist(db: DB, uid: string, email: string) {
+  db.prepare("delete from event_waitlist where event_uid = ? and email = ?").run(uid, email.trim().toLowerCase());
+}
+
+/**
+ * A place on the waitlist exists only while the event is scheduled, ahead and full. The event is read fresh: the
+ * visitor has usually just been told "full" by Cal, and a minute-old copy could still show a spot. A second join with
+ * the same email changes nothing, so nobody can rename someone else's place.
+ */
+async function joinWaitlist(db: DB, acc: Account, uid: string, person: { name: string; email: string; userId: string | null }) {
+  invalidate(acc);
+  const event = (await allEvents(acc)).find((e) => e.uid === uid);
+  if (!event) throw notFound("That event");
+  if (event.status !== "SCHEDULED" || isPast(event)) throw new CalError("This event has been cancelled or has ended.", 400, "BAD_REQUEST");
+  if (event.capacity == null || event.spotsLeft == null || event.spotsLeft > 0) {
+    throw new CalError("There are still spots open, so you can RSVP instead.", 409, "SPOTS_OPEN");
+  }
+  db.prepare(
+    `insert into event_waitlist (event_uid, email, name, user_id) values (?, ?, ?, ?)
+     on conflict (event_uid, email) do update set user_id = coalesce(event_waitlist.user_id, excluded.user_id)`,
+  ).run(uid, person.email.trim().toLowerCase(), person.name.trim().slice(0, 120), person.userId);
+}
+
+/** A member joins or leaves the waitlist of a full event, as herself. */
+export async function setMemberWaitlist({ db, actor }: Ctx, input: unknown): Promise<void> {
+  const who = requireMember(db, actor);
+  if (!isObject(input) || typeof input.on !== "boolean") throw bad("waitlist");
+  const uid = uidOf(input.eventId);
+  if (!input.on) return leaveWaitlist(db, uid, who.email);
+  await joinWaitlist(db, account(), uid, { name: memberName(db, who), email: who.email, userId: who.id });
+}
+
+/** Who is waiting for a place, first come first, for the admin's event page. */
+export function adminWaitlist({ db, actor }: Ctx, input: unknown): WaitlistEntry[] {
+  requireAdmin(db, actor);
+  const uid = uidOf(isObject(input) ? input.uid : undefined);
+  const rows = db.prepare("select id, name, email, user_id, created_at from event_waitlist where event_uid = ? order by created_at, id").all(uid) as {
+    id: number; name: string; email: string; user_id: string | null; created_at: string;
+  }[];
+  return rows.map((r) => ({ id: r.id, name: r.name, email: r.email, member: r.user_id !== null, createdAt: r.created_at }));
 }
 
 // ---- Admin ----
@@ -365,6 +434,7 @@ export async function addAdminRsvp({ db, actor }: Ctx, input: unknown): Promise<
   const acc = account(businessOf(input));
   await call(acc, "community-events", { path: `/${encodeURIComponent(uid)}/rsvps`, body });
   invalidate(acc);
+  if (body.status === "GOING") leaveWaitlist(db, uid, body.email);
 }
 
 const BOOKING_FILTERS: readonly BookingStatusFilter[] = ["upcoming", "past", "cancelled", "unconfirmed"];
@@ -584,12 +654,27 @@ export async function sendRsvp(uid: string, input: unknown, ip: string, business
   throw unavailable();
 }
 
-export function rsvpRequest(request: Request, uid: string): Promise<Response> {
+export function rsvpRequest(request: Request, uid: string, db?: DB): Promise<Response> {
   return respondCal(async () => {
     const ip = clientIp(request.headers);
     if (!rsvpLimit(`${ip}:${uid}`)) throw limited();
     const input = await readJson(request);
-    return sendRsvp(uid, input, ip, businessOf(input));
+    const result = await sendRsvp(uid, input, ip, businessOf(input));
+    // A seat after all: her waiting place is no longer needed.
+    if (db && result.status === "GOING" && isObject(input) && typeof input.email === "string") leaveWaitlist(db, uidOf(uid), input.email);
+    return result;
+  });
+}
+
+/** A visitor joins a full event's waitlist: the RSVP route's limit and size check, then name and email only. */
+export function waitlistRequest(db: DB, request: Request, uid: string): Promise<Response> {
+  return respondCal(async () => {
+    const ip = clientIp(request.headers);
+    if (!rsvpLimit(`${ip}:${uid}`)) throw limited();
+    const input = await readJson(request);
+    const { name, email } = checked(checkRsvp(isObject(input) ? { name: input.name, email: input.email, status: "MAYBE" } : {}));
+    await joinWaitlist(db, account(businessOf(input)), uidOf(uid), { name, email, userId: null });
+    return { waitlisted: true };
   });
 }
 

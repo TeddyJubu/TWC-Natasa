@@ -3,9 +3,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { coverVersion } from "@/server/covers";
-import { openDb } from "@/server/db";
+import type { Ctx } from "@/server/context.server";
+import { openDb, type DB } from "@/server/db";
 import {
-  adminEvent, CalError, clearCalCache, coverSource, createBooking, filterPublic, getPublicBooking, getPublicEvent, getSlots, listPublicEvents,
+  addAdminRsvp, adminEvent, adminWaitlist, CalError, memberEventRsvp, memberGatherings, rsvpRequest, setMemberRsvp, setMemberWaitlist, waitlistRequest, clearCalCache, coverSource, createBooking, filterPublic, getPublicBooking, getPublicEvent, getSlots, listPublicEvents,
   manageBooking, saveAdminEvent, sendRsvp, sitemapEvents, toAdminBooking, toCalError, toPublicEvent, toPublicEventType, type RawEvent,
 } from "./cal.server";
 import { checkEvent } from "./types";
@@ -326,5 +327,114 @@ describe("toPublicEventType", () => {
     expect(type).not.toHaveProperty("price");
     expect(type).not.toHaveProperty("currency");
     expect(JSON.stringify(type)).not.toMatch(/15000|usd/);
+  });
+});
+
+describe("members on the event page, and waitlists (0021)", () => {
+  const id = (n: string) => `00000000-0000-4000-8000-${n.padStart(12, "0")}`;
+  const [ADMIN, BEA, PIA] = ["a1", "b1", "c1"].map(id);
+  let db: DB;
+  const as = (who: string | null): Ctx => ({ db, actor: who ? { id: who, email: `${who}@x.test` } : null });
+  const waiting = () => (db.prepare("select email, name, user_id from event_waitlist order by id").all() as object[]).map((r) => ({ ...r }));
+  // Cal's owner RSVP list: Bea's own answer and someone else's, which must never reach her.
+  let owner: { email: string; status: string; plusOnes: number; note: string | null }[] = [];
+  const calWith = (events: RawEvent[]) => (c: Call) => {
+    if (c.url.pathname.endsWith("/rsvps")) {
+      if (c.method === "POST") return ok({ uid: "r9", ...(c.body as object) });
+      return ok(owner.map((r, n) => ({ uid: `r${n}`, name: "X", createdAt: "", updatedAt: "", ...r })));
+    }
+    return eventsApi(events)(c);
+  };
+  const full = event("full", { capacity: 2, spotsLeft: 0, goingCount: 2 });
+  const open = event("open", { capacity: 5, spotsLeft: 3 });
+  // Each test gets its own IP, so the shared per-IP limit never decides a result here.
+  let ip = 0;
+  const post = (body: unknown) => {
+    const text = JSON.stringify(body);
+    return new Request("http://app.test/api/gatherings/full/waitlist", {
+      method: "POST", body: text, headers: { "content-type": "application/json", "content-length": String(text.length), "cf-connecting-ip": `198.51.100.${ip}` },
+    });
+  };
+
+  beforeEach(() => {
+    ip++;
+    vi.stubEnv("DATA_DIR", mkdtempSync(join(tmpdir(), "twc-cal-")));
+    db = openDb(":memory:");
+    const now = new Date().toISOString();
+    for (const [who, name] of [[ADMIN, "Ada"], [BEA, "Bea"], [PIA, "Pia"]]) {
+      db.prepare(`insert into "user" (id, name, email, emailVerified, createdAt, updatedAt) values (?, ?, ?, 1, ?, ?)`).run(who, name, `${who}@x.test`, now, now);
+    }
+    db.prepare("insert into user_roles (user_id, role) values (?, 'admin')").run(ADMIN);
+    db.prepare("update profiles set status = 'approved', full_name = 'Bea Baker' where id = ?").run(BEA);
+    owner = [{ email: `${BEA}@X.test`, status: "GOING", plusOnes: 2, note: "Vegetarian" }, { email: "other@x.test", status: "MAYBE", plusOnes: 0, note: null }];
+    answer = calWith([full, open]);
+  });
+
+  it("reads only her own answer, matched by her account's email", async () => {
+    expect(await memberEventRsvp(as(BEA), { eventId: "full" })).toEqual({ status: "GOING", plusOnes: 2, waitlisted: false });
+    owner = [];
+    clearCalCache();
+    expect(await memberEventRsvp(as(BEA), { eventId: "full" })).toEqual({ status: null, plusOnes: 0, waitlisted: false });
+  });
+
+  it("a status change keeps her guests and note (the owner endpoint overwrites the whole RSVP)", async () => {
+    await setMemberRsvp(as(BEA), { eventId: "full", status: "GOING" });
+    expect(calls.at(-1)!.body).toEqual({ name: "Bea Baker", email: `${BEA}@x.test`, status: "GOING", plusOnes: 2, note: "Vegetarian" });
+    await setMemberRsvp(as(BEA), { eventId: "full", status: "MAYBE" });
+    expect(calls.at(-1)!.body).toEqual({ name: "Bea Baker", email: `${BEA}@x.test`, status: "MAYBE", note: "Vegetarian" });
+    await setMemberRsvp(as(BEA), { eventId: "full", going: false });
+    expect(calls.at(-1)!.body).toMatchObject({ status: "NOT_GOING" });
+    await expect(setMemberRsvp(as(BEA), { eventId: "full", status: "WAITLIST" })).rejects.toThrow();
+  });
+
+  it("joins only a full, scheduled, upcoming event, once, and leaves it", async () => {
+    await expect(setMemberWaitlist(as(BEA), { eventId: "open", on: true })).rejects.toMatchObject({ code: "SPOTS_OPEN" });
+    await setMemberWaitlist(as(BEA), { eventId: "full", on: true });
+    await setMemberWaitlist(as(BEA), { eventId: "full", on: true });
+    expect(waiting()).toEqual([{ email: `${BEA}@x.test`, name: "Bea Baker", user_id: BEA }]);
+    expect((await memberEventRsvp(as(BEA), { eventId: "full" })).waitlisted).toBe(true);
+    await setMemberWaitlist(as(BEA), { eventId: "full", on: false });
+    expect(waiting()).toEqual([]);
+    answer = calWith([{ ...full, status: "CANCELLED" }]);
+    await expect(setMemberWaitlist(as(BEA), { eventId: "full", on: true })).rejects.toMatchObject({ code: "BAD_REQUEST" });
+  });
+
+  it("a guest joins with name and email only; a second join can't rename someone's place", async () => {
+    const first = await waitlistRequest(db, post({ name: "Rosa", email: "Rosa@X.test", status: "GOING", note: "hi" }), "full");
+    expect(await first.json()).toEqual({ waitlisted: true });
+    await waitlistRequest(db, post({ name: "Mallory", email: "rosa@x.test" }), "full");
+    expect(waiting()).toEqual([{ email: "rosa@x.test", name: "Rosa", user_id: null }]);
+    const bad = await waitlistRequest(db, post({ name: "", email: "no" }), "full");
+    expect(bad.status).toBe(400);
+    expect((await waitlistRequest(db, post({ name: "Vi", email: "vi@x.test" }), "open")).status).toBe(409);
+  });
+
+  it("a seat after all takes her off the waitlist, through any path", async () => {
+    await waitlistRequest(db, post({ name: "Rosa", email: "rosa@x.test" }), "full");
+    await waitlistRequest(db, post({ name: "Vi", email: "vi@x.test" }), "full");
+    await setMemberWaitlist(as(BEA), { eventId: "full", on: true });
+    expect(waiting()).toHaveLength(3);
+    await addAdminRsvp(as(ADMIN), { uid: "full", rsvp: { name: "Rosa", email: "rosa@x.test", status: "GOING" } });
+    await setMemberRsvp(as(BEA), { eventId: "full", status: "GOING" });
+    answer = (c) => (c.url.pathname.endsWith("/rsvp") ? ok({ uid: "r1", status: "GOING", plusOnes: 0 }) : calWith([full])(c));
+    const seat = post({ name: "Vi", email: "VI@x.test", status: "GOING" });
+    expect((await rsvpRequest(seat, "full", db)).status).toBe(200);
+    expect(waiting()).toEqual([]);
+  });
+
+  it("only an admin reads the waitlist, first come first", async () => {
+    await waitlistRequest(db, post({ name: "Rosa", email: "rosa@x.test" }), "full");
+    await setMemberWaitlist(as(BEA), { eventId: "full", on: true });
+    expect(adminWaitlist(as(ADMIN), { uid: "full" }).map(({ name, email, member }) => ({ name, email, member }))).toEqual([
+      { name: "Rosa", email: "rosa@x.test", member: false }, { name: "Bea Baker", email: `${BEA}@x.test`, member: true },
+    ]);
+    for (const who of [null, PIA, BEA]) expect(() => adminWaitlist(as(who), { uid: "full" })).toThrow();
+    await expect(memberEventRsvp(as(PIA), { eventId: "full" })).rejects.toThrow(/members only/i);
+    await expect(setMemberWaitlist(as(null), { eventId: "full", on: true })).rejects.toThrow();
+  });
+
+  it("the account cards carry each event's slug, for their link", async () => {
+    answer = calWith([event("e1", { slug: "supper-club" })]);
+    expect((await memberGatherings(as(BEA))).map((g) => [g.id, g.slug])).toEqual([["e1", "supper-club"]]);
   });
 });

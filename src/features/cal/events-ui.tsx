@@ -3,7 +3,7 @@ import * as React from "react";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/index";
 import { Icon } from "@/app/layout/twc";
-import { isEnded, isFull, kindClass, type GatheringsView } from "./event-state";
+import { isEnded, isFull, kindClass, spotsLeft, type GatheringsView } from "./event-state";
 import type { CalEvent } from "./types";
 import { CancelledBadge, CategoryChip, DateTimeText, EndedBadge, StatusBadge, useToast } from "./ui";
 
@@ -109,6 +109,12 @@ const eventLink = (event: CalEvent, business?: string) => ({
   to: "/events/$slug" as const, params: { slug: event.slug }, ...(business ? { search: { business } } : {}),
 });
 
+export function SpotsLeft({ event }: { event: CalEvent }) {
+  const left = spotsLeft(event);
+  if (left === null) return null;
+  return <span className="twc-chip twc-chip--ring">{left === 1 ? "1 spot left" : `${left} spots left`}</span>;
+}
+
 /** The canvas programme: one lifted, gently tilted colour strip per event, its field from its category. */
 export function EventList({ events, business }: { events: CalEvent[]; business?: string }) {
   return (
@@ -121,10 +127,11 @@ export function EventList({ events, business }: { events: CalEvent[]; business?:
                 {e.title}
               </Link>
             </h3>
-            {(e.category || e.status === "CANCELLED" || isEnded(e) || isFull(e)) && (
+            {(e.category || e.status === "CANCELLED" || isEnded(e) || isFull(e) || spotsLeft(e) !== null) && (
               <div className="twc-ev__tags">
                 {e.category && <CategoryChip category={e.category} />}
                 <EventStatus event={e} />
+                <SpotsLeft event={e} />
               </div>
             )}
           </div>
