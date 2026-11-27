@@ -3,7 +3,7 @@ import * as React from "react";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/index";
 import { Icon } from "@/app/layout/twc";
-import { isEnded, isFull, kindClass, spotsLeft, type GatheringsView } from "./event-state";
+import { isEnded, isFull, kindClass, locationKind, mapSearchUrl, spotsLeft, type GatheringsView } from "./event-state";
 import type { CalEvent } from "./types";
 import { CancelledBadge, CategoryChip, DateTimeText, EndedBadge, StatusBadge, useToast } from "./ui";
 
@@ -44,7 +44,7 @@ export function EventsViewToggle({ view, onChange }: { view: GatheringsView; onC
     <div role="group" aria-label="View as" className="twc-filters mb-0">
       {(["grid", "calendar"] as const).map((v) => (
         <button key={v} type="button" aria-pressed={view === v || (v === "grid" && view === "list")} className={pressable} onClick={() => onChange(v)}>
-          {v === "grid" ? "Program" : "Calendar"}
+          {v === "grid" ? "List" : "Calendar"}
         </button>
       ))}
     </div>
@@ -115,7 +115,10 @@ export function SpotsLeft({ event }: { event: CalEvent }) {
   return <span className="twc-chip twc-chip--ring">{left === 1 ? "1 spot left" : `${left} spots left`}</span>;
 }
 
-/** The canvas programme: one lifted, gently tilted colour strip per event, its field from its category. */
+/**
+ * The canvas programme: one lifted, gently tilted colour strip per event, its field from its category. The title is the
+ * row's one link, stretched over the whole strip (`twc-ev__link`), so the strip is the tap target and wears the focus ring.
+ */
 export function EventList({ events, business, going }: { events: CalEvent[]; business?: string; going?: ReadonlySet<string> }) {
   return (
     <ol className="twc-evs twc-evs--list twc-bleed">
@@ -123,7 +126,7 @@ export function EventList({ events, business, going }: { events: CalEvent[]; bus
         <li key={e.uid} className={cn("twc-ev", kindClass(e.category))}>
           <div className="min-w-0">
             <h3>
-              <Link {...eventLink(e, business)} className="no-underline hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sb-ink">
+              <Link {...eventLink(e, business)} className="twc-ev__link">
                 {e.title}
               </Link>
             </h3>
@@ -219,8 +222,23 @@ export function EventDateTime({ event, className }: { event: Pick<CalEvent, "sta
   );
 }
 
-export function EventLocation({ location }: { location: string }) {
-  return <span className="inline-flex items-start gap-1.5 text-sm break-words"><Icon name="pin" className="mt-0.5 size-3.5 flex-none" />{location}</span>;
+/**
+ * Where it is. With `map`, a physical place links to a map search and a web address is a link of its own, both in a new
+ * tab; an online or Zoom location stays text. The programme rows leave it plain: their one link is the title.
+ */
+export function EventLocation({ location, map = false }: { location: string; map?: boolean }) {
+  const kind = map ? locationKind(location) : "online";
+  const href = kind === "place" ? mapSearchUrl(location) : kind === "url" ? location.trim() : null;
+  return (
+    <span className="inline-flex items-start gap-1.5 text-sm break-words">
+      <Icon name="pin" className="mt-0.5 size-3.5 flex-none" />
+      {href ? (
+        <a href={href} target="_blank" rel="noopener noreferrer" className="twc-link min-w-0 break-words">
+          {location}<span className="sr-only">{kind === "place" ? " (opens map)" : " (opens in a new tab)"}</span>
+        </a>
+      ) : location}
+    </span>
+  );
 }
 
 /** Plain text, always: line breaks are kept and nothing is parsed as markup. */

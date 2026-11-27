@@ -1,7 +1,7 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
-import { absoluteHttps, canonicalTags, parseSiteUrl } from "@/app/seo";
+import { absoluteHttps, canonicalTags, jsonLdScript, parseSiteUrl } from "@/app/seo";
 import {
   AttendanceSummary, AttendeeList, EventDateTime, EventDescription, EventHero, EventLocation, EventsSkeleton, HostCard, ShareButton,
 } from "@/features/cal/events-ui";
@@ -11,30 +11,41 @@ import { RsvpPanel } from "@/features/cal/rsvp";
 import { formatRange } from "@/features/cal/time";
 import type { CalEventDetail } from "@/features/cal/types";
 import { ErrorBanner } from "@/features/cal/ui";
+import type { viewerFn } from "@/features/auth/fns";
+import { gatheringsLd } from "@/features/events/structured-data";
 import { viewerQuery } from "@/features/members/queries";
 
 type Search = { business?: string };
 const SITE = "The Women’s Collective";
+type Viewer = Awaited<ReturnType<typeof viewerFn>>;
+/** The event (null while Cal is down) and who is looking (null if that check failed: the guest form then). */
+export type EventPageData = { event: CalEventDetail | null; viewer: Viewer | null };
 
 export const Route = createFileRoute("/events_/$slug")({
   validateSearch: (raw: Record<string, unknown>): Search =>
     typeof raw.business === "string" && raw.business ? { business: raw.business.slice(0, 80) } : {},
   loaderDeps: ({ search }) => ({ business: search.business }),
-  loader: async ({ context, params, deps }): Promise<CalEventDetail | null> => {
+  // Who is looking is asked here too, so the server's HTML already holds the right RSVP panel, not "Loading…".
+  loader: async ({ context, params, deps }): Promise<EventPageData> => {
+    const viewer = context.queryClient.ensureQueryData(viewerQuery).catch(() => null);
     try {
-      return await context.queryClient.ensureQueryData(calEventQuery(params.slug, deps.business));
+      return { event: await context.queryClient.ensureQueryData(calEventQuery(params.slug, deps.business)), viewer: await viewer };
     } catch (error) {
       if (/wasn.t found/i.test((error as Error).message ?? "")) throw notFound();
-      return null; // Cal is down: the page renders and offers a retry.
+      return { event: null, viewer: await viewer }; // Cal is down: the page renders and offers a retry.
     }
   },
-  head: ({ loaderData: e, params }) => {
+  head: ({ loaderData, params }) => {
+    const e = loaderData?.event;
     if (!e) return { meta: [{ title: `Event — ${SITE}` }, { name: "robots", content: "noindex" }] };
     const title = `${e.title} — ${SITE}`;
     const when = formatRange(e.startTime, e.endTime, e.timeZone, "en-US");
     const description = `${when}${e.location ? ` · ${e.location}` : ""}${e.description ? `. ${e.description.slice(0, 140)}` : ""}`;
     const seo = e.unlisted ? { meta: [], links: [] } : canonicalTags(import.meta.env.VITE_SITE_URL as string | undefined, `/events/${params.slug}`);
-    const image = absoluteHttps(parseSiteUrl(import.meta.env.VITE_SITE_URL as string | undefined), e.coverSrc);
+    const site = parseSiteUrl(import.meta.env.VITE_SITE_URL as string | undefined);
+    const image = absoluteHttps(site, e.coverSrc);
+    // schema.org Event for a listed event only: an unlisted one stays out of search entirely.
+    const ld = site && !e.unlisted ? gatheringsLd(site, [e]) : undefined;
     return {
       meta: [
         { title },
@@ -48,6 +59,7 @@ export const Route = createFileRoute("/events_/$slug")({
         ...seo.meta,
       ],
       links: seo.links,
+      scripts: ld ? [jsonLdScript(ld)] : [],
     };
   },
   component: GatheringPage,
@@ -57,10 +69,11 @@ function GatheringPage() {
   const { slug } = Route.useParams();
   const { business } = Route.useSearch();
   const loaded = Route.useLoaderData();
-  const query = useQuery({ ...calEventQuery(slug, business), initialData: loaded ?? undefined });
+  const query = useQuery({ ...calEventQuery(slug, business), initialData: loaded?.event ?? undefined });
   const event = query.data;
-  // Approved members (and admins) answer as themselves; a failed check falls back to the guest form.
-  const viewer = useQuery({ ...viewerQuery, retry: false });
+  // Approved members (and admins) answer as themselves; a failed check falls back to the guest form. The loader's
+  // answer is the first one, so the server's HTML and the first browser render show the same panel.
+  const viewer = useQuery({ ...viewerQuery, retry: false, initialData: loaded?.viewer ?? undefined });
   const member = !!(viewer.data?.member || viewer.data?.admin);
   return (
     <AppPage>
@@ -78,7 +91,7 @@ function GatheringPage() {
               <div className="flex min-w-0 flex-col gap-6">
                 <div className="flex flex-col gap-2 text-[17px]">
                   <EventDateTime event={event} className="text-base" />
-                  {event.location && <EventLocation location={event.location} />}
+                  {event.location && <EventLocation location={event.location} map />}
                 </div>
                 <EarlyRsvp event={event} />
                 <EventDescription text={event.description} />
@@ -87,7 +100,7 @@ function GatheringPage() {
                 <AttendeeList names={event.attendees} />
                 <div><ShareButton title={event.title} path={`/events/${encodeURIComponent(event.slug)}`} /></div>
               </div>
-              <RsvpPanel event={event} business={business} member={member} checking={viewer.isPending} />
+              <RsvpPanel event={event} business={business} member={member} checking={viewer.isPending} signedIn={viewer.data?.signedIn} />
             </div>
           </>
         )}

@@ -1,5 +1,5 @@
 // The public gatherings pages' URL state and small event rules, shared by their components.
-import { dayKey } from "./time";
+import { dayKey, monthKey } from "./time";
 import type { CalEvent } from "./types";
 
 export type GatheringsView = "grid" | "list" | "calendar";
@@ -25,6 +25,29 @@ export const isFull = (e: Pick<CalEvent, "spotsLeft" | "capacity">) => e.capacit
 /** Open spots on a capped, upcoming event that isn't full yet; null when there is nothing to count. */
 export const spotsLeft = (e: Pick<CalEvent, "capacity" | "spotsLeft" | "status" | "endTime">) =>
   e.capacity !== null && e.spotsLeft !== null && e.spotsLeft > 0 && e.status !== "CANCELLED" && !isEnded(e) ? e.spotsLeft : null;
+
+/**
+ * The month a calendar opens on when the address names none: this month, unless nothing is left in it, then the month
+ * of the next upcoming event (`next`, the first of the upcoming list), so the grid never opens empty with dates ahead.
+ */
+export function openingMonth(current: string, next?: Pick<CalEvent, "startTime" | "timeZone">): string {
+  const month = next && monthKey(next.startTime, next.timeZone);
+  return month && month > current ? month : current;
+}
+
+/**
+ * What an event's location is: a physical `place` (worth a map search), a `url` (a link of its own), or `online` (a
+ * video call or Cal's internal `integrations:*` value), which has no map and no address to open.
+ */
+export function locationKind(location: string): "place" | "url" | "online" {
+  const text = location.trim();
+  if (/^https?:\/\/\S+$/i.test(text)) return "url";
+  if (/^integrations:|:\/\/|^www\./i.test(text) || /\b(zoom|online|virtual|google meet|ms teams|microsoft teams|webinar|livestream)\b/i.test(text)) return "online";
+  return "place";
+}
+
+/** A map search for a physical place: Google's documented search URL, opened in a new tab. */
+export const mapSearchUrl = (place: string) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.trim())}`;
 
 /** Group a page of events by the day they happen where they happen. */
 export function byEventDay<T extends Pick<CalEvent, "startTime" | "timeZone">>(events: T[]): Map<string, T[]> {
