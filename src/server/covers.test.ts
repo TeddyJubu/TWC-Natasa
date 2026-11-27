@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { sized, TINY, WITH_GPS } from "@/test/images";
-import { cachedCover, coverPath, coverVersion, pruneCovers, resetCoverState, serveCover, type CoverSource } from "./covers";
+import { cachedCover, coverPath, coverVersion, pruneCovers, resetCoverState, serveCover, storeUploadedCover, uploadedCoverFile, type CoverSource } from "./covers";
 import { serveMedia } from "./media";
 import { openDb } from "./db";
 import { RemoteImageError } from "./remote-image";
@@ -289,5 +289,41 @@ describe("the cache's size", () => {
     const left = readdirSync(join(dir, "uploads", "covers"));
     expect(left).toContain(names[2]);
     expect(left).not.toContain(names[0]);
+  });
+});
+
+describe("uploaded covers", () => {
+  const never = vi.fn(async () => { throw new Error("an uploaded cover is never downloaded"); });
+  beforeEach(() => vi.stubEnv("APP_URL", "https://club.test"));
+
+  it("are stored on our disk, stripped, by their own hash, under an address of our origin", async () => {
+    const address = storeUploadedCover(WITH_GPS.jpg);
+    expect(address).toMatch(/^https:\/\/club\.test\/media\/event-covers\/[0-9a-f]{64}\.jpg$/);
+    const file = uploadedCoverFile(address)!;
+    expect(existsSync(file)).toBe(true);
+    expect(readFileSync(file).length).toBeLessThan(WITH_GPS.jpg.length);
+    expect(storeUploadedCover(WITH_GPS.jpg)).toBe(address);
+  });
+
+  it("are served through the event's cover route without any download", async () => {
+    const address = storeUploadedCover(TINY.jpg);
+    expect(coverPath("evt1", address)).toBe(`/media/covers/evt1?v=${coverVersion(address)}`);
+    const response = await serve(address, never);
+    expect(response.status).toBe(200);
+    expect(never).not.toHaveBeenCalled();
+  });
+
+  it("only our own origin and exact path count; a missing file is a 404", async () => {
+    const address = storeUploadedCover(TINY.jpg);
+    for (const other of [address.replace("club.test", "evil.test"), `${address}?x=1`, address.replace("event-covers", "covers"), "https://club.test/media/event-covers/../../x.jpg"]) {
+      expect(uploadedCoverFile(other)).toBeNull();
+    }
+    const gone = `https://club.test/media/event-covers/${"0".repeat(64)}.jpg`;
+    expect((await serve(gone, never)).status).toBe(404);
+    expect(never).not.toHaveBeenCalled();
+  });
+
+  it("refuses what isn't an image", () => {
+    expect(() => storeUploadedCover(text("<svg onload=alert(1)>"))).toThrow();
   });
 });

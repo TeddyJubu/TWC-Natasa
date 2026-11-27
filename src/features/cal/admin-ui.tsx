@@ -3,6 +3,8 @@ import * as React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { cn, SelectControl } from "@/index";
+import { postApi } from "@/app/api";
+import { FEED_RESIZE, resizeImage } from "@/app/resize-image";
 import { fieldClass, linkClass, primaryButton, mainButton, secondaryButton } from "@/app/layout/app-classes";
 import { Card, Chip, EmptySlot, InlineError, Toggle, type ChipTone } from "@/app/layout/app-ui";
 import { matchCategory, nextWeekly, rsvpCsv, rsvpTotals, STATUS_LABEL, useAdminBusiness } from "./admin-state";
@@ -219,7 +221,8 @@ export function EventEditorForm({ event, template, business }: { event?: AdminCa
           {(p) => <input {...p} type="number" min={1} className={fieldClass} value={d.capacity} onChange={(e) => set("capacity", e.target.value)} />}
         </FormField>
       </div>
-      {text("coverImageUrl", "Cover image address", "An https:// image link.")}
+      {text("coverImageUrl", "Cover image address", "An https:// image link, or upload one below.")}
+      <CoverUpload onUploaded={(url) => set("coverImageUrl", url)} />
       <Toggle
         label={event ? "Unlisted" : "Draft"}
         description={event ? "Left out of lists and search; anyone with the link can still open it." : "Stays off the calendar until you publish it; only its link opens it."}
@@ -230,6 +233,45 @@ export function EventEditorForm({ event, template, business }: { event?: AdminCa
       <button type="submit" className={cn(mainButton, "w-fit")} disabled={save.isPending}>{save.isPending ? "Saving…" : event ? "Save changes" : d.hidden ? "Save draft" : "Create and publish"}</button>
       {toastNode}
     </form>
+  );
+}
+
+const COVER_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+/**
+ * Uploads a cover to the site (shrunk in the browser first, checked and stripped on the server) and puts its address
+ * in the field above; Save keeps it. No preview: the page shows the cover once the event is saved.
+ */
+function CoverUpload({ onUploaded }: { onUploaded: (url: string) => void }) {
+  const id = React.useId();
+  const [state, setState] = React.useState<{ busy?: boolean; done?: string; error?: string }>({});
+  const pick = async (picked: File | undefined) => {
+    if (!picked) return;
+    if (!COVER_TYPES.includes(picked.type)) return setState({ error: "Please choose a JPG, PNG or WebP image." });
+    setState({ busy: true });
+    try {
+      const file = await resizeImage(picked, FEED_RESIZE);
+      if (file.size > 5 * 1024 * 1024) throw new Error("That image is over 5 MB. Please choose a smaller one.");
+      const form = new FormData();
+      form.set("kind", "event-cover");
+      form.set("file", file);
+      const { url } = await postApi<{ url: string }>("/api/images", form);
+      onUploaded(url);
+      setState({ done: picked.name });
+    } catch (error) {
+      setState({ error: messageOf(error) });
+    }
+    return undefined;
+  };
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={id} className="text-sm font-medium">Upload a cover</label>
+      <input id={id} type="file" accept={COVER_TYPES.join(",")} disabled={state.busy} className="text-sm" onChange={(e) => { void pick(e.target.files?.[0]); e.target.value = ""; }} />
+      <p role="status" className="text-sm text-app-muted">
+        {state.busy ? "Uploading…" : state.done ? `Uploaded ${state.done}. Save to use it.` : "JPG, PNG or WebP. It’s stored on this site."}
+      </p>
+      {state.error && <p role="alert" className="text-sm text-danger">{state.error}</p>}
+    </div>
   );
 }
 

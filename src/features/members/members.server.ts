@@ -3,7 +3,8 @@
 import type { MemberProfile } from "@/index";
 import type { Ctx } from "@/server/context.server";
 import { tx } from "@/server/db";
-import { AccessError, isAdmin, isMember, requireSession } from "@/server/guard";
+import { storeUploadedCover } from "@/server/covers";
+import { AccessError, isAdmin, isMember, requireAdmin, requireSession } from "@/server/guard";
 import { checkImage, mediaUrl, removeMedia, writeMedia } from "@/server/media";
 import { bad, isObject, str } from "@/server/validate";
 import { checkSize, fileBytes, readForm, respond } from "@/server/request";
@@ -172,6 +173,11 @@ export function uploadImageRequest(c: Ctx, request: Request): Promise<Response> 
     requireSession(c.actor);
     const form = await readForm(request);
     const kind = form.get("kind");
+    // An event's cover (admins): stored on the site, its address saved on the event by the editor.
+    if (kind === "event-cover") {
+      requireAdmin(c.db, c.actor);
+      return { url: storeUploadedCover(await fileBytes(form)) };
+    }
     if (kind !== "avatar" && kind !== "logo") throw bad("upload");
     return uploadImage(c, kind, await fileBytes(form));
   });

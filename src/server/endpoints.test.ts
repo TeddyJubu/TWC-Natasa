@@ -97,6 +97,21 @@ describe("POST /api/images", () => {
   });
 });
 
+describe("POST /api/images, an event cover", () => {
+  it("is for admins only", async () => {
+    const { body, headers } = await multipart({ kind: "event-cover", file: new Blob([PNG], { type: "image/png" }) });
+    expect((await uploadImageRequest(as(MEMBER), post(body, headers).request)).status).toBe(403);
+  });
+
+  it("stores an admin's picture and answers with the address to save on the event", async () => {
+    vi.stubEnv("APP_URL", "https://club.test");
+    const { body, headers } = await multipart({ kind: "event-cover", file: new Blob([PNG], { type: "image/png" }) });
+    const res = await uploadImageRequest(as(ADMIN), post(body, headers).request);
+    expect(res.status).toBe(200);
+    expect((await res.json()).url).toMatch(/^https:\/\/club\.test\/media\/event-covers\/[0-9a-f]{64}\.png$/);
+  });
+});
+
 describe("POST /api/neighborhood-logos", () => {
   it("refuses a non-admin before reading the body", async () => {
     const { request, state } = post("x", { "Content-Length": "1" });

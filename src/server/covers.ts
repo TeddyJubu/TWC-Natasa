@@ -21,20 +21,67 @@ export const COVER_LIMITS = { files: 200, bytes: 50 * 1024 * 1024 };
 export type CoverSource = (uid: string, business?: string) => Promise<{ url: string; unlisted: boolean } | null>;
 type Fetcher = (url: string) => Promise<Uint8Array>;
 
-const sha256 = (value: string) => createHash("sha256").update(value).digest("hex");
+const sha256 = (value: string | Uint8Array) => createHash("sha256").update(value).digest("hex");
 const coversDir = () => join(dataDir(), "uploads", "covers");
 export const coverVersion = (url: string) => sha256(url).slice(0, 12);
+
+// ---- Uploaded covers: an admin's picture, kept on our own disk (backed up, never evicted) ----
+// ponytail: an uploaded file stays when its event changes picture; clear old ones by hand if the folder ever grows.
+
+const uploadsDir = () => join(dataDir(), "uploads", "event-covers");
+const UPLOADED = /^\/media\/event-covers\/([0-9a-f]{64}\.(?:jpg|png|webp))$/;
+const appOrigin = () => {
+  try {
+    return new URL(process.env.APP_URL || "http://localhost:8080").origin;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * The file behind an uploaded cover's address (`${APP_URL}/media/event-covers/<sha256>.<ext>`, what Cal stores as the
+ * event's cover), or null for any other address. That address is only a name: it is never fetched, by us or a browser.
+ */
+export function uploadedCoverFile(url: string | null | undefined): string | null {
+  if (!url) return null;
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return null;
+  }
+  const name = parsed.origin === appOrigin() && !parsed.search && !parsed.hash ? UPLOADED.exec(parsed.pathname)?.[1] : undefined;
+  return name ? join(uploadsDir(), name) : null;
+}
+
+/** Checks and strips an admin's upload like any image, stores it by its own hash, and returns the address to save. */
+export function storeUploadedCover(bytes: Uint8Array): string {
+  const ext = checkImage(bytes, MAX_FEED_IMAGE_EDGE);
+  const clean = stripMetadata(bytes);
+  const name = `${sha256(clean)}.${ext}`;
+  const file = join(uploadsDir(), name);
+  if (!existsSync(file)) {
+    mkdirSync(uploadsDir(), { recursive: true });
+    const tmp = `${file}.tmp-${randomBytes(6).toString("hex")}`;
+    writeFileSync(tmp, clean);
+    renameSync(tmp, file);
+  }
+  return `${appOrigin()}/media/event-covers/${name}`;
+}
 
 /**
  * The same-origin address of an event's cover; null without an https source, or with one that could never be fetched
  * (a blocked IP, another port, credentials), so share tags don't advertise it. Never holds the source address.
  */
 export function coverPath(uid: string, url: string | null | undefined, business?: string | null): string | null {
-  if (!url?.startsWith("https://") || !UID.test(uid)) return null;
-  try {
-    checkRemoteUrl(url);
-  } catch {
-    return null;
+  if (!url || !UID.test(uid)) return null;
+  if (!uploadedCoverFile(url)) {
+    if (!url.startsWith("https://")) return null;
+    try {
+      checkRemoteUrl(url);
+    } catch {
+      return null;
+    }
   }
   return `/media/covers/${uid}?v=${coverVersion(url)}${business ? `&business=${encodeURIComponent(business)}` : ""}`;
 }
@@ -134,8 +181,10 @@ export async function serveCover(url: URL, requestHeaders: Headers, source: Cove
   } catch {
     return notFound();
   }
-  if (!cover?.url.startsWith("https://") || coverVersion(cover.url) !== url.searchParams.get("v")) return notFound();
-  const file = await cachedCover(cover.url, fetchImage);
+  if (!cover?.url || coverVersion(cover.url) !== url.searchParams.get("v")) return notFound();
+  const uploaded = uploadedCoverFile(cover.url);
+  const file = uploaded ? (existsSync(uploaded) ? uploaded : null)
+    : cover.url.startsWith("https://") ? await cachedCover(cover.url, fetchImage) : null;
   if (!file) return notFound();
   try {
     const stat = statSync(file);
