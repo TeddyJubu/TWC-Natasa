@@ -77,13 +77,32 @@ describe("/membership", () => {
     expect(amounts()).toEqual(["$0", "$20", "$40", "$220"]);
   });
 
-  it("sends the paid tiers to plain /join and the free one to the letter's own signup", () => {
+  it("sends the paid tiers to plain /join and the free one to the letter's own signup, on this page", () => {
     show(Membership);
-    for (const [name, href] of [["Get the newsletter", "/#letter"], ["Become a member", "/join"], ["Promote my business", "/join"], ["Apply", "/join"]]) {
+    for (const [name, href] of [["Get the newsletter", "#letter"], ["Become a member", "/join"], ["Promote my business", "/join"], ["Apply", "/join"]]) {
       const a = within(main()).getByRole("link", { name });
       expect(a.getAttribute("href")).toBe(href);
       expect(a.className.split(" ")).toContain("twc-btn");
     }
+    // The letter is here, below the arches, with its email-only signup: she never leaves for the home page.
+    const letter = main().querySelector<HTMLElement>("section#letter")!;
+    expect(within(letter).getByRole("heading", { name: "The Collective letter", level: 2 })).toBeTruthy();
+    expect(within(letter).getByRole("textbox", { name: /email/i })).toBeTruthy();
+    expect(within(letter).getByRole("form", { name: "Newsletter sign-up" })).toBeTruthy();
+    expect(main().querySelector(".twc-arches")!.compareDocumentPosition(letter) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("says how joining works in three steps, with no price, date, duration or payment", () => {
+    show(Membership);
+    const strip = screen.getByRole("region", { name: "How joining works" });
+    expect(within(strip).getAllByRole("heading", { level: 3 }).map((h) => h.textContent)).toEqual(["Apply", "We review", "Welcome"]);
+    expect(within(strip).getAllByRole("listitem").map((li) => li.querySelector("p")!.textContent)).toEqual([
+      "One form, about you and your work.",
+      "Every application is read by a person. We reply by email.",
+      "A welcome email, then your member card, events and the members’ directory.",
+    ]);
+    expect(strip.textContent).not.toMatch(/\$|\d{4}|\bdays?\b|\bweeks?\b|\bmonths?\b|\bpa(y|id)|\bfees?\b|\bprices?\b|\bfree\b/i);
+    expect(main().querySelector(".twc-arches")!.compareDocumentPosition(strip) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("promises the members-only directory, never Google, and only the saving it gives", () => {

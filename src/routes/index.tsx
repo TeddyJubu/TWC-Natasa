@@ -6,10 +6,11 @@ import { formatRange } from "@/features/cal/time";
 import { rosterQuery } from "@/features/roster/queries";
 import { stripMembers } from "@/app/canvas/strip";
 import { Experiences } from "@/app/canvas/Experiences";
-import { NewsletterSignup } from "@/features/newsletter/NewsletterSignup";
 import { AppFooter, AppNav, AppPage } from "@/app/layout/AppLayout";
 import { Arches } from "@/app/canvas/Arches";
 import { Bands } from "@/app/canvas/Bands";
+// The weekly letter at #letter; the canvas's partner card beside it waits until there is a partner to show.
+import { Letter } from "@/app/canvas/Letter";
 import { jsonLdScript, organizationLd, parseSiteUrl } from "@/app/seo";
 
 export const Route = createFileRoute("/")({
@@ -144,24 +145,6 @@ function Program() {
             <p className="twc-meta"><Link to="/events/$slug" params={{ slug: e.slug }}>Details and RSVP<span className="sr-only">: {e.title}</span> ↗</Link></p>
           </article>
         ))}
-      </div>
-    </section>
-  );
-}
-
-/** The weekly letter, with its own email-only signup (no application needed). `#letter` is where "Get the newsletter"
- *  and "Get launch news" lead. The canvas's partner card waits until there is a partner to show. */
-function Letter() {
-  return (
-    <section id="letter" aria-labelledby="letter-title" className="twc-letter">
-      <div className="twc-card twc-home-card twc-letter__card">
-        <div className="twc-letter__words">
-          <p className="twc-eyebrow">Every Thursday</p>
-          <h2 id="letter-title" className="twc-card__title">The Collective letter</h2>
-          <p className="twc-home-big">Member stories, local finds and opportunities.</p>
-          <p>One email a week. Unsubscribe in a click. Guests welcome.</p>
-        </div>
-        <NewsletterSignup className="twc-letter__form" />
       </div>
     </section>
   );

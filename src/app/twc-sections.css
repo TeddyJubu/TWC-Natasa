@@ -145,6 +145,17 @@
 }
 }
 
+/* ---- The letter (src/app/canvas/Letter.tsx): one card, its words beside the signup (stacked below 900px); on the
+   home page and /membership, wherever the arches' "Get the newsletter" leads ---- */
+@layer components {
+.twc-letter { scroll-margin-top: 120px; padding: var(--twc-space-90) var(--twc-gut); border-top: var(--twc-border-hairline) solid var(--color-sb-ink); }
+.twc-letter__card { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--twc-space-40); align-items: end; }
+.twc-letter__card p { margin: 0; }
+.twc-letter__words { display: flex; flex-direction: column; gap: var(--twc-space-18); }
+.twc-letter__big { font-size: 19px; line-height: 1.2; }
+@media (max-width: 900px) { .twc-letter__card { grid-template-columns: 1fr; } }
+}
+
 /* ---- Membership arches (canvas .twc-arches, src/app/canvas/Arches.tsx): four arched tiers on the stone shelf ---- */
 @layer components {
 .twc-arches { padding: var(--twc-space-60) var(--twc-gut) 0; background: var(--color-sb-cream); border-top: var(--twc-border-hairline) solid var(--color-sb-stone-rule); color: var(--color-sb-ink); }
