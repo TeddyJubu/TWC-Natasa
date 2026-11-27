@@ -433,8 +433,10 @@ describe("members on the event page, and waitlists (0021)", () => {
     await expect(setMemberWaitlist(as(null), { eventId: "full", on: true })).rejects.toThrow();
   });
 
-  it("the account cards carry each event's slug, for their link", async () => {
-    answer = calWith([event("e1", { slug: "supper-club" })]);
-    expect((await memberGatherings(as(BEA))).map((g) => [g.id, g.slug])).toEqual([["e1", "supper-club"]]);
+  it("the account cards carry each event's slug, for their link, and whether it is full", async () => {
+    answer = calWith([event("e1", { slug: "supper-club" }), full, open]);
+    expect((await memberGatherings(as(BEA))).map((g) => [g.id, g.slug, g.full]).sort()).toEqual([
+      ["e1", "supper-club", false], ["full", "full", true], ["open", "open", false],
+    ]);
   });
 });

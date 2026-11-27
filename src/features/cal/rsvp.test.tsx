@@ -129,6 +129,8 @@ describe("a full event's waitlist (guests)", () => {
     replies = [joined()];
     const { unmount } = renderWithQueries(<RsvpPanel event={full} />);
     expect(screen.getByText(/This event is full\. Join the waitlist, or say maybe\./)).toBeTruthy();
+    // Going can't be taken on a full event, so a new answer starts on Maybe.
+    expect((screen.getByRole("radio", { name: "Maybe" }) as HTMLInputElement).checked).toBe(true);
     fill();
     fireEvent.click(screen.getByRole("button", { name: "Join the waitlist" }));
     expect(await screen.findByText("You’re on the waitlist.", { selector: "p.font-display" })).toBeTruthy();

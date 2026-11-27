@@ -72,6 +72,11 @@ function Events({ userId, hoodList }: { userId: string; hoodList: Neighborhood[]
                           Can’t make it<span className="sr-only"> to {ev.title}</span>
                         </button>
                       </div>
+                    ) : ev.full ? (
+                      // A full event takes no seat from here: its page holds the waitlist.
+                      <Link to="/events/$slug" params={{ slug: ev.slug || ev.id }} className={cn(secondaryButton, "shrink-0")}>
+                        Full · Join the waitlist<span className="sr-only"> for {ev.title}</span>
+                      </Link>
                     ) : (
                       <button
                         type="button" disabled={toggle.isPending || !rsvpsState.isSuccess}

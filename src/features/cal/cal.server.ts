@@ -244,10 +244,10 @@ export async function sitemapEvents(): Promise<{ slug: string; updated: string }
 
 // ---- The gatherings cards on /account, /feed and the neighborhood pages ----
 
-export type GatheringRow = { id: string; slug: string; title: string; description: string; location: string; neighborhood: string; starts_at: string; kind: string };
+export type GatheringRow = { id: string; slug: string; full: boolean; title: string; description: string; location: string; neighborhood: string; starts_at: string; kind: string };
 
 const toGathering = (e: RawEvent): GatheringRow => ({
-  id: e.uid, slug: e.slug, title: e.title, description: e.description ?? "", location: e.location ?? "",
+  id: e.uid, slug: e.slug, full: e.capacity != null && e.spotsLeft != null && e.spotsLeft <= 0, title: e.title, description: e.description ?? "", location: e.location ?? "",
   // ponytail: a Cal event's category doubles as its neighborhood; add a real field if the two ever need to differ.
   neighborhood: e.category ?? "", starts_at: e.startTime, kind: "gathering",
 });

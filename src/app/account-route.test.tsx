@@ -559,6 +559,16 @@ describe("/account", () => {
       await waitFor(() => expect(fake.calls[0]).toEqual(["setRsvpFn", { eventId: "e1", going: false }]));
     });
 
+    it("a full event offers its page's waitlist, not a seat it can't take", () => {
+      const ev = { id: "e1", slug: "supper-club", full: true, title: "Supper Club", description: "", location: "Bar", neighborhood: "Astoria", starts_at: "2099-11-09T00:30:00Z", created_at: "" };
+      renderWithQueries(<Page />, [
+        viewer(), [["profile", "u1"], { profile: base, avatarUrl: undefined }], [["events"], [ev]], [["rsvps", "u1"], []],
+        [["booking", "u1"], null], [["intros", "u1", base.neighborhood], []],
+      ]);
+      expect(screen.queryByRole("button", { name: /save my seat/i })).toBeNull();
+      expect(screen.getByRole("link", { name: "Full · Join the waitlist for Supper Club" }).getAttribute("href")).toBe("/events/supper-club");
+    });
+
     it("formats event day and time in New York time", () => {
       setTz("Asia/Tokyo");
       const ev = { id: "e1", title: "Supper Club", description: "", location: "Bar", neighborhood: "Astoria", starts_at: "2026-11-09T00:30:00Z", created_at: "" };

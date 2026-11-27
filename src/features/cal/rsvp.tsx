@@ -67,7 +67,8 @@ export function RsvpForm({ event, initial, business, onSaved, onWaitlisted }: {
   onWaitlisted?: (email: string) => void;
 }) {
   const queryClient = useQueryClient();
-  const [status, setStatus] = React.useState<RsvpStatus>(initial?.status ?? "GOING");
+  // A full event can't take a Going, so a new answer starts on Maybe.
+  const [status, setStatus] = React.useState<RsvpStatus>(initial?.status ?? (isFull(event) ? "MAYBE" : "GOING"));
   const [name, setName] = React.useState(initial?.name ?? "");
   const [email, setEmail] = React.useState(initial?.email ?? "");
   const [plusOnes, setPlusOnes] = React.useState(String(initial?.plusOnes ?? 0));
