@@ -13,6 +13,12 @@ const isProduction = () => env("NODE_ENV") === "production";
 /** The public origin for links in emails (server env APP_URL), without a trailing slash. */
 export const appUrl = () => (env("APP_URL") ?? "http://localhost:8080").replace(/\/+$/, "");
 
+/**
+ * /auth opened on Create account with her address filled in, for the applicant's emails (most have no account yet).
+ * `email` only prefills /auth's field; one who already has an account switches to Log in and the address stays.
+ */
+export const signupUrl = (email: string) => `${appUrl()}/auth?${new URLSearchParams({ mode: "signup", email })}`;
+
 export async function sendEmail({ to, subject, text }: Email): Promise<EmailResult> {
   const accountId = env("CF_EMAIL_ACCOUNT_ID");
   const token = env("CF_EMAIL_API_TOKEN");

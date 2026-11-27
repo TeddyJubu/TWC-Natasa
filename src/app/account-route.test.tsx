@@ -1,4 +1,6 @@
 // @vitest-environment jsdom
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import type { MemberProfile } from "@/index";
@@ -9,23 +11,36 @@ import { chooseValue, renderWithQueries, selectOptions } from "@/test/dom";
 import { restoreTz, setTz } from "@/test/tz";
 import { fake } from "@/test/fake-fns";
 
+// The page's unsaved-changes blocker: the options it registers, last render first.
+type BlockerOpts = { shouldBlockFn: (a: { current: { pathname: string }; next: { pathname: string } }) => Promise<boolean>; disabled?: boolean; enableBeforeUnload?: boolean };
+const blocker = vi.hoisted(() => ({ opts: undefined as BlockerOpts | undefined }));
+const auth = vi.hoisted(() => ({ listAccounts: vi.fn(), changePassword: vi.fn(), deleteUser: vi.fn(), signOut: vi.fn() }));
+
 vi.mock("@/features/members/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 vi.mock("@/features/events/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
+vi.mock("@/features/cal/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 vi.mock("@/features/auth/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 vi.mock("@/app/api", async () => (await import("@/test/fake-fns")).fakeApi);
-vi.mock("@tanstack/react-router", async (orig) => ({ ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs }));
+vi.mock("@/app/auth-client", () => ({ getAuthClient: async () => auth }));
+vi.mock("@tanstack/react-router", async (orig) => ({
+  ...(await orig<object>()), ...(await import("@/test/dom")).routerStubs,
+  useBlocker: (opts: BlockerOpts) => { blocker.opts = opts; return { status: "idle" }; },
+}));
 
 import { Route } from "@/routes/_authenticated/account";
 
-vi.spyOn(Route, "useRouteContext").mockReturnValue({ user: { id: "u1" } } as never);
+vi.spyOn(Route, "useRouteContext").mockReturnValue({ user: { id: "u1", email: "rosa@example.test" } } as never);
 const Page = Route.options.component as React.ComponentType;
 beforeEach(() => {
   // Hide the one-time “You’re in” panel unless a test clears storage on purpose.
   localStorage.setItem("twc-youre-in:v1:u1", "1");
+  auth.listAccounts.mockResolvedValue({ data: [{ providerId: "credential" }], error: null });
 });
 afterEach(() => {
   cleanup();
   fake.reset();
+  vi.clearAllMocks();
+  blocker.opts = undefined;
 });
 
 const base: Profile = {
@@ -48,13 +63,14 @@ function renderAccount(
 ) {
   const profile = { ...base, ...over };
   return renderWithQueries(<Page />, [
-    ...extra,
     viewer(admin),
     [["profile", "u1"], { profile, avatarUrl: undefined, logoUrl }],
     [["events"], events],
     [["rsvps", "u1"], []],
+    [["rsvps", "u1", "plans"], []],
     [["booking", "u1"], null],
     [["intros", "u1", profile.neighborhood], intros],
+    ...extra,
   ]);
 }
 
@@ -63,7 +79,7 @@ const save = () => button(/save changes/i);
 /** The save bar holds no buttons until something changed. */
 const noSave = () => screen.queryByRole("button", { name: /save changes/i }) === null;
 const status = () => screen.getByRole("status").textContent;
-const editPublicCard = () => fireEvent.click(button("Edit public card"));
+const editDirectoryCard = () => fireEvent.click(button("Edit directory card"));
 
 describe("/account", () => {
   describe("business logo", () => {
@@ -132,23 +148,31 @@ describe("/account", () => {
     expect(screen.queryByText(/in review/i)).toBeNull();
     expect(screen.queryByText(/application pending/i)).toBeNull();
     expect(screen.queryByText(/being reviewed/i)).toBeNull();
-    expect(within(screen.getByRole("region", { name: "Membership" })).getByText("Your application wasn’t approved")).toBeTruthy();
     expect(screen.getByText("Application not approved")).toBeTruthy();
     expect(screen.getByText(/weren’t able to offer you a membership/i)).toBeTruthy();
-    expect(screen.getByText("Only you and the collective’s admins can see your card.")).toBeTruthy();
   });
 
-  it("promises a declined account nothing, on any card, and points her to /contact", () => {
-    renderAccount({ status: "declined", catalogue_number: null });
+  it("a declined account sees only the head and Account settings: nothing to fill in, nothing promised", () => {
+    renderAccount({ status: "declined", catalogue_number: null, neighborhood: null });
     const main = screen.getByRole("main");
-    expect(main.textContent).not.toMatch(/welcomed in|once you’re approved|once your membership|this time|you’ll meet|save your seat|how neighbors see you/i);
-    for (const id of ["events", "headshot", "introductions"]) {
-      expect(within(document.getElementById(id)!).getByText("This part is for members")).toBeTruthy();
-    }
+    expect([...main.querySelectorAll("section[id]")].map((s) => s.id)).toEqual(["profile", "settings"]);
+    expect(main.textContent).not.toMatch(/welcomed in|once you’re approved|once your membership|this time|you’ll meet|save your seat|how neighbors see you|choose your neighborhood/i);
+    // No map, card, words or visibility to edit, and no card to preview.
+    expect(screen.queryByRole("switch")).toBeNull();
+    expect(screen.queryByRole("button", { name: /^edit|^add|view directory card/i })).toBeNull();
+    expect(screen.queryByRole("region", { name: "Membership" })).toBeNull();
     const contact = screen.getAllByRole("link", { name: /contact us/i });
-    expect(contact).toHaveLength(4); // the cover and the three locked cards
+    expect(contact).toHaveLength(2); // the head's honest message, and changing her email in Account settings
     for (const link of contact) expect(link.getAttribute("href")).toBe("/contact");
     expect(screen.queryByRole("link", { name: /start your application/i })).toBeNull();
+    // Her account is still hers: password and delete.
+    const settings = screen.getByRole("region", { name: "Account settings" });
+    expect(within(settings).getByRole("button", { name: "Change password" })).toBeTruthy();
+    expect(within(settings).getByRole("button", { name: "Delete my account" })).toBeTruthy();
+    // The menu offers only what is on the page.
+    fireEvent.click(screen.getByRole("button", { name: /account menu/ }));
+    const nav = screen.getByRole("navigation", { name: "My account" });
+    expect(within(nav).getAllByRole("link").map((a) => a.textContent)).toEqual(["Profile", "Account settings"]);
   });
 
   it("still shows a pending application as in review", () => {
@@ -179,7 +203,7 @@ describe("/account", () => {
     expect(within(cover).getByText("Astoria")).toBeTruthy();
     const stat = (label: string) => within(cover).getByText(label).nextElementSibling?.textContent;
     expect([stat("Member"), stat("Joined")]).toEqual(["No. 27", "Jan 2026"]);
-    fireEvent.click(within(cover).getByRole("button", { name: "View public card" }));
+    fireEvent.click(within(cover).getByRole("button", { name: "View directory card" }));
     const pass = screen.getByRole("dialog", { name: "Rosa Diaz" });
     expect(within(pass).getByText("No. 27")).toBeTruthy();
     const membership = screen.getByRole("region", { name: "Membership" });
@@ -217,12 +241,12 @@ describe("/account", () => {
     const options = () =>
       selectOptions(screen.getByRole("combobox", { name: /neighborhood/i })).map((o) => o.textContent);
     renderAccount({ neighborhood: "Astoria" }, [], [], false, [[["neighborhoods"], hoods]]);
-    editPublicCard();
+    editDirectoryCard();
     expect(options()).toContain("Sunnyside");
     expect(options()).not.toContain("Rego Park");
     cleanup();
     renderAccount({ neighborhood: "Rego Park" }, [], [], false, [[["neighborhoods"], hoods]]);
-    editPublicCard();
+    editDirectoryCard();
     expect(options().filter((o) => o === "Rego Park")).toHaveLength(1);
     expect(screen.getByRole("combobox", { name: /neighborhood/i }).textContent).toContain("Rego Park");
   });
@@ -232,7 +256,7 @@ describe("/account", () => {
 
     it("offers a blank first choice, selected when she has none", () => {
       renderAccount({ neighborhood: null });
-      editPublicCard();
+      editDirectoryCard();
       const first = selectOptions(select())[0]!;
       expect(first.textContent).toBe("Choose your neighborhood");
       expect(first.dataset.value).toBe("");
@@ -252,7 +276,7 @@ describe("/account", () => {
 
     it("saves the blank choice as null", async () => {
       renderAccount({ neighborhood: "Astoria" });
-      editPublicCard();
+      editDirectoryCard();
       chooseValue(select(), "");
       fake.results = [{ ...base, neighborhood: null }];
       fireEvent.click(save());
@@ -359,7 +383,7 @@ describe("/account", () => {
     it("there is no Save, Discard or status until something has changed", () => {
       renderAccount();
       expect(noSave()).toBe(true);
-      editPublicCard();
+      editDirectoryCard();
       expect(noSave()).toBe(true);
       expect(screen.queryByRole("button", { name: /discard/i })).toBeNull();
       expect(status()).toBe("");
@@ -367,7 +391,7 @@ describe("/account", () => {
 
     it("Discard drops the draft, closes the cards and takes the bar away", () => {
       renderAccount();
-      editPublicCard();
+      editDirectoryCard();
       fireEvent.change(screen.getByLabelText(/^role/i), { target: { value: "Owner" } });
       expect(status()).toBe("Unsaved changes");
       fireEvent.click(button(/discard changes/i));
@@ -380,7 +404,7 @@ describe("/account", () => {
 
     it("edit → dirty → save sends only the changed fields, then goes quiet and clean", async () => {
       renderAccount();
-      editPublicCard();
+      editDirectoryCard();
       fireEvent.change(screen.getByLabelText(/^role/i), { target: { value: "  Owner " } });
       expect(save().disabled).toBe(false);
       expect(status()).toBe("Unsaved changes");
@@ -395,7 +419,7 @@ describe("/account", () => {
 
     it("shows a quiet error when the save fails, keeping the edit", async () => {
       renderAccount();
-      editPublicCard();
+      editDirectoryCard();
       fireEvent.change(screen.getByLabelText(/^role/i), { target: { value: "Owner" } });
       fake.results = [new Error("We couldn’t save that.")];
       fireEvent.click(save());
@@ -412,7 +436,7 @@ describe("/account", () => {
 
     it("Edit and Add buttons name their card or field", () => {
       renderAccount({ business: "", website: "" });
-      expect(button("Edit public card")).toBeTruthy();
+      expect(button("Edit directory card")).toBeTruthy();
       expect(button("Edit in your words")).toBeTruthy();
       expect(button("Add business")).toBeTruthy();
       expect(button("Add website")).toBeTruthy();
@@ -425,7 +449,7 @@ describe("/account", () => {
       fireEvent.change(screen.getByLabelText(/upload a portrait/i), { target: { files: [ok] } });
       await act(() => new Promise((r) => setTimeout(r, 20))); // let the upload take its never-settling result
       expect(noSave()).toBe(true);
-      editPublicCard();
+      editDirectoryCard();
       const name = screen.getByLabelText(/^full name/i);
       fireEvent.change(name, { target: { value: "Rosa M. Diaz" } });
       fireEvent.change(name, { target: { value: "Rosa Diaz" } });
@@ -441,7 +465,7 @@ describe("/account", () => {
 
     it("Preview card opens her member pass with her unsaved values", () => {
       renderAccount();
-      editPublicCard();
+      editDirectoryCard();
       fireEvent.change(screen.getByLabelText(/^full name/i), { target: { value: "Rosa M. Diaz" } });
       fireEvent.change(screen.getByLabelText(/^role/i), { target: { value: "Head Baker" } });
       fireEvent.click(button(/preview card/i));
@@ -454,11 +478,11 @@ describe("/account", () => {
   describe("where you belong", () => {
     const where = () => screen.getByRole("region", { name: "Where you belong" });
 
-    it("sits right under the cover: her neighborhood's post, nearest stop, where it gathers and who's near", () => {
+    it("sits right under Visibility: her neighborhood's post, nearest stop, where it gathers and who's near", () => {
       const ev = { id: "e1", title: "Supper Club", description: "", location: "Bar Bolonat", neighborhood: "Astoria", starts_at: "2099-11-09T00:30:00Z", created_at: "" };
       renderAccount({}, [card("Lena Ortiz", 3)], [ev]);
       const order = [...document.querySelectorAll("main section[id]")].map((el) => el.id);
-      expect(order.slice(0, 3)).toEqual(["profile", "where", "public-card"]);
+      expect(order.slice(0, 4)).toEqual(["profile", "visibility", "where", "directory-card"]);
       const text = where().textContent;
       expect(text).toContain("Queens, New York 11106");
       expect(text).toContain("Broadway, N, W trains");
@@ -483,7 +507,7 @@ describe("/account", () => {
       expect(where().textContent).not.toContain("Queens");
     });
 
-    it("without a neighborhood, offers to choose one in the public card's picker", () => {
+    it("without a neighborhood, offers to choose one in the directory card's picker", () => {
       renderAccount({ neighborhood: null });
       fireEvent.click(within(where()).getByRole("button", { name: "Choose your neighborhood" }));
       expect(document.activeElement).toBe(screen.getByRole("combobox", { name: /neighborhood/i }));
@@ -495,9 +519,16 @@ describe("/account", () => {
       renderAccount();
       fireEvent.click(screen.getByRole("button", { name: /account menu/ }));
       const nav = screen.getByRole("navigation", { name: "My account" });
-      const href = (name: string) => within(nav).getByRole("link", { name }).getAttribute("href");
       for (const name of ["Home", "Members", "Gatherings", "Introductions", "Admin"]) expect(within(nav).queryByRole("link", { name })).toBeNull();
-      expect([href("Profile"), href("Public card"), href("Visibility"), href("Headshot session")]).toEqual(["#profile", "#public-card", "#visibility", "#headshot"]);
+      // Every card worth jumping to, in page order (the directory is members-only, so it is the Directory card).
+      expect(within(nav).getAllByRole("link").map((a) => [a.textContent, a.getAttribute("href")])).toEqual([
+        ["Profile", "#profile"], ["Visibility", "#visibility"], ["Directory card", "#directory-card"], ["Membership", "#membership"],
+        ["Headshot session", "#headshot"], ["Events", "#events"], ["Account settings", "#settings"],
+      ]);
+      const order = [...document.querySelectorAll("main section[id]")].map((el) => el.id);
+      const anchors = within(nav).getAllByRole("link").map((a) => a.getAttribute("href")!.slice(1));
+      expect(order.filter((id) => anchors.includes(id))).toEqual(anchors);
+      expect(within(nav).queryByRole("link", { name: /public/i })).toBeNull();
       expect(within(nav).getByRole("link", { name: "Profile" }).getAttribute("aria-current")).toBe("location");
       expect(screen.getByRole("button", { name: "Sign out" })).toBeTruthy();
       expect(screen.queryByRole("button", { name: "Open menu" })).toBeNull();
@@ -509,6 +540,13 @@ describe("/account", () => {
       expect(screen.getByText("Member", { selector: ".twc-flag" })).toBeTruthy();
       expect(document.getElementById("events")).toBeTruthy();
       expect(document.getElementById("introductions")).toBeTruthy();
+    });
+
+    it("on phones each member header link is a 44px tap target (A7)", () => {
+      const css = readFileSync(resolve(process.cwd(), "src/app/twc-app.css"), "utf8");
+      const phone = /@media \(max-width: 640px\) \{\s*\.air-nav > a \{([^}]*)\}/.exec(css)?.[1] ?? "";
+      expect(phone).toMatch(/min-height: 44px/);
+      expect(phone).toMatch(/min-width: 44px/);
     });
   });
 
@@ -532,6 +570,7 @@ describe("/account", () => {
         viewer(),
         [["profile", "u1"], { profile: base, avatarUrl: undefined }],
         [["rsvps", "u1"], []],
+        [["rsvps", "u1", "plans"], []],
         [["booking", "u1"], null],
         [["intros", "u1", base.neighborhood], []],
       ]);
@@ -540,33 +579,83 @@ describe("/account", () => {
       expect(screen.queryByText(/no events on the calendar yet/i)).toBeNull();
     });
 
+    const ev = (id: string, over: object = {}) => ({
+      id, slug: "", full: false, title: `Event ${id}`, description: "", location: "Bar", neighborhood: "Astoria",
+      starts_at: "2099-11-09T00:30:00Z", kind: "gathering", ...over,
+    });
+    const withPlans = (events: unknown[], plans: unknown[]) => renderAccount({}, [], events, false, [[["rsvps", "u1", "plans"], plans]]);
+
     it("a seat is an invitation until taken; going is a chip with a quiet way out", async () => {
-      const ev = { id: "e1", title: "Supper Club", description: "", location: "Bar", neighborhood: "Astoria", starts_at: "2099-11-09T00:30:00Z", created_at: "" };
-      const queries = (rsvps: string[]): [unknown[], unknown][] => [
-        viewer(), [["profile", "u1"], { profile: base, avatarUrl: undefined }], [["events"], [ev]], [["rsvps", "u1"], rsvps],
-        [["booking", "u1"], null], [["intros", "u1", base.neighborhood], []],
-      ];
-      renderWithQueries(<Page />, queries([]));
+      withPlans([ev("e1", { title: "Supper Club" })], []);
       expect(button("Save my seat at Supper Club")).toBeTruthy();
       // The ticket opens the event's page (Cal's slug, or its uid on a row without one: the page takes either).
       expect(screen.getByRole("link", { name: "Supper Club" }).getAttribute("href")).toBe("/events/e1");
       expect(screen.queryByText("You’re going")).toBeNull();
       cleanup();
-      renderWithQueries(<Page />, queries(["e1"]));
+      withPlans([ev("e1", { title: "Supper Club" })], [{ eventId: "e1", status: "GOING", waitlisted: false }]);
       expect(screen.getByText("You’re going")).toBeTruthy();
       expect(screen.queryByRole("button", { name: /save my seat/i })).toBeNull();
       fireEvent.click(button("Can’t make it to Supper Club"));
       await waitFor(() => expect(fake.calls[0]).toEqual(["setRsvpFn", { eventId: "e1", going: false }]));
     });
 
-    it("a full event offers its page's waitlist, not a seat it can't take", () => {
-      const ev = { id: "e1", slug: "supper-club", full: true, title: "Supper Club", description: "", location: "Bar", neighborhood: "Astoria", starts_at: "2099-11-09T00:30:00Z", created_at: "" };
-      renderWithQueries(<Page />, [
-        viewer(), [["profile", "u1"], { profile: base, avatarUrl: undefined }], [["events"], [ev]], [["rsvps", "u1"], []],
-        [["booking", "u1"], null], [["intros", "u1", base.neighborhood], []],
-      ]);
+    it("shows her real answer on each event, her plans first, then what's coming up", () => {
+      withPlans(
+        [ev("open"), ev("going"), ev("maybe"), ev("waiting", { full: true }), ev("full", { full: true }), ev("maybe-full", { full: true })],
+        [
+          { eventId: "going", status: "GOING", waitlisted: false }, { eventId: "maybe", status: "MAYBE", waitlisted: false },
+          { eventId: "waiting", status: null, waitlisted: true }, { eventId: "maybe-full", status: "MAYBE", waitlisted: false },
+        ],
+      );
+      const events = within(document.getElementById("events")!);
+      const titles = (name: string) => within(events.getByRole("list", { name })).getAllByRole("heading").map((h) => h.textContent);
+      expect(events.getAllByRole("heading", { level: 3 }).map((h) => h.textContent)).toEqual(["Your plans", "Coming up"]);
+      expect(titles("Your plans")).toEqual(["Event going", "Event maybe", "Event waiting", "Event maybe-full"]);
+      expect(titles("Coming up")).toEqual(["Event open", "Event full"]);
+      const row = (id: string) => within(events.getByRole("link", { name: `Event ${id}` }).closest("li")!);
+      expect(row("going").getByText("You’re going")).toBeTruthy();
+      expect(row("maybe").getByText("Maybe")).toBeTruthy();
+      expect(row("maybe").getByRole("button", { name: "I’m going at Event maybe" })).toBeTruthy();
+      expect(row("maybe").getByRole("button", { name: "Can’t make it to Event maybe" })).toBeTruthy();
+      expect(row("maybe-full").getByRole("button", { name: "Join the waitlist for Event maybe-full" })).toBeTruthy();
+      expect(row("waiting").getByText("On the waitlist")).toBeTruthy();
+      expect(row("waiting").queryByRole("button", { name: /join the waitlist/i })).toBeNull();
+      expect(row("waiting").getByRole("button", { name: "Leave the waitlist for Event waiting" })).toBeTruthy();
+      expect(row("full").getByRole("button", { name: "Full · Join the waitlist for Event full" })).toBeTruthy();
+      expect(row("open").getByRole("button", { name: "Save my seat at Event open" })).toBeTruthy();
+    });
+
+    it("with no answers yet, the events stand alone, without a plans heading", () => {
+      withPlans([ev("e1")], []);
+      expect(within(document.getElementById("events")!).queryByRole("heading", { level: 3 })).toBeNull();
+    });
+
+    it("joins and leaves a full event's waitlist as herself, then refreshes her answers and the events", async () => {
+      const { queryClient } = withPlans([ev("waiting", { full: true }), ev("full", { full: true })], [{ eventId: "waiting", status: null, waitlisted: true }]);
+      const refreshed = vi.spyOn(queryClient, "invalidateQueries");
+      fireEvent.click(button("Full · Join the waitlist for Event full"));
+      await waitFor(() => expect(fake.calls[0]).toEqual(["setMemberWaitlistFn", { eventId: "full", on: true }]));
+      await waitFor(() => expect(refreshed.mock.calls.map(([f]) => f?.queryKey)).toEqual(expect.arrayContaining([["rsvps"], ["events"]])));
+      // (The refresh above emptied the fakes' events; a fresh page for the way out.)
+      cleanup();
+      fake.reset();
+      withPlans([ev("waiting", { full: true })], [{ eventId: "waiting", status: null, waitlisted: true }]);
+      fireEvent.click(button("Leave the waitlist for Event waiting"));
+      await waitFor(() => expect(fake.calls[0]).toEqual(["setMemberWaitlistFn", { eventId: "waiting", on: false }]));
+    });
+
+    it("says why a waitlist join was refused (a spot opened)", async () => {
+      withPlans([ev("full", { full: true })], []);
+      fake.results = [new Error("There are still spots open, so you can RSVP instead.")];
+      fireEvent.click(button("Full · Join the waitlist for Event full"));
+      expect((await screen.findByRole("alert")).textContent).toMatch(/still spots open/);
+    });
+
+    it("a full event offers its waitlist, not a seat it can't take", () => {
+      withPlans([ev("e1", { slug: "supper-club", full: true, title: "Supper Club" })], []);
       expect(screen.queryByRole("button", { name: /save my seat/i })).toBeNull();
-      expect(screen.getByRole("link", { name: "Full · Join the waitlist for Supper Club" }).getAttribute("href")).toBe("/events/supper-club");
+      expect(button("Full · Join the waitlist for Supper Club")).toBeTruthy();
+      expect(screen.getByRole("link", { name: "Supper Club" }).getAttribute("href")).toBe("/events/supper-club");
     });
 
     it("formats event day and time in New York time", () => {
@@ -631,5 +720,152 @@ describe("/account", () => {
     });
     expect((await screen.findByRole("alert")).textContent).toMatch(/5 MB/);
     expect(fake.calls.some((c) => c[0] === "/api/images")).toBe(false);
+  });
+
+  describe("unsaved changes (A1)", () => {
+    const toCalendar = { current: { pathname: "/account" }, next: { pathname: "/calendar" } };
+    const makeDirty = () => {
+      editDirectoryCard();
+      fireEvent.change(screen.getByLabelText(/^role/i), { target: { value: "Owner" } });
+    };
+
+    it("the card's button says Done editing, and closing the fields keeps the draft (and the save bar)", () => {
+      renderAccount();
+      editDirectoryCard();
+      fireEvent.change(screen.getByLabelText(/^role/i), { target: { value: "Owner" } });
+      fireEvent.click(button("Done editing directory card"));
+      expect(screen.queryByLabelText(/^role/i)).toBeNull();
+      expect(screen.getByText("Owner")).toBeTruthy();
+      expect(status()).toBe("Unsaved changes");
+      expect(save()).toBeTruthy();
+    });
+
+    it("guards nothing while the draft is clean", () => {
+      renderAccount();
+      expect(blocker.opts?.disabled).toBe(true);
+      expect(blocker.opts?.enableBeforeUnload).toBe(false);
+    });
+
+    it("asks before another page drops the draft: Stay keeps her here, Leave lets her go", async () => {
+      renderAccount();
+      makeDirty();
+      expect(blocker.opts?.disabled).toBe(false);
+      expect(blocker.opts?.enableBeforeUnload).toBe(true);
+
+      let blocked = blocker.opts!.shouldBlockFn(toCalendar);
+      const dialog = await screen.findByRole("alertdialog");
+      expect(within(dialog).getByRole("heading", { name: "Leave this page?" })).toBeTruthy();
+      expect(dialog.textContent).toMatch(/unsaved changes to your profile will be lost/i);
+      fireEvent.click(within(dialog).getByRole("button", { name: "Stay" }));
+      await expect(blocked).resolves.toBe(true);
+      expect(status()).toBe("Unsaved changes");
+
+      blocked = blocker.opts!.shouldBlockFn(toCalendar);
+      fireEvent.click(within(await screen.findByRole("alertdialog")).getByRole("button", { name: "Leave" }));
+      await expect(blocked).resolves.toBe(false);
+    });
+
+    it("never asks when she only moves between this page's cards", async () => {
+      renderAccount();
+      makeDirty();
+      await expect(blocker.opts!.shouldBlockFn({ current: { pathname: "/account" }, next: { pathname: "/account" } })).resolves.toBe(false);
+      expect(screen.queryByRole("alertdialog")).toBeNull();
+    });
+
+    it("stops guarding once the draft is saved or discarded", () => {
+      renderAccount();
+      makeDirty();
+      fireEvent.click(button(/discard changes/i));
+      expect(blocker.opts?.disabled).toBe(true);
+    });
+  });
+
+  describe("empty words (A8)", () => {
+    it("an empty bio and ask read as muted placeholders with Add, not as her words", () => {
+      renderAccount({ bio: "", looking_for: "" });
+      const bio = screen.getByText(/^No bio added\./);
+      const ask = screen.getByText(/^No one named yet\./);
+      for (const empty of [bio, ask]) {
+        expect(empty.closest(".air-val--empty")).toBeTruthy();
+        expect(empty.closest(".air-ruled, .air-ruled-serif")).toBeNull();
+      }
+      fireEvent.click(button("Add bio"));
+      expect(document.activeElement).toBe(screen.getByLabelText(/^bio/i));
+      cleanup();
+      renderAccount({ bio: "", looking_for: "" });
+      fireEvent.click(button("Add looking to meet"));
+      expect(document.activeElement).toBe(screen.getByLabelText(/^looking to meet/i));
+    });
+
+    it("her words, once written, are set large as before", () => {
+      renderAccount({ bio: "I bake.", looking_for: "Cafe owners" });
+      expect(screen.getByText("I bake.").classList.contains("air-ruled-serif")).toBe(true);
+      expect(screen.getByText("Cafe owners").classList.contains("air-ruled")).toBe(true);
+      expect(screen.queryByRole("button", { name: /add bio|add looking/i })).toBeNull();
+    });
+  });
+
+  describe("directory card anchors (A6)", () => {
+    afterEach(() => window.history.replaceState(null, "", "/"));
+
+    it("an old #public-card link lands on the Directory card, and the address shows its new anchor", () => {
+      const scrolled = vi.fn();
+      Element.prototype.scrollIntoView = scrolled;
+      window.history.replaceState(null, "", "/account#public-card");
+      renderAccount();
+      const card = screen.getByRole("region", { name: "Directory card" });
+      expect(card.id).toBe("directory-card");
+      expect(window.location.hash).toBe("#directory-card");
+      expect(scrolled.mock.contexts[0]).toBe(card);
+      expect(document.activeElement).toBe(within(card).getByRole("heading", { level: 2 }));
+    });
+  });
+
+  describe("account settings (A3)", () => {
+    const settings = () => within(screen.getByRole("region", { name: "Account settings" }));
+
+    it("comes after the member cards, with her email, a password change and Delete my account (moved from Membership)", () => {
+      renderAccount();
+      const order = [...document.querySelectorAll("main section[id]")].map((el) => el.id);
+      expect(order.at(-1)).toBe("settings");
+      expect(settings().getByText("rosa@example.test")).toBeTruthy();
+      expect(settings().getByRole("link", { name: /contact us/i }).getAttribute("href")).toBe("/contact");
+      expect(settings().getByRole("button", { name: "Delete my account" })).toBeTruthy();
+      expect(within(screen.getByRole("region", { name: "Membership" })).queryByRole("button", { name: /delete/i })).toBeNull();
+    });
+
+    it("changes her password with her current one, signing other devices out", async () => {
+      auth.changePassword.mockResolvedValue({ data: { token: "t" }, error: null });
+      renderAccount();
+      fireEvent.click(settings().getByRole("button", { name: "Change password" }));
+      expect(document.activeElement).toBe(settings().getByLabelText("Current password"));
+      fireEvent.change(settings().getByLabelText("Current password"), { target: { value: "old secret" } });
+      fireEvent.change(settings().getByLabelText("New password"), { target: { value: "new secret 123" } });
+      fireEvent.click(settings().getByRole("button", { name: "Change password" }));
+      await waitFor(() => expect(auth.changePassword).toHaveBeenCalledWith({ currentPassword: "old secret", newPassword: "new secret 123", revokeOtherSessions: true }));
+      expect(await settings().findByText(/password changed/i)).toBeTruthy();
+      expect(settings().queryByLabelText("Current password")).toBeNull();
+      expect(document.activeElement).toBe(settings().getByRole("button", { name: "Change password" }));
+    });
+
+    it("says plainly when the current password is wrong, or there were too many tries", async () => {
+      auth.changePassword.mockResolvedValueOnce({ data: null, error: { code: "INVALID_PASSWORD", status: 400 } });
+      renderAccount();
+      fireEvent.click(settings().getByRole("button", { name: "Change password" }));
+      fireEvent.change(settings().getByLabelText("Current password"), { target: { value: "nope" } });
+      fireEvent.change(settings().getByLabelText("New password"), { target: { value: "new secret 123" } });
+      fireEvent.click(settings().getByRole("button", { name: "Change password" }));
+      expect((await settings().findByRole("alert")).textContent).toBe("That current password didn’t match. Try again.");
+      auth.changePassword.mockResolvedValueOnce({ data: null, error: { status: 429 } });
+      fireEvent.click(settings().getByRole("button", { name: "Change password" }));
+      await waitFor(() => expect(settings().getByRole("alert").textContent).toMatch(/too many tries/i));
+    });
+
+    it("a Google-only account is told she signs in with Google, with no password form", async () => {
+      auth.listAccounts.mockResolvedValue({ data: [{ providerId: "google" }], error: null });
+      renderAccount();
+      expect(await settings().findByText("You sign in with Google")).toBeTruthy();
+      expect(settings().queryByRole("button", { name: "Change password" })).toBeNull();
+    });
   });
 });

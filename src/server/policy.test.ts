@@ -14,7 +14,7 @@ import { viewer } from "@/features/auth/viewer.server";
 import { bookHeadshot } from "@/features/events/events.server";
 import {
   addAdminRsvp, adminBookings, adminBusinesses, adminEvent, adminEvents, adminEventTypes, adminRsvps, adminWaitlist, cancelAdminEvent, clearCalCache,
-  memberEventRsvp, memberGatherings, memberRsvps, saveAdminEvent, saveEventType, setMemberRsvp, setMemberWaitlist,
+  memberEventRsvp, memberGatherings, memberPlans, memberRsvps, saveAdminEvent, saveEventType, setMemberRsvp, setMemberWaitlist,
 } from "@/features/cal/cal.server";
 import { submitApplication } from "@/features/applications/applications.server";
 import { listNeighborhoods } from "@/features/neighborhoods/neighborhoods.server";
@@ -143,6 +143,7 @@ describe("access rules (ported from the RLS checks)", () => {
   // T3: approval gates RSVPs and bookings, not just reading events.
   it("pending member cannot RSVP", () => refusedBeforeCal(() => setMemberRsvp(as(C), { eventId: "evt1", going: true })));
   it("pending member cannot read who she is going with", () => refusedBeforeCal(() => memberRsvps(as(C))));
+  it("pending member cannot read her event plans", () => refusedBeforeCal(() => memberPlans(as(C))));
   it("pending member cannot book a headshot", () =>
     throwsAccess(() => bookHeadshot(as(C), { preferred_date: "2026-12-01", preferred_time: "Morning", notes: "" })));
   // T4: the old probing helper stays closed too.
@@ -540,6 +541,7 @@ describe("access rules (ported from the RLS checks)", () => {
   it("anon cannot read the members' gatherings or RSVP as a member", async () => {
     await refusedBeforeCal(() => memberGatherings(anon()));
     await refusedBeforeCal(() => memberRsvps(anon()));
+    await refusedBeforeCal(() => memberPlans(anon()));
     await refusedBeforeCal(() => setMemberRsvp(anon(), { eventId: "evt1", going: true }));
     await refusedBeforeCal(() => setMemberRsvp(anon(), { eventId: "evt1", status: "MAYBE" }));
     await refusedBeforeCal(() => memberEventRsvp(anon(), { eventId: "evt1" }));

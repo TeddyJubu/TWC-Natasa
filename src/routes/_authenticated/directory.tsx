@@ -73,7 +73,7 @@ function DirectoryPage() {
   return (
     <AppPage trail={false}>
       <AirShell
-        page="/directory" admin={viewer.data?.admin === true} name={own?.profile.full_name || user.name || user.email}
+        page="/directory" admin={viewer.data?.admin === true} declined={own?.profile.status === "declined"} name={own?.profile.full_name || user.name || user.email}
         avatar={own?.avatarUrl} catalogueNumber={own?.profile.status === "approved" ? own.profile.catalogue_number : null}
       >
         <main id="main" tabIndex={-1} className="outline-none">

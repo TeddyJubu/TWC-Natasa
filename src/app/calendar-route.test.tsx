@@ -45,6 +45,40 @@ describe("/calendar", () => {
     expect(screen.getAllByRole("link", { name: /Coffee Connections/ }).length).toBeGreaterThanOrEqual(2); // a day’s pill and its program row
   });
 
+  it("names the month once: the grid's own title is only announced", () => {
+    renderWithQueries(<Page />, seed);
+    expect(screen.queryByRole("heading", { name: "December 2026" })).toBeNull();
+    expect(screen.getAllByText(/December/).filter((n) => !n.closest(".sr-only") && n.tagName !== "TABLE")
+      .map((n) => n.textContent)).toEqual(["December, 2026"]);
+  });
+
+  it("draws the neighbouring months' events on the grid's leading and trailing days", () => {
+    const month = (m: string, events: CalEvent[]): [unknown[], unknown] =>
+      [["cal", "events", { tab: "all", month: m, take: 100 }], { events, total: events.length, categories: ["Coffee"], host: "Host" }];
+    renderWithQueries(<Page />, [
+      ...seed,
+      month("2026-11", [event("n1", "November coffee", "2026-11-30T15:00:00.000Z")]),
+      month("2027-01", [event("j1", "January coffee", "2027-01-02T15:00:00.000Z")]),
+    ]);
+    const day = (d: string) => within(document.querySelector<HTMLElement>(`[data-day="${d}"]`)!);
+    expect(day("2026-11-30").getByRole("link", { name: /November coffee/ })).toBeTruthy();
+    expect(day("2027-01-02").getByRole("link", { name: /January coffee/ })).toBeTruthy();
+    // The program under the grid stays the month's own.
+    expect(screen.getAllByRole("link", { name: /November coffee/ })).toHaveLength(1);
+  });
+
+  it("with no month in the address opens on the next event's month when this one has nothing left", async () => {
+    vi.spyOn(Route, "useSearch").mockReturnValue({} as never);
+    const later = event("l1", "Spring coffee", "2027-03-10T15:00:00.000Z");
+    renderWithQueries(<Page />, [
+      ...seed,
+      [["cal", "events", { tab: "upcoming", take: 1 }], { events: [later], total: 1, categories: ["Coffee"], host: "Host" }],
+      [["cal", "events", { tab: "all", month: "2027-03", take: 100 }], { events: [later], total: 1, categories: ["Coffee"], host: "Host" }],
+    ]);
+    expect((await screen.findByRole("heading", { level: 1 })).textContent).toBe("March, 2027");
+    expect(within(document.querySelector<HTMLElement>('[data-day="2027-03-10"]')!).getByRole("link", { name: /Spring coffee/ })).toBeTruthy();
+  });
+
   it("keeps only a real month from the address", () => {
     const parse = Route.options.validateSearch as (raw: Record<string, unknown>) => { month?: string };
     expect(parse({ month: "2026-12" })).toEqual({ month: "2026-12" });

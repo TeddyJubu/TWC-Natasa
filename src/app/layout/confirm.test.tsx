@@ -39,4 +39,15 @@ describe("askConfirm", () => {
     fireEvent.keyDown(dialog, { key: "Escape" });
     await expect(answer).resolves.toBe(false);
   });
+
+  it("names the safe answer when Cancel would be unclear (Stay, for leaving a page)", async () => {
+    render(<ConfirmHost />);
+    let answer!: Promise<boolean>;
+    act(() => { answer = askConfirm("Leave this page? Your unsaved changes will be lost.", "Leave", true, "Stay"); });
+    await screen.findByRole("alertdialog");
+    expect(screen.queryByRole("button", { name: "Cancel" })).toBeNull();
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole("button", { name: "Stay" })));
+    fireEvent.click(screen.getByRole("button", { name: "Stay" }));
+    await expect(answer).resolves.toBe(false);
+  });
 });

@@ -34,7 +34,7 @@ describe("Delete my account", () => {
     expect(screen.getByRole("form", { name: "Delete your account?" }).textContent).toMatch(/can’t be undone/);
     fireEvent.change(screen.getByLabelText("Your password"), { target: { value: "correct horse" } });
     confirm();
-    await waitFor(() => expect(navigate).toHaveBeenCalledWith({ to: "/", replace: true }));
+    await waitFor(() => expect(navigate).toHaveBeenCalledWith({ to: "/", replace: true, ignoreBlocker: true }));
     expect(auth.deleteUser).toHaveBeenCalledWith({ password: "correct horse" });
     expect(emitted).toEqual(["SIGNED_OUT"]);
   });

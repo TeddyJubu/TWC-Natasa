@@ -62,6 +62,7 @@ function JoinPage() {
             <span className="twc-eyebrow">{t("Membership application")}</span>
             <h1 className="twc-display">{t("Tell us about your place in the constellation.")}</h1>
             <p className="twc-lede">{t("Complete this application so we can learn about you, your work, and how you would like to participate in The Women’s Collective.")}</p>
+            <p className="twc-fmono">{t("Seven short sections. Your answers save on this device as you go.")}</p>
           </div>
           <p className="twc-fmono twc-fhead__side">{t("psst — there’s a seat for you")}</p>
         </div>
@@ -74,7 +75,8 @@ function JoinPage() {
                 submit={submit}
                 initial={applicant ?? undefined}
                 // ponytail: pre-launch an applicant only needs to apply, so no login step; the thank-you is its own page.
-                onSent={() => void navigate({ to: "/join/thanks" })}
+                // Her email rides in the history entry's state (handoff.ts), never the URL, for the thanks page's login button.
+                onSent={(email) => void navigate({ to: "/join/thanks", ...(email ? { state: { applicantEmail: email } } : {}) })}
               />
             </>
           ) : <AreaChoice />}

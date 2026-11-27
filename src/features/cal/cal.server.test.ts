@@ -6,7 +6,7 @@ import { coverVersion } from "@/server/covers";
 import type { Ctx } from "@/server/context.server";
 import { openDb, type DB } from "@/server/db";
 import {
-  addAdminRsvp, adminEvent, adminWaitlist, CalError, memberEventRsvp, memberGatherings, rsvpRequest, setMemberRsvp, setMemberWaitlist, waitlistRequest, clearCalCache, coverSource, createBooking, filterPublic, getPublicBooking, getPublicEvent, getSlots, listPublicEvents,
+  addAdminRsvp, adminEvent, adminWaitlist, CalError, memberEventRsvp, memberGatherings, memberPlans, memberRsvps, rsvpRequest, setMemberRsvp, setMemberWaitlist, waitlistRequest, clearCalCache, coverSource, createBooking, filterPublic, getPublicBooking, getPublicEvent, getSlots, listPublicEvents,
   manageBooking, saveAdminEvent, sendRsvp, sitemapEvents, toAdminBooking, toCalError, toPublicEvent, toPublicEventType, type RawEvent,
 } from "./cal.server";
 import { checkEvent } from "./types";
@@ -438,5 +438,35 @@ describe("members on the event page, and waitlists (0021)", () => {
     expect((await memberGatherings(as(BEA))).map((g) => [g.id, g.slug, g.full]).sort()).toEqual([
       ["e1", "supper-club", false], ["full", "full", true], ["open", "open", false],
     ]);
+  });
+
+  it("her plans for the account card: Going and Maybe from Cal and her waitlist places, in one call, only her own", async () => {
+    const going = event("going", { goingCount: 2 });
+    const maybe = event("maybe", { maybeCount: 1 });
+    const no = event("no", { goingCount: 1 });
+    const quiet = event("quiet");
+    // Each event's owner list: her row (by her account's email, any case) beside someone else's Going.
+    const hers: Record<string, string> = { going: "GOING", maybe: "MAYBE", no: "NOT_GOING", full: "NOT_GOING" };
+    answer = (c) => {
+      if (c.url.pathname.endsWith("/rsvps")) {
+        const uid = decodeURIComponent(c.url.pathname.split("/").at(-2)!);
+        const rows = [{ email: "other@x.test", status: "GOING" }, ...(hers[uid] ? [{ email: `${BEA}@X.test`, status: hers[uid] }] : [])];
+        return ok(rows.map((r, n) => ({ uid: `r${n}`, name: "X", plusOnes: 0, note: null, createdAt: "", updatedAt: "", ...r })));
+      }
+      return eventsApi([going, maybe, no, quiet, full, open])(c);
+    };
+    await setMemberWaitlist(as(BEA), { eventId: "full", on: true });
+    await waitlistRequest(db, post({ name: "Rosa", email: "rosa@x.test" }), "full");
+    calls = [];
+    const plans = await memberPlans(as(BEA));
+    expect([...plans].sort((a, b) => a.eventId.localeCompare(b.eventId))).toEqual([
+      { eventId: "full", status: null, waitlisted: true },
+      { eventId: "going", status: "GOING", waitlisted: false },
+      { eventId: "maybe", status: "MAYBE", waitlisted: false },
+    ]);
+    // An event nobody has answered is never asked about.
+    expect(calls.filter((c) => /\/(quiet|open)\/rsvps$/.test(c.url.pathname))).toEqual([]);
+    expect(await memberRsvps(as(BEA))).toEqual(["going"]);
+    await expect(memberPlans(as(PIA))).rejects.toThrow(/members only/i);
   });
 });

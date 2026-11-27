@@ -22,7 +22,8 @@ export function useSignOut() {
     await queryClient.cancelQueries();
     queryClient.clear();
     emitAuthEvent("SIGNED_OUT");
-    navigate({ to: "/auth", replace: true });
+    // Signed out already: an unsaved-changes guard (/account) has nothing left to keep.
+    navigate({ to: "/auth", replace: true, ignoreBlocker: true });
   }
 
   return { signOut, error };

@@ -4,7 +4,7 @@ import { assertFormOpen } from "@/features/forms-state/forms-state.server";
 import { subscribeIfConsented } from "@/server/beehiiv";
 import type { Ctx } from "@/server/context.server";
 import type { DB } from "@/server/db";
-import { appUrl } from "@/server/email";
+import { appUrl, signupUrl } from "@/server/email";
 import { confirmFooter, confirmSubmitter, firstName, notifyAdmins, oneLine } from "@/server/notify";
 import { bad, isObject, str } from "@/server/validate";
 import { AREAS, isSigningDate } from "./schema";
@@ -45,13 +45,20 @@ export async function alertApplication(db: DB, { fullName }: Pick<Stored, "fullN
 }
 
 /**
- * Short thank-you to the applicant after a successful store. No admin links. Never throws: the row is already stored.
+ * Short thank-you to the applicant after a successful store, with what happens next (the same true facts as
+ * /join/thanks: no review time, price or payment) and the Create account link. No admin links. Never throws: the row is
+ * already stored.
  */
 export async function confirmApplication({ email, fullName }: Stored): Promise<void> {
   const hi = firstName(fullName);
   const text = [
     `Hi ${hi},`, "",
-    "Thank you for applying to The Women's Collective. We've received your application and will be in touch once we've had a chance to read it.", "",
+    "Thank you for applying to The Women's Collective. We've received your application.", "",
+    "What happens next:",
+    "1. The collective reads every application and replies by email.",
+    "2. Once you're approved, we send a welcome email, and your member card, events and the members' directory open to you.",
+    "3. You can create your login now, with this email address:",
+    signupUrl(email), "",
     confirmFooter("membership application"),
   ].join("\n");
   await confirmSubmitter({ to: email, subject: "We got your application", text }, "[application]");

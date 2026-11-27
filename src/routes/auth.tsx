@@ -5,6 +5,7 @@ import { cn } from "@/index";
 import { getAuthClient } from "@/app/auth-client";
 import { emitAuthEvent } from "@/app/auth-events";
 import { AuthFrame, authAlert, authCard, authEyebrow, authH, slink } from "@/app/auth-ui";
+import { prefillEmail, readHandoffEmail } from "@/features/applications/handoff";
 
 type Mode = "signin" | "signup" | "forgot";
 const MODES: readonly string[] = ["signin", "signup", "forgot"];
@@ -12,10 +13,15 @@ const MODES: readonly string[] = ["signin", "signup", "forgot"];
 export const Route = createFileRoute("/auth")({
   // `/auth?mode=signup` opens Create account and `/auth?mode=forgot` the reset form (e.g. from an expired link);
   // `/auth?reset=done` is where a successful password reset lands, to say so above the sign-in form.
-  validateSearch: (search: Record<string, unknown>): { mode?: Mode; reset?: "done" } => ({
-    ...(typeof search.mode === "string" && MODES.includes(search.mode) ? { mode: search.mode as Mode } : {}),
-    ...(search.reset === "done" ? { reset: "done" as const } : {}),
-  }),
+  // `?email=` (the approval email's link) only prefills the Email field: a string of at most 254 characters, shown nowhere else.
+  validateSearch: (search: Record<string, unknown>): { mode?: Mode; reset?: "done"; email?: string } => {
+    const email = prefillEmail(search.email);
+    return {
+      ...(typeof search.mode === "string" && MODES.includes(search.mode) ? { mode: search.mode as Mode } : {}),
+      ...(search.reset === "done" ? { reset: "done" as const } : {}),
+      ...(email ? { email } : {}),
+    };
+  },
   head: () => ({
     meta: [
       { title: "Member Sign In — The Women’s Collective" },
@@ -33,6 +39,8 @@ export const Route = createFileRoute("/auth")({
 const SIGN_IN_FAILED = "That email or password didn’t match. Try again, or reset your password.";
 // New and existing emails get the same sign-up notice, so the form can't be used to probe for accounts.
 const SIGNUP_SENT = "Check your inbox: if this email is new to us, a confirmation link is on its way. Once confirmed, sign in to finish your profile. Already have an account? Sign in, or reset your password.";
+// The resend reads the same for every address too (Better Auth answers alike for unknown and verified ones).
+const SIGNUP_RESENT = "Sent again: if this email is waiting to be confirmed, a fresh link is on its way.";
 const RESET_SENT = "If that email belongs to a member, a reset link is on its way.";
 const PASSWORD_CHANGED = "Your password is changed. Sign in with your new one.";
 const ALREADY_EXISTS = ["USER_ALREADY_EXISTS", "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL"];
@@ -54,12 +62,34 @@ function AuthPage() {
   const [notice, setNotice] = React.useState<{ title: string; text: string } | null>(
     search.reset === "done" && (search.mode ?? "signin") === "signin" ? { title: "Password changed", text: PASSWORD_CHANGED } : null,
   );
-  const sent = (text: string) => setNotice({ title: "Almost there", text });
+  // The address a sign-up went to: the filled form gives way to the notice and "Send the link again".
+  const [signedUp, setSignedUp] = React.useState<string | null>(null);
+  // Bumped by each sent notice, so focus moves to it (on a phone it lands below the fold) even when the words repeat.
+  const [sentCount, setSentCount] = React.useState(0);
+  const noticeRef = React.useRef<HTMLDivElement>(null);
+  const sent = (text: string) => {
+    setNotice({ title: "Almost there", text });
+    setSentCount((n) => n + 1);
+  };
+  React.useEffect(() => {
+    if (!sentCount) return;
+    noticeRef.current?.focus({ preventScroll: true });
+    noticeRef.current?.scrollIntoView?.({ block: "center" });
+  }, [sentCount]);
   const setMode = (next: Mode) => {
     setModeState(next);
     setError(null);
     setNotice(null);
+    setSignedUp(null);
   };
+
+  // A prefill only (the approval email's ?email=, or the address handed on from /join/thanks): fills an empty Email
+  // field after hydration, so the server's HTML matches, and never overwrites what she has typed.
+  React.useEffect(() => {
+    const email = search.email ?? readHandoffEmail();
+    const input = document.getElementById("email");
+    if (email && input instanceof HTMLInputElement && !input.value) input.value = email;
+  }, [search.email]);
   // Forgot password? and Back to sign in unmount themselves: hand focus to the Email field so keyboard and screen-reader users keep their place.
   const switchTo = (next: Mode) => {
     setMode(next);
@@ -93,7 +123,10 @@ function AuthPage() {
       // The emailed link lands on /verified whatever this says (auth.server.ts); kept in step for clarity.
       const { error } = await auth.signUp.email({ email, password, name: String(f.get("name") ?? ""), callbackURL: "/verified" });
       // An existing email gets the same notice as a new one: no account disclosure.
-      if (!error || ALREADY_EXISTS.includes(error.code ?? "")) sent(SIGNUP_SENT);
+      if (!error || ALREADY_EXISTS.includes(error.code ?? "")) {
+        setSignedUp(email);
+        sent(SIGNUP_SENT);
+      }
       else if (PASSWORD_RULES.includes(error.code ?? "")) setError(error.message ?? "Please choose a password of 8 to 128 characters."); // the password rule, nothing about the email
       else setError("We couldn’t create your account right now. Please try again in a minute.");
     } else {
@@ -102,6 +135,17 @@ function AuthPage() {
       if (!error || error.status === 429) sent(RESET_SENT);
       else setError("We couldn’t send a link right now. Please try again in a minute.");
     }
+    setBusy(false);
+  }
+
+  // Better Auth answers an unknown or already-verified address like a real one and limits sends per IP, so every
+  // outcome but a failure reads the same.
+  async function resend() {
+    if (!signedUp) return;
+    setBusy(true); setError(null);
+    const { error } = await (await getAuthClient()).sendVerificationEmail({ email: signedUp, callbackURL: "/verified" });
+    if (!error || error.status === 429) sent(SIGNUP_RESENT);
+    else setError("We couldn’t send a link right now. Please try again in a minute.");
     setBusy(false);
   }
 
@@ -157,22 +201,33 @@ function AuthPage() {
           )}
 
           <form onSubmit={submit} className="twc-form flex flex-col gap-[18px]">
-            {mode === "signup" && field("name", "Full name", { autoComplete: "name" })}
-            {field("email", "Email", { type: "email", autoComplete: "email" })}
-            {mode !== "forgot" && field(
-              "password", "Password",
-              { type: "password", minLength: 8, autoComplete: mode === "signup" ? "new-password" : "current-password" },
-              mode === "signin" ? <button type="button" onClick={() => switchTo("forgot")} className={cn(slink, "text-[13px]")}>Forgot password?</button> : undefined,
-              mode === "signup" ? "At least 8 characters." : undefined,
+            {!signedUp && (
+              <>
+                {mode === "signup" && field("name", "Full name", { autoComplete: "name" })}
+                {field("email", "Email", { type: "email", autoComplete: "email" })}
+                {mode !== "forgot" && field(
+                  "password", "Password",
+                  { type: "password", minLength: 8, autoComplete: mode === "signup" ? "new-password" : "current-password" },
+                  mode === "signin" ? <button type="button" onClick={() => switchTo("forgot")} className={cn(slink, "text-[13px]")}>Forgot password?</button> : undefined,
+                  mode === "signup" ? "At least 8 characters." : undefined,
+                )}
+              </>
             )}
             {error && <p id="auth-error" role="alert" className={authAlert}>{error}</p>}
             {notice && (
-              <div role="status" className="twc-notice twc-notice--mint">
+              <div ref={noticeRef} tabIndex={-1} role="status" className="twc-notice twc-notice--mint scroll-mt-6 outline-none">
                 <h2 className="twc-notice__title">{notice.title}</h2>
                 <p className="text-[15px]">{notice.text}</p>
               </div>
             )}
-            <button type="submit" disabled={busy} aria-busy={busy || undefined} className="twc-btn mt-1 self-start">{copy.submit}</button>
+            {signedUp ? (
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
+                <button type="button" onClick={() => void resend()} disabled={busy} aria-busy={busy || undefined} className="twc-btn twc-btn--outline">Send the link again</button>
+                <button type="button" onClick={() => switchTo("signup")} className={slink}>Use a different email</button>
+              </div>
+            ) : (
+              <button type="submit" disabled={busy} aria-busy={busy || undefined} className="twc-btn mt-1 self-start">{copy.submit}</button>
+            )}
           </form>
 
           <p className="flex flex-col items-center gap-2 text-center text-sm">

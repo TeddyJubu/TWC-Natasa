@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { cn, formatCatalogueNumber, initials } from "@/index";
 import type { Profile } from "@/features/members/queries";
 import { useUploadAvatar } from "@/features/members/mutations";
-import { bookingQuery, eventsQuery, rsvpsQuery } from "@/features/events/queries";
+import { bookingQuery, eventsQuery, plansQuery } from "@/features/events/queries";
 import { eventWhen } from "@/features/events/format";
 import { ring, secondaryButton } from "@/app/layout/app-classes";
 import { Icon } from "@/app/layout/icons";
@@ -26,10 +26,10 @@ export function AccountHeader({ userId, profile, avatar, onPreview }: {
   const approved = profile.status === "approved";
   const declined = profile.status === "declined";
   const booking = useQuery({ ...bookingQuery(userId), enabled: approved }).data;
-  // Shares the Gatherings card's cache: her next RSVP'd gathering.
+  // Shares the Events card's caches: the next event she is going to.
   const events = useQuery({ ...eventsQuery, enabled: approved }).data ?? [];
-  const rsvps = new Set(useQuery({ ...rsvpsQuery(userId), enabled: approved }).data ?? []);
-  const next = events.find((e) => rsvps.has(e.id));
+  const going = new Set((useQuery({ ...plansQuery(userId), enabled: approved }).data ?? []).filter((p) => p.status === "GOING").map((p) => p.eventId));
+  const next = events.find((e) => going.has(e.id));
 
   const number = approved && profile.catalogue_number !== null ? formatCatalogueNumber(profile.catalogue_number) : null;
   const joined = approved ? shortMonthYear(profile.member_since) : null;
@@ -69,9 +69,12 @@ export function AccountHeader({ userId, profile, avatar, onPreview }: {
         </div>
         <div className="air-phead-tags">
           <span className="twc-flag">{approved ? "Verified member" : declined ? "Application not approved" : "Application under review"}</span>
-          <button type="button" onClick={onPreview} className={secondaryButton}>
-            View public card <Icon name="arrow-right" />
-          </button>
+          {/* A declined account has no card to show anyone, so nothing to preview. */}
+          {!declined && (
+            <button type="button" onClick={onPreview} className={secondaryButton}>
+              View directory card <Icon name="arrow-right" />
+            </button>
+          )}
         </div>
       </div>
       {upload.isError && <p role="alert" className="mt-3 text-sm text-danger">{errorMessage(upload.error)}</p>}

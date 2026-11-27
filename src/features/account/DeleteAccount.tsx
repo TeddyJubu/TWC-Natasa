@@ -18,7 +18,7 @@ const FAILED: Record<string, string> = {
 const GENERIC = "We couldn’t delete your account right now. Please try again in a minute.";
 
 /**
- * "Delete my account" at the foot of the Membership card: a confirm step, then her password (a Google-only account
+ * "Delete my account" at the foot of Account settings: a confirm step, then her password (a Google-only account
  * has none, so Better Auth wants a sign-in from the last day instead). The server refuses admins and deletes her
  * profile, applications, imported record and upload folders with the account (src/server/account-delete.ts).
  */
@@ -79,7 +79,8 @@ export function DeleteAccount() {
     await queryClient.cancelQueries();
     queryClient.clear();
     emitAuthEvent("SIGNED_OUT");
-    navigate({ to: "/", replace: true });
+    // The account is gone: an unsaved-changes guard on the page has nothing left to keep.
+    navigate({ to: "/", replace: true, ignoreBlocker: true });
   }
 
   if (!confirming) {

@@ -285,6 +285,9 @@ describe("/ (home) structure", () => {
     expect(within(letter as HTMLElement).getByRole("textbox", { name: /email/i })).toBeTruthy();
     expect(container.textContent).not.toMatch(/Your brand here/i);
     expect(screen.queryByRole("link", { name: /See packages/ })).toBeNull();
+    // The Guest arch's "Get the newsletter" stays on this page, at this letter.
+    expect(screen.getByRole("link", { name: "Get the newsletter" }).getAttribute("href")).toBe("#letter");
+    expect(container.querySelectorAll("#letter")).toHaveLength(1);
   });
 
   it("lead or partner: ambassadors write through /contact, partners see /partnerships and the canvas's price ranges", () => {

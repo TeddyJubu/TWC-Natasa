@@ -1,15 +1,15 @@
 // The design canvas's membership arches (docs/design-canvas/, arches()): four tiers as arched colour fields on the stone
 // shelf, with the Monthly / Yearly switch. Prices and words as the canvas shows them (owner decision, 2026-11-26).
 // The paid tiers' buttons are JoinButton: they are chosen on the application, so each goes to plain /join; Guest's
-// "Get the newsletter" goes to the letter's signup instead. Member promises the members-only directory, never Google
+// "Get the newsletter" goes to the letter's signup (`Letter`, #letter) on the same page instead: every page that draws
+// the arches draws the letter too, so she never leaves the page she is on. Member promises the members-only directory, never Google
 // (members-only directory, owner decision 2026-11-24). Yearly saves two months on Member, less on Business, hence "up to". Styles: .twc-arches
 // in twc-sections.css. Shared by /membership and the home page.
 import * as React from "react";
 import { cn } from "@/index";
-import { Link } from "@tanstack/react-router";
 import { JoinButton } from "@/app/layout/twc";
 
-/** `letter`: the free tier's button is the weekly letter's own signup on the home page, not the membership application. */
+/** `letter`: the free tier's button is the weekly letter's own signup on this page, not the membership application. */
 type Tier = { n: string; field: string; k: string; p: [string, string]; s: [string, string]; f: string[]; cta: string; feat?: boolean; letter?: boolean };
 
 const TIERS: Tier[] = [
@@ -51,7 +51,7 @@ export function Arches({ heading: H = "h2" }: { heading?: "h1" | "h2" } = {}) {
             <p className="twc-arch__per">{t.s[i]}</p>
             <ul>{t.f.map((x) => <li key={x}>{x}</li>)}</ul>
             {t.letter
-              ? <Link to="/" hash="letter" className="twc-btn twc-btn--outline">{t.cta}</Link>
+              ? <a href="#letter" className="twc-btn twc-btn--outline">{t.cta}</a>
               : <JoinButton className={t.feat ? "twc-btn--on-cobalt" : "twc-btn--outline"}>{t.cta}</JoinButton>}
           </div>
         ))}
