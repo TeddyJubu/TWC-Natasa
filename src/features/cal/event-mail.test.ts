@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { openDb, type DB } from "@/server/db";
-import { cancelAdminEvent, clearCalCache, saveAdminEvent, type RawEvent } from "./cal.server";
+import { addAdminRsvp, adminEvents, cancelAdminEvent, clearCalCache, saveAdminEvent, type RawEvent } from "./cal.server";
 import { cancelledMail, changedFacts, changedMail, cleanNote, uniqueRecipients } from "./event-mail.server";
 import { checkEvent } from "./types";
 
@@ -11,7 +11,7 @@ const future = (days: number) => new Date(Date.now() + days * 86_400_000).toISOS
 const stored = (over: Partial<RawEvent> = {}): RawEvent => ({
   uid: "e1", slug: "supper", title: "Supper club", description: null, category: null, coverImageUrl: null, startTime: future(2), endTime: future(2.1),
   timeZone: "America/New_York", location: "The loft", capacity: 10, status: "SCHEDULED", host: { name: "Host", username: "twc" },
-  goingCount: 2, maybeCount: 1, spotsLeft: 8, attendees: [], hidden: false, showAttendees: true, ...over,
+  goingCount: 2, maybeCount: 1, spotsLeft: 0, attendees: [], hidden: false, showAttendees: true, ...over,
 });
 const RSVPS = [
   { uid: "r1", name: "Ana Diaz", email: "Ana@X.test", status: "GOING", plusOnes: 0, note: null, updatedAt: "" },
@@ -132,5 +132,40 @@ describe("the emails", () => {
   it("dedupe addresses and clean the note", () => {
     expect(uniqueRecipients([{ name: "A", email: "A@x.test" }, { name: "B", email: "a@x.test " }])).toEqual([{ name: "A", email: "a@x.test" }]);
     expect(cleanNote("one\r\ntwo\u0000")).toBe("one\ntwo");
+  });
+});
+
+describe("a spot opening on a full event", () => {
+  const alerts = () => send.mock.calls.filter((c) => /A spot opened/.test(c[0].subject));
+  it("tells the admins once, with how many wait and a link, until the event fills again", async () => {
+    current = stored({ spotsLeft: 1 });
+    await addAdminRsvp(ctx(), { uid: "e1", rsvp: { name: "Cy", email: "cy@x.test", status: "NOT_GOING" } });
+    await addAdminRsvp(ctx(), { uid: "e1", rsvp: { name: "Bea", email: "bea@x.test", status: "NOT_GOING" } });
+    expect(alerts()).toHaveLength(1);
+    expect(alerts()[0][0].to).toBe("a@x.test");
+    expect(alerts()[0][0].text).toContain("2 people on the waitlist");
+    expect(alerts()[0][0].text).toContain("https://club.test/admin/events/e1");
+    // Full again, someone joins the waitlist, then a spot opens: news again.
+    db.prepare("delete from event_spot_alerts").run(); // what joinWaitlist does on a full event
+    await addAdminRsvp(ctx(), { uid: "e1", rsvp: { name: "Cy", email: "cy@x.test", status: "NOT_GOING" } });
+    expect(alerts()).toHaveLength(2);
+  });
+
+  it("says nothing while the event is full, or when nobody waits", async () => {
+    current = stored({ spotsLeft: 0 });
+    await addAdminRsvp(ctx(), { uid: "e1", rsvp: { name: "Cy", email: "cy@x.test", status: "MAYBE" } });
+    db.prepare("delete from event_waitlist").run();
+    current = stored({ spotsLeft: 3 });
+    await addAdminRsvp(ctx(), { uid: "e1", rsvp: { name: "Cy", email: "cy@x.test", status: "NOT_GOING" } });
+    expect(alerts()).toHaveLength(0);
+  });
+
+  it("counts who is waiting on the admin list", async () => {
+    vi.stubGlobal("fetch", vi.fn(async (input: string | URL) => {
+      const url = new URL(String(input));
+      return Response.json({ status: "success", data: url.searchParams.get("period") === "upcoming" ? [current] : [] });
+    }));
+    const list = await adminEvents(ctx(), { tab: "upcoming" });
+    expect(list.events[0].waiting).toBe(2);
   });
 });

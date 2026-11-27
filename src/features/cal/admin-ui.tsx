@@ -50,6 +50,10 @@ const eventChip = (e: AdminCalEvent): [ChipTone, string] =>
   e.status === "CANCELLED" ? ["no", "Cancelled"] : Date.parse(e.endTime) <= Date.now() ? ["muted", "Ended"]
     : e.capacity !== null && (e.spotsLeft ?? 1) <= 0 ? ["pending", "Full"] : ["ok", "Scheduled"];
 
+/** A scheduled, upcoming event with people waiting and a seat free: someone should be moved up. */
+const spotForWaitlist = (e: AdminCalEvent) =>
+  (e.waiting ?? 0) > 0 && e.status === "SCHEDULED" && Date.parse(e.endTime) > Date.now() && e.capacity !== null && (e.spotsLeft ?? 0) > 0;
+
 export function AdminEventsTable({ events, caption }: { events: AdminCalEvent[]; caption: string }) {
   return (
     <div role="region" aria-label={caption} tabIndex={0} className="overflow-x-auto focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-app-accent">
@@ -57,7 +61,7 @@ export function AdminEventsTable({ events, caption }: { events: AdminCalEvent[];
         <caption className="sr-only">{caption}</caption>
         <thead>
           <tr className="border-b border-app-rule">
-            {["Event", "When", "Status", "Going", "Maybe"].map((h) => <th key={h} scope="col" className="twc-eyebrow px-4 py-3.5 whitespace-nowrap">{h}</th>)}
+            {["Event", "When", "Status", "Going", "Maybe", "Waiting"].map((h) => <th key={h} scope="col" className="twc-eyebrow px-4 py-3.5 whitespace-nowrap">{h}</th>)}
             <th scope="col" className="px-4 py-2.5"><span className="sr-only">Actions</span></th>
           </tr>
         </thead>
@@ -75,6 +79,10 @@ export function AdminEventsTable({ events, caption }: { events: AdminCalEvent[];
                 <td className="px-4 py-3"><Chip tone={tone}>{label}</Chip></td>
                 <td className="px-4 py-3 font-plex whitespace-nowrap tabular-nums">{e.goingCount}{e.capacity !== null ? ` / ${e.capacity}` : ""}</td>
                 <td className="px-4 py-3 font-plex tabular-nums">{e.maybeCount}</td>
+                <td className="px-4 py-3">
+                  <span className="font-plex tabular-nums">{e.waiting ?? 0}</span>
+                  {spotForWaitlist(e) && <span className="ml-2 align-middle"><Chip tone="pending">Spot open</Chip></span>}
+                </td>
                 <td className="px-4 py-3">
                   <div className="flex gap-2">
                     <Link to="/admin/events/$uid" params={{ uid: e.uid }} className={cn(secondaryButton, "whitespace-nowrap")} aria-label={`Open ${e.title}`}>Open</Link>
@@ -398,6 +406,11 @@ export function WaitlistCard({ event, business }: { event: AdminCalEvent; busine
   const rows = list.data ?? [];
   return (
     <Card title="Waitlist" subtitle={rows.length ? `${rows.length} waiting, first come first` : "Nobody is waiting"}>
+      {rows.length > 0 && spotForWaitlist({ ...event, waiting: rows.length }) && (
+        <p role="status" className="mx-4 mt-3 border border-ink bg-app-pending px-3 py-2 text-sm text-ink">
+          {event.spotsLeft === 1 ? "A spot is open." : `${event.spotsLeft} spots are open.`} Add the first in line as going, then let her know.
+        </p>
+      )}
       {add.isError && <p role="alert" className="px-4 pt-3 text-sm text-danger">{messageOf(add.error)}</p>}
       {list.isError ? <div className="p-4"><InlineError message={messageOf(list.error)} onRetry={() => void list.refetch()} /></div>
         : list.isPending ? <p role="status" className="p-4 text-sm text-app-muted">Loading the waitlist…</p>

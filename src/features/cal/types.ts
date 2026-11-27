@@ -18,7 +18,8 @@ export type CalEvent = {
 };
 /** A detail page's event; `unlisted` puts `noindex` on the page. */
 export type CalEventDetail = CalEvent & { unlisted: boolean };
-export type AdminCalEvent = CalEvent & { hidden: boolean; showAttendees: boolean };
+/** `waiting`: how many are on its waitlist (event_waitlist), on the admin list and event page. */
+export type AdminCalEvent = CalEvent & { hidden: boolean; showAttendees: boolean; waiting?: number };
 export type EventList = { events: CalEvent[]; total: number; categories: string[]; host: string | null };
 export type AdminEventList = { events: AdminCalEvent[]; total: number; categories: string[] };
 export type EventTab = "upcoming" | "past";

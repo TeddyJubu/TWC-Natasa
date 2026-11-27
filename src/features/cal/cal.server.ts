@@ -4,7 +4,9 @@ import { CalAccounts, clientFromEnv, type CalClient } from "@teddyjubu/cal-agent
 import type { Ctx } from "@/server/context.server";
 import type { DB } from "@/server/db";
 import { coverPath } from "@/server/covers";
+import { appUrl } from "@/server/email";
 import { requireAdmin, requireMember } from "@/server/guard";
+import { notifyAdmins, oneLine } from "@/server/notify";
 import { checkSize, clientIp, HttpError, publicError, rateLimit } from "@/server/request";
 import { bad, isObject, str } from "@/server/validate";
 import { cancelledMail, changedFacts, changedMail, cleanNote, sendAll, uniqueRecipients, type Recipient } from "./event-mail.server";
@@ -313,6 +315,7 @@ export async function setMemberRsvp({ db, actor }: Ctx, input: unknown): Promise
   });
   invalidate(acc);
   if (status === "GOING") leaveWaitlist(db, uid, who.email);
+  await alertOpenSpot(db, acc, uid);
 }
 
 // ---- Waitlists (event_waitlist, 0021): Cal has no waitlist status, so who waits for a full event is kept here ----
@@ -336,10 +339,41 @@ async function joinWaitlist(db: DB, acc: Account, uid: string, person: { name: s
   if (event.capacity == null || event.spotsLeft == null || event.spotsLeft > 0) {
     throw new CalError("There are still spots open, so you can RSVP instead.", 409, "SPOTS_OPEN");
   }
+  // Full again: the next spot that opens is news.
+  db.prepare("delete from event_spot_alerts where event_uid = ?").run(uid);
   db.prepare(
     `insert into event_waitlist (event_uid, email, name, user_id) values (?, ?, ?, ?)
      on conflict (event_uid, email) do update set user_id = coalesce(event_waitlist.user_id, excluded.user_id)`,
   ).run(uid, person.email.trim().toLowerCase(), person.name.trim().slice(0, 120), person.userId);
+}
+
+const waitingCount = (db: DB, uid: string) =>
+  (db.prepare("select count(*) as n from event_waitlist where event_uid = ?").get(uid) as { n: number }).n;
+
+/**
+ * After any change that can free a seat (an RSVP, a capacity raise): if a full event with people waiting now has a
+ * spot, the admins hear it once (event_spot_alerts, 0022) and can add the first person from the event page. Never
+ * fails the change that called it.
+ */
+async function alertOpenSpot(db: DB, acc: Account, uid: string): Promise<void> {
+  try {
+    const waiting = waitingCount(db, uid);
+    if (!waiting) return;
+    const event = await call<RawEvent>(acc, "community-events", { path: `/${encodeURIComponent(uid)}` });
+    if (event.status !== "SCHEDULED" || isPast(event) || event.capacity == null || event.spotsLeft == null || event.spotsLeft <= 0) return;
+    if (!db.prepare("insert into event_spot_alerts (event_uid) values (?) on conflict do nothing").run(uid).changes) return;
+    const spots = event.spotsLeft === 1 ? "1 spot" : `${event.spotsLeft} spots`;
+    await notifyAdmins(db, {
+      subject: oneLine(`A spot opened: ${event.title}`),
+      text: `${oneLine(event.title)} has ${spots} open and ${waiting} ${waiting === 1 ? "person" : "people"} on the waitlist.
+
+`
+        + `Add the first in line from the event's page: ${appUrl()}/admin/events/${encodeURIComponent(uid)}
+`,
+    });
+  } catch (error) {
+    console.error("[cal] spot alert:", (error as Error).message);
+  }
 }
 
 /** A member joins or leaves the waitlist of a full event, as herself. */
@@ -388,14 +422,17 @@ export async function adminEvents({ db, actor }: Ctx, input: unknown): Promise<A
   const shown = all.filter((e) => (tab === "past") === isPast(e)).sort((a, b) => direction * (Date.parse(a.startTime) - Date.parse(b.startTime)));
   const skip = clamp(isObject(input) ? input.skip : 0, 0, 100_000);
   const take = clamp(isObject(input) ? input.take : 25, 25, PAGE) || 25;
-  return { events: shown.slice(skip, skip + take).map((e) => toAdminEvent(e, acc.name)), total: shown.length, categories: categoriesOf(all) };
+  return {
+    events: shown.slice(skip, skip + take).map((e) => ({ ...toAdminEvent(e, acc.name), waiting: waitingCount(db, e.uid) })),
+    total: shown.length, categories: categoriesOf(all),
+  };
 }
 
 export async function adminEvent({ db, actor }: Ctx, input: unknown): Promise<AdminCalEvent> {
   requireAdmin(db, actor);
   const uid = uidOf(isObject(input) ? input.uid : undefined);
   const acc = account(businessOf(input));
-  return toAdminEvent(await call<RawEvent>(acc, "community-events", { path: `/${encodeURIComponent(uid)}` }), acc.name);
+  return { ...toAdminEvent(await call<RawEvent>(acc, "community-events", { path: `/${encodeURIComponent(uid)}` }), acc.name), waiting: waitingCount(db, uid) };
 }
 
 /** Everyone with a stake in an event: Going and Maybe from Cal (read fresh), then the waitlist. */
@@ -428,7 +465,8 @@ export async function saveAdminEvent({ db, actor }: Ctx, input: unknown): Promis
     sendAll(people.map((p) => changedMail(before, after, p)), "event change");
     notified = people.length;
   }
-  return { ...after, notified };
+  if (uid) await alertOpenSpot(db, acc, uid);
+  return { ...after, notified, waiting: waitingCount(db, after.uid) };
 }
 
 /** Cancels an event, emails everyone on it (with the admin's note, if any) and clears its waitlist. */
@@ -442,6 +480,7 @@ export async function cancelAdminEvent({ db, actor }: Ctx, input: unknown): Prom
   await call(acc, "community-events", { path: `/${encodeURIComponent(uid)}/cancel`, method: "POST", body: {} });
   invalidate(acc);
   db.prepare("delete from event_waitlist where event_uid = ?").run(uid);
+  db.prepare("delete from event_spot_alerts where event_uid = ?").run(uid);
   sendAll(people.map((p) => cancelledMail(event, p, note)), "event cancel");
   return { notified: people.length };
 }
@@ -462,6 +501,7 @@ export async function addAdminRsvp({ db, actor }: Ctx, input: unknown): Promise<
   await call(acc, "community-events", { path: `/${encodeURIComponent(uid)}/rsvps`, body });
   invalidate(acc);
   if (body.status === "GOING") leaveWaitlist(db, uid, body.email);
+  await alertOpenSpot(db, acc, uid);
 }
 
 const BOOKING_FILTERS: readonly BookingStatusFilter[] = ["upcoming", "past", "cancelled", "unconfirmed"];
@@ -689,6 +729,7 @@ export function rsvpRequest(request: Request, uid: string, db?: DB): Promise<Res
     const result = await sendRsvp(uid, input, ip, businessOf(input));
     // A seat after all: her waiting place is no longer needed.
     if (db && result.status === "GOING" && isObject(input) && typeof input.email === "string") leaveWaitlist(db, uidOf(uid), input.email);
+    if (db) await alertOpenSpot(db, account(businessOf(input)), uidOf(uid));
     return result;
   });
 }
