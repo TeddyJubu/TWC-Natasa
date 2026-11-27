@@ -61,12 +61,15 @@ export function CalendarDayCell({ day, month, events, locale, today, active, onF
 
 /**
  * A WAI-ARIA grid with one tab stop: arrows move by day and week, Home/End to the week's ends, PageUp/PageDown by
- * month. Tab then reaches the focused day's events.
+ * month. Tab then reaches the focused day's events. `events` should cover the whole grid, the neighbouring months'
+ * leading and trailing days too (`useGridEvents`), or those days look empty.
  */
-export function MonthCalendar({ month, events, onMonthChange, locale: localeProp, business, going }: {
+export function MonthCalendar({ month, events, onMonthChange, locale: localeProp, business, going, hideTitle = false }: {
   month: string; events: CalEvent[]; onMonthChange: (month: string) => void; locale?: string; business?: string;
   /** Uids of the events the signed-in member is going to, marked with a tick. */
   going?: ReadonlySet<string>;
+  /** The page's own heading already names the month: the grid's title is then only announced, not shown again. */
+  hideTitle?: boolean;
 }) {
   const visitor = useVisitorLocale();
   const locale = localeProp ?? visitor;
@@ -133,8 +136,8 @@ export function MonthCalendar({ month, events, onMonthChange, locale: localeProp
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 aria-live="polite" className="twc-cal-title">{title}</h3>
-        <div className="flex gap-2">
+        {hideTitle ? <p aria-live="polite" className="sr-only">{title}</p> : <h3 aria-live="polite" className="twc-cal-title">{title}</h3>}
+        <div className="ml-auto flex gap-2">
           <button type="button" className="twc-btn twc-btn--outline twc-btn--sm" aria-label="Previous month" onClick={() => { setOpenDay(null); onMonthChange(shiftMonth(month, -1)); }}>‹</button>
           <button type="button" className="twc-btn twc-btn--outline twc-btn--sm" onClick={goToday}>Today</button>
           <button type="button" className="twc-btn twc-btn--outline twc-btn--sm" aria-label="Next month" onClick={() => { setOpenDay(null); onMonthChange(shiftMonth(month, 1)); }}>›</button>

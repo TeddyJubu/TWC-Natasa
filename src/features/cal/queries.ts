@@ -1,10 +1,12 @@
 // The browser's side of Cal: cached reads, and the posts that keep Cal's error codes for the forms.
-import { queryOptions, type QueryClient } from "@tanstack/react-query";
+import * as React from "react";
+import { queryOptions, useQueries, type QueryClient } from "@tanstack/react-query";
 import {
   adminBusinessesFn, adminCalBookingsFn, adminCalEventFn, adminCalEventsFn, adminCalEventTypesFn, adminCalRsvpsFn, adminCalWaitlistFn, calBookingFn,
   calEventFn, calEventsFn, calEventTypeFn, calEventTypesFn, calSlotsFn, memberEventRsvpFn,
 } from "./fns";
-import type { BookingStatusFilter, EventTab, RsvpInput, RsvpResult, RsvpStatus } from "./types";
+import { shiftMonth } from "./time";
+import type { BookingStatusFilter, EventList, EventTab, RsvpInput, RsvpResult, RsvpStatus } from "./types";
 
 const FRESH = 60_000;
 
@@ -12,6 +14,43 @@ export type EventsParams = { tab?: EventTab | "all"; category?: string; month?: 
 
 export const calEventsQuery = (params: EventsParams = {}) =>
   queryOptions({ queryKey: ["cal", "events", params], queryFn: () => calEventsFn({ data: params }), staleTime: FRESH });
+/** Events in a month, at most, for the month views. */
+export const MONTH_LIMIT = 100;
+export type MonthFilters = { category?: string; q?: string; business?: string };
+/** One month's events (every tab), for the month grids on /events and /calendar. */
+export const calMonthQuery = (month: string, filters: MonthFilters = {}) =>
+  calEventsQuery({ ...filters, tab: "all", month, take: MONTH_LIMIT });
+/** The next upcoming event, the first of the upcoming list: where a month view opens, and whether anything is ahead. */
+export const calNextQuery = (business?: string) => calEventsQuery({ tab: "upcoming", take: 1, ...(business ? { business } : {}) });
+/** The month and its neighbours: a month grid's leading and trailing days belong to the months either side. */
+export const gridMonths = (month: string) => [shiftMonth(month, -1), month, shiftMonth(month, 1)];
+
+/**
+ * A month grid's events: its own month's and its neighbours', so the days before the 1st and after the last carry their
+ * events too. `month` undefined (still deciding where to open) fetches nothing. A neighbour that fails is only left blank;
+ * the month's own failure is the error. `initial` holds a loader's months, keyed by month.
+ */
+export function useGridEvents(month: string | undefined, filters: MonthFilters, initial?: Readonly<Record<string, EventList>>) {
+  const months = month ? gridMonths(month) : [];
+  const results = useQueries({ queries: months.map((m) => ({ ...calMonthQuery(m, filters), initialData: initial?.[m] })) });
+  const own = results[1];
+  const [before, during, after] = [results[0]?.data, own?.data, results[2]?.data];
+  const events = React.useMemo(() => {
+    const byUid = new Map([before, during, after].flatMap((d) => d?.events ?? []).map((e) => [e.uid, e]));
+    return [...byUid.values()].sort((a, b) => Date.parse(a.startTime) - Date.parse(b.startTime));
+  }, [before, during, after]);
+  return {
+    /** Everything on the grid, the neighbours' days included. */
+    events,
+    /** Only the month's own events, for a list under the grid. */
+    monthEvents: own?.data?.events ?? [],
+    data: own?.data,
+    isPending: !own || own.isPending,
+    isError: !!own?.isError,
+    refetch: () => results.forEach((r) => void r.refetch()),
+  };
+}
+
 export const calEventQuery = (slug: string, business?: string) =>
   queryOptions({ queryKey: ["cal", "event", slug, business ?? null], queryFn: () => calEventFn({ data: { slug, business } }), staleTime: FRESH });
 export const calEventTypesQuery = (business?: string) =>
