@@ -49,6 +49,7 @@ import { Route as ApiEveToolsRouteImport } from './routes/api/eve-tools'
 import { Route as ApiFeedRouteImport } from './routes/api/feed'
 import { Route as ApiImagesRouteImport } from './routes/api/images'
 import { Route as ApiNeighborhoodLogosRouteImport } from './routes/api/neighborhood-logos'
+import { Route as ApiNewsletterRouteImport } from './routes/api/newsletter'
 import { Route as ApiPartnershipsRouteImport } from './routes/api/partnerships'
 import { Route as ApiReviewRouteImport } from './routes/api/review'
 import { Route as ApiSpotlightRouteImport } from './routes/api/spotlight'
@@ -274,6 +275,11 @@ const ApiNeighborhoodLogosRoute = ApiNeighborhoodLogosRouteImport.update({
   path: '/api/neighborhood-logos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiNewsletterRoute = ApiNewsletterRouteImport.update({
+  id: '/api/newsletter',
+  path: '/api/newsletter',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPartnershipsRoute = ApiPartnershipsRouteImport.update({
   id: '/api/partnerships',
   path: '/api/partnerships',
@@ -445,6 +451,7 @@ export interface FileRoutesByFullPath {
   '/api/feed': typeof ApiFeedRoute
   '/api/images': typeof ApiImagesRoute
   '/api/neighborhood-logos': typeof ApiNeighborhoodLogosRoute
+  '/api/newsletter': typeof ApiNewsletterRoute
   '/api/partnerships': typeof ApiPartnershipsRoute
   '/api/review': typeof ApiReviewRoute
   '/api/spotlight': typeof ApiSpotlightRoute
@@ -510,6 +517,7 @@ export interface FileRoutesByTo {
   '/api/feed': typeof ApiFeedRoute
   '/api/images': typeof ApiImagesRoute
   '/api/neighborhood-logos': typeof ApiNeighborhoodLogosRoute
+  '/api/newsletter': typeof ApiNewsletterRoute
   '/api/partnerships': typeof ApiPartnershipsRoute
   '/api/review': typeof ApiReviewRoute
   '/api/spotlight': typeof ApiSpotlightRoute
@@ -578,6 +586,7 @@ export interface FileRoutesById {
   '/api/feed': typeof ApiFeedRoute
   '/api/images': typeof ApiImagesRoute
   '/api/neighborhood-logos': typeof ApiNeighborhoodLogosRoute
+  '/api/newsletter': typeof ApiNewsletterRoute
   '/api/partnerships': typeof ApiPartnershipsRoute
   '/api/review': typeof ApiReviewRoute
   '/api/spotlight': typeof ApiSpotlightRoute
@@ -645,6 +654,7 @@ export interface FileRouteTypes {
     | '/api/feed'
     | '/api/images'
     | '/api/neighborhood-logos'
+    | '/api/newsletter'
     | '/api/partnerships'
     | '/api/review'
     | '/api/spotlight'
@@ -710,6 +720,7 @@ export interface FileRouteTypes {
     | '/api/feed'
     | '/api/images'
     | '/api/neighborhood-logos'
+    | '/api/newsletter'
     | '/api/partnerships'
     | '/api/review'
     | '/api/spotlight'
@@ -777,6 +788,7 @@ export interface FileRouteTypes {
     | '/api/feed'
     | '/api/images'
     | '/api/neighborhood-logos'
+    | '/api/newsletter'
     | '/api/partnerships'
     | '/api/review'
     | '/api/spotlight'
@@ -840,6 +852,7 @@ export interface RootRouteChildren {
   ApiFeedRoute: typeof ApiFeedRoute
   ApiImagesRoute: typeof ApiImagesRoute
   ApiNeighborhoodLogosRoute: typeof ApiNeighborhoodLogosRoute
+  ApiNewsletterRoute: typeof ApiNewsletterRoute
   ApiPartnershipsRoute: typeof ApiPartnershipsRoute
   ApiReviewRoute: typeof ApiReviewRoute
   ApiSpotlightRoute: typeof ApiSpotlightRoute
@@ -1143,6 +1156,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiNeighborhoodLogosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/newsletter': {
+      id: '/api/newsletter'
+      path: '/api/newsletter'
+      fullPath: '/api/newsletter'
+      preLoaderRoute: typeof ApiNewsletterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/partnerships': {
       id: '/api/partnerships'
       path: '/api/partnerships'
@@ -1404,6 +1424,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiFeedRoute: ApiFeedRoute,
   ApiImagesRoute: ApiImagesRoute,
   ApiNeighborhoodLogosRoute: ApiNeighborhoodLogosRoute,
+  ApiNewsletterRoute: ApiNewsletterRoute,
   ApiPartnershipsRoute: ApiPartnershipsRoute,
   ApiReviewRoute: ApiReviewRoute,
   ApiSpotlightRoute: ApiSpotlightRoute,

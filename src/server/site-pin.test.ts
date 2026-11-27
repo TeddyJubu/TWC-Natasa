@@ -34,6 +34,8 @@ describe("pinGate", () => {
     }
     const post = await pinGate(new Request("http://club.test/api/feed", { method: "POST", body: "{}" }), PIN);
     expect(post!.status).toBe(401);
+    // The newsletter sign-up lives on pages behind the PIN, so its post stays closed too.
+    expect((await pinGate(new Request("http://club.test/api/newsletter", { method: "POST", body: "{}" }), PIN))!.status).toBe(401);
     for (const path of ["/favicon.ico", "/favicon.png", "/apple-touch-icon.png", "/healthz"]) expect(await get(path)).toBeNull();
   });
 
