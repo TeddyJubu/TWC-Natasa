@@ -29,8 +29,11 @@ export interface ApplicationFormProps {
   initial?: { fullName?: string; email?: string };
   /** Offer "Review another application" after success (showcase demo only). */
   resettable?: boolean;
-  /** Called instead of showing the in-place confirmation (the live /join moves on to /join/thanks). */
-  onSent?: () => void;
+  /**
+   * Called instead of showing the in-place confirmation (the live /join moves on to /join/thanks), with the email she
+   * applied with; a honeypot "success" passes none.
+   */
+  onSent?: (email?: string) => void;
   /** The area she chose: its neighborhoods and its question. */
   area: Area;
 }
@@ -51,7 +54,7 @@ export function ApplicationForm({ submit, initial, resettable, onSent, area }: A
   const [round, setRound] = React.useState(0);
   // A ref, not state: a second submit can arrive before the "sending" render lands.
   const inFlight = React.useRef(false);
-  const sent = () => (onSent ? onSent() : setStatus("sent"));
+  const sent = (email?: string) => (onSent ? onSent(email) : setStatus("sent"));
 
   // Submit and Retry both land here, so every attempt re-reads the current answers and re-runs validation.
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -80,7 +83,7 @@ export function ApplicationForm({ submit, initial, resettable, onSent, area }: A
     try {
       await submit(application);
       clearDrafts();
-      sent();
+      sent(application.email);
     } catch {
       setFailure({ kind: "send", message: "We couldn’t send your application. Your answers are still here, so please try again." });
       setStatus("idle");

@@ -8,12 +8,14 @@ import { NEIGHBORHOOD_SEED } from "@/features/neighborhoods/queries";
 
 type LinkProps = React.AnchorHTMLAttributes<HTMLAnchorElement> & {
   to?: string; params?: Record<string, string>; search?: Record<string, string>; hash?: string; activeProps?: unknown; activeOptions?: unknown;
+  /** History state: kept off the anchor, as the router does; tests read it as `data-state` JSON. */
+  state?: Record<string, unknown>;
 };
 const fill = (to: string, params: Record<string, string> = {}) => to.replace(/\$(\w+)/g, (_, k: string) => params[k] ?? "");
 
 export const routerStubs = {
-  Link: ({ to, params, search, hash, children, activeProps: _a, activeOptions: _o, ...rest }: LinkProps) => (
-    <a href={`${fill(to ?? "", params)}${search ? `?${new URLSearchParams(search)}` : ""}${hash ? `#${hash}` : ""}`} {...rest}>{children}</a>
+  Link: ({ to, params, search, hash, state, children, activeProps: _a, activeOptions: _o, ...rest }: LinkProps) => (
+    <a href={`${fill(to ?? "", params)}${search ? `?${new URLSearchParams(search)}` : ""}${hash ? `#${hash}` : ""}`} data-state={state ? JSON.stringify(state) : undefined} {...rest}>{children}</a>
   ),
   useNavigate: () => () => undefined,
 };

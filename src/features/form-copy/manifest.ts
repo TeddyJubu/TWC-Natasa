@@ -21,6 +21,7 @@ export const COPY_FIELDS: Record<CopyForm, CopyField[]> = {
       "Membership application",
       "Tell us about your place in the constellation.",
       "Complete this application so we can learn about you, your work, and how you would like to participate in The Women’s Collective.",
+      "Seven short sections. Your answers save on this device as you go.",
     ]),
     ...g("01 — Personal information", [
       "Start with you.", "Private details stay private unless you explicitly authorize publication.",

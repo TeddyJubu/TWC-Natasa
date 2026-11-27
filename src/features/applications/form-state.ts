@@ -95,6 +95,28 @@ function messageFor(el: Control): string | null {
   return el.validity.valid ? null : el.validationMessage;
 }
 
+export type RequiredCount = { answered: number; required: number };
+
+/**
+ * How many of the answers the form requires right now are given, and well-formed: each required field and `Check` box,
+ * and each required choice group (`data-required` on its fieldset, answered once a box is ticked). A follow-up counts
+ * only while it is open, since it exists only then.
+ */
+export function countRequired(form: HTMLFormElement): RequiredCount {
+  let answered = 0;
+  let required = 0;
+  for (const el of controls(form)) {
+    if (!el.required || !el.willValidate) continue;
+    required += 1;
+    if (!messageFor(el)) answered += 1;
+  }
+  for (const group of form.querySelectorAll("fieldset[data-required]")) {
+    required += 1;
+    if (group.querySelector("input:checked")) answered += 1;
+  }
+  return { answered, required };
+}
+
 /** Every unanswered or malformed field, in page order. */
 export function collectErrors(form: HTMLFormElement): FieldError[] {
   return controls(form).flatMap((el) => {

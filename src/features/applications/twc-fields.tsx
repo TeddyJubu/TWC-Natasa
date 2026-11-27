@@ -91,7 +91,7 @@ export function Choices({ name, legend, options, type = "checkbox", hint, option
   const formError = React.useContext(FieldErrors).get(name);
   const message = formError ?? (invalid && required ? emptyMessage(type) : undefined);
   return (
-    <fieldset ref={group} data-question={t(legend)} aria-describedby={message ? errorId : undefined} className={cn("min-w-0", className)}>
+    <fieldset ref={group} data-question={t(legend)} data-required={required || undefined} aria-describedby={message ? errorId : undefined} className={cn("min-w-0", className)}>
       <legend className="twc-label mb-2.5">
         {t(legend)}{optional && <Optional />}
         {hint && <span className="ml-2 text-[13px] font-normal normal-case tracking-normal text-sb-muted">{t(hint)}</span>}

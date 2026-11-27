@@ -36,6 +36,11 @@
 .twc-fdone { display: flex; flex-direction: column; align-items: flex-start; gap: var(--twc-space-16); padding: var(--twc-space-40) var(--twc-space-30); color: var(--color-sb-ink); outline: none; }
 .twc-fdone > p, .twc-fdone > ul { margin: 0; max-width: 52ch; }
 
+/* /join/thanks: what happens next, numbered rows on hairlines (mono index, then the step) */
+.twc-next { margin: 0; padding: 0; list-style: none; border-top: var(--twc-border-hairline) solid var(--color-sb-ink); }
+.twc-next > li { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: var(--twc-space-16); align-items: baseline; padding: 14px 0; border-bottom: var(--twc-border-hairline) solid var(--color-sb-ink); }
+.twc-next > li > p { margin: 0; font-size: 17px; line-height: 1.5; }
+
 /* ---- The form: questions on hairlines, numbered per section in Plex Mono ---- */
 .twc-form { position: relative; min-width: 0; counter-reset: twc-q; }
 .twc-form--panel { padding: var(--twc-space-30); background: var(--color-sb-cream); }
@@ -60,9 +65,10 @@
 .twc-fsec__body { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
 @media (max-width: 1100px) { .twc-fsec { grid-template-columns: minmax(0, 1fr); } }
 
-/* /join's progress: a white bar under the header with an ink rule */
-.twc-fprogress { position: sticky; top: 64px; z-index: 30; margin-bottom: var(--twc-space-24); padding: 12px 0; background: var(--color-sb-paper); border-bottom: var(--twc-border-hairline) solid var(--color-sb-ink); }
-@media (min-width: 1024px) { .twc-fprogress { top: 88px; } }
+/* /join's progress: a white bar with an ink rule, flush under the sticky header above 1100px (its 81px lockup plus 18px
+   and 16px padding, twc.css), and at the very top below that, where the header scrolls away */
+.twc-fprogress { position: sticky; top: 0; z-index: 30; margin-bottom: var(--twc-space-24); padding: 12px 0; background: var(--color-sb-paper); border-bottom: var(--twc-border-hairline) solid var(--color-sb-ink); }
+@media (min-width: 1101px) { .twc-fprogress { top: 115px; } }
 
 /* Canvas error-state-shake: a field or alert shakes once as it turns wine */
 @keyframes twc-shake {
