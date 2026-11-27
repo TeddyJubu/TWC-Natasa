@@ -275,14 +275,41 @@ const memberName = (db: DB, who: { id: string; email: string }) => {
   return profile?.full_name?.trim() || who.email.split("@")[0];
 };
 
+/** Her answer on one upcoming event: Going or Maybe in Cal, and/or a place on our waitlist. */
+export type MemberPlan = { eventId: string; status: "GOING" | "MAYBE" | null; waitlisted: boolean };
+
+/**
+ * Her answers on the next 20 upcoming events (all the cards show), in one call: Going or Maybe from Cal, matched by
+ * her account's email, and her waitlist places in one read. Only her own rows leave the server; an event she hasn't
+ * answered (or can't make) is left out.
+ */
+async function plansOf(db: DB, email: string): Promise<MemberPlan[]> {
+  const acc = account();
+  // ponytail: one read per event that has any answer, cached a minute.
+  const events = (await upcomingListed(acc, new Date().toISOString())).slice(0, 20);
+  const waiting = new Set(
+    (db.prepare("select event_uid from event_waitlist where email = ?").all(email.trim().toLowerCase()) as { event_uid: string }[]).map((r) => r.event_uid),
+  );
+  const plans = await Promise.all(events.map(async (e): Promise<MemberPlan | null> => {
+    const answered = (e.goingCount ?? 0) + (e.maybeCount ?? 0) > 0;
+    const mine = answered ? (await ownRsvp(acc, e.uid, email))?.status : undefined;
+    const status = mine === "GOING" || mine === "MAYBE" ? mine : null;
+    const waitlisted = waiting.has(e.uid);
+    return status || waitlisted ? { eventId: e.uid, status, waitlisted } : null;
+  }));
+  return plans.filter((p): p is MemberPlan => p !== null);
+}
+
+/** Her plans for /account's Events card: Going, Maybe and waitlist places on upcoming events. */
+export async function memberPlans({ db, actor }: Ctx): Promise<MemberPlan[]> {
+  const who = requireMember(db, actor);
+  return plansOf(db, who.email);
+}
+
 /** Uids of the upcoming events she is going to. Her email is matched here; other guests never leave the server. */
 export async function memberRsvps({ db, actor }: Ctx): Promise<string[]> {
   const who = requireMember(db, actor);
-  const acc = account();
-  // ponytail: one read per event, cached a minute; the next 20 are all these cards show.
-  const events = (await upcomingListed(acc, new Date().toISOString())).slice(0, 20).filter((e) => (e.goingCount ?? 0) > 0);
-  const going = await Promise.all(events.map(async (e) => ((await ownRsvp(acc, e.uid, who.email))?.status === "GOING" ? e.uid : null)));
-  return going.filter((uid): uid is string => uid !== null);
+  return (await plansOf(db, who.email)).filter((p) => p.status === "GOING").map((p) => p.eventId);
 }
 
 /** Her own answer for one event (the event page): only her row leaves the server, never anyone else's. */

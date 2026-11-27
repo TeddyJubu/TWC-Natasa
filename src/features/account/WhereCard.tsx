@@ -13,7 +13,7 @@ import { NeighborhoodMap } from "./NeighborhoodMap";
 
 /**
  * Her pin on the collective's map: the neighborhood's centre (never an address), its post (ZIP, nearest stop), where
- * it gathers and how many listed neighbors live there. Shows what is saved; Edit opens the Public card's neighborhood
+ * it gathers and how many listed neighbors live there. Shows what is saved; Edit opens the Directory card's neighborhood
  * picker, the one place it is chosen. Rows whose facts we don't have are dropped.
  */
 export function WhereCard({ editor, userId, hood, approved, avatar, hoodList }: {
@@ -30,23 +30,23 @@ export function WhereCard({ editor, userId, hood, approved, avatar, hoodList }: 
   // Introductions return at most four, so four means "four or more".
   const near = intros?.filter((m) => m.neighborhood === hood).length;
   const neighbors = near === undefined ? null : near === 0 ? "Just you, for now" : near >= 4 ? "4+ neighbors" : `${near} neighbor${near === 1 ? "" : "s"}`;
-  const edit = <EditButton card="neighborhood" editing={false} onClick={() => editor.add("public", "neighborhood")} />;
+  const edit = <EditButton card="neighborhood" editing={false} onClick={() => editor.add("directory", "neighborhood")} />;
   const work = [card.business, card.specialty].filter((s) => s.trim()).join(" · ");
 
   if (!hood) {
     return (
-      <Letter id="where" no={1} title="Where you belong" subtitle="Your pin on the collective’s map of neighbors" action={edit}>
+      <Letter id="where" no={2} title="Where you belong" subtitle="Your pin on the collective’s map of neighbors" action={edit}>
         <EmptySlot icon="map-pin">
           <p className="air-empty-title">No neighborhood yet</p>
           <p>{card.status === "declined" ? "Choose yours and your pin goes on the map." : "Choose yours and your pin goes on the map, next to the neighbors you’ll meet first."}</p>
-          <button type="button" onClick={() => editor.add("public", "neighborhood")} className={cn("air-link", ring)}>Choose your neighborhood</button>
+          <button type="button" onClick={() => editor.add("directory", "neighborhood")} className={cn("air-link", ring)}>Choose your neighborhood</button>
         </EmptySlot>
       </Letter>
     );
   }
 
   return (
-    <Letter id="where" no={1} title="Where you belong" subtitle="Your pin on the collective’s map of neighbors" action={edit}>
+    <Letter id="where" no={2} title="Where you belong" subtitle="Your pin on the collective’s map of neighbors" action={edit}>
       <div className={cn("air-where", !place && "air-where--nomap")}>
         {place && (
           <NeighborhoodMap center={place.center} label={hood}>

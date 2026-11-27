@@ -7,7 +7,7 @@ import { Link } from "@tanstack/react-router";
 import { Popover, PopoverContent, PopoverTrigger } from "@ui-sdk/react/popover";
 import { LOCKUP, cn, initials } from "@/index";
 import { AppFooter } from "@/app/layout/AppLayout";
-import { MY_ACCOUNT, useActiveSection } from "@/app/layout/shell-nav";
+import { accountItems, useActiveSection } from "@/app/layout/shell-nav";
 import { ring } from "@/app/layout/app-classes";
 import { Icon } from "@/app/layout/icons";
 import { useSignOut } from "@/app/layout/sign-out";
@@ -25,9 +25,12 @@ const NAV: { to: AirPage; label: string }[] = [
   { to: "/account", label: "My profile" },
 ];
 
-/** `page` is where she is: the menu's sections are in-page anchors on /account and links back to it elsewhere. */
-export function AirShell({ page = "/account", admin, name, avatar, catalogueNumber, children }: {
-  page?: AirPage; admin: boolean; name: string; avatar?: string; catalogueNumber: number | null; children: React.ReactNode;
+/**
+ * `page` is where she is: the menu's sections are in-page anchors on /account and links back to it elsewhere.
+ * `declined` leaves out the cards /account doesn't show a declined account (it chooses links, never access).
+ */
+export function AirShell({ page = "/account", admin, declined = false, name, avatar, catalogueNumber, children }: {
+  page?: AirPage; admin: boolean; declined?: boolean; name: string; avatar?: string; catalogueNumber: number | null; children: React.ReactNode;
 }) {
   const { signOut, error } = useSignOut();
   const active = useActiveSection("/account");
@@ -46,7 +49,7 @@ export function AirShell({ page = "/account", admin, name, avatar, catalogueNumb
             <Link key={l.to} to={l.to} aria-current={l.to === page ? "page" : undefined} className={ring}>{l.label}</Link>
           ))}
           <AccountMenu
-            page={page} admin={admin} active={page === "/account" ? active : null} name={name} avatar={avatar} flag={flag}
+            page={page} admin={admin} declined={declined} active={page === "/account" ? active : null} name={name} avatar={avatar} flag={flag}
             onSignOut={signOut}
           />
         </nav>
@@ -62,8 +65,8 @@ export function AirShell({ page = "/account", admin, name, avatar, catalogueNumb
  * Her avatar and flag open the account menu: on hover with a mouse, and on click or Enter for touch and keyboard.
  * Escape, a click outside or picking an item closes it.
  */
-function AccountMenu({ page, admin, active, name, avatar, flag, onSignOut }: {
-  page: AirPage; admin: boolean; active: string | null; name: string; avatar?: string; flag: string | null; onSignOut: () => void;
+function AccountMenu({ page, admin, declined, active, name, avatar, flag, onSignOut }: {
+  page: AirPage; admin: boolean; declined: boolean; active: string | null; name: string; avatar?: string; flag: string | null; onSignOut: () => void;
 }) {
   const [open, setOpen] = React.useState(false);
   const close = () => setOpen(false);
@@ -77,7 +80,7 @@ function AccountMenu({ page, admin, active, name, avatar, flag, onSignOut }: {
       <PopoverContent keepMounted side="bottom" align="end" sideOffset={8} className="air-menu">
       <nav aria-label="My account">
         <ul>
-          {MY_ACCOUNT.map((item) => (
+          {accountItems(declined).map((item) => (
             <li key={item.hash}>
               {page === "/account" ? (
                 <a href={`#${item.hash}`} aria-current={item.hash === active ? "location" : undefined} onClick={close} className={ring}>

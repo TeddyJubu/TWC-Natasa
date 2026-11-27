@@ -1,8 +1,8 @@
 import { queryOptions, type QueryClient } from "@tanstack/react-query";
-import { bookingFn, eventsFn, publicEventsFn, rsvpsFn } from "./fns";
+import { bookingFn, eventsFn, plansFn, publicEventsFn, rsvpsFn } from "./fns";
 import type { PublicEvent } from "./events.server";
 
-export type { Booking, EventRow, PublicEvent } from "./events.server";
+export type { Booking, EventRow, MemberPlan, PublicEvent } from "./events.server";
 
 /** Upcoming events, soonest first (approved members and admins). */
 export const eventsQuery = queryOptions({
@@ -27,6 +27,16 @@ export const rsvpsQuery = (userId: string) =>
   queryOptions({
     queryKey: ["rsvps", userId],
     queryFn: () => rsvpsFn(),
+  });
+
+/**
+ * Her Going, Maybe and waitlist answers on upcoming events (/account's Events card and head). Under ["rsvps", userId],
+ * so anything that refreshes her RSVPs refreshes these too.
+ */
+export const plansQuery = (userId: string) =>
+  queryOptions({
+    queryKey: ["rsvps", userId, "plans"],
+    queryFn: () => plansFn(),
   });
 
 /** The member's single headshot booking, or null. */

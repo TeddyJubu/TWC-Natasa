@@ -3,9 +3,10 @@ import { MutationObserver, QueryClient, QueryObserver } from "@tanstack/react-qu
 import { fake } from "@/test/fake-fns";
 
 vi.mock("@/features/events/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
+vi.mock("@/features/cal/fns", async (orig) => (await import("@/test/fake-fns")).fakeFns(orig));
 
-import { bookingQuery, eventsQuery, loadPublicEvents, publicEventsQuery, rsvpsQuery } from "./queries";
-import { bookHeadshot, bookHeadshotMutation, setRsvp, toggleRsvpMutation } from "./mutations";
+import { bookingQuery, eventsQuery, loadPublicEvents, plansQuery, publicEventsQuery, rsvpsQuery } from "./queries";
+import { bookHeadshot, bookHeadshotMutation, planMutation, setRsvp, toggleRsvpMutation } from "./mutations";
 
 const run = (q: { queryFn?: unknown }) => (q.queryFn as (c: unknown) => Promise<unknown>)({});
 const denied = new Error("Members only.");
@@ -47,6 +48,39 @@ describe("rsvpsQuery", () => {
     expect(rsvpsQuery("u1").queryKey).toEqual(["rsvps", "u1"]);
     expect(await run(rsvpsQuery("u1"))).toEqual(["e1", "e2"]);
     expect(fake.calls).toEqual([["rsvpsFn"]]);
+  });
+});
+
+describe("plansQuery", () => {
+  it("loads her answers in one call, under her rsvps key so an RSVP refresh reaches it", async () => {
+    const plans = [{ eventId: "e1", status: "MAYBE", waitlisted: false }];
+    fake.results = [plans];
+    expect(plansQuery("u1").queryKey).toEqual(["rsvps", "u1", "plans"]);
+    expect(await run(plansQuery("u1"))).toBe(plans);
+    expect(fake.calls).toEqual([["plansFn"]]);
+  });
+});
+
+describe("planMutation", () => {
+  it.each([
+    [{ eventId: "e1", going: true }, ["setRsvpFn", { eventId: "e1", going: true }]],
+    [{ eventId: "e1", waitlist: true }, ["setMemberWaitlistFn", { eventId: "e1", on: true }]],
+    [{ eventId: "e1", waitlist: false }, ["setMemberWaitlistFn", { eventId: "e1", on: false }]],
+  ])("sends %o as herself, then refreshes every RSVP query and the events", async (change, call) => {
+    const qc = new QueryClient();
+    const spy = vi.spyOn(qc, "invalidateQueries");
+    fake.results = [null];
+    await new MutationObserver(qc, planMutation(qc, "u1")).mutate(change);
+    expect(fake.calls).toEqual([call]);
+    expect(spy.mock.calls.map((c) => c[0]?.queryKey)).toEqual([["rsvps"], ["events"]]);
+  });
+
+  it("refreshes after a refusal too (a full event that just opened up)", async () => {
+    const qc = new QueryClient();
+    const spy = vi.spyOn(qc, "invalidateQueries");
+    fake.results = [new Error("There are still spots open.")];
+    await expect(new MutationObserver(qc, planMutation(qc, "u1")).mutate({ eventId: "e1", waitlist: true })).rejects.toThrow();
+    expect(spy.mock.calls.map((c) => c[0]?.queryKey)).toEqual([["rsvps"], ["events"]]);
   });
 });
 

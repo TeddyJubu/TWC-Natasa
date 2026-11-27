@@ -21,7 +21,7 @@ const nameChars = (name: string) =>
   Math.max(...name.split(/[\s-]+/).map((word) => word.length), Math.ceil(1.3 * Math.sqrt(name.length)));
 
 /**
- * "View public card": her member card in a modal ui-sdk Dialog — side by side on wide screens, stacked below —
+ * "View directory card": her member card in a modal ui-sdk Dialog — side by side on wide screens, stacked below —
  * with the colour swatches under it. A swatch saves on the spot; the pass shows the choice straight away.
  */
 export function PassDialog({ open, onClose, userId, facts }: { open: boolean; onClose: () => void; userId: string; facts: PassFacts }) {
@@ -34,7 +34,7 @@ export function PassDialog({ open, onClose, userId, facts }: { open: boolean; on
     <DialogContent aria-labelledby={nameId} className="pass-dialog">
       <div className="pass-dialog-in">
         <DialogClose className={cn(secondaryButton, "pass-close")}>
-          Close<span className="sr-only"> your public card</span>
+          Close<span className="sr-only"> your directory card</span>
         </DialogClose>
         <MemberPass facts={{ ...facts, card_color: color }} nameId={nameId} />
         <fieldset className="pass-colors">

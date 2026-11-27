@@ -26,7 +26,13 @@ export const rsvpsFn = createServerFn().handler(async () => {
   return serve(m.memberRsvps);
 });
 
-export const setRsvpFn = createServerFn({ method: "POST" })
+/** Her Going / Maybe / waitlist answers on upcoming events, in one call (her own rows only). */
+export const plansFn = createServerFn().handler(async () => {
+  const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("@/features/cal/cal.server")]);
+  return serve(m.memberPlans);
+});
+
+export const setRsvpFn =createServerFn({ method: "POST" })
   .validator(pass<{ eventId: string } & ({ going: boolean } | { status: "GOING" | "MAYBE" | "NOT_GOING" })>)
   .handler(async ({ data }) => {
     const [{ serve }, m] = await Promise.all([import("@/server/context.server"), import("@/features/cal/cal.server")]);

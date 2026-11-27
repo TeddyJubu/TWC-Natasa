@@ -16,6 +16,8 @@ export const routerStubs = {
     <a href={`${fill(to ?? "", params)}${search ? `?${new URLSearchParams(search)}` : ""}${hash ? `#${hash}` : ""}`} {...rest}>{children}</a>
   ),
   useNavigate: () => () => undefined,
+  // No router, so nothing to block (/account's unsaved-changes guard; account-route.test.tsx checks its options).
+  useBlocker: () => ({ status: "idle" }),
 };
 
 // Reduced motion keeps motion components static; IntersectionObserver never fires.
