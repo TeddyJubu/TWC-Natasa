@@ -1,21 +1,25 @@
 // The design canvas's membership arches (docs/design-canvas/, arches()): four tiers as arched colour fields on the stone
 // shelf, with the Monthly / Yearly switch. Prices and words as the canvas shows them (owner decision, 2026-11-26).
-// Every button is JoinButton: the tiers are chosen on the application, so each goes to plain /join. Styles: .twc-arches
+// The paid tiers' buttons are JoinButton: they are chosen on the application, so each goes to plain /join; Guest's
+// "Get the newsletter" goes to the letter's signup instead. Member promises the members-only directory, never Google
+// (members-only directory, owner decision 2026-11-24). Yearly saves two months on Member, less on Business, hence "up to". Styles: .twc-arches
 // in twc-sections.css. Shared by /membership and the home page.
 import * as React from "react";
 import { cn } from "@/index";
+import { Link } from "@tanstack/react-router";
 import { JoinButton } from "@/app/layout/twc";
 
-type Tier = { n: string; field: string; k: string; p: [string, string]; s: [string, string]; f: string[]; cta: string; feat?: boolean };
+/** `letter`: the free tier's button is the weekly letter's own signup on the home page, not the membership application. */
+type Tier = { n: string; field: string; k: string; p: [string, string]; s: [string, string]; f: string[]; cta: string; feat?: boolean; letter?: boolean };
 
 const TIERS: Tier[] = [
-  { n: "Guest", field: "twc-arch--white", k: "Try it", p: ["$0", "$0"], s: ["always free", "always free"], cta: "Get the newsletter",
+  { n: "Guest", field: "twc-arch--white", k: "Try it", p: ["$0", "$0"], s: ["always free", "always free"], cta: "Get the newsletter", letter: true,
     f: ["Weekly newsletter", "Public event calendar", "One free coffee or happy hour, by member invitation", "Tickets to panels and open workshops"] },
   { n: "Member", field: "twc-arch--blush", k: "Belong", p: ["$20", "$200"], s: ["per month", "per year"], cta: "Become a member",
-    f: ["Your profile, findable on Google", "Pin on the Collective map", "Your constellation feed and rooms", "Monthly Constellation Zoom", "Coffees, happy hours and meetups included", "Member pricing on panels and workshops", "Invite a guest to her first social"] },
+    f: ["Your profile in the members-only directory", "Pin on the Collective map", "Your constellation feed and rooms", "Monthly Constellation Zoom", "Coffees, happy hours and meetups included", "Member pricing on panels and workshops", "Invite a guest to her first social"] },
   { n: "Business", field: "twc-arch--cobalt", k: "Be seen", p: ["$40", "$435"], s: ["per month", "per year"], cta: "Promote my business", feat: true,
     f: ["Everything in Member", "Featured listing and Business badge", "All constellations, citywide", "Quarterly All-Constellation Zoom", "A yearly spotlight: video, newsletter, Instagram", "15% off Collective Services"] },
-  { n: "Nonprofit", field: "twc-arch--butter", k: "Give back", p: ["$220", "$220"], s: ["per year", "per year"], cta: "Apply",
+  { n: "Nonprofit", field: "twc-arch--butter", k: "Give back", p: ["$220", "$220"], s: ["per year, yearly only", "per year"], cta: "Apply",
     f: ["Business benefits", "One free event listing a month", "Proof of nonprofit status required"] },
 ];
 
@@ -34,19 +38,21 @@ export function Arches({ heading: H = "h2" }: { heading?: "h1" | "h2" } = {}) {
         <div className="twc-bill" role="group" aria-label="Billing">
           <button type="button" aria-pressed={!yearly} onClick={() => setYearly(false)}>Monthly</button>
           <span aria-hidden>·</span>
-          <button type="button" aria-pressed={yearly} onClick={() => setYearly(true)}>Yearly, two months free</button>
+          <button type="button" aria-pressed={yearly} onClick={() => setYearly(true)}>Yearly, save up to two months</button>
         </div>
       </div>
       <div className="twc-arch-row">
         {TIERS.map((t) => (
           <div key={t.n} className={cn("twc-arch", t.field)}>
-            {t.feat && <span className="twc-arch__badge">Most promotion</span>}
+            {t.feat && <span className="twc-arch__badge">Most visibility</span>}
             <T className="twc-arch__title">{t.n}</T>
             <span className="twc-arch__k">{t.k}</span>
             <p className="twc-arch__amt">{t.p[i]}</p>
             <p className="twc-arch__per">{t.s[i]}</p>
             <ul>{t.f.map((x) => <li key={x}>{x}</li>)}</ul>
-            <JoinButton className={t.feat ? "twc-btn--on-cobalt" : "twc-btn--outline"}>{t.cta}</JoinButton>
+            {t.letter
+              ? <Link to="/" hash="letter" className="twc-btn twc-btn--outline">{t.cta}</Link>
+              : <JoinButton className={t.feat ? "twc-btn--on-cobalt" : "twc-btn--outline"}>{t.cta}</JoinButton>}
           </div>
         ))}
       </div>

@@ -53,9 +53,8 @@
 
 /* The member strip (canvas .twc-members): eight portraits, then "The women behind the / collective" */
 .twc-members { padding: var(--twc-space-90) var(--twc-gut) 70px; border-top: var(--twc-border-hairline) solid var(--color-sb-ink); }
-.twc-strip { display: grid; grid-template-columns: repeat(8, 1fr); align-items: start; }
-.twc-strip__item { display: block; color: inherit; text-decoration: none; }
-.twc-strip__item:focus-visible { outline: 2px solid var(--color-sb-ink); outline-offset: 2px; }
+.twc-strip { display: grid; grid-template-columns: repeat(8, 1fr); align-items: start; margin: 0; padding: 0; list-style: none; }
+.twc-strip__item { display: block; min-width: 0; }
 .twc-strip__ph { aspect-ratio: 4 / 5; width: 100%; }
 .twc-strip__ph > img { object-position: 50% 22%; }
 .twc-strip__n { margin: 10px 0 0; font-size: 12px; }
@@ -63,7 +62,7 @@
 .twc-members__words { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: var(--twc-space-24); margin-top: var(--twc-space-60); }
 .twc-members__title { margin: 0; font: inherit; }
 .twc-members__stagger { display: block; font: 400 30px/1.15 var(--font-serif); }
-.twc-members__giant { display: block; margin: 18px 0 0; font: 900 clamp(5rem, 15.5vw, 15rem)/.78 var(--font-sans); letter-spacing: -.055em; }
+.twc-members__giant { display: block; margin: 18px 0 0; font: 900 clamp(4rem, 15.5vw, 15rem)/.78 var(--font-sans); letter-spacing: -.055em; }
 .twc-members__aside { margin: 0; padding-bottom: var(--twc-space-22); text-align: right; font: 400 20px/1.2 var(--font-serif); }
 .twc-members__aside a { display: inline-block; margin-top: 12px; color: inherit; font: 600 14px var(--font-sans); text-decoration: underline; text-underline-offset: 3px; }
 @media (max-width: 1100px) {
@@ -71,31 +70,40 @@
   .twc-members__words { grid-template-columns: 1fr; }
   .twc-members__aside { text-align: left; }
 }
-@media (max-width: 600px) { .twc-strip { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) {
+  .twc-strip { grid-template-columns: repeat(2, 1fr); }
+  /* "collective" and its aside stay inside the screen (they ran 14px past it at 390px) */
+  .twc-members__giant { font-size: 18vw; }
+  .twc-members__words { min-width: 0; }
+}
+/* While the roster loads the strip keeps roughly its height, so nothing jumps when it arrives */
+.twc-members--pending { min-height: 560px; }
+@media (max-width: 600px) { .twc-members--pending { min-height: 1300px; } }
 @media (prefers-reduced-motion: reduce) {
   .twc-starchart .sc-tw { animation: none; }
   .twc-starchart .sc-mem, .twc-pf-card, .twc-pf-card__ph img, .twc-pf__btn { transition: none; }
   .twc-pslide { scroll-behavior: auto; }
 }
 
-/* The inline headline's one chip: a green pill between words */
-.twc-home-chip { border-radius: var(--twc-radius-pill); background: var(--color-sb-ev-green); }
 
-/* Experience tiles: the link fills the tile; the incubator tile is cobalt with paper text */
-.twc-grid6 > a.twc-tile:focus-visible { outline: 2px solid var(--color-sb-ink); outline-offset: -4px; }
-.twc-tile.twc-home-tile--dark { color: var(--color-sb-paper); }
-.twc-tile.twc-home-tile--dark .p { font-size: 13px; font-weight: 600; }
-.twc-tile--photo > figcaption { position: relative; z-index: 3; padding: 3px 7px; background: var(--color-sb-paper); color: var(--color-sb-ink); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
 
-/* Stepped cards: a column of kicker, title, copy and action; the letter's two short columns; the partner strip */
+/* The letter: one card, its words beside the signup (stacked on phones) */
 .twc-home-card { display: flex; flex-direction: column; gap: var(--twc-space-18); }
 .twc-home-card p { margin: 0; }
 .twc-home-big { font-size: 19px; line-height: 1.2; }
-.twc-home-two { display: grid; grid-template-columns: 1fr 1fr; gap: var(--twc-space-16); }
-.twc-home-card--strip { padding-bottom: 0; }
-.twc-home-strip { display: grid; place-items: center; height: 140px; margin: 10px calc(-1 * var(--twc-space-30)) 0 !important; background: var(--color-sb-tomato); color: var(--color-sb-ink); font: 800 64px/1 var(--font-display); font-stretch: 62%; text-transform: uppercase; }
-@media (max-width: 720px) { .twc-home-strip { margin-inline: -20px !important; } }
-/* The canvas's pill on ink: an outline in paper */
-.twc-btn.twc-home-onink { background: transparent; border-color: var(--color-sb-paper); color: var(--color-sb-paper); }
-.twc-btn.twc-home-onink:hover { background: var(--color-sb-paper); color: var(--color-sb-ink); }
+
+/* What this is, before the bands: the page's h1 and one plain line */
+.twc-home-intro { padding-bottom: var(--twc-space-40); }
+.twc-home-intro__h { margin: 0; max-width: 22ch; font: 400 clamp(2.4rem, 5vw, 4.4rem)/0.95 var(--font-serif); letter-spacing: -0.02em; }
+.twc-home-intro__h i { font-style: italic; }
+.twc-home-intro__p { max-width: 60ch; margin: var(--twc-space-18) 0 0; font-size: 17px; line-height: 1.45; }
+
+/* No dates yet: one line under the tiles */
+.twc-home-next { margin: 0; font-size: 17px; color: var(--color-sb-ink); }
+
+/* The letter: one card, its words beside the signup (stacked below 900px) */
+.twc-letter { scroll-margin-top: 120px; padding: var(--twc-space-90) var(--twc-gut); border-top: var(--twc-border-hairline) solid var(--color-sb-ink); }
+.twc-letter__card { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--twc-space-40); align-items: end; }
+.twc-letter__words { display: flex; flex-direction: column; gap: var(--twc-space-18); }
+@media (max-width: 900px) { .twc-letter__card { grid-template-columns: 1fr; } }
 }

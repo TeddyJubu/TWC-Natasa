@@ -77,13 +77,22 @@ describe("/membership", () => {
     expect(amounts()).toEqual(["$0", "$20", "$40", "$220"]);
   });
 
-  it("sends every tier's button to plain /join, in the canvas's words", () => {
+  it("sends the paid tiers to plain /join and the free one to the letter's own signup", () => {
     show(Membership);
-    for (const name of ["Get the newsletter", "Become a member", "Promote my business", "Apply"]) {
+    for (const [name, href] of [["Get the newsletter", "/#letter"], ["Become a member", "/join"], ["Promote my business", "/join"], ["Apply", "/join"]]) {
       const a = within(main()).getByRole("link", { name });
-      expect(a.getAttribute("href")).toBe("/join");
+      expect(a.getAttribute("href")).toBe(href);
       expect(a.className.split(" ")).toContain("twc-btn");
     }
+  });
+
+  it("promises the members-only directory, never Google, and only the saving it gives", () => {
+    show(Membership);
+    expect(main().textContent).not.toMatch(/Google/);
+    expect(main().textContent).toMatch(/Your profile in the members-only directory/);
+    expect(screen.getByRole("button", { name: "Yearly, save up to two months" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Monthly" }));
+    expect(main().textContent).toMatch(/\$220per year, yearly only/);
   });
 });
 

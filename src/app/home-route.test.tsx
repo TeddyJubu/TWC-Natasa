@@ -103,14 +103,28 @@ describe("/ (home): members come only from the roster", () => {
     expect(screen.getAllByRole("button", { name: "Previous profiles" })).toHaveLength(5);
   });
 
-  it("the member strip shows roster portraits with name and role · neighborhood, and opens the directory", () => {
+  it("the member strip shows roster portraits with name and role · neighborhood, both areas in turn, and opens the directory once", () => {
     const { container } = renderWithQueries(<Page />, withRoster(ROSTER));
     const strip = screen.getByRole("heading", { name: "The women behind the collective", level: 2 }).closest("section")!;
-    const items = [...strip.querySelectorAll<HTMLAnchorElement>(".twc-strip__item")];
-    expect(items.map((a) => a.textContent)).toEqual(["Ada ExamplePotter · Greenpoint", "Bea SampleGreenpoint", "Cy PlaceholderFlorist · Williamsburg", "Dee FixtureBaker · Astoria"]);
-    for (const a of items) expect(a.getAttribute("href")).toBe("/directory");
+    const items = [...strip.querySelectorAll<HTMLLIElement>("li.twc-strip__item")];
+    expect(items.map((a) => a.textContent)).toEqual(["Ada ExamplePotter · Greenpoint", "Dee FixtureBaker · Astoria", "Bea SampleGreenpoint", "Cy PlaceholderFlorist · Williamsburg"]);
+    expect(within(strip).getAllByRole("link")).toHaveLength(1);
     expect(within(strip).getByRole("link", { name: /Open the directory/ }).getAttribute("href")).toBe("/directory");
     expect(container.textContent).not.toMatch(/demo/i);
+  });
+
+  it("the strip leaves out the founder, who is named as North Brooklyn's lead", () => {
+    renderWithQueries(<Page />, withRoster({ ...ROSTER, members: [person("Fay Founder", "Greenpoint", "NB", { founder: true }), ...ROSTER.members] }));
+    const strip = screen.getByRole("heading", { name: "The women behind the collective", level: 2 }).closest("section")!;
+    expect(strip.textContent).not.toMatch(/Fay Founder/);
+  });
+
+  it("while the roster loads the strip keeps its space; with an empty roster there is no strip", () => {
+    const pending = renderWithQueries(<Page />);
+    expect(pending.container.querySelector(".twc-members--pending")).toBeTruthy();
+    pending.unmount();
+    const empty = renderWithQueries(<Page />, withRoster({ members: [], leads: {} }));
+    expect(empty.container.querySelector(".twc-members")).toBeNull();
   });
 
   it("no real member's name is in the source: the roster lives only on the server", () => {
@@ -165,13 +179,6 @@ describe("/ (home) structure", () => {
     expect(meta.find((m) => m.name === "robots")).toBeUndefined();
   });
 
-  it("the letter card sits in #letter and points to the application's opt-in with the one Join us button", () => {
-    renderWithQueries(<Page />);
-    const letter = screen.getByRole("heading", { name: "The Collective letter", level: 2 }).closest("#letter")!;
-    expect(letter).not.toBeNull();
-    expect(within(letter as HTMLElement).getByRole("link", { name: /^Join us/ }).getAttribute("href")).toBe("/join");
-  });
-
   it("five constellation bands, as closed native details: the two live ones join, the others look for leads", () => {
     renderWithQueries(<Page />);
     const section = screen.getByRole("heading", { name: "Five constellations", level: 2 }).closest("section")!;
@@ -196,14 +203,15 @@ describe("/ (home) structure", () => {
     expect(charts[4].textContent).toMatch(/Your star here/);
   });
 
-  it("seven experience tiles link to the calendar, with five captioned photos between them", () => {
+  it("seven experience tiles describe the ways to take part (not links), with five uncaptioned photos between them", () => {
     const { container } = renderWithQueries(<Page />);
     const grid = container.querySelector(".twc-grid6")!;
-    const tiles = [...grid.querySelectorAll("a.twc-tile")];
+    const tiles = [...grid.querySelectorAll("article.twc-tile")];
     expect(tiles.map((a) => a.querySelector("h3")!.textContent)).toEqual(["Constellation Zooms", "Coffee Connections", "Constellation Meetups",
       "Expert Panels", "Hands-on Workshops", "Incubator Growth Sessions", "Happy Hours"]);
-    for (const a of tiles) expect(a.getAttribute("href")).toBe("/events");
-    expect(grid.querySelectorAll("figure.twc-tile--photo img")).toHaveLength(5);
+    expect(grid.querySelectorAll("a")).toHaveLength(0);
+    expect(grid.querySelectorAll(".twc-tile--photo img")).toHaveLength(5);
+    expect(grid.querySelectorAll(".twc-tile--photo span, figcaption")).toHaveLength(0);
     expect(grid.children).toHaveLength(12);
   });
 
@@ -218,11 +226,35 @@ describe("/ (home) structure", () => {
     expect(within(section).getByRole("link", { name: /Details and RSVP/ }).getAttribute("href")).toBe("/events/coffee");
   });
 
-  it("the program with no events (or Cal down) says dates come as they're announced and links the calendar", () => {
-    renderWithQueries(<Page />, [[["cal", "events", { tab: "upcoming", take: 5 }], { events: [], total: 0, categories: [], host: null }]]);
-    const section = screen.getByRole("heading", { name: "Program", level: 2 }).closest("section")!;
-    expect(section.querySelector(".twc-ev")).toBeNull();
-    expect(within(section).getByRole("link", { name: "See the calendar" }).getAttribute("href")).toBe("/events");
+  it("the program with no events (or Cal down) is one line under the tiles linking the calendar, not an empty section", () => {
+    const { container } = renderWithQueries(<Page />, [[["cal", "events", { tab: "upcoming", take: 5 }], { events: [], total: 0, categories: [], host: null }]]);
+    expect(screen.queryByRole("heading", { name: /^Program/ })).toBeNull();
+    expect(container.querySelector(".twc-ev")).toBeNull();
+    expect(screen.getByText(/New dates are posted as they’re announced/)).toBeTruthy();
+    expect(screen.getByRole("link", { name: "See the calendar" }).getAttribute("href")).toBe("/events");
+  });
+
+  it("while the calendar loads the program shows nothing, so no empty state flashes first", () => {
+    renderWithQueries(<Page />);
+    expect(screen.queryByRole("heading", { name: /^Program/ })).toBeNull();
+    expect(screen.queryByText(/New dates are posted/)).toBeNull();
+  });
+
+  it("opens with the page's own h1 and one plain line saying what the Collective is", () => {
+    renderWithQueries(<Page />);
+    const h1 = screen.getByRole("heading", { level: 1 });
+    expect(h1.textContent).toBe("Find your people. Build what comes next.");
+    expect(h1.className).not.toMatch(/sr-only/);
+    expect(h1.parentElement!.textContent).toMatch(/A local-first network of women in business, one neighborhood at a time/);
+  });
+
+  it("the letter has its own email signup at #letter, and no placeholder partner card", () => {
+    const { container } = renderWithQueries(<Page />);
+    const letter = container.querySelector("section#letter")!;
+    expect(within(letter as HTMLElement).getByRole("heading", { name: "The Collective letter", level: 2 })).toBeTruthy();
+    expect(within(letter as HTMLElement).getByRole("textbox", { name: /email/i })).toBeTruthy();
+    expect(container.textContent).not.toMatch(/Your brand here/i);
+    expect(screen.queryByRole("link", { name: /See packages/ })).toBeNull();
   });
 
   it("lead or partner: ambassadors write through /contact, partners see /partnerships and the canvas's price ranges", () => {
@@ -233,7 +265,6 @@ describe("/ (home) structure", () => {
     expect(container.textContent).toMatch(/Uptown.?Two seats open/);
     expect(screen.getByRole("link", { name: "Apply to be an ambassador" }).getAttribute("href")).toBe("/contact");
     expect(screen.getByRole("link", { name: /Ways to partner/ }).getAttribute("href")).toBe("/partnerships");
-    expect(screen.getByRole("link", { name: /See packages/ }).getAttribute("href")).toBe("/partnerships");
   });
 
   it("never says gathering (the word is events) and, without a roster, names no member beyond the founder", () => {

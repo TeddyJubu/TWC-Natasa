@@ -1,7 +1,7 @@
 // The design canvas's inline headline and experience tiles (docs/design-canvas/, inlineHead() + tiles()): seven ways to
 // take part as colour tiles, with film photos between them (12 cells: 6 / 3 / 2 across). Stock photos
-// (src/assets/photography/home/CREDITS.md), captioned by kind only: they are not our events.
-import { Link } from "@tanstack/react-router";
+// (src/assets/photography/home/CREDITS.md), uncaptioned: they are not our events. The tiles are descriptions, not links (the
+// calendar is one link under them on the home page, and /events is where they sit).
 import xpZoom from "@/assets/photography/home/xp-zoom.webp";
 import xpCoffee from "@/assets/photography/home/xp-coffee.webp";
 import xpPanel from "@/assets/photography/home/xp-panel.webp";
@@ -18,11 +18,11 @@ const XP = [
   { k: "Happy Hours", h: "An informal evening to meet members in your neighborhood. New dates posted as they’re announced.", a: ["Included in membership", "First visit complimentary for invited guests", "Drinks purchased separately"], field: "bg-sb-sky" },
 ] as const;
 const PHOTOS = {
-  zoom: { src: xpZoom, alt: "A woman waving on a video call on a laptop", caption: "Zoom night" },
-  coffee: { src: xpCoffee, alt: "Two women talking over coffee at a café table", caption: "Coffee" },
-  panel: { src: xpPanel, alt: "A woman speaking into a microphone on a panel", caption: "Expert panel" },
-  workshop: { src: xpWorkshop, alt: "Two women drawing at a workshop table", caption: "Workshop" },
-  evening: { src: xpEvening, alt: "A hand lighting a candle on a long table", caption: "Happy hour" },
+  zoom: { src: xpZoom, alt: "A woman waving on a video call on a laptop" },
+  coffee: { src: xpCoffee, alt: "Two women talking over coffee at a café table" },
+  panel: { src: xpPanel, alt: "A woman speaking into a microphone on a panel" },
+  workshop: { src: xpWorkshop, alt: "Two women drawing at a workshop table" },
+  evening: { src: xpEvening, alt: "A hand lighting a candle on a long table" },
 } as const;
 type Cell = { tile: number } | { photo: keyof typeof PHOTOS };
 const GRID: Cell[] = [
@@ -46,16 +46,15 @@ export function Experiences({ heading: H = "h2" }: { heading?: "h1" | "h2" }) {
             return (
               <div key={cell.photo} className="twc-tile twc-tile--photo twc-film">
                 <img src={p.src} alt={p.alt} loading="lazy" decoding="async" />
-                <span>{p.caption}</span>
               </div>
             );
           }
           const x = XP[cell.tile];
           return (
-            <Link key={x.k} to="/events" className={`twc-tile ${x.field}`}>
+            <article key={x.k} className={`twc-tile ${x.field}`}>
               <div><span className="no">{no(cell.tile)}</span><T>{x.k}</T><p className="h">{x.h}</p></div>
               <p className="p">{x.a.map((line, i) => <span key={line} className="block">{i > 0 && <span className="sr-only"> · </span>}{line}</span>)}</p>
-            </Link>
+            </article>
           );
         })}
       </div>

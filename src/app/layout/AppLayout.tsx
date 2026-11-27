@@ -28,7 +28,8 @@ export function AppPage({ children, className, trail = true }: { children: React
   );
 }
 
-export type SiteLink = { label: string; to: "/constellations" | "/directory" | "/events" | "/leadership" | "/membership" | "/partnerships" | "/about" | "/faq" | "/fellowship" | "/contact" };
+/** `wide`: shown only on wider screens; on a phone the link is still in the footer, so the header stays short. */
+export type SiteLink = { label: string; to: "/constellations" | "/directory" | "/events" | "/leadership" | "/membership" | "/partnerships" | "/about" | "/faq" | "/fellowship" | "/contact"; wide?: boolean };
 
 // The canvas's visitor nav, in its order. Directory links to /directory for everyone; that page decides who sees members
 // (owner decision, 2026-11-26: no deliberate differences from the canvas).
@@ -36,9 +37,9 @@ const NAV: SiteLink[] = [
   { label: "Constellations", to: "/constellations" },
   { label: "Directory", to: "/directory" },
   { label: "Events", to: "/events" },
-  { label: "Leadership", to: "/leadership" },
+  { label: "Leadership", to: "/leadership", wide: true },
   { label: "Membership", to: "/membership" },
-  { label: "Partner", to: "/partnerships" },
+  { label: "Partner", to: "/partnerships", wide: true },
 ];
 
 /** The boxed club lockup (stars over the name), drawn as an image; its text is the link's or the page's. */
@@ -71,7 +72,7 @@ function SiteNav() {
     <header className="twc-header">
       <Link to="/" activeOptions={{ exact: true }} className="twc-logo" aria-label="The Women’s Collective home"><Lockup /></Link>
       <nav aria-label="Main" className="twc-nav">
-        {NAV.map((l) => <Link key={l.to} to={l.to}>{l.label}</Link>)}
+        {NAV.map((l) => <Link key={l.to} to={l.to} className={l.wide ? "twc-nav__wide" : undefined}>{l.label}</Link>)}
         {signedIn
           ? <Link to="/account" className={cn(JOIN_CLASS, "twc-btn--sm")}>Account</Link>
           : <><Link to="/auth">Log in</Link><JoinButton className="twc-btn--sm">Join</JoinButton></>}
@@ -107,12 +108,15 @@ export function AppFooter({ bare = false }: { bare?: boolean }) {
         </div>
         <div>
           <p>Constellations</p>
-          <p>North Brooklyn · Western Queens · Brownstone Brooklyn · Uptown Manhattan · Downtown Manhattan</p>
+          {bare
+            ? <p>North Brooklyn · Western Queens · Brownstone Brooklyn · Uptown Manhattan · Downtown Manhattan</p>
+            : <p><Link to="/constellations">North Brooklyn · Western Queens · Brownstone Brooklyn · Uptown Manhattan · Downtown Manhattan</Link></p>}
         </div>
         {!bare && (
           <div>
             <p>The Collective</p>
             <nav aria-label="Footer">{FOOTER.map((l) => <Link key={l.to} to={l.to}>{l.label}</Link>)}</nav>
+            <p className="mt-2"><a href="mailto:info@thewomenscollective.club">info@thewomenscollective.club</a></p>
           </div>
         )}
         <div>

@@ -198,6 +198,12 @@ describe("AppFooter", () => {
     for (const path of REMOVED) expect(tree).not.toContain(`path: '${path}'`);
   });
 
+  it("links the constellations line and gives the club's email", () => {
+    render(<AppFooter />);
+    expect(screen.getByRole("link", { name: /North Brooklyn · Western Queens/ }).getAttribute("href")).toBe("/constellations");
+    expect(screen.getByRole("link", { name: "info@thewomenscollective.club" }).getAttribute("href")).toBe("mailto:info@thewomenscollective.club");
+  });
+
   it("carries no legal links while the legal pages are removed", () => {
     render(<AppFooter />);
     expect(screen.queryByRole("navigation", { name: "Legal" })).toBeNull();
