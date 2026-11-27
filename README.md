@@ -308,7 +308,7 @@ root-only `/opt/cal/.env`, `/opt/cal/.api-key` and `/opt/cal/.owner-login`. The 
 | `/embed/events` | A bare list for framing. Same-site only until a partner origin is added to `frame-ancestors`. |
 | `/book`, `/book/<type>` | Pick a time and book. |
 | `/booking/<uid>?seat=` | The attendee's private manage link: reschedule, cancel, add guests. Never server-rendered, always `noindex`. |
-| `/admin/events`, `/new`, `/<uid>` | Create, edit and cancel events; RSVPs with filter, CSV and totals. |
+| `/admin/events`, `/new`, `/<uid>` | Create (as a draft until Publish), duplicate, edit and cancel events; RSVPs with filter, CSV and totals; the waitlist. Cancelling, or moving an upcoming event's time or place, emails everyone Going, Maybe or waiting; a spot opening on a full event with a waitlist emails the admins. |
 | `/admin/appointments` | Cal bookings and appointment types. Headshot requests stay in `/admin/bookings`. |
 
 Posts go through `/api/gatherings/<uid>/rsvp`, `/api/book` and `/api/booking/<uid>`, each CSRF-checked and rate-limited. Cal
@@ -317,7 +317,7 @@ has no API to delete a community event: cancel it, and remove a test one from Ca
 Event covers are served from `/media/covers/<uid>`: the app downloads the https address saved on the event once, checks it
 and keeps a copy in `${DATA_DIR}/uploads/covers/` (at most 200 files and 50 MB). A cover must be a JPG, PNG or WebP of at most
 5 MB and 4096px, on a public host. Anything else shows the date tile. To change a picture, link a new address: a new picture
-at the same address isn't fetched again.
+at the same address isn't fetched again. An uploaded cover is stored in `${DATA_DIR}/uploads/event-covers/` instead, kept and backed up.
 
 Redeploy Cal: images are built off this VPS by the fork's `twc-vps-images.yml` workflow (branch `deploy/twc-vps`), never here,
 because the disk is small. Load the new images, set `CAL_IMAGE_TAG` in `/opt/cal/.env`, then:
